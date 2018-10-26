@@ -43,9 +43,9 @@ Alias_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     if( !self )
         return 0;
     Alias* alias = reinterpret_cast<Alias*>( self );
-    alias->target = newref( target );
-    alias->chain = newref( chain );
-    alias->key = newref( key );
+    alias->target = cppy::incref( target );
+    alias->chain = cppy::incref( chain );
+    alias->key = cppy::incref( key );
     alias->canset = false;
     return self;
 }
@@ -98,7 +98,7 @@ static PyObject*
 Alias__get__( Alias* self, PyObject* object, PyObject* type )
 {
     if( !object )
-        return newref( pyobject_cast( self ) );
+        return cppy::incref( pyobject_cast( self ) );
     cppy::ptr storage( PyObject_GetAttr( object, storage_str ) );
     if( !storage )
         return 0;

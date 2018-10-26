@@ -175,7 +175,7 @@ load_dynamic_attr( PyObject* obj, PyObject* name, PyObject* tracer=0 )
             {
                 if( tracer && !run_tracer( tracer, objptr.get(), name, item ) )
                     return 0;
-                return newref( item );
+                return cppy::incref( item );
             }
         }
 
@@ -218,7 +218,7 @@ set_dynamic_attr( PyObject* obj, PyObject* name, PyObject* value )
     PyObject** dictptr;
     cppy::ptr descr;
     descrsetfunc descr_f;
-    cpp::ptr objptr( cppy::incref( obj ) );
+    cppy::ptr objptr( cppy::incref( obj ) );
 
     // The body of this loop is PyObject_GenericGetAttr, modified to
     // use smart pointers.
@@ -318,7 +318,7 @@ Nonlocals_repr( Nonlocals* self )
     cppy::ptr pystr( PyObject_Str( self->owner ) );
     if( !pystr )
         return 0;
-    return Py23Str_FromFormat(
+    return PyUnicode_FromFormat(
         "%s[%s]",
         Py_TYPE(self)->tp_name,
         PyUnicode_AsUTF8( pystr.get() )
@@ -409,7 +409,7 @@ Nonlocals_setitem( Nonlocals* self, PyObject* key, PyObject* value )
 {
     if( !PyUnicode_CheckExact( key ) )
     {
-        py_expected_type_fail( key, "str" );
+        cppy::type_error( key, "str" );
         return -1;
     }
     int res = set_dynamic_attr( self->owner, key, value );
@@ -523,11 +523,11 @@ DynamicScope_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
         &owner, &f_locals, &f_globals, &f_builtins, &change, &tracer ) )
         return 0;
     if( !PyMapping_Check( f_locals ) )
-        return py_expected_type_fail( f_locals, "mapping" );
+        return cppy::type_error( f_locals, "mapping" );
     if( !PyDict_CheckExact( f_globals ) )
-        return py_expected_type_fail( f_globals, "dict" );
+        return cppy::type_error( f_globals, "dict" );
     if( !PyDict_CheckExact( f_builtins ) )
-        return py_expected_type_fail( f_builtins, "dict" );
+        return cppy::type_error( f_builtins, "dict" );
     PyObject* self = PyType_GenericNew( type, 0, 0 );
     if( !self )
         return 0;
@@ -586,7 +586,7 @@ static PyObject*
 DynamicScope_getitem( DynamicScope* self, PyObject* key )
 {
     if( !PyUnicode_CheckExact( key ) )
-        return type_error( key, "str" );
+        return cppy::type_error( key, "str" );
 
     PyObject* res;
 
@@ -720,7 +720,7 @@ DynamicScope_contains( DynamicScope* self, PyObject* key )
         return 1;
 
     // value from the local scope
-    PyObjectPtr item( PyObject_GetItem( self->f_locals, key ) );
+    cppy::ptr item( PyObject_GetItem( self->f_locals, key ) );
     if( item )
         return 1;
     if( PyErr_Occurred() )

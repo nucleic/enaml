@@ -39,7 +39,7 @@ CallableRef_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     static char* kwlist[] = { "method", "callback", 0 };
     if( !PyArg_ParseTupleAndKeywords( args, kwargs, "O|O", kwlist, &obj, &cb ) )
         return 0;
-    PyObjectPtr crefptr( PyType_GenericNew( type, args, kwargs ) );
+    cppy::ptr crefptr( PyType_GenericNew( type, args, kwargs ) );
     if( !crefptr )
         return 0;
     CallableRef* cref = reinterpret_cast<CallableRef*>( crefptr.get() );
@@ -83,7 +83,7 @@ CallableRef_call( CallableRef* self, PyObject* args, PyObject* kwargs )
         Py_RETURN_NONE;
     cppy::ptr argsptr( cppy::incref( args ) );
     cppy::ptr kwargsptr( cppy::incref( kwargs ) );
-    return objptr.call( argsptr, kwargsptr ).release();
+    return objptr.call( argsptr, kwargsptr );
 }
 
 
@@ -92,19 +92,19 @@ CallableRef_richcompare( CallableRef* self, PyObject* other, int opid )
 {
     if( opid == Py_EQ )
     {
-        cppy::incref sref( cppy::incref( self->objref ) );
+        cppy::ptr sref( cppy::incref( self->objref ) );
         if( CallableRef_Check( other ) )
         {
             CallableRef* cref_other = reinterpret_cast<CallableRef*>( other );
-            cppy::incref oref( cppy::incref( cref_other->objref ) );
-            if( sref.richcompare( oref, Py_EQ ) )
+            cppy::ptr oref( cppy::incref( cref_other->objref ) );
+            if( sref.richcmp( oref, Py_EQ ) )
                 Py_RETURN_TRUE;
             Py_RETURN_FALSE;
         }
         if( PyWeakref_CheckRef( other ) )
         {
             cppy::ptr oref( cppy::incref( other ) );
-            if( sref.richcompare( oref, Py_EQ ) )
+            if( sref.richcmp( oref, Py_EQ ) )
                 Py_RETURN_TRUE;
             Py_RETURN_FALSE;
         }

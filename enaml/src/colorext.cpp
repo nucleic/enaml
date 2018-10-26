@@ -72,7 +72,7 @@ Color_repr( Color* self )
     uint32_t b = self->argb & 255;
     std::ostringstream ostr;
     ostr << "Color(red=" << r << ", green=" << g << ", blue=" << b << ", alpha=" << a << ")";
-    return Py23Str_FromString(ostr.str().c_str());
+    return PyUnicode_FromString(ostr.str().c_str());
 }
 
 

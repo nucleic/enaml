@@ -61,7 +61,7 @@ _Invoke( PyObject* func, PyObject* key, PyObject* self, PyObject* args,
     cppy::ptr f_globals( pfunc.getattr( "__globals__" ) );
     if( !f_globals )
         return cppy::attribute_error( pfunc.get(), "__globals__" );
-    cppy::ptr f_builtins( f_globals.getitem( "__builtins__" ) );
+    cppy::ptr f_builtins( PyDict_GetItemString( f_globals.get(), "__builtins__" ) );
     if( !f_builtins ){
         PyErr_Format(
             PyExc_KeyError,
@@ -82,7 +82,7 @@ _Invoke( PyObject* func, PyObject* key, PyObject* self, PyObject* args,
                                       f_globals.get(),
                                       f_builtins.get(), 0 )
         );
-    if( PyMapping_SetItemString( scope.get(), "super", newref( super_disallowed ) ) == -1 )
+    if( PyMapping_SetItemString( scope.get(), "super", cppy::incref( super_disallowed ) ) == -1 )
         return cppy::system_error( "Failed to set key super in dynamic scope" );
 
     cppy::ptr pkw( cppy::xincref( kwargs ) );
@@ -110,8 +110,8 @@ DFunc_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     if( !PyFunction_Check( im_func ) )
         return cppy::type_error( im_func, "function" );
     DFunc* df = reinterpret_cast<DFunc*>( self );
-    df->im_func = newref( im_func );
-    df->im_key = newref( im_key );
+    df->im_func = cppy::incref( im_func );
+    df->im_key = cppy::incref( im_key );
     return self;
 }
 
@@ -147,13 +147,13 @@ DFunc_repr( DFunc* self )
     std::ostringstream ostr;
     ostr << "<declarative function ";
     cppy::ptr mod( PyObject_GetAttrString( self->im_func, "__module__" ) );
-    if( mod && Py23Str_Check( mod.get() ) )
-        ostr << Py23Str_AS_STRING( mod.get() ) << ".";
+    if( mod && PyUnicode_Check( mod.get() ) )
+        ostr << PyUnicode_AsUTF8( mod.get() ) << ".";
     cppy::ptr name( PyObject_GetAttrString( self->im_func, "__name__" ) );
-    if( name && Py23Str_Check( name.get() ) )
-        ostr << Py23Str_AS_STRING( name.get() );
+    if( name && PyUnicode_Check( name.get() ) )
+        ostr << PyUnicode_AsUTF8( name.get() );
     ostr << ">";
-    return Py23Str_FromString( ostr.str().c_str() );
+    return PyUnicode_FromString( ostr.str().c_str() );
 }
 
 
@@ -169,8 +169,8 @@ DFunc__get__( DFunc* self, PyObject* im_self, PyObject* type )
 static PyObject*
 DFunc__call__( DFunc* self, PyObject* args, PyObject* kwargs )
 {
-    cppy::ptr argsptr( cppy::newref( args ) );
-    Py_ssize_t args_size = PyTuple_GET_SIZE( argsptr.get() )
+    cppy::ptr argsptr( cppy::incref( args ) );
+    Py_ssize_t args_size = PyTuple_GET_SIZE( argsptr.get() );
     if( args_size == 0 )
     {
         std::ostringstream ostr;
@@ -311,10 +311,10 @@ BoundDMethod_repr( BoundDMethod* self )
         pyobject_cast( Py_TYPE( self->im_self ) ), "__name__" ) );
     if( cls && PyUnicode_Check( cls.get() ) )
         ostr << PyUnicode_AsUTF8( cls.get() ) << ".";
-    PyObjectPtr name( PyObject_GetAttrString( self->im_func, "__name__" ) );
+    cppy::ptr name( PyObject_GetAttrString( self->im_func, "__name__" ) );
     if( name && PyUnicode_Check( name.get() ) )
         ostr << PyUnicode_AsUTF8( name.get() );
-    PyObjectPtr obj( PyObject_Repr( self->im_self ) );
+    cppy::ptr obj( PyObject_Repr( self->im_self ) );
     if( obj && PyUnicode_Check( obj.get() ) )
         ostr << " of " << PyUnicode_AsUTF8( obj.get() );
     ostr << ">";
@@ -428,9 +428,9 @@ BoundDMethod_New( PyObject* im_func, PyObject* im_self, PyObject* im_key )
             return 0;
     }
     BoundDMethod* method = reinterpret_cast<BoundDMethod*>( pymethod );
-    method->im_func = newref( im_func );
-    method->im_self = newref( im_self );
-    method->im_key = newref( im_key );
+    method->im_func = cppy::incref( im_func );
+    method->im_self = cppy::incref( im_self );
+    method->im_key = cppy::incref( im_key );
     return pymethod;
 }
 

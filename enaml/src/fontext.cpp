@@ -293,10 +293,10 @@ new_enum_class( const char* name )
     cppy::ptr kwargs( PyDict_New() );
     if( !kwargs )
         return 0;
-    cppy::ptr modname( Py23Str_FromString( "fontext" ) );
+    cppy::ptr modname( PyUnicode_FromString( "fontext" ) );
     if( !modname )
         return 0;
-    if( !kwargs.setitem( "__module__", modname ) )
+    if( PyDict_SetItemString( kwargs.get(), "__module__", modname.get() ) != 0 )
         return 0;
     cppy::ptr callargs( PyTuple_Pack( 3, pyname.get(), args.get(), kwargs.get() ) );
     if( !callargs )

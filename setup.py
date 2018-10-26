@@ -185,6 +185,7 @@ setup(
         'enaml-compileall = enaml.compile_all:main',
     ]},
     ext_modules=ext_modules,
-    cmdclass={'install': Install,
+    cmdclass={'build_ext': BuildExt,
+              'install': Install,
               'develop': Develop},
 )

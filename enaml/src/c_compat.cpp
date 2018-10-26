@@ -70,7 +70,7 @@ _imp__fix_co_filename_impl(PyObject *module, PyObject* args, PyObject* kwargs )
         return 0;
     if( !PyCode_Check( code ) )
         return cppy::type_error( code, "CodeType" );
-    if( !Py23Str_Check( path ) )
+    if( !PyUnicode_Check( path ) )
         return cppy::type_error( path, "str" );
     PyCodeObject* cc = reinterpret_cast<PyCodeObject*>( code );
     update_compiled_module(cc, path);
@@ -122,11 +122,11 @@ PyMODINIT_FUNC PyInit_c_compat( void )
 {
     cppy::ptr mod( PyModule_Create(&moduledef) );
     if( !mod )
-        INITERROR;
+        return NULL;
 
-    PyObjectPtr up( mod.getattr( "_fix_co_filename" ) );
+    cppy::ptr up( mod.getattr( "_fix_co_filename" ) );
     if( !up )
-        INITERROR;
+        return NULL;
     _fix_co_filename = up.release();
 
     return mod.release();

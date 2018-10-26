@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <Python.h>
 #include <cppy/cppy.h>
 
 
@@ -87,7 +88,7 @@ Signal_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
         std::ostringstream ostr;
         ostr << "Signal() takes no keyword arguments (";
         ostr << PyDict_Size( kwargsptr.get() ) << " given)";
-        return cppy::type::error( ostr.str().c_str() );
+        return cppy::type_error( ostr.str().c_str() );
     }
 
     cppy::ptr argsptr( args, true );
@@ -377,7 +378,7 @@ _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
     cppy::ptr slots( signals.getitem( owner ) );
     if( !slots )
         Py_RETURN_NONE;
-    if( !PyDict_CheckExact( slots.check_exact() ) )
+    if( !PyDict_CheckExact( slots.get() ) )
         return cppy::type_error( slots.get(), "list" );
 
     cppy::ptr slot( cppy::incref( PyTuple_GET_ITEM( argsptr.get(), 0 ) ) );
@@ -385,7 +386,7 @@ _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
     Py_ssize_t maxidx = PyList_Size( slots.get() );
     for( Py_ssize_t idx = 0; idx < maxidx; idx++ )
     {
-        PyObject* other = PyList_GET_ITEM( idx ) );
+        PyObject* other = PyList_GET_ITEM( slots.get(), idx );
         if( slot.richcmp( other, Py_EQ ) )
             index = idx;
             break;
@@ -393,7 +394,7 @@ _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
 
     if( index != -1 )
     {
-        if( !slots.delitem( index ) )
+        if( PySequence_DelItem( slots.get(), index ) != 0 )
             return 0;
         // A _Disconnector is the first item in the list and is created
         // on demand. The list is deleted when that is the only item left.
@@ -401,7 +402,7 @@ _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
         {
             if( !signals.delitem( owner ) )
                 return 0;
-            if( signals.size() == 0 )
+            if( PyDict_Size( signals.get() ) == 0 )
             {
                 if( !dict.delitem( key ) )
                     return 0;
@@ -602,7 +603,7 @@ BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
         return 0;
     for( Py_ssize_t idx = 1; idx < size; idx++ )
     {
-        cppy::ptr slot( slots.getitem( idx ) );
+        cppy::ptr slot( cppy::incref( PyList_GET_ITEM( slots.get(), idx ) ) );
         PyTuple_SET_ITEM( cslots.get(), idx - 1, slot.release() );
     }
 
@@ -611,7 +612,7 @@ BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
     cppy::ptr kwargsptr( cppy::incref( kwargs ) );
     for( Py_ssize_t idx = 0; idx < size; idx++ )
     {
-        cppy::ptr slot( cslots.getitem( idx ) );
+        cppy::ptr slot( cppy::incref( PyTuple_GET_ITEM( cslots.get(), idx ) ) );
         if( !slot.call( argsptr, kwargsptr ) )
             return 0;
     }
@@ -661,7 +662,7 @@ BoundSignal_connect( BoundSignal* self, PyObject* slot )
     cppy::ptr slots( signals.getitem( owner ) );
     if( slots )
     {
-        if( !PyList_CheckExact( slots.check_exact() ) )
+        if( !PyList_CheckExact( slots.get() ) )
             return cppy::type_error( slots.get(), "list" );
     }
     else
@@ -673,17 +674,17 @@ BoundSignal_connect( BoundSignal* self, PyObject* slot )
             return 0;
     }
 
-    if( PyList_size( slots.size() == 0 ) )
+    if( PyList_Size( slots.get() ) == 0 )
     {
         cppy::ptr disc( _Disconnector_New( owner.get(), objref.get() ) );
         if( !disc )
             return 0;
-        if( !PyList_Append( slots.get(), disc.get() )
+        if( PyList_Append( slots.get(), disc.get() ) != 0 )
             return 0;
-        disc.release()
+        disc.release();
     }
 
-    cppy::ptr slotptr( cppy::ptr( slot ) );
+    cppy::ptr slotptr( cppy::incref( slot ) );
     if( PyMethod_Check( slot ) && PyMethod_GET_SELF( slot ) )
     {
         cppy::ptr args( PyTuple_New( 1 ) );
@@ -691,7 +692,7 @@ BoundSignal_connect( BoundSignal* self, PyObject* slot )
             return 0;
         PyTuple_SET_ITEM( args.get(), 0, slotptr.release() );
         cppy::ptr wm_cls( cppy::incref( WeakMethod ) );
-        cppy::ptr wm( wm_cls( args ) );
+        cppy::ptr wm( wm_cls.call( args ) );
         if( !wm )
             return 0;
         args = PyTuple_New( 2 );
@@ -701,14 +702,14 @@ BoundSignal_connect( BoundSignal* self, PyObject* slot )
         PyTuple_SET_ITEM( args.get(), 0, wm.release() );
         PyTuple_SET_ITEM( args.get(), 1, disc.release() );
         cppy::ptr cr_cls( cppy::incref( CallableRef ) );
-        slotptr = cr_cls( args );
+        slotptr = cr_cls.call( args );
         if( !slotptr )
             return 0;
     }
 
     if( !PyList_Append( slots.get(), slotptr.get() ) )
         return 0;
-    slotptr.release()
+    slotptr.release();
 
     Py_RETURN_NONE;
 }
@@ -725,12 +726,12 @@ BoundSignal_disconnect( BoundSignal* self, PyObject* slot )
     {
         args.setitem( 0, slotptr.get() );
         cppy::ptr wm_cls( cppy::incref( WeakMethod ) );
-        cppy::ptr wm( wm_cls( args ) );
+        cppy::ptr wm( wm_cls.call( args ) );
         if( !wm )
             return 0;
         args.setitem( 0, wm );
         cppy::ptr cr_cls( cppy::incref( CallableRef ) );
-        slotptr = cr_cls( args );
+        slotptr = cr_cls.call( args );
         if( !slotptr )
             return 0;
     }
@@ -738,7 +739,7 @@ BoundSignal_disconnect( BoundSignal* self, PyObject* slot )
     if( !disc )
         return 0;
     PyTuple_SET_ITEM( args.get(), 0, slotptr.release() );
-    return disc( args ).release();
+    return disc.call( args );
 }
 
 
@@ -894,14 +895,14 @@ PyMODINIT_FUNC PyInit_signaling( void )
     cppy::ptr wm_mod( PyImport_ImportModuleLevel( "weakmethod", mod_dict, 0, 0 , 1) );
     if( !wm_mod)
         return NULL;
-    cppy::ptr wm_cls( wm_mod.get_attr( "WeakMethod" ) );
+    cppy::ptr wm_cls( wm_mod.getattr( "WeakMethod" ) );
     if( !wm_cls )
         return NULL;
 
     cppy::ptr cr_mod( PyImport_ImportModuleLevel( "callableref", mod_dict, 0, 0, 1 ) );
     if( !cr_mod )
         return NULL;
-    cppy::ptr cr_cls( cr_mod.get_attr( "CallableRef" ) );
+    cppy::ptr cr_cls( cr_mod.getattr( "CallableRef" ) );
     if( !cr_cls )
         return NULL;
 

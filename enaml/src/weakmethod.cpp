@@ -110,7 +110,7 @@ WeakMethod_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     if( !selfref )
         return 0;
 
-    cppy::ptr wmethods_ptr( cppy::ptr( weak_methods ) );
+    cppy::ptr wmethods_ptr( cppy::incref( weak_methods ) );
     cppy::ptr items( wmethods_ptr.getitem( selfref ) );
     if( !items )
     {
@@ -130,10 +130,10 @@ WeakMethod_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     }
 
     WeakMethod* pywm = 0;
-    Py_ssize_t size = items.size();
+    Py_ssize_t size = PyList_Size( items.get() );
     for( Py_ssize_t idx = 0; idx < size; idx++ )
     {
-        cppy::ptr wmptr( items.getitem( idx ) );
+        cppy::ptr wmptr( cppy::incref( PyList_GET_ITEM( items.get(), idx ) ) );
         pywm = reinterpret_cast<WeakMethod*>( wmptr.get() );
         if( ( func.get() == pywm->func ) && ( cls.get() == pywm->cls ) )
             return wmptr.release();
@@ -197,7 +197,7 @@ WeakMethod_call( WeakMethod* self, PyObject* args, PyObject* kwargs )
         return 0;
     cppy::ptr argsptr( cppy::incref( args ) );
     cppy::ptr kwargsptr( cppy::incref( kwargs ) );
-    return method.call( argsptr, kwargsptr ).release();
+    return method.call( argsptr, kwargsptr );
 }
 
 
@@ -209,8 +209,8 @@ static PyObject*
 WeakMethod__remove( PyObject* ignored, PyObject* wr_item )
 {
     cppy::ptr wmethods_ptr( cppy::incref( weak_methods ) );
-    cppy:::ptr wrptr( cppy::incref( wr_item ) );
-    if( !wmethods_ptr.del_item( wrptr ) )
+    cppy::ptr wrptr( cppy::incref( wr_item ) );
+    if( !wmethods_ptr.delitem( wrptr ) )
         return 0;
     Py_RETURN_NONE;
 }
@@ -346,7 +346,7 @@ PyMODINIT_FUNC PyInit_weakmethod( void )
     cppy::ptr wm_type( cppy::incref( pyobject_cast( &WeakMethod_Type ) ) );
     PyModule_AddObject( mod.get(), "WeakMethod", wm_type.release() );
 
-    return mod;
+    return mod.release();
 }
 
 } // extern "C"
