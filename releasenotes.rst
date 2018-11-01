@@ -3,6 +3,8 @@ Enaml Release Notes
 
 0.10.3 - unreleased
 -------------------
+- make enaml-run exit immediately when pressing ^c #328
+- add enaml-compileall for generating .pyc and .enamlc files #262
 - fix the tp_name value of all C extensions #318
 - add pickle support for enaml's Color - #316
 - add support for tiling and cascading to MdiArea PR # 259
