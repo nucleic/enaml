@@ -165,6 +165,8 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
         """
         if fullname in sys.modules:
             pre_exists = True
+        else:
+            pre_exists = False
 
         mod = self.create_module(ModuleSpec(fullname, self,
                                             origin=self.file_info.src_path))
