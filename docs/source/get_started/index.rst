@@ -11,16 +11,6 @@ When you are comfortable with the topics here, have a look at the
 :ref:`dev_guides` for in-depth articles about developing with the framework.
 
 
-.. toctree::
-    :titlesonly:
-    :hidden:
-
-    introduction
-    installation
-    anatomy
-    syntax
-    layout
-
 .. This simply prevents the :doc: to create entries in the sidebar
 .. container::
 
@@ -59,3 +49,14 @@ When you are comfortable with the topics here, have a look at the
     become tedious for all but the simplest of cases. Enaml sheds the
     status quo and provides a flexible layout system which uses symbolic
     constraints. This section covers the basics of constraints layout.
+
+
+.. toctree::
+    :titlesonly:
+    :hidden:
+
+    introduction
+    installation
+    anatomy
+    syntax
+    layout

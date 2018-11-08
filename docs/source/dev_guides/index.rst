@@ -10,13 +10,6 @@ variety of topics ranging from language features and syntax rules to
 application development and best practices. For the implementation details of
 the framework see the :ref:`arch_ref`.
 
-.. toctree::
-    :hidden:
-
-    stylesheets
-    languagebasedtools
-    workbenches
-
 .. This simply prevents the :doc: to create entries in the sidebar
 .. container::
 
@@ -36,6 +29,13 @@ the framework see the :ref:`arch_ref`.
     .. rubric:: :doc:`workbenches`
 
     Enaml Workbenches provide a set of low-level components which can
-    be used to develop high-level plugin applications.  Workbenches 
-    enable the developer to write large UI applications which can be 
+    be used to develop high-level plugin applications.  Workbenches
+    enable the developer to write large UI applications which can be
     *safely extended at runtime* by other developers.
+
+.. toctree::
+    :hidden:
+
+    stylesheets
+    languagebasedtools
+    workbenches
