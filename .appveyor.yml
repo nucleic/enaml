@@ -7,6 +7,10 @@
 #    Create a new appveyor project, using the GitHub details.
 #    Ideally, configure notifications to post back to GitHub. (Untested)
 
+branches:
+  only:
+    - master
+
 environment:
     matrix:
         # Version Restrictions
