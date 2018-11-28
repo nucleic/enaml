@@ -96,5 +96,5 @@ script:
 after_success:
   - cd $TRAVIS_BUILD_DIR
   - 'if [ $SPHINX -eq 0 ]; then
-        bash <(curl -s https://codecov.io/bash)
+        bash <(curl -s https://codecov.io/bash);
     fi'
