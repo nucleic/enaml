@@ -5,8 +5,10 @@ branches:
   only:
     - master
 
-matrix:
-  include:
+env:
+  global:
+    - CPPFLAGS=--coverage
+  matrix:
     - env: PYTHON=2.7 QT_VERSION=4 IPY_VERSION=3 SPHINX=0
     - env: PYTHON=3.4 QT_VERSION=4 IPY_VERSION=3 SPHINX=0
     - env: PYTHON=3.5 QT_VERSION=5 IPY_VERSION=5 QSCINTILLA=0 SPHINX=0
@@ -68,9 +70,6 @@ before_install:
          python setup.py install;
      fi'
 
-  # Install codecov report tools
-  - $PIP_INSTALL codecov
-
 install:
 
   # Install ecpy (check that build script is not broken
@@ -97,5 +96,5 @@ script:
 after_success:
   - cd $TRAVIS_BUILD_DIR
   - 'if [ $SPHINX -eq 0 ]; then
-         codecov;
+        bash <(curl -s https://codecov.io/bash)
     fi'
