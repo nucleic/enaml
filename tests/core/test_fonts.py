@@ -10,6 +10,7 @@ import pytest
 
 from enaml.fonts import (coerce_font, Font, _SIZES, _UNITS, _WEIGHTS, _STYLES,
                          _VARIANTS, _STRETCH)
+from enaml.qt.q_resource_helpers import get_cached_qfont
 
 # The order defining a CSS3 string is:
 # style variant weight stretch size line-height family.
@@ -47,3 +48,7 @@ def test_font_coercion(family, size, weight, style, variant, stretch):
     assert font.style == _STYLES[style or 'normal']
     assert font.caps == _VARIANTS[variant or 'normal']
     assert font.stretch == _STRETCH[stretch or 'normal']
+
+    assert font._tkdata is None
+    get_cached_qfont(font)
+    assert font._tkdata is not None

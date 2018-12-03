@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,6 +10,50 @@ from textwrap import dedent
 import pytest
 
 from utils import compile_source
+
+
+# XXX test setting the canset attribute and read it
+# XXX test alias not targetting a proper name
+def test_alias_attributes():
+    """
+    """
+    pass
+
+
+def test_alias_resolve():
+    """
+    """
+    pass
+
+
+def test_simple_alias_get():
+    """
+    """
+    pass
+
+
+def test_chained_alias_get():
+    """
+    """
+    pass
+
+
+def test_simple_alias_set():
+    """
+    """
+    pass
+
+
+def test_chained_alias_set():
+    """
+    """
+    pass
+
+
+def test_alias_canset():
+    """
+    """
+    pass
 
 
 #------------------------------------------------------------------------------
