@@ -9,51 +9,203 @@ from textwrap import dedent
 
 import pytest
 
+from enaml.core.alias import Alias
 from utils import compile_source
 
 
 # XXX test setting the canset attribute and read it
 # XXX test alias not targetting a proper name
 def test_alias_attributes():
+    """Test accessing an alias attributes.
+
     """
-    """
-    pass
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window):
+        alias fd
+        alias fd_txt: fd.text
+
+        Field: fd:
+            name = 'content'
+
+    """)
+    win = compile_source(source, 'Main')
+    for alias_name, target, chain, canset in [('fd', 'fd', (), False),
+                                              ('fd_txt', 'fd', ('text',), True)
+                                              ]:
+        alias = getattr(win, alias_name)
+        assert alias.target == target
+        assert alias.chain == chain
+        assert alias.key
+        assert alias.canset is canset
 
 
 def test_alias_resolve():
+    """Test resolving an alias.
+
     """
-    """
-    pass
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window):
+
+        alias ct
+        Container: ct:
+            alias fd
+            Field: fd:
+                name = 'content'
+
+    """)
+    win = compile_source(source, 'Main')()
+    key = list(win._d_storage.keys())[0]
+    alias = Alias('ct', (), key)
+    assert alias.resolve(win) == (win.ct, None)
+
+    alias = Alias('ct', ('fd',), key)
+    assert alias.resolve(win) == (win.ct.fd, None)
+
+    alias = Alias('ct', ('fd', 'text'), key)
+    assert alias.resolve(win) == ('', None)
+
+    alias.canset = True
+    assert alias.resolve(win) == (win.ct.fd, 'text')
+
+    alias = Alias('unknown', (), key)
+    with pytest.raises(RuntimeError):
+        alias.resolve(win)
+
+    alias = Alias('ct', ('fd', 'unknown'), key)
+    with pytest.raises(AttributeError):
+        alias.resolve(win)
 
 
-def test_simple_alias_get():
+def test_simple_alias_get_error():
+    """Test handling an error getting a simple alias.
+
     """
-    """
-    pass
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window):
+
+        alias ct
+        Container: ct:
+            alias fd
+            Field: fd:
+                name = 'content'
+
+    """)
+    win_cls = compile_source(source, 'Main')
+    key = list(win_cls()._d_storage.keys())[0]
+    win_cls.alias = Alias('unknown', (), key)
+    win = win_cls()
+
+    with pytest.raises(RuntimeError) as excinfo:
+        win.alias
+    assert 'failed to load alias' in excinfo.exconly()
 
 
-def test_chained_alias_get():
+def test_chained_alias_get_error():
+    """Test handling an error getting a chained alias.
+
     """
-    """
-    pass
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window):
+
+        alias ct
+        Container: ct:
+            alias fd
+            Field: fd:
+                name = 'content'
+
+    """)
+    win_cls = compile_source(source, 'Main')
+    key = list(win_cls()._d_storage.keys())[0]
+    win_cls.alias = Alias('ct', ('unknown',), key)
+    win = win_cls()
+
+    with pytest.raises(AttributeError):
+        win.alias
 
 
-def test_simple_alias_set():
+def test_alias_set_canset_false():
+    """Test handling an error setting a simple alias.
+
     """
-    """
-    pass
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window):
+
+        alias ct
+        Container: ct:
+            alias fd
+            Field: fd:
+                name = 'content'
+
+    """)
+    win_cls = compile_source(source, 'Main')
+    key = list(win_cls()._d_storage.keys())[0]
+    win_cls.alias = Alias('unknown', (), key)
+    win = win_cls()
+
+    with pytest.raises(AttributeError):
+        win.alias = 1
 
 
-def test_chained_alias_set():
+def test_simple_alias_set_error():
+    """Test handling an error setting a simple alias.
+
     """
-    """
-    pass
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window):
+
+        alias ct
+        Container: ct:
+            alias fd
+            Field: fd:
+                name = 'content'
+
+    """)
+    win_cls = compile_source(source, 'Main')
+    key = list(win_cls()._d_storage.keys())[0]
+    win_cls.alias = Alias('unknown', (), key)
+    win_cls.alias.canset = True
+    win = win_cls()
+
+    with pytest.raises(RuntimeError) as excinfo:
+        win.alias = 1
+    assert 'failed to load alias' in excinfo.exconly()
 
 
-def test_alias_canset():
+def test_chained_alias_set_error():
+    """Test handling an error setting a chained alias.
+
     """
-    """
-    pass
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window):
+
+        alias ct
+        Container: ct:
+            alias fd
+            Field: fd:
+                name = 'content'
+
+    """)
+    win_cls = compile_source(source, 'Main')
+    key = list(win_cls()._d_storage.keys())[0]
+    win_cls.alias = Alias('ct', ('unknown',), key)
+    win = win_cls()
+
+    with pytest.raises(AttributeError):
+        win.alias = 1
 
 
 #------------------------------------------------------------------------------
