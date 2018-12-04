@@ -17,8 +17,8 @@ parsers:
     branch_detection:
       conditional: yes
       loop: yes
-      method: yes
-      macro: yes
+      method: no
+      macro: no
 
 comment:
   layout: "header, diff"

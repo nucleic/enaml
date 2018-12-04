@@ -13,8 +13,6 @@ from enaml.core.alias import Alias
 from utils import compile_source
 
 
-# XXX test setting the canset attribute and read it
-# XXX test alias not targetting a proper name
 def test_alias_attributes():
     """Test accessing an alias attributes.
 
@@ -125,10 +123,13 @@ def test_chained_alias_get_error():
     win_cls = compile_source(source, 'Main')
     key = list(win_cls()._d_storage.keys())[0]
     win_cls.alias = Alias('ct', ('unknown',), key)
+    win_cls.alias2 = Alias('unknown', ('unknown',), key)
     win = win_cls()
 
     with pytest.raises(AttributeError):
         win.alias
+    with pytest.raises(AttributeError):
+        win.alias2
 
 
 def test_alias_set_canset_false():
@@ -202,10 +203,13 @@ def test_chained_alias_set_error():
     win_cls = compile_source(source, 'Main')
     key = list(win_cls()._d_storage.keys())[0]
     win_cls.alias = Alias('ct', ('unknown',), key)
+    win_cls.alias = Alias('unknown', ('unknown',), key)
     win = win_cls()
 
     with pytest.raises(AttributeError):
         win.alias = 1
+    with pytest.raises(AttributeError):
+        win.alias2 = 1
 
 
 #------------------------------------------------------------------------------
