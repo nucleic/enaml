@@ -38,6 +38,9 @@ def test_alias_attributes():
         assert alias.key
         assert alias.canset is canset
 
+    with pytest.raises(TypeError):
+        alias.canset = 1
+
 
 def test_alias_resolve():
     """Test resolving an alias.
@@ -202,7 +205,7 @@ def test_chained_alias_set_error():
     """)
     win_cls = compile_source(source, 'Main')
     key = list(win_cls()._d_storage.keys())[0]
-    win_cls.alias = Alias('ct', ('unknown',), key)
+    win_cls.alias = Alias('ct', ('fd', 'unknown'), key)
     win_cls.alias.canset = True
     win_cls.alias2 = Alias('unknown', ('unknown',), key)
     win_cls.alias2.canset = True
