@@ -128,7 +128,7 @@ def test_chained_alias_get_error():
 
     with pytest.raises(AttributeError):
         win.alias
-    with pytest.raises(AttributeError):
+    with pytest.raises(RuntimeError):
         win.alias2
 
 
@@ -208,7 +208,7 @@ def test_chained_alias_set_error():
 
     with pytest.raises(AttributeError):
         win.alias = 1
-    with pytest.raises(AttributeError):
+    with pytest.raises(RuntimeError):
         win.alias2 = 1
 
 
