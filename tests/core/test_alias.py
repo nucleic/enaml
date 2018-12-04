@@ -203,7 +203,9 @@ def test_chained_alias_set_error():
     win_cls = compile_source(source, 'Main')
     key = list(win_cls()._d_storage.keys())[0]
     win_cls.alias = Alias('ct', ('unknown',), key)
-    win_cls.alias = Alias('unknown', ('unknown',), key)
+    win_cls.alias.canset = True
+    win_cls.alias2 = Alias('unknown', ('unknown',), key)
+    win_cls.alias2.canset = True
     win = win_cls()
 
     with pytest.raises(AttributeError):
