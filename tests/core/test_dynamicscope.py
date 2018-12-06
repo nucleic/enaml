@@ -18,17 +18,48 @@ def dynamicscope():
     """Dynamic used for testing.
 
     """
-    class Owner(): # XXX will need a real class with descriptor and non descriptors
-        pass
+    class Owner():
+        def __init__(self):
+            self._parent = None
+            self.attribute1 = 1
+            self._prop2 = 0
+
+        @property
+        def owner(self):
+            return self
+
+        @property
+        def prop2(self):
+            return self._prop2
+
+        @prop2.setter
+        def prop2(self, value):
+            self._prop2 = value
+
+        @property
+        def key_raise(self):
+            raise KeyError
+
+    class Tracer(object):
+        """Tracer for testing.
+
+        """
+        def __init__(self):
+            self.traced = []
+
+        def dynamic_load(self, owner, name, value):
+            self.traced.append((owner, name, value))
+
     owner = Owner()
+    owner.attribute1 = 2
     owner._parent = Owner()
-    owner._parent._parent = None
+    owner._parent.attribute2 = 1
     locs = sortedmap()
     locs['a'] = 1
     globs = {'b': 2}
     builtins = {'c': 3}
     change = {'d': 4}
-    tracer = object()  # XXX will need a real tracer
+    tracer = Tracer()
     dynamicscope = DynamicScope(owner, locs, globs, builtins, change, tracer)
     dynamicscope['e'] = 5  # Add an entry in the f_writes
 
@@ -145,14 +176,91 @@ def nonlocals(dynamicscope):
     return dynamicscope[0]['nonlocals']
 
 
-# XXX test nonlocals (from nonlocals in a dynamic scope)
-# - getitem
-# - getattr
-# - setitem
-# - setattr
-# - delitem
-# - contains
-# - traverse
-# - clear
-# - repr
-# - call (bad level)
+def test_dynamicscope_lifecycle(dynamicscope, nonlocals):
+    """Test the repr, traverse, clear etc...
+
+    """
+    owner, tracer = dynamicscope[1][0], dynamicscope[1][-1]
+    assert 'Nonlocals[' in repr(nonlocals)
+    assert gc.get_referents(nonlocals) == [owner, tracer]
+
+    del dynamicscope
+    gc.collect()
+
+
+def test_nonlocals_contains(nonlocals):
+    """Test nonlocals contains.
+
+    """
+    for key in ('attribute1', 'attribute2', 'owner', 'prop2', 'key_raise'):
+        assert key in nonlocals
+
+
+def test_nonlocals_get(dynamicscope, nonlocals):
+    """Test accessing attribute through getattr and getitem
+
+    """
+    tracer = dynamicscope[1][-1]
+
+    assert nonlocals.attribute1 == 2
+    assert tracer.traced[-1][1] == 'attribute1'
+    assert nonlocals.attribute2 == 1
+    assert tracer.traced[-1][1] == 'attribute2'
+    assert nonlocals.owner
+    assert tracer.traced[-1][1] == 'owner'
+    assert nonlocals.prop2 == 0
+    assert tracer.traced[-1][1] == 'prop2'
+
+    with pytest.raises(AttributeError):
+        nonlocals.unknown
+
+    with pytest.raises(UserKeyError):
+        nonlocals.key_raise
+
+    assert nonlocals['attribute1'] == 2
+    assert nonlocals['attribute2'] == 1
+    assert nonlocals['owner']
+    assert nonlocals['prop2'] == 0
+
+    with pytest.raises(AttributeError):
+        nonlocals.unknown
+
+    with pytest.raises(UserKeyError):
+        nonlocals.key_raise
+
+
+def test_nonlocals_set(nonlocals):
+    """Test setting attribute through setatttr and setitem.
+
+    """
+    nonlocals.attribute1 = 3
+    assert nonlocals.attribute1 == 3
+    nonlocals['attribute1'] = 4
+    assert nonlocals.attribute1 == 4
+
+    nonlocals.prop2 = 3
+    assert nonlocals.prop2 == 3
+    nonlocals['prop2'] = 4
+    assert nonlocals.prop2 == 4
+
+    nonlocals.attribute2 = 5
+    assert nonlocals.attribute2 == 5
+    nonlocals['attribute2'] = 6
+    assert nonlocals.attribute2 == 6
+
+    del nonlocals.attribute1
+    assert nonlocals.attribute1 == 1
+
+
+def test_nonlocals_call(dynamicscope, nonlocals):
+    """Test calling a nonlocals to go up one level.
+
+    """
+    owner = dynamicscope[1][0]
+    par_nonlocals = nonlocals(1)
+    assert par_nonlocals.owner is owner._parent
+    assert par_nonlocals.attribute1 == 1
+
+    with pytest.raises(ValueError):
+        nonlocals(level=2)
+
