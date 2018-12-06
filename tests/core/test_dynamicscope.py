@@ -14,24 +14,35 @@ from atom.datastructures.api import sortedmap
 from enaml.core.dynamicscope import UserKeyError, DynamicScope
 
 
-# XXX Not sure I need that but I have no time to look into it
-pytestmark = pytest.mark.skipif(sys.version_info < (3,))
-
-
 @pytest.fixture
 def dynamicscope():
     """Dynamic used for testing.
 
     """
-    class Owner():
+
+    class NonDataDescriptor(object):
+
+        def __init__(self, should_raise=False):
+            self.should_raise = should_raise
+
+        def __get__(self, instance, objtype=None):
+            if not self.should_raise:
+                return instance
+            else:
+                raise KeyError()
+
+    class WriteOnlyDescriptor(object):
+
+        def __set__(self, instance, value, objtype=None):
+            instance.value = 1
+
+    class Owner(object):
         def __init__(self):
             self._parent = None
             self.attribute1 = 1
             self._prop2 = 0
 
-        @property
-        def owner(self):
-            return self
+        owner = NonDataDescriptor()
 
         @property
         def prop2(self):
@@ -43,9 +54,11 @@ def dynamicscope():
 
         @property
         def key_raise(self):
-            raise KeyError
+            raise KeyError()
 
-        write_only = property(fset=lambda self, value: None)
+        non_data_key_raise = NonDataDescriptor(True)
+
+        write_only = WriteOnlyDescriptor()
 
     class TopOwner(Owner):
 
@@ -212,6 +225,9 @@ def test_nonlocals_contains(nonlocals):
     for key in ('attribute1', 'attribute2', 'owner', 'prop2', 'key_raise'):
         assert key in nonlocals
 
+    with pytest.raises(TypeError):
+        1 in nonlocals
+
 
 def test_nonlocals_get(dynamicscope, nonlocals):
     """Test accessing attribute through getattr and getitem
@@ -245,6 +261,16 @@ def test_nonlocals_get(dynamicscope, nonlocals):
     with pytest.raises(UserKeyError):
         nonlocals.key_raise
 
+    with pytest.raises(UserKeyError):
+        nonlocals.non_data_key_raise
+
+    with pytest.raises(TypeError):
+        nonlocals[1]
+
+    # Test non-readable descriptor
+    nonlocals.write_only
+    assert tracer.traced[-1][1] == 'write_only'
+
 
 def test_nonlocals_set(nonlocals):
     """Test setting attribute through setatttr and setitem.
@@ -271,13 +297,13 @@ def test_nonlocals_set(nonlocals):
     with pytest.raises(AttributeError):
         del nonlocals.unknown
 
-    with pytest.raises(AttributeError):
-        nonlocals.owner = 1
-
     # write in the absence of an instance dict
     del nonlocals.owner.__dict__
     nonlocals.attribute1 = 3
     assert nonlocals.attribute1 == 3
+
+    with pytest.raises(TypeError):
+        nonlocals[1]
 
 
 def test_nonlocals_call(dynamicscope, nonlocals):
