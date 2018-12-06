@@ -31,6 +31,14 @@ def dynamicscope():
             else:
                 raise KeyError()
 
+    class ReadOnlyDescriptor(object):
+
+        def __get__(self, instance, objtype=None):
+            return 1
+
+        def __set__(self, instance, objtype=None):
+            raise AttributeError
+
     class WriteOnlyDescriptor(object):
 
         def __set__(self, instance, value, objtype=None):
@@ -44,9 +52,7 @@ def dynamicscope():
 
         owner = NonDataDescriptor()
 
-        @property
-        def prop1(self):
-            return 1
+        prop1 = ReadOnlyDescriptor()
 
         @property
         def prop2(self):
