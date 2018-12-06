@@ -45,6 +45,10 @@ def dynamicscope():
         owner = NonDataDescriptor()
 
         @property
+        def prop1(self):
+            return 1
+
+        @property
         def prop2(self):
             return self._prop2
 
@@ -139,6 +143,9 @@ def test_dynamicscope_contains(dynamicscope):
         assert key in dynamicscope
 
     assert 'z' not in dynamicscope
+
+    with pytest.raises(TypeError):
+        1 in dynamicscope
 
 
 def test_dynamicscope_get(dynamicscope):
@@ -295,6 +302,9 @@ def test_nonlocals_set(nonlocals):
     assert nonlocals.attribute1 == 1
 
     with pytest.raises(AttributeError):
+        nonlocals.prop1 = 1
+
+    with pytest.raises(AttributeError):
         del nonlocals.unknown
 
     # write in the absence of an instance dict
@@ -303,7 +313,11 @@ def test_nonlocals_set(nonlocals):
     assert nonlocals.attribute1 == 3
 
     with pytest.raises(TypeError):
-        nonlocals[1]
+        nonlocals[1] = 1
+
+    # Test setting a non-data descriptor
+    nonlocals.owner = 1
+    assert nonlocals.owner == 1
 
 
 def test_nonlocals_call(dynamicscope, nonlocals):
