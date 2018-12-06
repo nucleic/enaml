@@ -6,11 +6,15 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import gc
+import sys
 
 import pytest
 
 from atom.datastructures.api import sortedmap
 from enaml.core.dynamicscope import UserKeyError, DynamicScope
+
+
+pytest.mark.skipif(sys.version_info < (3,))
 
 
 @pytest.fixture
@@ -40,6 +44,18 @@ def dynamicscope():
         def key_raise(self):
             raise KeyError
 
+        write_only = property(fset=lambda self, value: None)
+
+    class TopOwner(Owner):
+
+        @property
+        def top(self):
+            return self._top
+
+        @top.setter
+        def top(self, value):
+            self._top = 1
+
     class Tracer(object):
         """Tracer for testing.
 
@@ -52,7 +68,7 @@ def dynamicscope():
 
     owner = Owner()
     owner.attribute1 = 2
-    owner._parent = Owner()
+    owner._parent = TopOwner()
     owner._parent.attribute2 = 1
     locs = sortedmap()
     locs['a'] = 1
@@ -243,13 +259,24 @@ def test_nonlocals_set(nonlocals):
     nonlocals['prop2'] = 4
     assert nonlocals.prop2 == 4
 
-    nonlocals.attribute2 = 5
-    assert nonlocals.attribute2 == 5
-    nonlocals['attribute2'] = 6
-    assert nonlocals.attribute2 == 6
+    nonlocals.top = 1
+    assert nonlocals.top == 1
+
+    nonlocals.write_only = 1
 
     del nonlocals.attribute1
     assert nonlocals.attribute1 == 1
+
+    with pytest.raises(AttributeError):
+        del nonlocals.unknown
+
+    with pytest.raises(AttributeError):
+        nonlocals.owner = 1
+
+    # write in the absence of an instance dict
+    del nonlocals.owner.__dict__
+    nonlocals.attribute1 = 3
+    assert nonlocals.attribute1 == 3
 
 
 def test_nonlocals_call(dynamicscope, nonlocals):
