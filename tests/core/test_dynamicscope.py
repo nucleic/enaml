@@ -14,7 +14,8 @@ from atom.datastructures.api import sortedmap
 from enaml.core.dynamicscope import UserKeyError, DynamicScope
 
 
-pytest.mark.skipif(sys.version_info < (3,))
+# XXX Not sure I need that but I have no time to look into it
+pytestmark = pytest.mark.skipif(sys.version_info < (3,))
 
 
 @pytest.fixture
