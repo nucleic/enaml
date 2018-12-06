@@ -7,6 +7,10 @@
 #    Create a new appveyor project, using the GitHub details.
 #    Ideally, configure notifications to post back to GitHub. (Untested)
 
+branches:
+  only:
+    - master
+
 environment:
     matrix:
         # Version Restrictions
@@ -59,22 +63,13 @@ environment:
           PYTHON_ARCH: "64"
           PYQT_VERSION: "5"
 
-# Does not pass tests!
-#        - NAME: "Py 3.4 PyQt 4 v2"
-#          PYTHON: "C:\\Python34-x64"
-#          PYTHON_VERSION: "3.4.8"
-#          PYTHON_ARCH: "64"
-#          MINICONDA: C:\Miniconda34-x64
-#          PYQT_VERSION: "4"
-#          PYTEST_QT_API: "pyqt4v2"
+        # - NAME: "Py 2.7"
+        #   PYTHON_VERSION: "2.7.15"
+        #   PYTHON_ARCH: "64"
+        #   PYQT_VERSION: "4"
+        #   MINICONDA: C:\Miniconda-x64
 
-        - NAME: "Py 2.7"
-          PYTHON_VERSION: "2.7.15"
-          PYTHON_ARCH: "64"
-          PYQT_VERSION: "4"
-          MINICONDA: C:\Miniconda-x64
-
-        # 32-bit versions, PyQt, latest to oldest.
+        # 32-bit versions, PyQt, latest
 
         - NAME: "32-bit, Latest "
           PYTHON: "C:\\Python37"
@@ -82,22 +77,8 @@ environment:
           PYTHON_ARCH: "32"
           PYQT_VERSION: "5"
 
-        - NAME: "32-bit, Oldest"
-          MINICONDA: C:\Miniconda
-          PYTHON_VERSION: "2.7.15"
-          PYTHON_ARCH: "32"
-          PYQT_VERSION: "4"
-
         # PySide versions
         # See "allow_failures" section below.
-
-        - NAME: "PySide"
-          # Wheels only available up to Python 3.4, win32.
-          PYTHON: "C:\\Python34"
-          PYTHON_VERSION: "3.4.8"
-          PYTHON_ARCH: "32"
-          PYQT_VERSION: "None"
-          QT_API: "pyside"
 
         - NAME: "PySide2"
           PYTHON: "C:\\Python37-x64"
