@@ -171,4 +171,4 @@ def test_importer_management(enaml_importer):
     enaml_importer.remove_importer(WrongEnamlImporter)
 
     with pytest.raises(TypeError):
-        enaml_importer.add_importer(None)
+        enaml_importer.add_importer(object)
