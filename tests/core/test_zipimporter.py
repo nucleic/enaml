@@ -50,7 +50,7 @@ def generate_cache(path):
 def make_library(lib):
     # Create a library.zip with the examples.
 
-    root = os.path.normpath(os.path.join(os.path.dirname(__file__), '..',
+    root = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..',
                             'examples', 'widgets'))
 
     with zipfile.ZipFile(lib, 'w') as zf:

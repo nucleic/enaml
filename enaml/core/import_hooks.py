@@ -5,7 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import imp
 import marshal
 import os
 import io
@@ -30,16 +29,16 @@ from ..compat import (read_source, detect_encoding, update_code_co_filename,
 
 # The magic number as symbols for the current Python interpreter. These
 # define the naming scheme used when create cached files and directories.
-MAGIC = imp.get_magic()
 try:
-    MAGIC_TAG = 'enaml-py%s%s-cv%s' % (
-        sys.version_info.major, sys.version_info.minor, COMPILER_VERSION,
-    )
-except AttributeError:
-    # Python 2.6 compatibility
-    MAGIC_TAG = 'enaml-py%s%s-cv%s' % (
-        sys.version_info[0], sys.version_info[1], COMPILER_VERSION,
-    )
+    import importlib
+    MAGIC = importlib.util.MAGIC_NUMBER
+except (ImportError, AttributeError):
+    import imp
+    MAGIC = imp.get_magic()
+
+MAGIC_TAG = 'enaml-py%s%s-cv%s' % (
+    sys.version_info.major, sys.version_info.minor, COMPILER_VERSION,
+)
 CACHEDIR = '__enamlcache__'
 
 
