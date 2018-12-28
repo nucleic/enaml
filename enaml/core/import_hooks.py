@@ -186,8 +186,6 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
         If a module already exisist in sys.path, the existing module is
         reused, otherwise a new one is created.
 
-        This method is used only in Python 3.4+
-
         """
         fullname = spec.name
         if fullname in sys.modules:
@@ -204,8 +202,6 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
 
     def exec_module(self, module, code=None):
         """ Execute the module in its own namespace.
-
-        This method is used only in Python 3.4+
 
         """
         if code is None:
