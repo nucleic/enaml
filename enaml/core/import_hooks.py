@@ -5,7 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import imp
 import marshal
 import os
 import io
@@ -16,6 +15,11 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict, namedtuple
 from zipfile import ZipFile
 
+if sys.version_info >= (3, 4):
+    from importlib.machinery import ModuleSpec
+else:
+    # Fake ModuleSpec for re-using as much code as possible in Python 2
+    ModuleSpec = namedtuple('ModuleSpec', 'name, loader, origin')
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
@@ -25,16 +29,16 @@ from ..compat import (read_source, detect_encoding, update_code_co_filename,
 
 # The magic number as symbols for the current Python interpreter. These
 # define the naming scheme used when create cached files and directories.
-MAGIC = imp.get_magic()
 try:
-    MAGIC_TAG = 'enaml-py%s%s-cv%s' % (
-        sys.version_info.major, sys.version_info.minor, COMPILER_VERSION,
-    )
-except AttributeError:
-    # Python 2.6 compatibility
-    MAGIC_TAG = 'enaml-py%s%s-cv%s' % (
-        sys.version_info[0], sys.version_info[1], COMPILER_VERSION,
-    )
+    import importlib
+    MAGIC = importlib.util.MAGIC_NUMBER
+except (ImportError, AttributeError):
+    import imp
+    MAGIC = imp.get_magic()
+
+MAGIC_TAG = 'enaml-py%s%s-cv%s' % (
+    sys.version_info.major, sys.version_info.minor, COMPILER_VERSION,
+)
 CACHEDIR = '__enamlcache__'
 
 
@@ -117,6 +121,8 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
         """ Finds the given Enaml module and returns an importer, or
         None if the module is not found.
 
+        Only used in Python 2.
+
         """
         loader = cls.locate_module(fullname, path)
         if loader is not None:
@@ -125,35 +131,89 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
                 raise ImportError(msg % loader)
             return loader
 
+    @classmethod
+    def find_spec(cls, fullname, path=None, target=None):
+        """ Finds the given Enaml module and returns an importer, or
+        None if the module is not found.
+
+        This method is used only in Python 3.4+
+
+        """
+        loader = cls.locate_module(fullname, path)
+        if loader is not None:
+            if not isinstance(loader, AbstractEnamlImporter):
+                msg = 'Enaml imports received invalid loader object %s'
+                raise ImportError(msg % loader)
+
+            spec = ModuleSpec(fullname, loader,
+                              origin=loader.file_info.src_path)
+
+            return spec
+
+    #--------------------------------------------------------------------------
+    # Python Import Loader API
+    #--------------------------------------------------------------------------
+
     def load_module(self, fullname):
         """ Loads and returns the Python module for the given enaml path.
         If a module already exisist in sys.path, the existing module is
         reused, otherwise a new one is created.
 
+        Only used in Python 2.
+
         """
-        code, path = self.get_code()
         if fullname in sys.modules:
             pre_exists = True
-            mod = sys.modules[fullname]
         else:
             pre_exists = False
-            mod = sys.modules[fullname] = types.ModuleType(fullname)
-        mod.__loader__ = self
-        mod.__file__ = path
-        # Even though the import hook is already installed, this is a
-        # safety net to avoid potentially hard to find bugs if code has
-        # manually installed and removed a hook. The contract here is
-        # that the import hooks are always installed when executing the
-        # module code of an Enaml file.
+
+        mod = self.create_module(ModuleSpec(fullname, self,
+                                            origin=self.file_info.src_path))
+
+        code, _ = self.get_code()
+
         try:
-            with imports():
-                exec_(code, mod.__dict__)
+            self.exec_module(mod, code)
         except Exception:
             if not pre_exists:
                 del sys.modules[fullname]
             raise
 
         return mod
+
+    def create_module(self, spec):
+        """ Create the Python module for the given enaml path.
+        If a module already exisist in sys.path, the existing module is
+        reused, otherwise a new one is created.
+
+        """
+        fullname = spec.name
+        if fullname in sys.modules:
+            mod = sys.modules[fullname]
+        else:
+            mod = sys.modules[fullname] = types.ModuleType(fullname)
+
+        # XXX when dropping Python < 3.5 we can use module_from_spec
+        mod.__loader__ = self
+        mod.__file__ = self.file_info.src_path
+        mod.__name__ = fullname
+
+        return mod
+
+    def exec_module(self, module, code=None):
+        """ Execute the module in its own namespace.
+
+        """
+        if code is None:
+            code, _ = self.get_code()
+
+        # Even though the import hook is already installed, this is a
+        # safety net to avoid potentially hard to find bugs if code has
+        # manually installed and removed a hook. The contract here is
+        # that the import hooks are always installed when executing the
+        # module code of an Enaml file.
+        with imports():
+            exec_(code, module.__dict__)
 
     #--------------------------------------------------------------------------
     # Abstract API
@@ -563,9 +623,9 @@ class EnamlZipImporter(EnamlImporter):
         return src
 
     def _write_cache(self, code, ts, file_info):
-        """ Overridden to because cache files cannot be written into 
-        the archive.  
-        
+        """ Overridden to because cache files cannot be written into
+        the archive.
+
         """
         pass
 
