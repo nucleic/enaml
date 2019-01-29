@@ -1,11 +1,13 @@
 Enaml Release Notes
 ===================
 
-0.10.3 - unreleased
+0.10.3 - 28/01/2019
 -------------------
 - implement import hooks using Python 3 interface #331
 - make enaml-run exit immediately when pressing ^c #328
-- add enaml-compileall for generating .pyc and .enamlc files #262
+- add support for f-strings in enaml files on supported Python versions PR #288
+- add support for declarative async function PR #285
+- add a enaml-compileallcommand to generate pyc and enamlc files PR #262
 - fix the tp_name value of all C extensions #318
 - add pickle support for enaml's Color - #316
 - add support for tiling and cascading to MdiArea PR # 259
@@ -15,6 +17,10 @@ Enaml Release Notes
 - remove dependency on future to reduce import time PR #255
 - add constraints to enforce image aspect ratio in ImageView PR #254
 - improvements to the scintilla widget and live editor PR #243
+
+Multiple improvements to the documentation, special thanks to Julian-O for
+this.
+
 
 0.10.2 - 28/01/2018
 -------------------

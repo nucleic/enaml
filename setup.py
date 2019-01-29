@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2018, Nucleic Development Team.
+# Copyright (c) 2013-2019, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -163,7 +163,7 @@ setup(
       ],
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     requires=['atom', 'PyQt', 'ply', 'kiwisolver', 'qtpy'],
-    install_requires=['setuptools', 'atom>=0.4.2.dev', 'qtpy>=1.3',
+    install_requires=['setuptools', 'atom>=0.4.2', 'qtpy>=1.3',
                       'kiwisolver>=1.0.0', 'ply>=3.4'],
     packages=find_packages(),
     package_data={
