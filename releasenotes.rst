@@ -1,6 +1,10 @@
 Enaml Release Notes
 ===================
 
+0.11.0 - unreleased
+-------------------
+
+
 0.10.3 - 28/01/2019
 -------------------
 - implement import hooks using Python 3 interface #331
