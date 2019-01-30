@@ -372,11 +372,11 @@ def enaml_run(enaml_qtbot, monkeypatch):
 
     def start(self):
         for window in Window.windows:
-            wait_for_window_displayed(qtbot, window)
+            wait_for_window_displayed(enaml_qtbot, window)
             if callable(runner.run):
                 runner.run(self, window)
             else:
-                close_window_or_popup(qtbot, window)
+                close_window_or_popup(enaml_qtbot, window)
             break
     try:
         with monkeypatch.context() as m:
