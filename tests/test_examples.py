@@ -60,7 +60,7 @@ else:
 try:
     from enaml.qt import QtWebEngineWidgets
     WEBVIEW_AVAILABLE = True
-except ImportError:
+except Exception:
     WEBVIEW_AVAILABLE = False
 
 

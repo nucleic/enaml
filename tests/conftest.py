@@ -68,7 +68,7 @@ def qt_app():
     """
     try:
         from enaml.qt.qt_application import QtApplication
-    except ImportError:
+    except Exception:
         pytest.skip('No Qt binding found: %s' % format_exc())
 
     app = QtApplication.instance()

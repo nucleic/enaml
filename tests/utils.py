@@ -326,8 +326,8 @@ def handle_question(app, answer):
 
 @contextmanager
 def cd(path, add_to_sys_path=False):
-    """ cd to the directory then return to the cwd 
-    
+    """ cd to the directory then return to the cwd
+
     """
     cwd = os.getcwd()
     if add_to_sys_path:
@@ -343,33 +343,33 @@ def cd(path, add_to_sys_path=False):
 
 
 @pytest.fixture
-def enaml_run(qtbot, monkeypatch):
-    """ Patches the QtApplication to allow using the qtbot when the 
+def enaml_run(enaml_qtbot, monkeypatch):
+    """ Patches the QtApplication to allow using the qtbot when the
     enaml application is started. It also patches QApplication.exit as
     recommended in the pytest-qt docs.
-    
+
     Yields
     -------
-    handler: object 
-        an object with a `run` attribute that can be set to a callback that 
+    handler: object
+        an object with a `run` attribute that can be set to a callback that
         will be invoked with the application and first window shown.
-    
+
     References
     ----------
     1. https://pytest-qt.readthedocs.io/en/latest/app_exit.html
-    
+
     """
     from enaml.qt.qt_application import QtApplication, QApplication
-    
+
     app = Application.instance()
     if app:
         Application._instance = None
-    
+
     class Runner:
         # Set this to a callback
         run = None
     runner = Runner()
-    
+
     def start(self):
         for window in Window.windows:
             wait_for_window_displayed(qtbot, window)

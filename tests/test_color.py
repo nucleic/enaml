@@ -8,7 +8,6 @@
 import pickle
 
 from enaml.colors import Color
-from enaml.qt.q_resource_helpers import get_cached_qcolor
 
 
 def test_color_initialization():
@@ -25,6 +24,11 @@ def test_color_initialization():
         assert getattr(c, name) == 0
 
     assert c._tkdata is None
+
+    try:
+        from enaml.qt.q_resource_helpers import get_cached_qcolor
+    except Exception:
+        return
     get_cached_qcolor(c)
     assert c._tkdata is not None
 
