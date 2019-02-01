@@ -20,7 +20,11 @@ def sys_argv():
 
 
 def test_runner(enaml_run, sys_argv):
-    sys.argv = ['enaml-run',
-                os.path.join('examples', 'stdlib', 'mapped_view.enaml')]
-    main()
+    """Test invoking the runner application.
 
+    """
+    dir_path = os.path.abspath(os.path.split(os.path.dirname(__file__))[0])
+    sys.argv = ['enaml-run',
+                os.path.join(dir_path,
+                             'examples', 'stdlib', 'mapped_view.enaml')]
+    main()
