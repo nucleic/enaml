@@ -70,8 +70,8 @@ def test_validation_dock_layout2(enaml_qtbot, enaml_sleep):
         win.area.layout = HSplitLayout('item1', 'item2', 'item3')
     assert globals() == glob
     enaml_qtbot.wait(enaml_sleep)
-    
-    
+
+
 def test_dock_area_interactions(enaml_qtbot, enaml_sleep):
     """Test interations with the dock area.
 
@@ -81,52 +81,56 @@ def test_dock_area_interactions(enaml_qtbot, enaml_sleep):
     from enaml.qt.QtCore import Qt, QPoint
     from enaml.qt.QtWidgets import QWidget
     from enaml.layout.api import FloatItem, InsertTab
-    with open(os.path.join('examples', 'widgets', 'dock_area.enaml')) as f:
+
+    dir_path = os.path.abspath(os.path.split(os.path.dirname(__file__))[0])
+    example_path = os.path.join(dir_path, 'examples', 'widgets',
+                                'dock_area.enaml')
+    with open(example_path) as f:
         source = f.read()
-    
+
     win = compile_source(source, 'Main')()
     win.show()
-    
+
     wait_for_window_displayed(enaml_qtbot, win)
     enaml_qtbot.wait(enaml_sleep)
     _children = win.children[0].children
     btn_save, btn_restore, btn_add, cmb_styles, cbx_evts, dock = _children
-        
+
     # Enable dock events
     enaml_qtbot.mouseClick(cbx_evts.proxy.widget, Qt.LeftButton)
     enaml_qtbot.wait(enaml_sleep)
-    
+
     with pytest.warns(DockLayoutWarning):
         # Change styles
         cmb_styles.proxy.widget.setFocus()
         enaml_qtbot.keyClick(cmb_styles.proxy.widget, Qt.Key_Up)
-        
+
         # Save layout
         enaml_qtbot.mouseClick(btn_save.proxy.widget, Qt.LeftButton)
         enaml_qtbot.wait(enaml_sleep)
-        
+
         # Toggle closable
         di = dock.find('item_2')
         di.closable = False
         enaml_qtbot.wait(enaml_sleep)
         di.closable = True
-        
+
         # Check alert
         di.alert('info')
-        
+
         # Maximize it
         tb = di.proxy.widget.titleBarWidget()
         enaml_qtbot.mouseClick(tb._max_button, Qt.LeftButton)
         enaml_qtbot.wait(enaml_sleep)
-        
+
         # Minimize it
         enaml_qtbot.mouseClick(tb._restore_button, Qt.LeftButton)
         enaml_qtbot.wait(enaml_sleep)
-    
+
         # Pin it
         enaml_qtbot.mouseClick(tb._pin_button, Qt.LeftButton)
         enaml_qtbot.wait(enaml_sleep)
-        
+
         # TODO: Open and close it using clicks
         dock_area = dock.proxy.widget
         for c in dock_area.dockBarContainers():
@@ -135,56 +139,56 @@ def test_dock_area_interactions(enaml_qtbot, enaml_sleep):
             enaml_qtbot.wait(enaml_sleep)
             dock_area.retractToDockBar(dock_bar)
             enaml_qtbot.wait(enaml_sleep)
-        
+
         # Unpin
         enaml_qtbot.mouseClick(tb._pin_button, Qt.LeftButton)
         enaml_qtbot.wait(enaml_sleep)
-        
+
         # Note the location of the dock item title
         title = tb._title_label
         ref = win.proxy.widget
-        
+
         # Maximize and minimize it by double clicking
         pos = title.mapTo(tb, title.pos())
         enaml_qtbot.mouseDClick(tb, Qt.LeftButton, pos=pos)
         enaml_qtbot.wait(enaml_sleep)
         enaml_qtbot.mouseDClick(tb, Qt.LeftButton, pos=pos)
         enaml_qtbot.wait(enaml_sleep)
-        
+
         # Float it
         op = FloatItem(item=di.name)
         dock.update_layout(op)
         enaml_qtbot.wait(enaml_sleep)
-        
+
         # Link it
         enaml_qtbot.mouseClick(tb._link_button, Qt.LeftButton)
         enaml_qtbot.wait(enaml_sleep)
-        
+
         # Unlink it
         enaml_qtbot.mouseClick(tb._link_button, Qt.LeftButton)
         enaml_qtbot.wait(enaml_sleep)
-        
+
         # Restore it
         op = InsertTab(item=di.name, target='item_1')
         dock.update_layout(op)
         enaml_qtbot.wait(enaml_sleep)
-        
+
         # TODO: Drag it around
-        
+
         # Add items
         enaml_qtbot.mouseClick(btn_add.proxy.widget, Qt.LeftButton)
         enaml_qtbot.wait(enaml_sleep)
-        
+
         # Close all added items
         for i in range(10, 15):
             di = dock.find('item_%i'%i)
             if di:
                 enaml_qtbot.mouseClick(
-                    di.proxy.widget.titleBarWidget()._close_button, 
+                    di.proxy.widget.titleBarWidget()._close_button,
                     Qt.LeftButton)
-        
+
         # Restore layout
         enaml_qtbot.mouseClick(btn_restore.proxy.widget, Qt.LeftButton)
         enaml_qtbot.wait(enaml_sleep)
-    
+
     enaml_qtbot.wait(enaml_sleep)

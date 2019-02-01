@@ -17,8 +17,8 @@ from utils import cd, enaml_run
 
 
 def clean_cache(path):
-    """ Clean the cache files in the path 
-    
+    """ Clean the cache files in the path
+
     """
     with cd(path):
         if os.path.exists('__enamlcache__'):
@@ -31,8 +31,8 @@ def clean_cache(path):
 
 
 def clean_source(path):
-    """ Clean the source files in the path 
-    
+    """ Clean the source files in the path
+
     """
     with cd(path):
         for f in os.listdir('.'):
@@ -50,7 +50,9 @@ def clean_source(path):
 ])
 def test_tutorials(enaml_run, tmpdir, tutorial):
     # Run normally to generate cache files
-    source = os.path.join('examples', 'tutorial', tutorial)
+
+    dir_path = os.path.abspath(os.path.split(os.path.dirname(__file__))[0])
+    source = os.path.join(dir_path, 'examples', 'tutorial', tutorial)
     example = os.path.join(tmpdir.strpath, tutorial)
 
     # Copy to a tmp dir

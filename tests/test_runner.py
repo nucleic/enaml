@@ -8,8 +8,8 @@ from enaml.runner import main
 
 @pytest.fixture
 def sys_argv():
-    """ Fixture that saves sys.argv and restores it after the test completes 
-    
+    """ Fixture that saves sys.argv and restores it after the test completes
+
     """
     argv = sys.argv
     try:
@@ -19,6 +19,7 @@ def sys_argv():
 
 
 def test_runner(enaml_run, sys_argv):
-    sys.argv = ['enaml-run', 'examples/stdlib/mapped_view.enaml']
+    sys.argv = ['enaml-run',
+                os.path.join('examples', 'stdlib', 'mapped_view.enaml')]
     main()
-    
+
