@@ -1,5 +1,8 @@
 sudo: false
-dist: trusty
+language: generic
+dist: xenial
+services:
+  - xvfb
 
 branches:
   only:
@@ -8,13 +11,43 @@ branches:
 env:
   global:
     - CPPFLAGS=--coverage
-  matrix:
-    - env: PYTHON=2.7 QT_VERSION=4 IPY_VERSION=3 SPHINX=0
-    # - env: PYTHON=3.4 QT_VERSION=4 IPY_VERSION=3 SPHINX=0
-    - env: PYTHON=3.5 QT_VERSION=5 IPY_VERSION=5 QSCINTILLA=0 SPHINX=0
-    - env: PYTHON=3.6 QT_VERSION=5 IPY_VERSION=6 QSCINTILLA=1 SPHINX=0
-    - env: PYTHON=3.7 QT_VERSION=5 IPY_VERSION=6 QSCINTILLA=1 SPHINX=0
-    - env: PYTHON=3.6 QT_VERSION=5 SPHINX=1
+
+matrix:
+  fast_finish: true
+  include:
+    - os: linux
+      dist: trusty
+      env:
+        - PYTHON=2.7
+        - QT_VERSION=4
+        - IPY_VERSION=3
+        - SPHINX=0
+    - os: linux
+      env:
+        - PYTHON=3.5
+        - QT_VERSION=5
+        - IPY_VERSION=5
+        - QSCINTILLA=0
+        - SPHINX=0
+    - os: linux
+      env:
+        - PYTHON=3.6
+        - QT_VERSION=5
+        - IPY_VERSION=6
+        - QSCINTILLA=0
+        - SPHINX=0
+    - os: linux
+      env:
+        - PYTHON=3.7
+        - QT_VERSION=5
+        - IPY_VERSION=6
+        - QSCINTILLA=1
+        - SPHINX=0
+    - os: linux
+      env:
+        - PYTHON=3.6
+        - QT_VERSION=5
+        - SPHINX=1
 
 before_install:
 
@@ -37,12 +70,18 @@ before_install:
 
   # Install enaml dependencies and include special widgets dependencies
   # We do not test vtk as it segfaults on Travis
-  - $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib
+  - 'if [ $QSCINTILLA -eq 1 ]; then
+        $PIP_INSTALL pyqt5 ply matplotlib;
+     else
+        $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib;
+     fi;'
 
   # Install qtpy from pip to get a recent version (>= 1.3) on python 3.4
   - $PIP_INSTALL qtpy
   - 'if [ $IPY_VERSION < 4 ]; then
         $CONDA_INSTALL ipython=$IPY_VERSION ipython-qtconsole;
+     elif [ $QSCINTILLA -eq 1 ]; then
+        $PIP_INSTALL ipython qtconsole;
      else
         $CONDA_INSTALL ipython=$IPY_VERSION qtconsole;
      fi'
@@ -60,8 +99,9 @@ before_install:
 
   # Intall test tools (we require pytest > 3.3 to get the builtin logging
   # features)
+  # Pytest-xvfb allows to run on CI (without a display with less magic)
   - 'if [ $SPHINX -eq 0 ]; then
-         $PIP_INSTALL pytest pytest-cov pytest-qt;
+         $PIP_INSTALL pytest pytest-cov pytest-qt pytest-xvfb;
      fi'
   - 'if [ $SPHINX -eq 1 ]; then
          $PIP_INSTALL sphinx sphinx_rtd_theme;
@@ -70,6 +110,13 @@ before_install:
          python setup.py install;
      fi'
 
+  # Avoid annoying focus problems when running tests
+  # See discussion in e.g. https://github.com/spyder-ide/spyder/pull/6132
+  - sudo apt-get -qq update
+  - sudo apt-get install -y matchbox-window-manager xterm libxkbcommon-x11-0
+  - matchbox-window-manager&
+  - sleep 5
+
 install:
 
   # Install ecpy (check that build script is not broken
@@ -77,16 +124,11 @@ install:
   - python setup.py develop
   - cd ~
 
-before_script:
-# We need a (fake) display on Travis so I need to start a X server.
-- export DISPLAY=:99.0
-- /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render
-
 script:
   # Run the enaml test suite
   - cd $TRAVIS_BUILD_DIR
   - 'if [ $SPHINX -eq 0 ]; then
-         pytest tests --cov enaml --cov-report xml -v;
+         pytest tests --cov enaml --cov-report xml;
      fi'
   - 'if [ $SPHINX -eq 1 ]; then
          sphinx-build docs/source $TRAVIS_BUILD_DIR -W -b html;
