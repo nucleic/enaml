@@ -46,14 +46,14 @@ environment:
 
         - NAME: "Py 3.7"
           PYTHON: "C:\\Python37-x64"
-          PYTHON_VERSION: "3.7.0"
+          PYTHON_VERSION: "3.7.3"
           PYTHON_ARCH: "64"
           PYQT_VERSION: "5"
           QSCINTILLA: "Yes"
 
         - NAME: "Py 3.6"
           PYTHON: "C:\\Python36-x64"
-          PYTHON_VERSION: "3.6.3"
+          PYTHON_VERSION: "3.6.7"
           PYTHON_ARCH: "64"
           PYQT_VERSION: "5"
 
@@ -73,7 +73,7 @@ environment:
 
         - NAME: "32-bit, Latest "
           PYTHON: "C:\\Python37"
-          PYTHON_VERSION: "3.7.0"
+          PYTHON_VERSION: "3.7.3"
           PYTHON_ARCH: "32"
           PYQT_VERSION: "5"
 
@@ -168,23 +168,16 @@ install:
 build_script:
 
   - cd %APPVEYOR_BUILD_DIR%
-  - pip install .
+  - pip install -e .
 
 test_script:
 
   # Run the project tests
   - cd %APPVEYOR_BUILD_DIR%
-  - pytest tests -v
+  - pytest tests --cov enaml --cov-report xml
 
 after_test:
-  # Create wheels and installers ready to try on other platforms.
-  - cd %APPVEYOR_BUILD_DIR%
-  - python setup.py bdist_wheel bdist_wininst
-  - ps: "ls dist"
-
-artifacts:
-  # Archive (short-term) the generated packages in the ci.appveyor.com build report.
-  - path: dist\*
-
-# on_success:
-#   - TODO: upload the content of dist/*.whl to a public wheelhouse
+  - ps: |
+      $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
+      Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+      bash codecov.sh

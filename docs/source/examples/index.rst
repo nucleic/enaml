@@ -93,6 +93,7 @@ Advanced
     ex_nested_boxes
     ex_nested_containers
     ex_override_layout_constraints
+    ex_centered_grid
 
 
 Stdlib Examples
