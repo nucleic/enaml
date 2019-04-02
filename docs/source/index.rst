@@ -25,6 +25,7 @@ A few highlights of the framework:
     FAQs <faqs/index>
     Examples <examples/index>
     API Reference <api_ref/index>
+    Command Reference <cmd_ref/index>
 
 
 :doc:`get_started/index`
@@ -73,3 +74,8 @@ not alone.
 "Use the source, Luke." When all else fails, consult the API docs to
 find the answer you need. The API docs also include convenient links
 to the most definitive Enaml documentation: the source.
+
+:doc:`cmd_ref/index`
+--------------------
+
+Enaml includes a few console scripts to assist in development.
