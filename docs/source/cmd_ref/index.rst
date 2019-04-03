@@ -9,7 +9,15 @@ Enaml makes the following console scripts available
 enaml-run
 ---------
 
-A shortcut which will run an enaml file using the default QtApplication.
+A shortcut which will run an enaml file using the default QtApplication. This
+can be used to display most of the examples as follow (assuming you are at the
+root of the repo)::
+
+    $ enaml-run examples/widgets/window.enaml
+
+By default the script will look for a component (`enamldef` class) named `Main`
+to display. One can use the `-c` (`--component`) option to use a different
+name.
 
 
 enaml-compileall
