@@ -10,7 +10,7 @@ enaml-run
 ---------
 
 A shortcut which will run an enaml file using the default QtApplication. This
-can be used to display most of the examples as follow (assuming you are at the
+can be used to display most of the examples as follows (assuming you are at the
 root of the repo)::
 
     $ enaml-run examples/widgets/window.enaml
