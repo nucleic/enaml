@@ -16,6 +16,11 @@ from enaml.layout.geometry import Size
 from .control import Control, ProxyControl
 
 
+def ButtonGroup():
+    from .button_group import ButtonGroup
+    return ButtonGroup
+
+
 class ProxyAbstractButton(ProxyControl):
     """ The abstract definition of a proxy AbstractButton object.
 
@@ -30,6 +35,9 @@ class ProxyAbstractButton(ProxyControl):
         raise NotImplementedError
 
     def set_icon_size(self, size):
+        raise NotImplementedError
+
+    def set_group(self, group):
         raise NotImplementedError
 
     def set_checkable(self, checkable):
@@ -52,6 +60,8 @@ class AbstractButton(Control):
     #: The size to use for the icon. The default is an invalid size
     #: and indicates that an appropriate default should be used.
     icon_size = d_(Coerced(Size, (-1, -1)))
+
+    group = d_(ForwardTyped(ButtonGroup))
 
     #: Whether or not the button is checkable. The default is False.
     checkable = d_(Bool(False))
@@ -78,7 +88,7 @@ class AbstractButton(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe('text', 'icon', 'icon_size', 'checkable', 'checked')
+    @observe('text', 'icon', 'icon_size', 'group', 'checkable', 'checked')
     def _update_proxy(self, change):
         """ An observer which updates the proxy widget.
 

@@ -15,6 +15,11 @@ def action_group_factory():
     return QtActionGroup
 
 
+def button_group_factory():
+    from .qt_button_group import QtButtonGroup
+    return QtButtonGroup
+
+
 def calendar_factory():
     from .qt_calendar import QtCalendar
     return QtCalendar
@@ -303,6 +308,7 @@ def window_factory():
 QT_FACTORIES = {
     'Action': action_factory,
     'ActionGroup': action_group_factory,
+    'ButtonGroup': button_group_factory,
     'Calendar': calendar_factory,
     'CheckBox': check_box_factory,
     'ColorDialog': color_dialog_factory,
