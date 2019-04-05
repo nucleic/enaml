@@ -88,34 +88,30 @@ enamldef Main(Window): window:
         GroupBox: results:
             title = "Survey Results"
             Label:
-                text << (
-                    "" if wake_up_time is None
-                    else "You are a " + (
-                        "morning person"
-                        if is_morning_person(wake_up_time)
-                        else "night owl"))
+                text <<
+                    if wake_up_time is None:
+                        return ""
+                    if is_morning_person(wake_up_time):
+                        return  "You are a morning person"
+                    return "You are a night owl"
             Label:
-                text << (
-                    "" if birthday is None
-                    else (
-                        "You are a Leo!"
-                        if is_leo(birthday)
-                        else "You don't believe in astrology."))
+                text <<
+                    if birthday is None:
+                        return ""
+                    if is_leo(birthday):
+                        return "You are a Leo!"
+                    return "You don't believe in astrology."
             Label:
-                text << (
-                    "" if best_moment is None
-                    else (
-                        "Congratulations! You are at your peak."
-                        if is_recent_peak(best_moment)
-                        else "You are past your peak."
-                    )
-                )
+                text <<
+                    if best_moment is None:
+                        return ""
+                    if is_recent_peak(best_moment):
+                        return "Congratulations! You are at your peak."
+                    return "You are past your peak."
             Label:
-                text << (
-                    "" if last_backup is None
-                    else (
-                        "You are a stickler."
-                        if is_recent_backup(last_backup)
-                        else "You are careless."
-                    )
-                )
+                text <<
+                    if last_backup is None:
+                        return ""
+                    if is_recent_backup(last_backup):
+                        return "You are a stickler."
+                    return "You are careless."
