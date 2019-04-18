@@ -15,11 +15,8 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict, namedtuple
 from zipfile import ZipFile
 
-if sys.version_info >= (3, 4):
-    from importlib.machinery import ModuleSpec
-else:
-    # Fake ModuleSpec for re-using as much code as possible in Python 2
-    ModuleSpec = namedtuple('ModuleSpec', 'name, loader, origin')
+from importlib.machinery import ModuleSpec
+from importlib.util import module_from_spec
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
@@ -110,27 +107,10 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
     #--------------------------------------------------------------------------
     # Python Import API
     #--------------------------------------------------------------------------
-    @classmethod
-    def find_module(cls, fullname, path=None):
-        """ Finds the given Enaml module and returns an importer, or
-        None if the module is not found.
-
-        Only used in Python 2.
-
-        """
-        loader = cls.locate_module(fullname, path)
-        if loader is not None:
-            if not isinstance(loader, AbstractEnamlImporter):
-                msg = 'Enaml imports received invalid loader object %s'
-                raise ImportError(msg % loader)
-            return loader
-
-    @classmethod
+     @classmethod
     def find_spec(cls, fullname, path=None, target=None):
         """ Finds the given Enaml module and returns an importer, or
         None if the module is not found.
-
-        This method is used only in Python 3.4+
 
         """
         loader = cls.locate_module(fullname, path)
@@ -148,37 +128,9 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
     # Python Import Loader API
     #--------------------------------------------------------------------------
 
-    def load_module(self, fullname):
-        """ Loads and returns the Python module for the given enaml path.
-        If a module already exisist in sys.path, the existing module is
-        reused, otherwise a new one is created.
-
-        Only used in Python 2.
-
-        """
-        if fullname in sys.modules:
-            pre_exists = True
-        else:
-            pre_exists = False
-
-        mod = self.create_module(ModuleSpec(fullname, self,
-                                            origin=self.file_info.src_path))
-
-        code, _ = self.get_code()
-
-        try:
-            with imports():
-                exec(code, mod.__dict__)
-        except Exception:
-            if not pre_exists:
-                del sys.modules[fullname]
-            raise
-
-        return mod
-
     def create_module(self, spec):
         """ Create the Python module for the given enaml path.
-        If a module already exisist in sys.path, the existing module is
+        If a module already exist in sys.path, the existing module is
         reused, otherwise a new one is created.
 
         """
@@ -186,12 +138,7 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
         if fullname in sys.modules:
             mod = sys.modules[fullname]
         else:
-            mod = sys.modules[fullname] = types.ModuleType(fullname)
-
-        # XXX when dropping Python < 3.5 we can use module_from_spec
-        mod.__loader__ = self
-        mod.__file__ = self.file_info.src_path
-        mod.__name__ = fullname
+            mod = sys.modules[fullname] = module_from_spec(spec)
 
         return mod
 
