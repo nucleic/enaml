@@ -7,8 +7,8 @@
 |----------------------------------------------------------------------------*/
 #include <iostream>
 #include <sstream>
-#include <structmember.h>  // Included to access offsetof
 #include <cppy/cppy.h>
+#include <structmember.h>  // Included to access offsetof
 
 
 extern "C" {
