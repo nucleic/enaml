@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, Int, Unicode, Enum, List, Typed, ForwardTyped, observe, set_default
+    Bool, Int, Str, Enum, List, Typed, ForwardTyped, observe, set_default
 )
 
 from enaml.core.declarative import d_
@@ -58,7 +58,7 @@ class Field(Control):
 
     """
     #: The unicode text to display in the field.
-    text = d_(Unicode())
+    text = d_(Str())
 
     #: The mask to use for text input
     #: http://qt-project.org/doc/qt-4.8/qlineedit.html#inputMask-prop
@@ -87,7 +87,7 @@ class Field(Control):
     #: The mask consists of a string of mask characters and separators, optionally
     #: followed by a semicolon and the character used for blanks
     #: Eg: 9 digit phone number: (999) 999-9999;_
-    mask = d_(Unicode())
+    mask = d_(Str())
 
     #: The validator to use for this field. If the validator provides
     #: a client side validator, then text will only be submitted if it
@@ -111,7 +111,7 @@ class Field(Control):
 
     #: The grayed-out text to display if the field is empty and the
     #: widget doesn't have focus. Defaults to the empty string.
-    placeholder = d_(Unicode())
+    placeholder = d_(Str())
 
     #: How to display the text in the field. Valid values are 'normal'
     #: which displays the text as normal, 'password' which displays the

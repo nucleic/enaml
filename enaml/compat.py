@@ -119,5 +119,3 @@ def read_source(filename):
         return f.read()
 
 detect_encoding = tokenize.detect_encoding
-
-exec_ = getattr(builtins, "exec")

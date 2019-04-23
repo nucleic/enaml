@@ -8,7 +8,7 @@
 from contextlib import contextmanager
 
 from atom.api import (
-    Bool, Coerced, Enum, Typed, ForwardTyped, Unicode, Event, observe,
+    Bool, Coerced, Enum, Typed, ForwardTyped, Str, Event, observe,
     set_default
 )
 
@@ -92,7 +92,7 @@ class DockArea(ConstraintsWidget):
     #:
     #: Only one mode of styling should be used for the dock area at a
     #: time. Using both modes simultaneously is undefined.
-    style = d_(Unicode('vs-2010'))
+    style = d_(Str('vs-2010'))
 
     #: Whether or not dock events are enabled for the area.
     dock_events_enabled = d_(Bool(False))

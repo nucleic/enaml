@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Unicode
+from atom.api import Bool, Str
 
 from enaml.core.declarative import Declarative, d_
 
@@ -15,7 +15,7 @@ class ItemGroup(Declarative):
 
     """
     #: The identifier of group within the menu.
-    id = d_(Unicode())
+    id = d_(Str())
 
     #: Whether or not the group is visible.
     visible = d_(Bool(True))

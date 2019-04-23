@@ -9,7 +9,7 @@ import uuid
 
 from atom.api import (
     Atom, Int, Constant, Enum, Event, Typed, List, ForwardTyped, Tuple,
-    Unicode, observe, set_default
+    Str, observe, set_default
 )
 from enaml.image import Image
 from enaml.core.declarative import d_
@@ -85,7 +85,7 @@ class ScintillaIndicator(Atom):
                  'triangle_character')
 
     #: Indicator foreground color
-    color = Unicode("#000000")
+    color = Str("#000000")
 
 
 class ScintillaMarker(Atom):

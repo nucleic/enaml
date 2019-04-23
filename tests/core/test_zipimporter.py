@@ -16,7 +16,7 @@ import pytest
 
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
-from enaml.core.import_hooks import MAGIC, make_file_info
+from enaml.core.import_hooks import MAGIC_NUMBER, make_file_info
 from utils import wait_for_window_displayed, is_qt_available
 
 
@@ -26,7 +26,7 @@ pytestmark = pytest.mark.skipif(not is_qt_available(),
 
 def generate_cache(path):
     #: Read
-    with open(path, 'rU') as f:
+    with open(path, 'r') as f:
         enaml_code = f.read()
 
     #: Compile
@@ -35,7 +35,7 @@ def generate_cache(path):
 
     #: Generate cache
     with open('tmp.enamlc', 'wb') as f:
-        f.write(MAGIC)
+        f.write(MAGIC_NUMBER)
         f.write(struct.pack('i', int(os.path.getmtime(path))))
         marshal.dump(code, f)
     with open('tmp.enamlc', 'rb') as f:

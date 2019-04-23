@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Tuple, Unicode
+from atom.api import Tuple, Str
 
 from enaml.core.declarative import Declarative, d_
 
@@ -17,7 +17,7 @@ class ExtensionPoint(Declarative):
 
     """
     #: The globally unique identifier for the extension point.
-    id = d_(Unicode())
+    id = d_(Str())
 
     #: The tuple of extensions contributed to this extension point. The
     #: tuple is updated by the framework as needed. It is kept in sorted
@@ -26,7 +26,7 @@ class ExtensionPoint(Declarative):
     extensions = Tuple()
 
     #: An optional description of the extension point.
-    description = d_(Unicode())
+    description = d_(Str())
 
     @property
     def plugin_id(self):

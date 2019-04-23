@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Atom, Unicode, Enum, Bool, Event, Coerced, Typed, ForwardTyped, observe,
+    Atom, Str, Enum, Bool, Event, Coerced, Typed, ForwardTyped, observe,
     set_default
 )
 
@@ -109,7 +109,7 @@ class Window(Widget):
     windows = set()
 
     #: The titlebar text.
-    title = d_(Unicode())
+    title = d_(Str())
 
     #: The initial position of the window frame. A value of (-1, -1)
     #: indicates that the toolkit should choose the initial position.

@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Unicode, Bool, Event, Typed, ForwardTyped, observe
+from atom.api import Str, Bool, Event, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 from enaml.icon import Icon
@@ -40,7 +40,7 @@ class Page(Widget):
 
     """
     #: The title to use for the page in the notebook.
-    title = d_(Unicode())
+    title = d_(Str())
 
     #: The icon to use for the page tab.
     icon = d_(Typed(Icon))

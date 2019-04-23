@@ -9,7 +9,7 @@ from collections import deque
 import sys
 import warnings
 
-from atom.api import Atom, Int, Bool, Coerced, Enum, List, Unicode
+from atom.api import Atom, Int, Bool, Coerced, Enum, List, Str
 
 from enaml.nodevisitor import NodeVisitor
 
@@ -121,7 +121,7 @@ class ItemLayout(LayoutNode):
 
     """
     #: The name of the DockItem to which this layout item applies.
-    name = Unicode()
+    name = Str()
 
     #: Whether or not the item is floating. An ItemLayout defined as
     #: a toplevel item in a DockLayout should be marked as floating.
@@ -532,10 +532,10 @@ class InsertItem(DockLayoutOp):
 
     """
     #: The name of the dock item to insert into the layout.
-    item = Unicode()
+    item = Str()
 
     #: The name of the dock item to use as the target location.
-    target = Unicode()
+    target = Str()
 
     #: The position relative to the target at which to insert the item.
     position = Enum('left', 'top', 'right', 'bottom')
@@ -571,10 +571,10 @@ class InsertBorderItem(DockLayoutOp):
 
     """
     #: The name of the dock item to insert into the layout.
-    item = Unicode()
+    item = Str()
 
     #: The name of the dock item to use as the target location.
-    target = Unicode()
+    target = Str()
 
     #: The border position at which to insert the item.
     position = Enum('left', 'top', 'right', 'bottom')
@@ -611,10 +611,10 @@ class InsertDockBarItem(DockLayoutOp):
 
     """
     #: The name of the dock item to insert into the layout.
-    item = Unicode()
+    item = Str()
 
     #: The name of the dock item to use as the target location.
-    target = Unicode()
+    target = Str()
 
     #: The dock bar position at which to insert the item.
     position = Enum('right', 'left', 'bottom', 'top')
@@ -652,10 +652,10 @@ class InsertTab(DockLayoutOp):
 
     """
     #: The name of the dock item to insert into the tab group.
-    item = Unicode()
+    item = Str()
 
     #: The name of an existing dock item in the tab group of interest.
-    target = Unicode()
+    target = Str()
 
     #: The index at which to insert the dock item.
     index = Int(-1)
@@ -696,7 +696,7 @@ class RemoveItem(DockLayoutOp):
 
     """
     #: The name of the dock item to remove from the layout.
-    item = Unicode()
+    item = Str()
 
 
 class ExtendItem(DockLayoutOp):
@@ -708,7 +708,7 @@ class ExtendItem(DockLayoutOp):
 
     """
     #: The name of the dock item to extend from its dock bar.
-    item = Unicode()
+    item = Str()
 
 
 class RetractItem(DockLayoutOp):
@@ -720,4 +720,4 @@ class RetractItem(DockLayoutOp):
 
     """
     #: The name of the dock item to retract into its dock bar.
-    item = Unicode()
+    item = Str()

@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    List, Enum, Unicode, Bool, Event, Typed, ForwardTyped, observe
+    List, Enum, Str, Bool, Event, Typed, ForwardTyped, observe
 )
 
 from enaml.core.declarative import d_
@@ -59,7 +59,7 @@ class DockPane(Widget):
 
     """
     #: The title to use in the title bar.
-    title = d_(Unicode())
+    title = d_(Str())
 
     #: Whether or not the title bar is visible.
     title_bar_visible = d_(Bool(True))

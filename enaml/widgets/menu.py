@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Typed, ForwardTyped, Unicode, observe
+from atom.api import Bool, Typed, ForwardTyped, Str, observe
 
 from enaml.core.declarative import d_
 
@@ -45,7 +45,7 @@ class Menu(ToolkitObject):
 
     """
     #: The title to use for the menu.
-    title = d_(Unicode())
+    title = d_(Str())
 
     #: Whether or not the menu is enabled.
     enabled = d_(Bool(True))

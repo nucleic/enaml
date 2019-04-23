@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Unicode, Enum, Typed, ForwardTyped, observe
+from atom.api import Bool, Str, Enum, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
@@ -35,7 +35,7 @@ class GroupBox(Container):
 
     """
     #: The title displayed at the top of the box.
-    title = d_(Unicode())
+    title = d_(Str())
 
     #: The flat parameter determines if the GroupBox is displayed with
     #: just the title and a header line (True) or with a full border

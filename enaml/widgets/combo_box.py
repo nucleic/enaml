@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, List, Int, Property, Unicode, Typed, ForwardTyped, set_default,
+    Bool, List, Int, Property, Str, Typed, ForwardTyped, set_default,
     observe
 )
 
@@ -41,7 +41,7 @@ class ComboBox(Control):
 
     """
     #: The strings to display in the combo box.
-    items = d_(List(Unicode()))
+    items = d_(List(Str()))
 
     #: The integer index of the currently selected item. If the index
     #: falls outside the range of items, the item will be deselected.

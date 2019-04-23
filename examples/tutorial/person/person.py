@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from __future__ import unicode_literals, print_function
 
-from atom.api import Atom, Unicode, Range, Bool, observe
+from atom.api import Atom, Str, Range, Bool, observe
 
 import enaml
 from enaml.qt.qt_application import QtApplication
@@ -17,9 +17,9 @@ class Person(Atom):
     """ A simple class representing a person object.
 
     """
-    last_name = Unicode()
+    last_name = Str()
 
-    first_name = Unicode()
+    first_name = Str()
 
     age = Range(low=0)
 

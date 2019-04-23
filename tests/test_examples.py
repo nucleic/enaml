@@ -213,7 +213,7 @@ def test_examples(enaml_qtbot, enaml_sleep, path, handler):
     dir_path = os.path.abspath(os.path.split(os.path.dirname(__file__))[0])
     enaml_file = os.path.join(dir_path, 'examples', os.path.normpath(path))
 
-    with open(enaml_file, 'rU') as f:
+    with open(enaml_file, 'r') as f:
         enaml_code = f.read()
 
     # Parse and compile the Enaml source into a code object

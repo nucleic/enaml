@@ -14,7 +14,7 @@ developer is free to define their own styles completely from scratch, and
 ignore these styles in their entirety.
 
 """
-from atom.api import Atom, Typed, Unicode
+from atom.api import Atom, Typed
 from enaml.core.template_ import Template
 from enaml.styling import StyleSheet, Style, Setter
 

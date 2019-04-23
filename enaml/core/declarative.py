@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Event, Typed, Unicode
+from atom.api import Event, Typed, Str
 from atom.datastructures.api import sortedmap
 
 from .declarative_meta import DeclarativeMeta
@@ -80,7 +80,7 @@ class Declarative(Object, metaclass=DeclarativeMeta):
     """
 
     #: Export the 'name' attribute as a declarative member.
-    name = d_(Unicode())
+    name = d_(Str())
 
     #: An event fired when an object is initialized. It is triggered
     #: once during the object lifetime, at the end of the initialize

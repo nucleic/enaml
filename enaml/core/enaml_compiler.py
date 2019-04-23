@@ -217,8 +217,7 @@ class EnamlCompiler(cmn.CompilerBase):
         cg = self.code_generator
         code = EnamlDefCompiler.compile(node, cg.filename)
         cg.load_const(code)
-        if IS_PY3:
-            cg.load_const(None)  # XXX better qualified name
+        cg.load_const(None)  # XXX better qualified name
         cg.make_function()
         cg.call_function()
         cg.store_global(node.typename)
@@ -263,8 +262,7 @@ class EnamlCompiler(cmn.CompilerBase):
 
             # Under Python 3 function have a qualified name
             # XXX improve qualified name
-            if IS_PY3:
-                cg.load_const(None)
+            cg.load_const(None)
             cg.make_function(0x01 if USE_WORDCODE else
                              len(node.parameters.keywords))
 

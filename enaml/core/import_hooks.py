@@ -16,7 +16,7 @@ from collections import defaultdict, namedtuple
 from zipfile import ZipFile
 
 from importlib.machinery import ModuleSpec
-from importlib.util import module_from_spec
+from importlib.util import module_from_spec, MAGIC_NUMBER
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
@@ -25,7 +25,6 @@ from ..compat import read_source, detect_encoding, update_code_co_filename
 
 # The magic number as symbols for the current Python interpreter. These
 # define the naming scheme used when create cached files and directories.
-MAGIC = imp.get_magic()
 MAGIC_TAG = 'enaml-py%s%s-cv%s' % (
     sys.version_info.major, sys.version_info.minor, COMPILER_VERSION,
 )
@@ -75,7 +74,7 @@ class abstractclassmethod(classmethod):
 #------------------------------------------------------------------------------
 # Abstract Enaml Importer
 #------------------------------------------------------------------------------
-class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
+class AbstractEnamlImporter(object, metaclass=ABCMeta):
     """ An abstract base class which defines the api required to
     implement an Enaml importer.
 
@@ -138,7 +137,7 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
         if fullname in sys.modules:
             mod = sys.modules[fullname]
         else:
-            mod = sys.modules[fullname] = module_from_spec(spec)
+            mod = None  # Rely on default module creation semantics
 
         return mod
 
@@ -155,7 +154,7 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
         # that the import hooks are always installed when executing the
         # module code of an Enaml file.
         with imports():
-            exec_(code, module.__dict__)
+            exec(code, module.__dict__)
 
     #--------------------------------------------------------------------------
     # Abstract API
@@ -316,7 +315,7 @@ class EnamlImporter(AbstractEnamlImporter):
             if not os.path.exists(file_info.cache_dir):
                 os.mkdir(file_info.cache_dir)
             with open(file_info.cache_path, 'w+b') as cache_file:
-                cache_file.write(MAGIC)
+                cache_file.write(MAGIC_NUMBER)
                 cache_file.write(struct.pack('i', ts))
                 marshal.dump(code, cache_file)
         except (OSError, IOError):
@@ -403,7 +402,7 @@ class EnamlImporter(AbstractEnamlImporter):
         src_mod_time = self.get_source_modified_time()
         if os.path.exists(file_info.cache_path):
             magic, ts = self._get_magic_info(file_info)
-            if magic == MAGIC and src_mod_time <= ts:
+            if magic == MAGIC_NUMBER and src_mod_time <= ts:
                 code = self._load_cache(file_info, set_src=True)
                 return (code, file_info.src_path)
 

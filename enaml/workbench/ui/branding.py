@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed, Unicode
+from atom.api import Typed, Str
 
 from enaml.core.declarative import Declarative, d_
 from enaml.icon import Icon
@@ -16,7 +16,7 @@ class Branding(Declarative):
 
     """
     #: The primary title of the workbench window.
-    title = d_(Unicode())
+    title = d_(Str())
 
     #: The icon for the workbench window.
     icon = d_(Typed(Icon))
