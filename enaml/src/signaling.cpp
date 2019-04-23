@@ -8,7 +8,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <Python.h>
 #include <cppy/cppy.h>
 
 

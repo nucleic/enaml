@@ -9,6 +9,7 @@
 #ifndef OEMRESOURCE
 #define OEMRESOURCE
 #endif
+#include <Python.h>
 #include <windows.h>
 
 

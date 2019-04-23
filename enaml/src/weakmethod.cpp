@@ -7,6 +7,7 @@
 |----------------------------------------------------------------------------*/
 #include <iostream>
 #include <sstream>
+#include <structmember.h>  // Included to access offsetof
 #include <cppy/cppy.h>
 
 
