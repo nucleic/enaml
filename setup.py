@@ -165,7 +165,7 @@ setup(
       ],
     python_requires='>=3.5',
     requires=['atom', 'PyQt', 'ply', 'kiwisolver'],
-    install_requires=['setuptools', 'atom>=0.5.0',
+    install_requires=['setuptools', 'atom>=0.4.3',
                       'kiwisolver>=1.0.1', 'ply>=3.4'],
     setup_requires=['cppy>=1.1.0'],
     packages=find_packages(),
