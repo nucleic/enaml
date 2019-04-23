@@ -107,7 +107,7 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
     #--------------------------------------------------------------------------
     # Python Import API
     #--------------------------------------------------------------------------
-     @classmethod
+    @classmethod
     def find_spec(cls, fullname, path=None, target=None):
         """ Finds the given Enaml module and returns an importer, or
         None if the module is not found.
