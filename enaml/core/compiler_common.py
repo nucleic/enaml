@@ -56,7 +56,7 @@ COMPILE_MODE = {
 
 #: Ast nodes associated with comprehensions which uses a function call that we
 #: will have to call in proper scope
-_FUNC_DEF_NODES = [ast.Lambda, 
+_FUNC_DEF_NODES = [ast.Lambda,
                    ast.ListComp,
                    ast.DictComp,
                    ast.SetComp]
@@ -506,34 +506,33 @@ def gen_child_def_node(cg, node, local_names):
     # Subclass the child class if needed
     store_types = (StorageExpr, AliasExpr, FuncDef)
     if any(isinstance(item, store_types) for item in node.body):
-        
-    # On Python 3 create the class code
-    cg.load_build_class()
-    cg.rot_two()                            # builtins.__build_class_ -> base
 
-    class_cg = CodeGenerator()
-    class_cg.filename = cg.filename
-    class_cg.name = node.typename
-    class_cg.firstlineno = node.lineno
-    class_cg.set_lineno(node.lineno)
+        # Create the class code
+        cg.load_build_class()
+        cg.rot_two()                            # builtins.__build_class_ -> base
 
-    class_cg.code_ops.append((bp.LOAD_NAME, '__name__'),)
-    class_cg.code_ops.append((bp.STORE_NAME, '__module__'),)
-    class_cg.load_const(node.typename)
-    class_cg.code_ops.append((bp.STORE_NAME, '__qualname__'),)
-    class_cg.load_const(None)  # XXX better qualified name
-    class_cg.return_value()
+        class_cg = CodeGenerator()
+        class_cg.filename = cg.filename
+        class_cg.name = node.typename
+        class_cg.firstlineno = node.lineno
+        class_cg.set_lineno(node.lineno)
 
-    class_code = class_cg.to_code()
-    cg.load_const(class_code)
-    cg.load_const(None)  # XXX better qualified name
-    cg.make_function()
+        class_cg.code_ops.append((bp.LOAD_NAME, '__name__'),)
+        class_cg.code_ops.append((bp.STORE_NAME, '__module__'),)
+        class_cg.load_const(node.typename)
+        class_cg.code_ops.append((bp.STORE_NAME, '__qualname__'),)
+        class_cg.load_const(None)  # XXX better qualified name
+        class_cg.return_value()
 
-    cg.rot_two()                            # builtins.__build_class_ -> class_func -> base
-    cg.load_const(node.typename)
-    cg.rot_two()                            # builtins.__build_class_ -> class_func -> class_name -> base
-    cg.call_function(3)                     # class
+        class_code = class_cg.to_code()
+        cg.load_const(class_code)
+        cg.load_const(None)  # XXX better qualified name
+        cg.make_function()
 
+        cg.rot_two()                            # builtins.__build_class_ -> class_func -> base
+        cg.load_const(node.typename)
+        cg.rot_two()                            # builtins.__build_class_ -> class_func -> class_name -> base
+        cg.call_function(3)                     # class
 
     # Build the declarative compiler node
     store_locals = should_store_locals(node)
