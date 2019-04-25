@@ -178,7 +178,7 @@ DFunc__call__( DFunc* self, PyObject* args, PyObject* kwargs )
         ostr << args_size << " given)";
         return cppy::type_error( ostr.str().c_str() );
     }
-    cppy::ptr pself( argsptr.getitem( 0 ) );
+    cppy::ptr pself( PyTuple_GetItem( argsptr.get(), 0 ) );
     cppy::ptr pargs( PyTuple_GetSlice( argsptr.get(), 1, args_size ) );
     if( !pargs )
         return cppy::system_error( "DeclarativeFunction.__call__ failed to "

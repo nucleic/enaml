@@ -151,7 +151,7 @@ install:
   # At the time of writing, the setup.py says Enaml depends on a dev version
   # of Atom which is not on PyPI. Install straight from GitHub.
   - pip install https://github.com/nucleic/atom/tarball/master
-  - $PIP_INSTALL https://github.com/nucleic/kiwi/tarball/master
+  - pip install https://github.com/nucleic/kiwi/tarball/master
   - pip install https://github.com/nucleic/cppy/tarball/nucleic-migration
 
   # We need a library for Qt.
