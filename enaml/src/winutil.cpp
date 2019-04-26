@@ -164,7 +164,7 @@ winutil_methods[] = {
         if( !TOKEN ) \
             return NULL; \
         reinterpret_cast<WinEnum*>( TOKEN )->value = VALUE; \
-        if( PyModule_AddObject( mod, #VALUE, cppy::incref( TOKEN ) ) < 0 ) \
+        if( PyModule_AddObject( mod.get(), #VALUE, cppy::incref( TOKEN ) ) < 0 ) \
             return NULL; \
     } while( 0 )
 
