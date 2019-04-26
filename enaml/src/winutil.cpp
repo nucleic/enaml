@@ -9,8 +9,8 @@
 #ifndef OEMRESOURCE
 #define OEMRESOURCE
 #endif
-#include <Python.h>
 #include <windows.h>
+#include <cppy.h>
 
 
 // Builtin Icons
@@ -111,7 +111,7 @@ PyBytes_FromHICON( HICON icon, int& width_out, int& height_out )
     HGDIOBJ old_hdc = ( HBITMAP )SelectObject( hdc, win_bitmap );
     DrawIconEx( hdc, 0, 0, icon, w, h, 0, 0, DI_NORMAL );
 
-    PyObject* result = Py23Bytes_FromStringAndSize( ( const char* )bits, w * h * 4 );
+    PyObject* result = PyBytes_FromStringAndSize( ( const char* )bits, w * h * 4 );
 
     // dispose resources created by GetIconInfo
     DeleteObject( icon_info.hbmMask );
