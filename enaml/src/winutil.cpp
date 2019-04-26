@@ -162,10 +162,10 @@ winutil_methods[] = {
     do { \
         TOKEN = PyType_GenericNew( &WinEnum_Type, 0, 0 ); \
         if( !TOKEN ) \
-            INITERROR; \
+            return NULL; \
         reinterpret_cast<WinEnum*>( TOKEN )->value = VALUE; \
-        if( PyModule_AddObject( mod, #VALUE, newref( TOKEN ) ) < 0 ) \
-            INITERROR; \
+        if( PyModule_AddObject( mod, #VALUE, cppy::incref( TOKEN ) ) < 0 ) \
+            return NULL; \
     } while( 0 )
 
 
