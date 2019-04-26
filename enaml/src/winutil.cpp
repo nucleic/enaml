@@ -10,7 +10,7 @@
 #define OEMRESOURCE
 #endif
 #include <windows.h>
-#include <cppy.h>
+#include <cppy/cppy.h>
 
 
 // Builtin Icons
