@@ -38,6 +38,7 @@ enaml.widgets
     group_box <group_box>
     html <html>
     image_view <image_view>
+    ipython_console <ipython_console>
     label <label>
     main_window <main_window>
     mdi_area <mdi_area>
@@ -110,6 +111,7 @@ enaml.widgets
     group_box
     html
     image_view
+    ipython_console
     label
     main_window
     mdi_area
