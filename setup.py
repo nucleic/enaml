@@ -103,6 +103,9 @@ class BuildExt(build_ext):
         for ext in self.extensions:
             ext.include_dirs.insert(0, cppy.get_include())
             ext.extra_compile_args = opts
+            if sys.platform == 'darwin':
+                ext.extra_compile_args += ['-stdlib=libc++']
+                ext.extra_link_args += ['-stdlib=libc++']
         build_ext.build_extensions(self)
 
 
