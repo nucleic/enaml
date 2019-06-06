@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2017-2018, Nucleic Development Team.
+| Copyright (c) 2017-2019, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -16,11 +16,13 @@
 #endif
 
 
-PyObject* _fix_co_filename;
+namespace
+{
+
 
 /* The following three functions are taken from CPython import.c implementation
 */
-static void
+void
 update_code_filenames(PyCodeObject *co, PyObject *oldname, PyObject *newname)
 {
     PyObject *constants, *tmp;
@@ -44,7 +46,7 @@ update_code_filenames(PyCodeObject *co, PyObject *oldname, PyObject *newname)
     }
 }
 
-static void
+void
 update_compiled_module(PyCodeObject *co, PyObject *newname)
 {
     PyObject *oldname;
@@ -60,7 +62,7 @@ update_compiled_module(PyCodeObject *co, PyObject *newname)
 
 /*End of the end extracted from CPython import.c*/
 
-static PyObject *
+PyObject *
 _imp__fix_co_filename_impl(PyObject *module, PyObject* args, PyObject* kwargs )
 {
     PyObject* code;
@@ -79,10 +81,12 @@ _imp__fix_co_filename_impl(PyObject *module, PyObject* args, PyObject* kwargs )
 }
 
 
-
-struct module_state {
-    PyObject *error;
-};
+// Module definition
+int
+c_compat_modexec( PyObject *mod )
+{
+    return 0;
+}
 
 static PyMethodDef
 c_compat_methods[] = {
@@ -92,42 +96,29 @@ c_compat_methods[] = {
 };
 
 
-#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-
-static int c_compat_traverse(PyObject *m, visitproc visit, void *arg) {
-    Py_VISIT(GETSTATE(m)->error);
-    return 0;
-}
-
-static int c_compat_clear(PyObject *m) {
-    Py_CLEAR(GETSTATE(m)->error);
-    return 0;
-}
+PyModuleDef_Slot c_compat_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>( c_compat_modexec ) },
+    {0, NULL}
+};
 
 
-static struct PyModuleDef moduledef = {
+struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
         "c_compat",
-        NULL,
-        sizeof(struct module_state),
+        "c_compat extension module",
+        0,
         c_compat_methods,
+        c_compat_slots,
         NULL,
-        c_compat_traverse,
-        c_compat_clear,
+        NULL,
         NULL
 };
 
 
+}  // namespace
+
+
 PyMODINIT_FUNC PyInit_c_compat( void )
 {
-    cppy::ptr mod( PyModule_Create(&moduledef) );
-    if( !mod )
-        return NULL;
-
-    cppy::ptr up( mod.getattr( "_fix_co_filename" ) );
-    if( !up )
-        return NULL;
-    _fix_co_filename = up.release();
-
-    return mod.release();
+    return PyModuleDef_Init( &moduledef );
 }

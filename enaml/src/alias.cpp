@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013-2018, Nucleic Development Team.
+| Copyright (c) 2013-2019, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -17,19 +17,35 @@
 #endif
 
 
+namespace enaml
+{
+
 static PyObject* storage_str;
 
 
-typedef struct {
-    PyObject_HEAD
+// POD struct - all member fields are considered private
+struct Alias
+{
+	PyObject_HEAD
     PyObject* target;
     PyObject* chain;
     PyObject* key;
     bool canset;
-} Alias;
+
+	static PyType_Spec TypeObject_Spec;
+
+    static PyTypeObject* TypeObject;
+
+	static bool Ready();
+
+};
 
 
-static PyObject*
+namespace
+{
+
+
+PyObject*
 Alias_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
     PyObject* target;
@@ -51,7 +67,7 @@ Alias_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 }
 
 
-static void
+void
 Alias_dealloc( Alias* self )
 {
     Py_CLEAR( self->target );
@@ -61,7 +77,7 @@ Alias_dealloc( Alias* self )
 }
 
 
-static PyObject*
+PyObject*
 alias_load_fail( Alias* self )
 {
     std::ostringstream ostr;
@@ -86,7 +102,7 @@ alias_load_fail( Alias* self )
 }
 
 
-static int
+int
 alias_load_set_fail( Alias* self )
 {
     alias_load_fail( self );
@@ -94,7 +110,7 @@ alias_load_set_fail( Alias* self )
 }
 
 
-static PyObject*
+PyObject*
 Alias__get__( Alias* self, PyObject* object, PyObject* type )
 {
     if( !object )
@@ -125,7 +141,7 @@ Alias__get__( Alias* self, PyObject* object, PyObject* type )
 }
 
 
-static int
+int
 Alias__set__( Alias* self, PyObject* object, PyObject* value )
 {
     if( !self->canset )
@@ -162,7 +178,7 @@ Alias__set__( Alias* self, PyObject* object, PyObject* value )
 }
 
 
-static PyObject*
+PyObject*
 Alias_resolve( Alias* self, PyObject* object )
 {
     cppy::ptr storage( PyObject_GetAttr( object, storage_str ) );
@@ -197,35 +213,35 @@ Alias_resolve( Alias* self, PyObject* object )
 }
 
 
-static PyObject*
+PyObject*
 Alias_get_target( Alias* self, void* ctxt )
 {
     return cppy::incref( self->target );
 }
 
 
-static PyObject*
+PyObject*
 Alias_get_chain( Alias* self, void* ctxt )
 {
     return cppy::incref( self->chain );
 }
 
 
-static PyObject*
+PyObject*
 Alias_get_key( Alias* self, void* ctxt )
 {
     return cppy::incref( self->key );
 }
 
 
-static PyObject*
+PyObject*
 Alias_get_canset( Alias* self, void* ctxt )
 {
     return cppy::incref( self->canset ? Py_True : Py_False );
 }
 
 
-static int
+int
 Alias_set_canset( Alias* self, PyObject* value, void* ctxt )
 {
     if( !PyBool_Check( value ) )
@@ -260,103 +276,110 @@ Alias_methods[] = {
 };
 
 
-PyTypeObject Alias_Type = {
-    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.alias.Alias",                      /* tp_name */
-    sizeof( Alias ),                          /* tp_basicsize */
-    0,                                        /* tp_itemsize */
-    ( destructor )Alias_dealloc,              /* tp_dealloc */
-    ( printfunc )0,                           /* tp_print */
-    ( getattrfunc )0,                         /* tp_getattr */
-    ( setattrfunc )0,                         /* tp_setattr */
-	( PyAsyncMethods* )0,                     /* tp_as_async */
-    ( reprfunc )0,                            /* tp_repr */
-    ( PyNumberMethods* )0,                    /* tp_as_number */
-    ( PySequenceMethods* )0,                  /* tp_as_sequence */
-    ( PyMappingMethods* )0,                   /* tp_as_mapping */
-    ( hashfunc )0,                            /* tp_hash */
-    ( ternaryfunc )0,                         /* tp_call */
-    ( reprfunc )0,                            /* tp_str */
-    ( getattrofunc )0,                        /* tp_getattro */
-    ( setattrofunc )0,                        /* tp_setattro */
-    ( PyBufferProcs* )0,                      /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,                       /* tp_flags */
-    0,                                        /* Documentation string */
-    ( traverseproc )0,                        /* tp_traverse */
-    ( inquiry )0,                             /* tp_clear */
-    ( richcmpfunc )0,                         /* tp_richcompare */
-    0,                                        /* tp_weaklistoffset */
-    ( getiterfunc )0,                         /* tp_iter */
-    ( iternextfunc )0,                        /* tp_iternext */
-    ( struct PyMethodDef* )Alias_methods,     /* tp_methods */
-    ( struct PyMemberDef* )0,                 /* tp_members */
-    Alias_getset,                             /* tp_getset */
-    0,                                        /* tp_base */
-    0,                                        /* tp_dict */
-    ( descrgetfunc )Alias__get__,             /* tp_descr_get */
-    ( descrsetfunc )Alias__set__,             /* tp_descr_set */
-    0,                                        /* tp_dictoffset */
-    ( initproc )0,                            /* tp_init */
-    ( allocfunc )PyType_GenericAlloc,         /* tp_alloc */
-    ( newfunc )Alias_new,                     /* tp_new */
-    ( freefunc )PyObject_Del,                 /* tp_free */
-    ( inquiry )0,                             /* tp_is_gc */
-    0,                                        /* tp_bases */
-    0,                                        /* tp_mro */
-    0,                                        /* tp_cache */
-    0,                                        /* tp_subclasses */
-    0,                                        /* tp_weaklist */
-    ( destructor )0                           /* tp_del */
+static PyType_Slot Alias_Type_slots[] = {
+    { Py_tp_dealloc, void_cast( Alias_dealloc ) },        /* tp_dealloc */
+    { Py_tp_methods, void_cast( Alias_methods ) },        /* tp_methods */
+    { Py_tp_getset, void_cast( Alias_getset ) },          /* tp_getset */
+    { Py_tp_descr_get, void_cast( Alias__get__ ) },       /* tp_descr_get */
+    { Py_tp_descr_set, void_cast( Alias__set__ ) },       /* tp_descr_set */
+    { Py_tp_new, void_cast( Alias_new ) },                /* tp_new */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },    /* tp_alloc */
+    { Py_tp_free, void_cast( PyObject_Del ) },            /* tp_free */
+    { 0, 0 },
 };
 
 
-struct module_state {
-    PyObject *error;
+}  // namespace
+
+
+// Initialize static variables (otherwise the compiler eliminates them)
+PyTypeObject* Alias::TypeObject = NULL;
+
+
+PyType_Spec Alias::TypeObject_Spec = {
+	"enaml.alias.Alias",                 /* tp_name */
+	sizeof( Alias ),                     /* tp_basicsize */
+	0,                                   /* tp_itemsize */
+	Py_TPFLAGS_DEFAULT,                  /* tp_flags */
+    Alias_Type_slots                     /* slots */
 };
+
+
+bool Alias::Ready()
+{
+    // The reference will be handled by the module to which we will add the type
+	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
+    if( !TypeObject )
+    {
+        return false;
+    }
+    return true;
+}
+
+
+// Module definition
+namespace
+{
+
+
+int
+alias_modexec( PyObject *mod )
+{
+    storage_str = PyUnicode_FromString( "_d_storage" );
+    if( !storage_str )
+    {
+        return -1;
+    }
+
+    if( !Alias::Ready() )
+    {
+        return -1;
+    }
+
+    // alias
+    cppy::ptr alias( pyobject_cast( Alias::TypeObject ) );
+	if( PyModule_AddObject( mod, "Alias", alias.get() ) < 0 )
+	{
+		return -1;
+	}
+    alias.release();
+
+    return 0;
+}
+
 
 static PyMethodDef
 alias_methods[] = {
-    { 0 } // sentinel
+    { 0 } // Sentinel
 };
 
 
-#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-
-static int alias_traverse(PyObject *m, visitproc visit, void *arg) {
-    Py_VISIT(GETSTATE(m)->error);
-    return 0;
-}
-
-static int alias_clear(PyObject *m) {
-    Py_CLEAR(GETSTATE(m)->error);
-    return 0;
-}
+PyModuleDef_Slot alias_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>( alias_modexec ) },
+    {0, NULL}
+};
 
 
-static struct PyModuleDef moduledef = {
+struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
         "alias",
-        NULL,
-        sizeof(struct module_state),
+        "alias extension module",
+        0,
         alias_methods,
+        alias_slots,
         NULL,
-        alias_traverse,
-        alias_clear,
+        NULL,
         NULL
 };
 
 
+}  // namespace
+
+
+}  // namespace enaml
+
+
 PyMODINIT_FUNC PyInit_alias( void )
 {
-    cppy::ptr mod( PyModule_Create(&moduledef) );
-    if( !mod )
-        return NULL;
-    storage_str = PyUnicode_FromString( "_d_storage" );
-    if( !storage_str )
-        return NULL;
-    if( PyType_Ready( &Alias_Type ) < 0 )
-        return NULL;
-    PyModule_AddObject( mod.get(), "Alias", cppy::incref( pyobject_cast( &Alias_Type ) ) );
-
-    return mod.release();
+    return PyModuleDef_Init( &enaml::moduledef );
 }

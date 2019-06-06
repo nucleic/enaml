@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013-2018, Nucleic Development Team.
+| Copyright (c) 2013-2019, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -8,7 +8,8 @@
 #include <Python.h>
 
 
-extern "C" {
+namespace enaml
+{
 
 /* Call a function with an optional locals mapping.
 
@@ -18,7 +19,7 @@ dynamic scoping. The code below is a slightly tweaked `function_call`
 from Python's funcobject.c
 
 */
-static PyObject*
+PyObject*
 call_func( PyObject* mod, PyObject* args )
 {
     PyObject* func;
@@ -100,10 +101,17 @@ call_func( PyObject* mod, PyObject* args )
     return result;
  }
 
-struct module_state {
-    PyObject *error;
-};
 
+// Module definition
+namespace
+{
+
+
+int
+funchelper_modexec( PyObject *mod )
+{
+    return 0;
+}
 
 static PyMethodDef
 funchelper_methods[] = {
@@ -113,37 +121,32 @@ funchelper_methods[] = {
 };
 
 
-#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-
-static int funchelper_traverse(PyObject *m, visitproc visit, void *arg) {
-    Py_VISIT(GETSTATE(m)->error);
-    return 0;
-}
-
-static int funchelper_clear(PyObject *m) {
-    Py_CLEAR(GETSTATE(m)->error);
-    return 0;
-}
+PyModuleDef_Slot funchelper_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>( funchelper_modexec ) },
+    {0, NULL}
+};
 
 
-static struct PyModuleDef moduledef = {
+struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
         "funchelper",
-        NULL,
-        sizeof(struct module_state),
+        "funchelper extension module",
+        0,
         funchelper_methods,
+        funchelper_slots,
         NULL,
-        funchelper_traverse,
-        funchelper_clear,
+        NULL,
         NULL
 };
 
 
+}  // namespace
+
+
+}  // namespace enaml
+
+
 PyMODINIT_FUNC PyInit_funchelper( void )
 {
-    PyObject *mod = PyModule_Create(&moduledef);
-    return mod;
+    return PyModuleDef_Init( &enaml::moduledef );
 }
-
-} // extern "C"
-

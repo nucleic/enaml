@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013-2018, Nucleic Development Team.
+| Copyright (c) 2013-2019, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -16,20 +16,30 @@
 #endif
 
 
-static PyObject* parent_str;
-static PyObject* dynamic_load_str;
-static PyObject* UserKeyError;
+namespace enaml
+{
 
 
-typedef struct {
-    PyObject_HEAD
+// POD struct - all member fields are considered private
+struct Nonlocals
+{
+	PyObject_HEAD
     PyObject* owner;
     PyObject* tracer;
-} Nonlocals;
+
+	static PyType_Spec TypeObject_Spec;
+
+    static PyTypeObject* TypeObject;
+
+	static bool Ready();
+
+};
 
 
-typedef struct {
-    PyObject_HEAD
+// POD struct - all member fields are considered private
+struct DynamicScope
+{
+	PyObject_HEAD
     PyObject* owner;
     PyObject* change;
     PyObject* tracer;
@@ -38,13 +48,29 @@ typedef struct {
     PyObject* f_builtins;
     PyObject* f_writes;
     PyObject* f_nonlocals;
-} DynamicScope;
+
+	static PyType_Spec TypeObject_Spec;
+
+    static PyTypeObject* TypeObject;
+
+	static bool Ready();
+
+};
+
+
+namespace
+{
+
+
+static PyObject* parent_str;
+static PyObject* dynamic_load_str;
+static PyObject* UserKeyError;
 
 
 /*-----------------------------------------------------------------------------
 | Utilities
 |----------------------------------------------------------------------------*/
-static int
+int
 test_dynamic_attr( PyObject* obj, PyObject* name )
 {
     PyTypeObject* tp;
@@ -98,7 +124,7 @@ test_dynamic_attr( PyObject* obj, PyObject* name )
 // the failure in the user code. This function is used to convert such an
 // error into a UserKeyError, which does not derive from KeyError and so
 // will not be trapped by the Python VM during expression eval.
-static inline void
+inline void
 maybe_translate_key_error()
 {
     if( PyErr_Occurred() && PyErr_ExceptionMatches( PyExc_KeyError ) )
@@ -113,7 +139,7 @@ maybe_translate_key_error()
 }
 
 
-static inline bool
+inline bool
 run_tracer( PyObject* tracer, PyObject* owner, PyObject* name, PyObject* value )
 {
     cppy::ptr handler( PyObject_GetAttr( tracer, dynamic_load_str ) );
@@ -132,7 +158,7 @@ run_tracer( PyObject* tracer, PyObject* owner, PyObject* name, PyObject* value )
 }
 
 
-static PyObject*
+PyObject*
 load_dynamic_attr( PyObject* obj, PyObject* name, PyObject* tracer=0 )
 {
     PyTypeObject* tp;
@@ -210,7 +236,7 @@ load_dynamic_attr( PyObject* obj, PyObject* name, PyObject* tracer=0 )
 }
 
 
-static int
+int
 set_dynamic_attr( PyObject* obj, PyObject* name, PyObject* value )
 {
     PyTypeObject* tp;
@@ -286,7 +312,7 @@ set_dynamic_attr( PyObject* obj, PyObject* name, PyObject* value )
 /*-----------------------------------------------------------------------------
 | Nonlocals
 |----------------------------------------------------------------------------*/
-static void
+void
 Nonlocals_clear( Nonlocals* self )
 {
     Py_CLEAR( self->owner );
@@ -294,7 +320,7 @@ Nonlocals_clear( Nonlocals* self )
 }
 
 
-static int
+int
 Nonlocals_traverse( Nonlocals* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->owner );
@@ -303,7 +329,7 @@ Nonlocals_traverse( Nonlocals* self, visitproc visit, void* arg )
 }
 
 
-static void
+void
 Nonlocals_dealloc( Nonlocals* self )
 {
     PyObject_GC_UnTrack( self );
@@ -312,7 +338,7 @@ Nonlocals_dealloc( Nonlocals* self )
 }
 
 
-static PyObject*
+PyObject*
 Nonlocals_repr( Nonlocals* self )
 {
     cppy::ptr pystr( PyObject_Str( self->owner ) );
@@ -326,7 +352,7 @@ Nonlocals_repr( Nonlocals* self )
 }
 
 
-static PyObject*
+PyObject*
 Nonlocals_call( Nonlocals* self, PyObject* args, PyObject* kwargs )
 {
     unsigned int level;
@@ -362,7 +388,7 @@ Nonlocals_call( Nonlocals* self, PyObject* args, PyObject* kwargs )
 }
 
 
-static PyObject*
+PyObject*
 Nonlocals_getattro( Nonlocals* self, PyObject* name )
 {
     PyObject* res = load_dynamic_attr( self->owner, name, self->tracer );
@@ -377,7 +403,7 @@ Nonlocals_getattro( Nonlocals* self, PyObject* name )
 }
 
 
-static int
+int
 Nonlocals_setattro( Nonlocals* self, PyObject* name, PyObject* value )
 {
     int res = set_dynamic_attr( self->owner, name, value );
@@ -392,7 +418,7 @@ Nonlocals_setattro( Nonlocals* self, PyObject* name, PyObject* value )
 }
 
 
-static PyObject*
+PyObject*
 Nonlocals_getitem( Nonlocals* self, PyObject* key )
 {
     if( !PyUnicode_CheckExact( key ) )
@@ -404,7 +430,7 @@ Nonlocals_getitem( Nonlocals* self, PyObject* key )
 }
 
 
-static int
+int
 Nonlocals_setitem( Nonlocals* self, PyObject* key, PyObject* value )
 {
     if( !PyUnicode_CheckExact( key ) )
@@ -419,7 +445,7 @@ Nonlocals_setitem( Nonlocals* self, PyObject* key, PyObject* value )
 }
 
 
-static int
+int
 Nonlocals_contains( Nonlocals* self, PyObject* key )
 {
     if( !PyUnicode_CheckExact( key ) )
@@ -431,83 +457,60 @@ Nonlocals_contains( Nonlocals* self, PyObject* key )
 }
 
 
-static PyMappingMethods
-Nonlocals_as_mapping = {
-    ( lenfunc )0,                             /*mp_length*/
-    ( binaryfunc )Nonlocals_getitem,          /*mp_subscript*/
-    ( objobjargproc )Nonlocals_setitem,       /*mp_ass_subscript*/
+static PyType_Slot Nonlocals_Type_slots[] = {
+    { Py_tp_dealloc, void_cast( Nonlocals_dealloc ) },        /* tp_dealloc */
+    { Py_tp_traverse, void_cast( Nonlocals_traverse ) },      /* tp_traverse */
+    { Py_tp_clear, void_cast( Nonlocals_clear ) },            /* tp_clear */
+    { Py_tp_call, void_cast( Nonlocals_call ) },              /* tp_call */
+    { Py_tp_repr, void_cast( Nonlocals_repr ) },              /* tp_repr */
+    { Py_tp_getattro, void_cast( Nonlocals_getattro ) },      /* tp_getattro */
+    { Py_tp_setattro, void_cast( Nonlocals_setattro ) },      /* tp_setattro */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },        /* tp_alloc */
+    { Py_tp_free, void_cast( PyObject_GC_Del ) },             /* tp_free */
+    { Py_mp_subscript, void_cast( Nonlocals_getitem ) },      /* mp_subscript */
+    { Py_mp_ass_subscript, void_cast( Nonlocals_setitem ) },  /* mp_ass_subscript */
+    { Py_sq_contains, void_cast( Nonlocals_contains ) },      /* sq_contains */
+    { 0, 0 },
 };
 
 
-static PySequenceMethods
-Nonlocals_as_sequence = {
-    0,                                    /* sq_length */
-    0,                                    /* sq_concat */
-    0,                                    /* sq_repeat */
-    0,                                    /* sq_item */
-    0,                                    /* sq_slice */
-    0,                                    /* sq_ass_item */
-    0,                                    /* sq_ass_slice */
-    ( objobjproc )Nonlocals_contains,     /* sq_contains */
-    0,                                    /* sq_inplace_concat */
-    0,                                    /* sq_inplace_repeat */
+}  // namespace
+
+
+// Initialize static variables (otherwise the compiler eliminates them)
+PyTypeObject* Nonlocals::TypeObject = NULL;
+
+
+PyType_Spec Nonlocals::TypeObject_Spec = {
+	"enaml.dynamicscope.Nonlocals",    /* tp_name */
+	sizeof( Nonlocals ),               /* tp_basicsize */
+	0,                                 /* tp_itemsize */
+	Py_TPFLAGS_DEFAULT|
+    Py_TPFLAGS_HAVE_GC,                /* tp_flags */
+    Nonlocals_Type_slots               /* slots */
 };
 
 
-PyTypeObject Nonlocals_Type = {
-    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.dynamicscope.Nonlocals",               /* tp_name */
-    sizeof( Nonlocals ),                          /* tp_basicsize */
-    0,                                            /* tp_itemsize */
-    ( destructor )Nonlocals_dealloc,              /* tp_dealloc */
-    ( printfunc )0,                               /* tp_print */
-    ( getattrfunc )0,                             /* tp_getattr */
-    ( setattrfunc )0,                             /* tp_setattr */
-	( PyAsyncMethods* )0,                         /* tp_as_async */
-    ( reprfunc )Nonlocals_repr,                   /* tp_repr */
-    ( PyNumberMethods* )0,                        /* tp_as_number */
-    ( PySequenceMethods* )&Nonlocals_as_sequence, /* tp_as_sequence */
-    ( PyMappingMethods* )&Nonlocals_as_mapping,   /* tp_as_mapping */
-    ( hashfunc )0,                                /* tp_hash */
-    ( ternaryfunc )Nonlocals_call,                /* tp_call */
-    ( reprfunc )0,                                /* tp_str */
-    ( getattrofunc )Nonlocals_getattro,           /* tp_getattro */
-    ( setattrofunc )Nonlocals_setattro,           /* tp_setattro */
-    ( PyBufferProcs* )0,                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,        /* tp_flags */
-    0,                                            /* Documentation string */
-    ( traverseproc )Nonlocals_traverse,           /* tp_traverse */
-    ( inquiry )Nonlocals_clear,                   /* tp_clear */
-    ( richcmpfunc )0,                             /* tp_richcompare */
-    0,                                            /* tp_weaklistoffset */
-    ( getiterfunc )0,                             /* tp_iter */
-    ( iternextfunc )0,                            /* tp_iternext */
-    ( struct PyMethodDef* )0,                     /* tp_methods */
-    ( struct PyMemberDef* )0,                     /* tp_members */
-    0,                                            /* tp_getset */
-    0,                                            /* tp_base */
-    0,                                            /* tp_dict */
-    ( descrgetfunc )0,                            /* tp_descr_get */
-    ( descrsetfunc )0,                            /* tp_descr_set */
-    0,                                            /* tp_dictoffset */
-    ( initproc) 0,                                /* tp_init */
-    ( allocfunc )PyType_GenericAlloc,             /* tp_alloc */
-    ( newfunc )0,                                 /* tp_new */
-    ( freefunc )PyObject_GC_Del,                  /* tp_free */
-    ( inquiry )0,                                 /* tp_is_gc */
-    0,                                            /* tp_bases */
-    0,                                            /* tp_mro */
-    0,                                            /* tp_cache */
-    0,                                            /* tp_subclasses */
-    0,                                            /* tp_weaklist */
-    ( destructor )0                               /* tp_del */
-};
+bool Nonlocals::Ready()
+{
+    // The reference will be handled by the module to which we will add the type
+	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
+    if( !TypeObject )
+    {
+        return false;
+    }
+    return true;
+}
+
+
+namespace
+{
 
 
 /*-----------------------------------------------------------------------------
 | DynamicScope
 |----------------------------------------------------------------------------*/
-static PyObject*
+PyObject*
 DynamicScope_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
     PyObject* owner;
@@ -544,7 +547,7 @@ DynamicScope_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 }
 
 
-static void
+void
 DynamicScope_clear( DynamicScope* self )
 {
     Py_CLEAR( self->owner );
@@ -558,7 +561,7 @@ DynamicScope_clear( DynamicScope* self )
 }
 
 
-static int
+int
 DynamicScope_traverse( DynamicScope* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->owner );
@@ -573,7 +576,7 @@ DynamicScope_traverse( DynamicScope* self, visitproc visit, void* arg )
 }
 
 
-static void
+void
 DynamicScope_dealloc( DynamicScope* self )
 {
     PyObject_GC_UnTrack( self );
@@ -582,7 +585,7 @@ DynamicScope_dealloc( DynamicScope* self )
 }
 
 
-static PyObject*
+PyObject*
 DynamicScope_getitem( DynamicScope* self, PyObject* key )
 {
     if( !PyUnicode_CheckExact( key ) )
@@ -611,7 +614,7 @@ DynamicScope_getitem( DynamicScope* self, PyObject* key )
     {
         if( !self->f_nonlocals )
         {
-            self->f_nonlocals = PyType_GenericNew( &Nonlocals_Type, 0, 0 );
+            self->f_nonlocals = PyType_GenericNew( Nonlocals::TypeObject, 0, 0 );
             if( !self->f_nonlocals )
                 return 0;
             Nonlocals* nl = reinterpret_cast<Nonlocals*>( self->f_nonlocals );
@@ -661,7 +664,7 @@ DynamicScope_getitem( DynamicScope* self, PyObject* key )
 }
 
 
-static int
+int
 DynamicScope_setitem( DynamicScope* self, PyObject* key, PyObject* value )
 {
     if( !PyUnicode_CheckExact( key ) )
@@ -686,7 +689,7 @@ DynamicScope_setitem( DynamicScope* self, PyObject* key, PyObject* value )
 }
 
 
-static int
+int
 DynamicScope_contains( DynamicScope* self, PyObject* key )
 {
     if( !PyUnicode_CheckExact( key ) )
@@ -742,137 +745,129 @@ DynamicScope_contains( DynamicScope* self, PyObject* key )
 }
 
 
-static PyMappingMethods
-DynamicScope_as_mapping = {
-    ( lenfunc )0,                             /*mp_length*/
-    ( binaryfunc )DynamicScope_getitem,       /*mp_subscript*/
-    ( objobjargproc )DynamicScope_setitem,    /*mp_ass_subscript*/
+static PyType_Slot DynamicScope_Type_slots[] = {
+    { Py_tp_dealloc, void_cast( DynamicScope_dealloc ) },           /* tp_dealloc */
+    { Py_tp_traverse, void_cast( DynamicScope_traverse ) },         /* tp_traverse */
+    { Py_tp_clear, void_cast( DynamicScope_clear ) },               /* tp_clear */
+    { Py_tp_new, void_cast( DynamicScope_new ) },                /* tp_new */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },           /* tp_alloc */
+    { Py_tp_free, void_cast( PyObject_GC_Del ) },                /* tp_free */
+    { Py_mp_subscript, void_cast( DynamicScope_getitem ) },      /* mp_subscript */
+    { Py_mp_ass_subscript, void_cast( DynamicScope_setitem ) },  /* mp_ass_subscript */
+    { Py_sq_contains, void_cast( DynamicScope_contains ) },      /* sq_contains */
+    { 0, 0 },
 };
 
 
-static PySequenceMethods
-DynamicScope_as_sequence = {
-    0,                                    /* sq_length */
-    0,                                    /* sq_concat */
-    0,                                    /* sq_repeat */
-    0,                                    /* sq_item */
-    0,                                    /* sq_slice */
-    0,                                    /* sq_ass_item */
-    0,                                    /* sq_ass_slice */
-    ( objobjproc )DynamicScope_contains,  /* sq_contains */
-    0,                                    /* sq_inplace_concat */
-    0,                                    /* sq_inplace_repeat */
-};
+}  // namespace
 
 
-PyTypeObject DynamicScope_Type = {
-    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.dynamicscope.DynamicScope",               /* tp_name */
-    sizeof( DynamicScope ),                          /* tp_basicsize */
-    0,                                               /* tp_itemsize */
-    ( destructor )DynamicScope_dealloc,              /* tp_dealloc */
-    ( printfunc )0,                                  /* tp_print */
-    ( getattrfunc )0,                                /* tp_getattr */
-    ( setattrfunc )0,                                /* tp_setattr */
-	( PyAsyncMethods* )0,                            /* tp_as_async */
-    ( reprfunc )0,                                   /* tp_repr */
-    ( PyNumberMethods* )0,                           /* tp_as_number */
-    ( PySequenceMethods* )&DynamicScope_as_sequence, /* tp_as_sequence */
-    ( PyMappingMethods* )&DynamicScope_as_mapping,   /* tp_as_mapping */
-    ( hashfunc )0,                                   /* tp_hash */
-    ( ternaryfunc )0,                                /* tp_call */
-    ( reprfunc )0,                                   /* tp_str */
-    ( getattrofunc )0,                               /* tp_getattro */
-    ( setattrofunc )0,                               /* tp_setattro */
-    ( PyBufferProcs* )0,                             /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT
+// Initialize static variables (otherwise the compiler eliminates them)
+PyTypeObject* DynamicScope::TypeObject = NULL;
+
+
+PyType_Spec DynamicScope::TypeObject_Spec = {
+	"enaml.dynamicscope.DynamicScope",    /* tp_name */
+	sizeof( DynamicScope ),               /* tp_basicsize */
+	0,                                    /* tp_itemsize */
+	Py_TPFLAGS_DEFAULT
     |Py_TPFLAGS_HAVE_GC
-    |Py_TPFLAGS_DICT_SUBCLASS,                       /* tp_flags */
-    0,                                               /* Documentation string */
-    ( traverseproc )DynamicScope_traverse,           /* tp_traverse */
-    ( inquiry )DynamicScope_clear,                   /* tp_clear */
-    ( richcmpfunc )0,                                /* tp_richcompare */
-    0,                                               /* tp_weaklistoffset */
-    ( getiterfunc )0,                                /* tp_iter */
-    ( iternextfunc )0,                               /* tp_iternext */
-    ( struct PyMethodDef* )0,                        /* tp_methods */
-    ( struct PyMemberDef* )0,                        /* tp_members */
-    0,                                               /* tp_getset */
-    0,                                               /* tp_base */
-    0,                                               /* tp_dict */
-    ( descrgetfunc) 0,                               /* tp_descr_get */
-    ( descrsetfunc )0,                               /* tp_descr_set */
-    0,                                               /* tp_dictoffset */
-    ( initproc )0,                                   /* tp_init */
-    ( allocfunc )PyType_GenericAlloc,                /* tp_alloc */
-    ( newfunc )DynamicScope_new,                     /* tp_new */
-    ( freefunc )PyObject_GC_Del,                     /* tp_free */
-    ( inquiry )0,                                    /* tp_is_gc */
-    0,                                               /* tp_bases */
-    0,                                               /* tp_mro */
-    0,                                               /* tp_cache */
-    0,                                               /* tp_subclasses */
-    0,                                               /* tp_weaklist */
-    ( destructor )0                                  /* tp_del */
+    |Py_TPFLAGS_DICT_SUBCLASS,            /* tp_flags */
+    DynamicScope_Type_slots               /* slots */
 };
 
-struct module_state {
-    PyObject *error;
-};
+
+bool DynamicScope::Ready()
+{
+    // The reference will be handled by the module to which we will add the type
+	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
+    if( !TypeObject )
+    {
+        return false;
+    }
+    return true;
+}
+
+
+// Module definition
+namespace
+{
+
+
+int
+dynamicscope_modexec( PyObject *mod )
+{
+    parent_str = PyUnicode_FromString( "_parent" );
+    if( !parent_str )
+    {
+        return -1;
+    }
+    dynamic_load_str = PyUnicode_FromString( "dynamic_load" );
+    if( !dynamic_load_str )
+    {
+        return -1;
+    }
+    UserKeyError = PyErr_NewException( "dynamicscope.UserKeyError", 0, 0 );
+    if( !UserKeyError )
+    {
+        return -1;
+    }
+
+    if( !Nonlocals::Ready() )
+    {
+        return -1;
+    }
+    if( !DynamicScope::Ready() )
+    {
+        return -1;
+    }
+
+    // DynamicScope
+    cppy::ptr dynamicscope( pyobject_cast( DynamicScope::TypeObject ) );
+	if( PyModule_AddObject( mod, "DynamicScope", dynamicscope.get() ) < 0 )
+	{
+		return -1;
+	}
+    dynamicscope.release();
+
+    PyModule_AddObject( mod, "UserKeyError", UserKeyError );
+
+    return 0;
+}
 
 
 static PyMethodDef
 dynamicscope_methods[] = {
-    { 0 } // sentinel
+    { 0 }  // Sentinel
 };
 
 
-#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-
-static int dynamicscope_traverse(PyObject *m, visitproc visit, void *arg) {
-    Py_VISIT(GETSTATE(m)->error);
-    return 0;
-}
-
-static int dynamicscope_clear(PyObject *m) {
-    Py_CLEAR(GETSTATE(m)->error);
-    return 0;
-}
+PyModuleDef_Slot dynamicscope_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>( dynamicscope_modexec ) },
+    {0, NULL}
+};
 
 
-static struct PyModuleDef moduledef = {
+struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
         "dynamicscope",
-        NULL,
-        sizeof(struct module_state),
+        "dynamicscope extension module",
+        0,
         dynamicscope_methods,
+        dynamicscope_slots,
         NULL,
-        dynamicscope_traverse,
-        dynamicscope_clear,
+        NULL,
         NULL
 };
 
 
+}  // namespace
+
+
+}  // namespace enaml
+
+
 PyMODINIT_FUNC PyInit_dynamicscope( void )
 {
-    cppy::ptr mod( PyModule_Create(&moduledef) );
-    if( !mod )
-        return NULL;
-    parent_str = PyUnicode_FromString( "_parent" );
-    if( !parent_str )
-        return NULL;
-    dynamic_load_str = PyUnicode_FromString( "dynamic_load" );
-    if( !dynamic_load_str )
-        return NULL;
-    UserKeyError = PyErr_NewException( "dynamicscope.UserKeyError", 0, 0 );
-    if( !UserKeyError )
-        return NULL;
-    if( PyType_Ready( &Nonlocals_Type ) < 0 )
-        return NULL;
-    if( PyType_Ready( &DynamicScope_Type ) < 0 )
-        return NULL;
-    PyModule_AddObject( mod.get(), "UserKeyError", cppy::incref( UserKeyError ) );
-    PyModule_AddObject( mod.get(), "DynamicScope", cppy::incref( pyobject_cast( &DynamicScope_Type ) ) );
-
-    return mod.release();
+    return PyModuleDef_Init( &enaml::moduledef );
 }

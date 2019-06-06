@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013-2018, Nucleic Development Team.
+| Copyright (c) 2013-2019, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -20,26 +20,63 @@
 #endif
 
 
-extern "C" {
-
-typedef struct {
-    PyObject_HEAD
-} Signal;
+namespace enaml
+{
 
 
-typedef struct {
-    PyObject_HEAD
+// POD struct - all member fields are considered private
+struct Signal
+{
+	PyObject_HEAD
+
+	static PyType_Spec TypeObject_Spec;
+
+    static PyTypeObject* TypeObject;
+
+	static bool Ready();
+
+};
+
+
+// POD struct - all member fields are considered private
+struct _Disconnector
+{
+	PyObject_HEAD
     PyObject* owner;
     PyObject* objref;
-} _Disconnector;
+
+	static PyType_Spec TypeObject_Spec;
+
+    static PyTypeObject* TypeObject;
+
+	static bool Ready();
+
+    static PyObject* New( PyObject* owner, PyObject* objref );
+
+};
 
 
-typedef struct {
-    PyObject_HEAD
+// POD struct - all member fields are considered private
+struct BoundSignal
+{
+	PyObject_HEAD
     PyObject* owner;
     PyObject* objref;
-} BoundSignal;
 
+	static PyType_Spec TypeObject_Spec;
+
+    static PyTypeObject* TypeObject;
+
+	static bool Ready();
+
+    static PyObject* New( PyObject* owner, PyObject* objref );
+
+    static int TypeCheck( PyObject* obj );
+
+};
+
+namespace
+{
 
 #define FREELIST_MAX 128
 static int numfree = 0;
@@ -49,18 +86,6 @@ static BoundSignal* freelist[ FREELIST_MAX ];
 static PyObject* SignalsKey;
 static PyObject* WeakMethod;
 static PyObject* CallableRef;
-
-
-static PyObject*
-_Disconnector_New( PyObject* owner, PyObject* objref );
-
-
-static PyObject*
-_BoundSignal_New( PyObject* owner, PyObject* objref );
-
-
-static int
-BoundSignal_Check( PyObject* obj );
 
 
 inline bool load_obj_dict( cppy::ptr& objptr, cppy::ptr& out, bool forcecreate=false )
@@ -78,7 +103,7 @@ inline bool load_obj_dict( cppy::ptr& objptr, cppy::ptr& out, bool forcecreate=f
 /*-----------------------------------------------------------------------------
 | Signal
 |----------------------------------------------------------------------------*/
-static PyObject*
+PyObject*
 Signal_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
     cppy::ptr kwargsptr( kwargs, true );
@@ -107,14 +132,14 @@ Signal_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 }
 
 
-static void
+void
 Signal_clear( Signal* self )
 {
     // nothing to clear
 }
 
 
-static int
+int
 Signal_traverse( Signal* self, visitproc visit, void* arg )
 {
     // nothing to traverse
@@ -122,7 +147,7 @@ Signal_traverse( Signal* self, visitproc visit, void* arg )
 }
 
 
-static void
+void
 Signal_dealloc( Signal* self )
 {
     PyObject_GC_UnTrack( self );
@@ -131,7 +156,7 @@ Signal_dealloc( Signal* self )
 }
 
 
-static PyObject*
+PyObject*
 Signal__get__( PyObject* self, PyObject* obj, PyObject* type )
 {
     cppy::ptr selfptr( cppy::incref( self ) );
@@ -140,14 +165,14 @@ Signal__get__( PyObject* self, PyObject* obj, PyObject* type )
     cppy::ptr objref( PyWeakref_NewRef( obj, 0 ) );
     if( !objref )
         return 0;
-    cppy::ptr boundsig( _BoundSignal_New( self, objref.get() ) );
+    cppy::ptr boundsig( BoundSignal::New( self, objref.get() ) );
     if( !boundsig )
         return 0;
     return boundsig.release();
 }
 
 
-static int
+int
 Signal__set__( Signal* self, PyObject* obj, PyObject* value )
 {
     if( value )
@@ -192,7 +217,7 @@ Signal__set__( Signal* self, PyObject* obj, PyObject* value )
 }
 
 
-static PyObject*
+PyObject*
 Signal_disconnect_all( PyObject* ignored, PyObject* obj )
 {
     cppy::ptr objptr( cppy::incref( obj ) );
@@ -233,62 +258,57 @@ PyDoc_STRVAR(Signal__doc__,
 "garbage collected.\n\n");
 
 
-PyTypeObject Signal_Type = {
-    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.signaling.Signal",                 /* tp_name */
-    sizeof( Signal ),                         /* tp_basicsize */
-    0,                                        /* tp_itemsize */
-    ( destructor )Signal_dealloc,             /* tp_dealloc */
-    ( printfunc )0,                           /* tp_print */
-    ( getattrfunc )0,                         /* tp_getattr */
-    ( setattrfunc )0,                         /* tp_setattr */
-	( PyAsyncMethods* )0,                     /* tp_as_async */
-    ( reprfunc )0,                            /* tp_repr */
-    ( PyNumberMethods* )0,                    /* tp_as_number */
-    ( PySequenceMethods* )0,                  /* tp_as_sequence */
-    ( PyMappingMethods* )0,                   /* tp_as_mapping */
-    ( hashfunc )0,                            /* tp_hash */
-    ( ternaryfunc )0,                         /* tp_call */
-    ( reprfunc )0,                            /* tp_str */
-    ( getattrofunc )0,                        /* tp_getattro */
-    ( setattrofunc )0,                        /* tp_setattro */
-    ( PyBufferProcs* )0,                      /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT
-    |Py_TPFLAGS_BASETYPE
-    |Py_TPFLAGS_HAVE_GC,                      /* tp_flags */
-    Signal__doc__,                            /* Documentation string */
-    ( traverseproc )Signal_traverse,          /* tp_traverse */
-    ( inquiry )Signal_clear,                  /* tp_clear */
-    ( richcmpfunc )0,                         /* tp_richcompare */
-    0,                                        /* tp_weaklistoffset */
-    ( getiterfunc )0,                         /* tp_iter */
-    ( iternextfunc )0,                        /* tp_iternext */
-    ( struct PyMethodDef* )Signal_methods,    /* tp_methods */
-    ( struct PyMemberDef* )0,                 /* tp_members */
-    0,                                        /* tp_getset */
-    0,                                        /* tp_base */
-    0,                                        /* tp_dict */
-    ( descrgetfunc )Signal__get__,            /* tp_descr_get */
-    ( descrsetfunc )Signal__set__,            /* tp_descr_set */
-    0,                                        /* tp_dictoffset */
-    ( initproc )0,                            /* tp_init */
-    ( allocfunc )PyType_GenericAlloc,         /* tp_alloc */
-    ( newfunc )Signal_new,                    /* tp_new */
-    ( freefunc )0,                            /* tp_free */
-    ( inquiry )0,                             /* tp_is_gc */
-    0,                                        /* tp_bases */
-    0,                                        /* tp_mro */
-    0,                                        /* tp_cache */
-    0,                                        /* tp_subclasses */
-    0,                                        /* tp_weaklist */
-    ( destructor )0                           /* tp_del */
+static PyType_Slot Signal_Type_slots[] = {
+    { Py_tp_dealloc, void_cast( Signal_dealloc ) },       /* tp_dealloc */
+    { Py_tp_traverse, void_cast( Signal_traverse ) },      /* tp_dealloc */
+    { Py_tp_clear, void_cast( Signal_clear ) },           /* tp_dealloc */
+    { Py_tp_doc, void_cast( Signal__doc__ ) },            /* tp_doc */
+    { Py_tp_methods, void_cast( Signal_methods ) },       /* tp_methods */
+    { Py_tp_descr_get, void_cast( Signal__get__ ) },      /* tp_descr_get */
+    { Py_tp_descr_set, void_cast( Signal__set__ ) },      /* tp_descr_set */
+    { Py_tp_new, void_cast( Signal_new ) },               /* tp_new */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },    /* tp_alloc */
+    { 0, 0 },
 };
+
+
+}  // namespace
+
+
+// Initialize static variables (otherwise the compiler eliminates them)
+PyTypeObject* Signal::TypeObject = NULL;
+
+
+PyType_Spec Signal::TypeObject_Spec = {
+	"enaml.signaling.Signal",            /* tp_name */
+	sizeof( Signal ),                     /* tp_basicsize */
+	0,                                   /* tp_itemsize */
+	Py_TPFLAGS_DEFAULT|
+    Py_TPFLAGS_BASETYPE|
+    Py_TPFLAGS_HAVE_GC,                  /* tp_flags */
+    Signal_Type_slots                     /* slots */
+};
+
+
+bool Signal::Ready()
+{
+    // The reference will be handled by the module to which we will add the type
+	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
+    if( !TypeObject )
+    {
+        return false;
+    }
+    return true;
+}
 
 
 /*-----------------------------------------------------------------------------
 | _Disconnector
 |----------------------------------------------------------------------------*/
-static PyObject*
+namespace
+{
+
+PyObject*
 _Disconnector_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
     PyObject* owner;
@@ -299,16 +319,16 @@ _Disconnector_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     // not normally be creating _Disconnector instances. So, using the
     // slow but convenient arg parsing is fine here.
     int ok = PyArg_ParseTupleAndKeywords(
-        args, kwargs, "O!O!", kwlist, &Signal_Type, &owner,
+        args, kwargs, "O!O!", kwlist, Signal::TypeObject, &owner,
         &_PyWeakref_RefType, &objref
     );
     if( !ok )
         return 0;
-    return _Disconnector_New( owner, objref );
+    return _Disconnector::New( owner, objref );
 }
 
 
-static void
+void
 _Disconnector_clear( _Disconnector* self )
 {
     Py_CLEAR( self->owner );
@@ -316,7 +336,7 @@ _Disconnector_clear( _Disconnector* self )
 }
 
 
-static int
+int
 _Disconnector_traverse( _Disconnector* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->owner );
@@ -325,7 +345,7 @@ _Disconnector_traverse( _Disconnector* self, visitproc visit, void* arg )
 }
 
 
-static void
+void
 _Disconnector_dealloc( _Disconnector* self )
 {
     PyObject_GC_UnTrack( self );
@@ -334,7 +354,7 @@ _Disconnector_dealloc( _Disconnector* self )
 }
 
 
-static PyObject*
+PyObject*
 _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
 {
     cppy::ptr kwargsptr( kwargs, true );
@@ -387,8 +407,10 @@ _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
     {
         PyObject* other = PyList_GET_ITEM( slots.get(), idx );
         if( slot.richcmp( other, Py_EQ ) )
+        {
             index = idx;
             break;
+        }
     }
 
     if( index != -1 )
@@ -421,62 +443,53 @@ PyDoc_STRVAR(_Disconnector__doc__,
 "not meant for public consumption.\n\n");
 
 
-PyTypeObject _Disconnector_Type = {
-    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.signaling._Disconnector",          /* tp_name */
-    sizeof( _Disconnector ),                  /* tp_basicsize */
-    0,                                        /* tp_itemsize */
-    ( destructor )_Disconnector_dealloc,      /* tp_dealloc */
-    ( printfunc )0,                           /* tp_print */
-    ( getattrfunc )0,                         /* tp_getattr */
-    ( setattrfunc )0,                         /* tp_setattr */
-	( PyAsyncMethods* )0,                     /* tp_as_async */
-    ( reprfunc )0,                            /* tp_repr */
-    ( PyNumberMethods* )0,                    /* tp_as_number */
-    ( PySequenceMethods* )0,                  /* tp_as_sequence */
-    ( PyMappingMethods* )0,                   /* tp_as_mapping */
-    ( hashfunc )0,                            /* tp_hash */
-    ( ternaryfunc )_Disconnector_call,        /* tp_call */
-    ( reprfunc )0,                            /* tp_str */
-    ( getattrofunc )0,                        /* tp_getattro */
-    ( setattrofunc )0,                        /* tp_setattro */
-    ( PyBufferProcs* )0,                      /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,    /* tp_flags */
-    _Disconnector__doc__,                     /* Documentation string */
-    ( traverseproc )_Disconnector_traverse,   /* tp_traverse */
-    ( inquiry )_Disconnector_clear,           /* tp_clear */
-    ( richcmpfunc )0,                         /* tp_richcompare */
-    0,                                        /* tp_weaklistoffset */
-    ( getiterfunc )0,                         /* tp_iter */
-    ( iternextfunc )0,                        /* tp_iternext */
-    ( struct PyMethodDef* )0,                 /* tp_methods */
-    ( struct PyMemberDef* )0,                 /* tp_members */
-    0,                                        /* tp_getset */
-    0,                                        /* tp_base */
-    0,                                        /* tp_dict */
-    ( descrgetfunc )0,                        /* tp_descr_get */
-    ( descrsetfunc )0,                        /* tp_descr_set */
-    0,                                        /* tp_dictoffset */
-    ( initproc )0,                            /* tp_init */
-    ( allocfunc )PyType_GenericAlloc,         /* tp_alloc */
-    ( newfunc )_Disconnector_new,             /* tp_new */
-    ( freefunc )0,                            /* tp_free */
-    ( inquiry )0,                             /* tp_is_gc */
-    0,                                        /* tp_bases */
-    0,                                        /* tp_mro */
-    0,                                        /* tp_cache */
-    0,                                        /* tp_subclasses */
-    0,                                        /* tp_weaklist */
-    ( destructor )0                           /* tp_del */
+static PyType_Slot _Disconnector_Type_slots[] = {
+    { Py_tp_dealloc, void_cast( _Disconnector_dealloc ) },       /* tp_dealloc */
+    { Py_tp_traverse, void_cast( _Disconnector_traverse ) },     /* tp_traverse */
+    { Py_tp_clear, void_cast( _Disconnector_clear ) },           /* tp_clear */
+    { Py_tp_doc, void_cast( _Disconnector__doc__ ) },            /* tp_doc */
+    { Py_tp_call, void_cast( _Disconnector_call ) },             /* tp_call */
+    { Py_tp_new, void_cast( _Disconnector_new ) },               /* tp_new */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },           /* tp_alloc */
+    { 0, 0 },
 };
 
 
-static PyObject*
-_Disconnector_New( PyObject* owner, PyObject* objref )
+}  // namespace
+
+
+// Initialize static variables (otherwise the compiler eliminates them)
+PyTypeObject* _Disconnector::TypeObject = NULL;
+
+
+PyType_Spec _Disconnector::TypeObject_Spec = {
+	"enaml.signaling._Disconnector",            /* tp_name */
+	sizeof( _Disconnector ),                     /* tp_basicsize */
+	0,                                          /* tp_itemsize */
+	Py_TPFLAGS_DEFAULT|
+    Py_TPFLAGS_HAVE_GC,                         /* tp_flags */
+    _Disconnector_Type_slots                           /* slots */
+};
+
+
+bool _Disconnector::Ready()
+{
+    // The reference will be handled by the module to which we will add the type
+	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
+    if( !TypeObject )
+    {
+        return false;
+    }
+    return true;
+}
+
+
+PyObject*
+_Disconnector::New( PyObject* owner, PyObject* objref )
 {
     cppy::ptr ownerptr( cppy::incref( owner ) );
     cppy::ptr objrefptr( cppy::incref( objref ) );
-    cppy::ptr self( PyType_GenericAlloc( &_Disconnector_Type, 0 ) );
+    cppy::ptr self( PyType_GenericAlloc( _Disconnector::TypeObject, 0 ) );
     if( !self )
         return 0;
     _Disconnector* disc = reinterpret_cast<_Disconnector*>( self.get() );
@@ -489,27 +502,31 @@ _Disconnector_New( PyObject* owner, PyObject* objref )
 /*-----------------------------------------------------------------------------
 | BoundSignal
 |----------------------------------------------------------------------------*/
-static PyObject*
+namespace
+{
+
+
+PyObject*
 BoundSignal_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
     PyObject* owner;
     PyObject* objref;
     static char* kwlist[] = { "signal", "objref", 0 };
-    // The C++ code for Signal calls _BoundSignal_New directly. This
+    // The C++ code for Signal calls BoundSignal::New directly. This
     // new method will only be called by Python code, which should not
     // normally be creating BoundSignal instances. So, using the slow
     // but convenient arg parsing is fine here.
     int ok = PyArg_ParseTupleAndKeywords(
-        args, kwargs, "O!O!", kwlist, &Signal_Type, &owner,
+        args, kwargs, "O!O!", kwlist, Signal::TypeObject, &owner,
         &_PyWeakref_RefType, &objref
     );
     if( !ok )
         return 0;
-    return _BoundSignal_New( owner, objref );
+    return BoundSignal::New( owner, objref );
 }
 
 
-static void
+void
 BoundSignal_clear( BoundSignal* self )
 {
     Py_CLEAR( self->owner );
@@ -517,7 +534,7 @@ BoundSignal_clear( BoundSignal* self )
 }
 
 
-static int
+int
 BoundSignal_traverse( BoundSignal* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->owner );
@@ -526,7 +543,7 @@ BoundSignal_traverse( BoundSignal* self, visitproc visit, void* arg )
 }
 
 
-static void
+void
 BoundSignal_dealloc( BoundSignal* self )
 {
     PyObject_GC_UnTrack( self );
@@ -538,12 +555,12 @@ BoundSignal_dealloc( BoundSignal* self )
 }
 
 
-static PyObject*
+PyObject*
 BoundSignal_richcompare( BoundSignal* self, PyObject* other, int opid )
 {
     if( opid == Py_EQ )
     {
-        if( BoundSignal_Check( other ) )
+        if( BoundSignal::TypeCheck( other ) )
         {
             BoundSignal* other_sig = reinterpret_cast<BoundSignal*>( other );
             if( self->owner == other_sig->owner )
@@ -560,7 +577,7 @@ BoundSignal_richcompare( BoundSignal* self, PyObject* other, int opid )
 }
 
 
-static PyObject*
+PyObject*
 BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
 {
     cppy::ptr objref( cppy::incref( self->objref ) );
@@ -620,14 +637,14 @@ BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
 }
 
 
-static PyObject*
+PyObject*
 BoundSignal_call( BoundSignal* self, PyObject* args, PyObject* kwargs )
 {
     return BoundSignal_emit( self, args, kwargs );
 }
 
 
-static PyObject*
+PyObject*
 BoundSignal_connect( BoundSignal* self, PyObject* slot )
 {
     cppy::ptr objref( cppy::incref( self->objref ) );
@@ -675,7 +692,7 @@ BoundSignal_connect( BoundSignal* self, PyObject* slot )
 
     if( PyList_Size( slots.get() ) == 0 )
     {
-        cppy::ptr disc( _Disconnector_New( owner.get(), objref.get() ) );
+        cppy::ptr disc( _Disconnector::New( owner.get(), objref.get() ) );
         if( !disc )
             return 0;
         if( PyList_Append( slots.get(), disc.get() ) != 0 )
@@ -714,7 +731,7 @@ BoundSignal_connect( BoundSignal* self, PyObject* slot )
 }
 
 
-static PyObject*
+PyObject*
 BoundSignal_disconnect( BoundSignal* self, PyObject* slot )
 {
     cppy::ptr slotptr( cppy::incref( slot ) );
@@ -734,7 +751,7 @@ BoundSignal_disconnect( BoundSignal* self, PyObject* slot )
         if( !slotptr )
             return 0;
     }
-    cppy::ptr disc( _Disconnector_New( self->owner, self->objref ) );
+    cppy::ptr disc( _Disconnector::New( self->owner, self->objref ) );
     if( !disc )
         return 0;
     PyTuple_SET_ITEM( args.get(), 0, slotptr.release() );
@@ -762,65 +779,58 @@ PyDoc_STRVAR(BoundSignal__doc__,
 "emitting signals.\n\n");
 
 
-PyTypeObject BoundSignal_Type = {
-    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-"enaml.signaling.BoundSignal",                  /* tp_name */
-    sizeof( BoundSignal ),                      /* tp_basicsize */
-    0,                                          /* tp_itemsize */
-    ( destructor )BoundSignal_dealloc,          /* tp_dealloc */
-    ( printfunc )0,                             /* tp_print */
-    ( getattrfunc )0,                           /* tp_getattr */
-    ( setattrfunc )0,                           /* tp_setattr */
-	( PyAsyncMethods* )0,                       /* tp_as_async */
-    ( reprfunc )0,                              /* tp_repr */
-    ( PyNumberMethods* )0,                      /* tp_as_number */
-    ( PySequenceMethods* )0,                    /* tp_as_sequence */
-    ( PyMappingMethods* )0,                     /* tp_as_mapping */
-    ( hashfunc )0,                              /* tp_hash */
-    ( ternaryfunc )BoundSignal_call,            /* tp_call */
-    ( reprfunc )0,                              /* tp_str */
-    ( getattrofunc )0,                          /* tp_getattro */
-    ( setattrofunc )0,                          /* tp_setattro */
-    ( PyBufferProcs* )0,                        /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,      /* tp_flags */
-    BoundSignal__doc__,                         /* Documentation string */
-    ( traverseproc )BoundSignal_traverse,       /* tp_traverse */
-    ( inquiry )BoundSignal_clear,               /* tp_clear */
-    ( richcmpfunc )BoundSignal_richcompare,     /* tp_richcompare */
-    0,                                          /* tp_weaklistoffset */
-    ( getiterfunc )0,                           /* tp_iter */
-    ( iternextfunc )0,                          /* tp_iternext */
-    ( struct PyMethodDef* )BoundSignal_methods, /* tp_methods */
-    ( struct PyMemberDef* )0,                   /* tp_members */
-    0,                                          /* tp_getset */
-    0,                                          /* tp_base */
-    0,                                          /* tp_dict */
-    ( descrgetfunc )0,                          /* tp_descr_get */
-    ( descrsetfunc )0,                          /* tp_descr_set */
-    0,                                          /* tp_dictoffset */
-    ( initproc )0,                              /* tp_init */
-    ( allocfunc )PyType_GenericAlloc,           /* tp_alloc */
-    ( newfunc )BoundSignal_new,                 /* tp_new */
-    ( freefunc )0,                              /* tp_free */
-    ( inquiry )0,                               /* tp_is_gc */
-    0,                                          /* tp_bases */
-    0,                                          /* tp_mro */
-    0,                                          /* tp_cache */
-    0,                                          /* tp_subclasses */
-    0,                                          /* tp_weaklist */
-    ( destructor )0                             /* tp_del */
+static PyType_Slot BoundSignal_Type_slots[] = {
+    { Py_tp_dealloc, void_cast( BoundSignal_dealloc ) },          /* tp_dealloc */
+    { Py_tp_traverse, void_cast( BoundSignal_traverse ) },        /* tp_traverse */
+    { Py_tp_clear, void_cast( BoundSignal_clear ) },              /* tp_clear */
+    { Py_tp_methods, void_cast( BoundSignal_methods ) },          /* tp_doc */
+    { Py_tp_doc, void_cast( BoundSignal__doc__ ) },               /* tp_doc */
+    { Py_tp_call, void_cast( BoundSignal_call ) },                /* tp_call */
+    { Py_tp_richcompare, void_cast( BoundSignal_richcompare ) },  /* tp_richcompare */
+    { Py_tp_new, void_cast( BoundSignal_new ) },                  /* tp_new */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },            /* tp_alloc */
+    { 0, 0 },
 };
 
 
-static int
-BoundSignal_Check( PyObject* obj )
+}  // namespace
+
+
+// Initialize static variables (otherwise the compiler eliminates them)
+PyTypeObject* BoundSignal::TypeObject = NULL;
+
+
+PyType_Spec BoundSignal::TypeObject_Spec = {
+	"enaml.signaling.BoundSignal",              /* tp_name */
+	sizeof( BoundSignal ),                     /* tp_basicsize */
+	0,                                          /* tp_itemsize */
+	Py_TPFLAGS_DEFAULT|
+    Py_TPFLAGS_HAVE_GC,                         /* tp_flags */
+    BoundSignal_Type_slots                           /* slots */
+};
+
+
+bool BoundSignal::Ready()
 {
-    return PyObject_TypeCheck( obj, &BoundSignal_Type );
+    // The reference will be handled by the module to which we will add the type
+	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
+    if( !TypeObject )
+    {
+        return false;
+    }
+    return true;
 }
 
 
-static PyObject*
-_BoundSignal_New( PyObject* owner, PyObject* objref )
+int
+BoundSignal::TypeCheck( PyObject* obj )
+{
+    return PyObject_TypeCheck( obj, BoundSignal::TypeObject );
+}
+
+
+PyObject*
+BoundSignal::New( PyObject* owner, PyObject* objref )
 {
     cppy::ptr ownerptr( cppy::incref( owner ) );
     cppy::ptr objrefptr( cppy::incref( objref ) );
@@ -833,7 +843,7 @@ _BoundSignal_New( PyObject* owner, PyObject* objref )
     }
     else
     {
-        bsigptr = PyType_GenericAlloc( &BoundSignal_Type, 0 );
+        bsigptr = PyType_GenericAlloc( BoundSignal::TypeObject, 0 );
         if( !bsigptr )
             return 0;
     }
@@ -847,91 +857,121 @@ _BoundSignal_New( PyObject* owner, PyObject* objref )
 /*-----------------------------------------------------------------------------
 | Signaling Module
 |----------------------------------------------------------------------------*/
-struct module_state {
-    PyObject *error;
-};
 
-
-static PyMethodDef
-signaling_methods[] = {
-    { 0 } // Sentinel
-};
-
-
-#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-
-static int signaling_traverse(PyObject *m, visitproc visit, void *arg) {
-    Py_VISIT(GETSTATE(m)->error);
-    return 0;
-}
-
-static int signaling_clear(PyObject *m) {
-    Py_CLEAR(GETSTATE(m)->error);
-    return 0;
-}
-
-
-static struct PyModuleDef moduledef = {
-        PyModuleDef_HEAD_INIT,
-        "signaling",
-        NULL,
-        sizeof(struct module_state),
-        signaling_methods,
-        NULL,
-        signaling_traverse,
-        signaling_clear,
-        NULL
-};
-
-
-PyMODINIT_FUNC PyInit_signaling( void )
+// Module definition
+namespace
 {
-    cppy::ptr mod( PyModule_Create(&moduledef) );
-    if( !mod )
-        return NULL;
-    PyObject* mod_dict = PyModule_GetDict( mod.get() );
 
+
+int
+signaling_modexec( PyObject *mod )
+{
+    // Borrowed reference
+    PyObject* mod_dict = PyModule_GetDict( mod );
+
+    // Other module objects required for operation
     cppy::ptr wm_mod( PyImport_ImportModuleLevel( "weakmethod", mod_dict, 0, 0 , 1) );
     if( !wm_mod)
-        return NULL;
+    {
+        return -1;
+    }
     cppy::ptr wm_cls( wm_mod.getattr( "WeakMethod" ) );
     if( !wm_cls )
-        return NULL;
+    {
+        return -1;
+    }
 
     cppy::ptr cr_mod( PyImport_ImportModuleLevel( "callableref", mod_dict, 0, 0, 1 ) );
     if( !cr_mod )
-        return NULL;
+    {
+        return -1;
+    }
     cppy::ptr cr_cls( cr_mod.getattr( "CallableRef" ) );
     if( !cr_cls )
-        return NULL;
+    {
+        return -1;
+    }
 
     cppy::ptr key( PyUnicode_FromString( "_[signals]" ) );
     if( !key )
-        return NULL;
+    {
+        return -1;
+    }
 
     SignalsKey = key.release();
     WeakMethod = wm_cls.release();
     CallableRef = cr_cls.release();
 
-    if( PyType_Ready( &Signal_Type ) )
-        return NULL;
-    if( PyType_Ready( &_Disconnector_Type ) )
-        return NULL;
-    if( PyType_Ready( &BoundSignal_Type ) )
-        return NULL;
+    if( !Signal::Ready() )
+    {
+        return -1;
+    }
+    if( !_Disconnector::Ready() )
+    {
+        return -1;
+    }
+    if( !BoundSignal::Ready() )
+    {
+        return -1;
+    }
 
-    cppy::ptr sig_type( cppy::incref( pyobject_cast( &Signal_Type ) ) );
-    if( PyModule_AddObject( mod.get(), "Signal", sig_type.release() ) == -1 )
-        return NULL;
-    cppy::ptr disc_type( cppy::incref( pyobject_cast( &_Disconnector_Type ) ) );
-    if( PyModule_AddObject( mod.get(), "_Disconnector", disc_type.release() ) == -1 )
-        return NULL;
-    cppy::ptr bsig_type( cppy::incref( pyobject_cast( &BoundSignal_Type ) ) );
-    if( PyModule_AddObject( mod.get(), "BoundSignal", bsig_type.release() ) == -1 )
-        return NULL;
+    // Signal
+    cppy::ptr signal( pyobject_cast( Signal::TypeObject ) );
+	if( PyModule_AddObject( mod, "Signal", signal.get() ) < 0 )
+	{
+		return -1;
+	}
+    signal.release();
+    // _Disconnector
+    cppy::ptr _disc( pyobject_cast( _Disconnector::TypeObject ) );
+	if( PyModule_AddObject( mod, "_Disconnector", _disc.get() ) < 0 )
+	{
+		return -1;
+	}
+    _disc.release();
+    // BoundSignal
+    cppy::ptr bsignal( pyobject_cast( BoundSignal::TypeObject ) );
+	if( PyModule_AddObject( mod, "BoundSignal", bsignal.get() ) < 0 )
+	{
+		return -1;
+	}
+    bsignal.release();
 
-    return mod.release();
+    return 0;
 }
 
-} // extern "C"
+static PyMethodDef
+signaling_methods[] = {
+    { 0 } // sentinel
+};
 
+
+PyModuleDef_Slot signaling_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>( signaling_modexec ) },
+    {0, NULL}
+};
+
+
+struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "signaling",
+        "signaling extension module",
+        0,
+        signaling_methods,
+        signaling_slots,
+        NULL,
+        NULL,
+        NULL
+};
+
+
+}  // namespace
+
+
+}  // namespace enaml
+
+
+PyMODINIT_FUNC PyInit_signaling( void )
+{
+    return PyModuleDef_Init( &enaml::moduledef );
+}
