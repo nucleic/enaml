@@ -17,7 +17,7 @@ namespace enaml
 {
 
 // POD struct - all member fields are considered private
-struct WeakMethod
+struct WinEnum
 {
 	PyObject_HEAD;
     UINT value;
@@ -70,7 +70,7 @@ PyType_Spec WinEnum::TypeObject_Spec = {
 };
 
 
-bool WeakMethod::Ready()
+bool WinEnum::Ready()
 {
     // The reference will be handled by the module to which we will add the type
 	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
@@ -78,8 +78,6 @@ bool WeakMethod::Ready()
     {
         return false;
     }
-    // Delayed setting of weaklistoffset
-    TypeObject->tp_weaklistoffset = offsetof( WeakMethod, weakreflist )
     return true;
 }
 
@@ -132,7 +130,7 @@ PyObject*
 load_icon( PyObject* mod, PyObject* args )
 {
     WinEnum* win_enum;
-    if( !PyArg_ParseTuple( args, "O!", &WinEnum_Type, &win_enum ) )
+    if( !PyArg_ParseTuple( args, "O!", WinEnum::TypeObject, &win_enum ) )
         return 0;
     HANDLE hicon = LoadImage(
         0, MAKEINTRESOURCE( win_enum->value ), IMAGE_ICON, 0, 0, LR_SHARED
@@ -153,7 +151,7 @@ weakmethod_modexec( PyObject *mod )
 
 #define MAKE_ENUM( TOKEN, VALUE ) \
     do { \
-        TOKEN = PyType_GenericNew( &WinEnum_Type, 0, 0 ); \
+        TOKEN = PyType_GenericNew( WinEnum_Type, 0, 0 ); \
         if( !TOKEN ) \
             return NULL; \
         reinterpret_cast<WinEnum*>( TOKEN )->value = VALUE; \
