@@ -151,15 +151,15 @@ weakmethod_modexec( PyObject *mod )
 
 #define MAKE_ENUM( TOKEN, VALUE ) \
     do { \
-        TOKEN = PyType_GenericNew( WinEnum_Type, 0, 0 ); \
+        TOKEN = PyType_GenericNew( WinEnum::TypeObject, 0, 0 ); \
         if( !TOKEN ) \
             return NULL; \
         reinterpret_cast<WinEnum*>( TOKEN )->value = VALUE; \
-        if( PyModule_AddObject( mod.get(), #VALUE, cppy::incref( TOKEN ) ) < 0 ) \
+        if( PyModule_AddObject( mod, #VALUE, cppy::incref( TOKEN ) ) < 0 ) \
             return NULL; \
     } while( 0 )
 
-    if( !EnumType::Ready() )
+    if( !WinEnum::Ready() )
     {
         return -1;
     }
