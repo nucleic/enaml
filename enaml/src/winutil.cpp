@@ -146,7 +146,7 @@ load_icon( PyObject* mod, PyObject* args )
 
 
 int
-weakmethod_modexec( PyObject *mod )
+winutil_modexec( PyObject *mod )
 {
 
 #define MAKE_ENUM( TOKEN, VALUE ) \
