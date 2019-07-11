@@ -19,8 +19,8 @@ matrix:
       dist: trusty
       env:
         - PYTHON=2.7
-        - QT_VERSION=4
-        - IPY_VERSION=3
+        - QT_VERSION=5
+        - IPY_VERSION=5
         - SPHINX=0
     - os: linux
       env:
@@ -70,12 +70,10 @@ before_install:
 
   # Install enaml dependencies and include special widgets dependencies
   # We do not test vtk as it segfaults on Travis
-  # We use conda-forge for pyqt since qt4 for 2.7 was removed from main
   - 'if [ $QSCINTILLA -eq 1 ]; then
         $PIP_INSTALL pyqt5 ply matplotlib;
      else
-        $CONDA_INSTALL pyqt=$QT_VERSION -c conda-forge;
-        $CONDA_INSTALL ply matplotlib;
+        $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib;
      fi;'
 
   # Install qtpy from pip to get a recent version (>= 1.3) on python 3.4
