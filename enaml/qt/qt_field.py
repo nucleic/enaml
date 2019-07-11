@@ -206,12 +206,19 @@ class QtField(QtControl, ProxyField):
             if self._text_timer is None:
                 timer = self._text_timer = QTimer()
                 timer.setSingleShot(True)
-                timer.setInterval(300)
+                timer.setInterval(self.declaration.sync_time)
                 timer.timeout.connect(handler)
         else:
             if self._text_timer is not None:
                 self._text_timer.stop()
                 self._text_timer = None
+
+    def set_sync_time(self, time):
+        """ Set the sync time for the widget.
+
+        """
+        if self._text_timer is not None:
+            self._text_timer.setInterval(self.declaration.sync_time)
 
     def set_placeholder(self, text):
         """ Set the placeholder text of the widget.

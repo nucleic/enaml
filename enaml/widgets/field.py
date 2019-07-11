@@ -31,6 +31,9 @@ class ProxyField(ProxyControl):
     def set_submit_triggers(self, triggers):
         raise NotImplementedError
 
+    def set_sync_time(self, time):
+        raise NotImplementedError
+
     def set_placeholder(self, placeholder):
         raise NotImplementedError
 
@@ -101,6 +104,11 @@ class Field(Control):
         ['lost_focus', 'return_pressed']
     ))
 
+    #: Time in ms after which the client submit its text to the server for
+    #: validation and update when the user stop typing. This is used only when
+    #: the 'auto_sync' mode is part of the submit_triggers.
+    sync_time = d_(Int(300))
+
     #: The grayed-out text to display if the field is empty and the
     #: widget doesn't have focus. Defaults to the empty string.
     placeholder = d_(Unicode())
@@ -132,7 +140,7 @@ class Field(Control):
     # Observers
     #--------------------------------------------------------------------------
     @observe('text', 'mask', 'submit_triggers', 'placeholder', 'echo_mode',
-        'max_length', 'read_only', 'text_align')
+        'max_length', 'read_only', 'text_align', 'sync_time')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 
