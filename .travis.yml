@@ -19,8 +19,8 @@ matrix:
       dist: trusty
       env:
         - PYTHON=2.7
-        - QT_VERSION=4
-        - IPY_VERSION=3
+        - QT_VERSION=5
+        - IPY_VERSION=5
         - SPHINX=0
     - os: linux
       env:
