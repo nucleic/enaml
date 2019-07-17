@@ -33,6 +33,7 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
     #: A reference to the widget created by the proxy
     widget = Typed(QAbstractButton)
 
+    #: A reference to the group this button is part of.
     _current_group = Typed(ButtonGroup)
 
     #: Cyclic notification guard. This a bitfield of multiple guards.
@@ -118,6 +119,14 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
             self.widget.setIconSize(QSize(*size))
 
     def set_group(self, group):
+        """Set the group this button belongs to.
+
+        Parameters
+        ----------
+        group : ButtonGroup
+            ButtonGroup declaration to which this button should be added.
+
+        """
         if self._current_group:
             self._current_group.proxy.remove_button(self.declaration)
         group.proxy.add_button(self.declaration)
