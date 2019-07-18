@@ -61,6 +61,9 @@ Supported Versions
 ==================
 Enaml applications can be run on any platform which supports Python (2.7, 3.4, 3.5 and 3.6) and Qt (versions 4 or 5, see https://doc.qt.io/qt-5/supported-platforms.html).
 
+Enaml 0.10.4 will be the last version to support Python 2.7 and 3.4 and Qt 4.
+Moving forward support will be limited to Python 3.5+ and Qt 5.
+
 This includes Linux, Windows, macOs, Android and iOS. (Automated testing of Enaml runs on Linux.)
 
 Enaml is licensed under the `Modified BSD License <https://github.com/nucleic/enaml/blob/master/LICENSE>`_.
