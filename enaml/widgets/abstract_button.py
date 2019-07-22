@@ -61,6 +61,7 @@ class AbstractButton(Control):
     #: and indicates that an appropriate default should be used.
     icon_size = d_(Coerced(Size, (-1, -1)))
 
+    #: Group to which this button belongs to.
     group = d_(ForwardTyped(ButtonGroup))
 
     #: Whether or not the button is checkable. The default is False.
