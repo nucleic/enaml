@@ -71,21 +71,21 @@ enamldef Main(Window): main:
                 Looper:
                     iterable << models
                     Conditional:
-                        condition = isinstance(loop_item, Foo)
+                        condition = isinstance(loop.item, Foo)
                         FooView:
-                            model = loop_item
+                            model = loop.item
                     Conditional:
-                        condition << isinstance(loop_item, Bar) and show_bar.checked
+                        condition << isinstance(loop.item, Bar) and show_bar.checked
                         BarView:
-                            model = loop_item
+                            model = loop.item
                     Conditional:
-                        condition = isinstance(loop_item, Baz)
+                        condition = isinstance(loop.item, Baz)
                         BazView:
-                            model = loop_item
+                            model = loop.item
                     Conditional:
                         condition << (
-                            (loop_index != len(main.models) - 1) and
-                            (show_bar.checked if isinstance(loop_item, Bar) else True)
+                            (loop.index != len(main.models) - 1) and
+                            (show_bar.checked if isinstance(loop.item, Bar) else True)
                         )
                         Separator:
                             orientation = 'horizontal'
