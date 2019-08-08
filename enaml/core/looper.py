@@ -34,19 +34,24 @@ class Looper(Pattern):
 
     The children of a `Looper` are used as a template when creating new
     objects for each item in the given `iterable`. Each iteration of the
-    loop will be given an indenpendent scope which is the union of the
+    loop will be given an independent scope which is the union of the
     outer scope and any identifiers created during the iteration. This
-    scope will also contain `loop_index` and `loop_item` variables which
-    are the index and value of the iterable, respectively.
+    scope will also contain a `loop` variable which has `item` and `index`
+    members to access the index and value of the iterable, respectively.
 
     All items created by the looper will be added as children of the
     parent of the `Looper`. The `Looper` keeps ownership of all items
     it creates. When the iterable for the looper is changed, the looper
     will only create and destroy children for the items in the iterable
-    which have changed.
+    which have changed. When an item in the iterable is moved the
+    `loop.index` will be updated to reflect the new index.
 
-    The Looper works under the assumptions that the values stored in the
+    The Looper works under the assumption that the values stored in the
     iterable are unique.
+
+    The `loop_item` and `loop_index` scope variables are depreciated in favor
+    of `loop.item` and `loop.index` respectively. This is because the old
+    `loop_index` variable may become invalid when items are moved.
 
     """
     #: The iterable to use when creating the items for the looper.
