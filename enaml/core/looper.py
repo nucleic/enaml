@@ -132,8 +132,8 @@ class Looper(Pattern):
                 for nodes, key, f_locals in pattern_nodes:
                     with new_scope(key, f_locals) as f_locals:
                         # Retain for compatibility reasons
-                        f_locals['loop_item'] = loop_item
                         f_locals['loop_index'] = loop_index
+                        f_locals['loop_item'] = loop_item
                         f_locals['loop'] = iter_data
                         for node in nodes:
                             child = node(None)
