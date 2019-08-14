@@ -32,10 +32,14 @@ class ProxyButtonGroup(ProxyToolkitObject):
 class ButtonGroup(ToolkitObject):
     """ A way to declare a group of buttons.
 
-    This allows to group buttons even though they beloing to different
-    container.
+    This allows to group buttons even though they belong to different
+    container. Note that if a button belongs to a ButtonGroup the rules
+    about buttons sharing a container being in the same group do not apply.d2
 
     """
+    #: Set of members belonging to the group.
+    #: This value should be considered read-only for users.
+    group_members = Typed(set, ())
 
     #: Can only a single button in the group be checked at a time.
     exclusive = d_(Bool(True))

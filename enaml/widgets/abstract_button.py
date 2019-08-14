@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2019, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -86,6 +86,12 @@ class AbstractButton(Control):
     #: A reference to the ProxyAbstractButton object.
     proxy = Typed(ProxyAbstractButton)
 
+    def __init__(self, parent=None, **kwargs):
+        super(AbstractButton, self).__init__(parent, **kwargs)
+        # Overridden to synchronize the group_members member of the group
+        if self.group:
+            self.group.group_members.add(self)
+
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
@@ -96,3 +102,15 @@ class AbstractButton(Control):
         """
         # The superclass implementation is sufficient.
         super(AbstractButton, self)._update_proxy(change)
+
+    #--------------------------------------------------------------------------
+    # Post Setattr Handlers
+    #--------------------------------------------------------------------------
+    def _post_setattr_group(self, old, new):
+        """ Update the group_members of the group this button belongs too.
+
+        """
+        if old:
+            old.group_members.remove(self)
+        if new:
+            new.group_members.add(self)
