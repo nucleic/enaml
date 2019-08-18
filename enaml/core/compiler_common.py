@@ -259,6 +259,11 @@ def load_name(cg, name, local_names):
     """
     if name in local_names:
         cg.load_fast(name)
+    elif '.' in name:
+        parts = name.split('.')
+        load_name(cg, parts.pop(0), local_names)
+        while parts:
+            cg.load_attr(parts.pop(0))
     else:
         cg.load_global(name)
 

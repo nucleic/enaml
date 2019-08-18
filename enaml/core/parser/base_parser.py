@@ -601,6 +601,32 @@ class BaseEnamlParser(object):
         node.expr = p[5]
         p[0] = node
 
+    def p_storage_expr5(self, p):
+        ''' storage_expr : NAME NAME COLON NAME ex_dotted_names NEWLINE '''
+        kind = p[1]
+        lineno = p.lineno(1)
+        self._validate_storage_expr(kind, lineno, p.lexer.lexer)
+        node = enaml_ast.StorageExpr()
+        node.lineno = lineno
+        node.kind = kind
+        node.name = p[2]
+        node.typename = '.'.join([p[4]] + p[5])
+        p[0] = node
+
+    def p_storage_expr6(self, p):
+        ''' storage_expr : NAME NAME COLON NAME ex_dotted_names operator_expr '''
+        kind = p[1]
+        lineno = p.lineno(1)
+        self._validate_storage_expr(kind, lineno, p.lexer.lexer)
+        node = enaml_ast.StorageExpr()
+        node.lineno = lineno
+        node.kind = kind
+        node.name = p[2]
+        node.typename = '.'.join([p[4]] + p[5])
+        node.expr = p[6]
+        p[0] = node
+
+
     # -------------------------------------------------------------------------
     # ChildDef
     # -------------------------------------------------------------------------
