@@ -102,7 +102,7 @@ SUBSCRIPTION_BLOCK_TESTS = {
 
 
 @pytest.mark.parametrize('name', SUBSCRIPTION_BLOCK_TESTS.keys())
-def test_subscription_block(name):
+def test_subscription_block_syntax(name):
     """Test a subscription block operator does not interfere with the leftshift
     operator.
 
@@ -120,7 +120,8 @@ def test_subscription_block(name):
         Main = compile_source(source, 'Main')
         window = Main()
 
-def test_subscription_block_observers():
+
+def test_subscription_block_observers1():
     """Test a subscription block operator.
 
     """
@@ -151,3 +152,33 @@ def test_subscription_block_observers():
     window.a = 1
     assert label.text == 'a'
 
+
+def test_subscription_block_observers2():
+    """Test that intermediate assignments do not confuse the tracer.
+
+    """
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window):
+        alias label
+        attr a = 1
+        attr b = 2
+        Label: label:
+            text <<
+                b = a
+                if b & 1:
+                    return 'a'
+                return 'none'
+
+    """)
+    Main = compile_source(source, 'Main')
+    window = Main()
+    label = window.label
+    assert label.text == 'a'
+    window.a = 2
+    assert label.text == 'none'
+    window.b = 1
+    assert label.text == 'none'
+    window.a = 1
+    assert label.text == 'a'
