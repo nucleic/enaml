@@ -182,3 +182,121 @@ def test_subscription_block_observers2():
     assert label.text == 'none'
     window.a = 1
     assert label.text == 'a'
+
+
+def test_subscription_block_observers3():
+    """Test that handling recursive behavior works.
+
+    """
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window): main:
+        alias label
+        attr a = 1
+        attr b = 2
+        Label: label:
+            text <<
+                value = 'none'
+                if a & 1:
+                    value = 'a'
+                elif b & 1:
+                    value = 'b'
+                main.b = 2
+                return value
+
+    """)
+    Main = compile_source(source, 'Main')
+    window = Main()
+    label = window.label
+    assert label.text == 'a'
+    window.a = 2
+    assert label.text == 'none'  # 2 and 2
+    window.b = 1
+    assert label.text == 'b'
+    assert window.b == 2
+    window.a = 1
+    assert label.text == 'a'
+
+
+def test_subscription_block_observers4():
+    """Test that global variable shadowed by local can be accessed.
+
+    """
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    b = 2
+
+    enamldef Main(Window): main:
+        alias label
+        attr a = 1
+        attr b = 2
+        attr counter = 0
+        Label: label:
+            text <<
+                global b
+                main.counter += 1
+                if a & 1:
+                    return 'a'
+                elif b & 1:
+                    return 'b'
+                return 'none'
+
+    """)
+    Main = compile_source(source, 'Main')
+    window = Main()
+    label = window.label
+    assert label.text == 'a'
+    assert window.counter == 1
+    window.a = 2
+    assert label.text == 'none'  # 2 and 2
+    assert window.counter == 2
+    window.b = 1
+    assert label.text == 'none'
+    assert window.counter == 2
+    window.a = 1
+    assert label.text == 'a'
+    assert window.counter == 3
+
+
+def test_subscription_block_observers5():
+    """Test that global variable shadowed by local do not block notification
+    on qualified name access.
+
+    """
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    b = 2
+
+    enamldef Main(Window): main:
+        alias label
+        attr a = 1
+        attr b = 2
+        attr counter = 0
+        Label: label:
+            text <<
+                global b
+                main.counter += 1
+                if a & 1:
+                    return 'a'
+                elif main.b & 1:
+                    return 'b'
+                return 'none'
+
+    """)
+    Main = compile_source(source, 'Main')
+    window = Main()
+    label = window.label
+    assert label.text == 'a'
+    assert window.counter == 1
+    window.a = 2
+    assert label.text == 'none'  # 2 and 2
+    assert window.counter == 2
+    window.b = 1
+    assert label.text == 'b'
+    assert window.counter == 3
+    window.a = 1
+    assert label.text == 'a'
+    assert window.counter == 4
