@@ -131,7 +131,8 @@ script:
          pytest tests --cov enaml --cov-report xml;
      fi'
   - 'if [ $SPHINX -eq 1 ]; then
-         sphinx-build docs/source $TRAVIS_BUILD_DIR -W -b html;
+         mkdir docs_output
+         sphinx-build docs/source docs_output -W -b html;
      fi'
   -
 
