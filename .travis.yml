@@ -131,7 +131,7 @@ script:
          pytest tests --cov enaml --cov-report xml;
      fi'
   - 'if [ $SPHINX -eq 1 ]; then
-         mkdir docs_output
+         mkdir docs_output;
          sphinx-build docs/source docs_output -W -b html;
      fi'
   -
