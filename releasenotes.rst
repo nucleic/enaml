@@ -9,6 +9,7 @@ Enaml Release Notes
 -------------------
 - add a ButtonGroup widget and a group attribute on all buttons to allow to
   group buttons belonging to different containers. PR #346
+- fix an issue in ImageView when the image is None PR #361
 - add a sync_time attribute to Field to control teh refresh rate when using the
   'auto_sync' trigger mode. PR #353
 - multiple improvement of the documentation PR #341 #345 #350
