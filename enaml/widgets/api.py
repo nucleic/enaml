@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from .action import Action
 from .action_group import ActionGroup
+from .button_group import ButtonGroup
 from .calendar import Calendar
 from .check_box import CheckBox
 from .color_dialog import ColorDialog

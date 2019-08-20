@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2019, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -16,6 +16,11 @@ from enaml.layout.geometry import Size
 from .control import Control, ProxyControl
 
 
+def ButtonGroup():
+    from .button_group import ButtonGroup
+    return ButtonGroup
+
+
 class ProxyAbstractButton(ProxyControl):
     """ The abstract definition of a proxy AbstractButton object.
 
@@ -30,6 +35,9 @@ class ProxyAbstractButton(ProxyControl):
         raise NotImplementedError
 
     def set_icon_size(self, size):
+        raise NotImplementedError
+
+    def set_group(self, group):
         raise NotImplementedError
 
     def set_checkable(self, checkable):
@@ -53,6 +61,9 @@ class AbstractButton(Control):
     #: and indicates that an appropriate default should be used.
     icon_size = d_(Coerced(Size, (-1, -1)))
 
+    #: Group to which this button belongs to.
+    group = d_(ForwardTyped(ButtonGroup))
+
     #: Whether or not the button is checkable. The default is False.
     checkable = d_(Bool(False))
 
@@ -75,13 +86,31 @@ class AbstractButton(Control):
     #: A reference to the ProxyAbstractButton object.
     proxy = Typed(ProxyAbstractButton)
 
+    def __init__(self, parent=None, **kwargs):
+        super(AbstractButton, self).__init__(parent, **kwargs)
+        # Overridden to synchronize the group_members member of the group
+        if self.group:
+            self.group.group_members.add(self)
+
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe('text', 'icon', 'icon_size', 'checkable', 'checked')
+    @observe('text', 'icon', 'icon_size', 'group', 'checkable', 'checked')
     def _update_proxy(self, change):
         """ An observer which updates the proxy widget.
 
         """
         # The superclass implementation is sufficient.
         super(AbstractButton, self)._update_proxy(change)
+
+    #--------------------------------------------------------------------------
+    # Post Setattr Handlers
+    #--------------------------------------------------------------------------
+    def _post_setattr_group(self, old, new):
+        """ Update the group_members of the group this button belongs too.
+
+        """
+        if old:
+            old.group_members.remove(self)
+        if new:
+            new.group_members.add(self)

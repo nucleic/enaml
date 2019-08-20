@@ -8,6 +8,7 @@
 from atom.api import Int, Typed
 
 from enaml.widgets.abstract_button import ProxyAbstractButton
+from enaml.widgets.button_group import ButtonGroup
 
 from .QtCore import QSize
 from .QtGui import QIcon
@@ -31,6 +32,9 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
     """
     #: A reference to the widget created by the proxy
     widget = Typed(QAbstractButton)
+
+    #: A reference to the group this button is part of.
+    _current_group = Typed(ButtonGroup)
 
     #: Cyclic notification guard. This a bitfield of multiple guards.
     _guard = Int(0)
@@ -56,6 +60,8 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
             self.set_icon(d.icon)
         if -1 not in d.icon_size:
             self.set_icon_size(d.icon_size)
+        if d.group:
+            self.set_group(d.group)
         self.set_checkable(d.checkable)
         self.set_checked(d.checked)
         widget = self.widget
@@ -111,6 +117,20 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
         """
         with self.geometry_guard():
             self.widget.setIconSize(QSize(*size))
+
+    def set_group(self, group):
+        """Set the group this button belongs to.
+
+        Parameters
+        ----------
+        group : ButtonGroup
+            ButtonGroup declaration to which this button should be added.
+
+        """
+        if self._current_group:
+            self._current_group.proxy.remove_button(self.declaration)
+        group.proxy.add_button(self.declaration)
+        self._current_group = group
 
     def set_checkable(self, checkable):
         """ Sets whether or not the widget is checkable.

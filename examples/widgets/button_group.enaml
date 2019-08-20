@@ -1,0 +1,63 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2019, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of button groups in Enaml.
+
+This example shows the usage of the `ButtonGroup` widget in combination
+with multiple `RadioButton` widgets.
+
+The intent of this example is to show how several buttons in different
+containers can still be in the same group, ensuring that only one can
+be selected at any given time.
+
+This widget is currently only available for Qt.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import (
+    Window, Container, HGroup, GroupBox, ButtonGroup, CheckBox, RadioButton
+)
+
+enamldef Main(Window):
+    title = "Button Group Example"
+    Container:
+        HGroup:
+            CheckBox:
+                text = "Group 1 Exclusive"
+                checked := btn_group1.exclusive
+            CheckBox:
+                text = "Group 2 Exclusive"
+                checked := btn_group2.exclusive
+        HGroup:
+            ButtonGroup: btn_group1:
+                pass
+            ButtonGroup: btn_group2:
+                pass
+            GroupBox:
+                title = "Group 1"
+                RadioButton:
+                    text = "Button Group 1"
+                    group = btn_group1
+                RadioButton:
+                    text = "Button Group 2"
+                    group = btn_group2
+            GroupBox:
+                title = "Group 2"
+                RadioButton:
+                    text = "Button Group 1"
+                    group = btn_group1
+                RadioButton:
+                    text = "Button Group 2"
+                    group = btn_group2
+            GroupBox:
+                title = "Group 3"
+                RadioButton:
+                    text = "Button Group 1"
+                    group = btn_group1
+                RadioButton:
+                    text = "Button Group 2"
+                    group = btn_group2

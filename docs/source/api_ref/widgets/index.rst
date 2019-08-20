@@ -13,6 +13,7 @@ enaml.widgets
     bounded_date <bounded_date>
     bounded_datetime <bounded_datetime>
     bounded_time <bounded_time>
+    button_group <button_group>
     calendar <calendar>
     check_box <check_box>
     color_dialog <color_dialog>
@@ -86,6 +87,7 @@ enaml.widgets
     bounded_date
     bounded_datetime
     bounded_time
+    button_group
     calendar
     check_box
     color_dialog
