@@ -24,6 +24,7 @@ def image_path(name):
 
 
 IMAGES = {
+    'None': None,
     'Image A': Image(data=open(image_path('img1.png'), 'rb').read()),
     'Image B': Image(data=open(image_path('img2.png'), 'rb').read()),
     'Image C': Image(data=open(image_path('img3.png'), 'rb').read()),
