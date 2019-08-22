@@ -167,7 +167,7 @@ class FirstPassTemplateCompiler(block.FirstPassBlockCompiler):
                 cg.dup_top()
                 cmn.load_helper(cg, 'type_check_expr')
                 cg.rot_two()
-                cmn.load_name(cg, node.typename, names)
+                cmn.load_typename(cg, node.typename, names)
                 cg.call_function(2)
                 cg.pop_top()
 

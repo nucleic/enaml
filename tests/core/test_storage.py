@@ -13,9 +13,9 @@ from utils import compile_source, is_qt_available, wait_for_window_displayed
 
 
 #------------------------------------------------------------------------------
-# Alias Syntax
+# Attr Syntax
 #------------------------------------------------------------------------------
-def test_syntax_1():
+def test_attr_syntax_1():
     source = dedent("""\
     from enaml.widgets.api import *
 
@@ -25,7 +25,7 @@ def test_syntax_1():
     compile_source(source, 'Main')
 
 
-def test_syntax_2():
+def test_attr_syntax_2():
     source = dedent("""\
     from datetime import date
     from enaml.widgets.api import *
@@ -36,7 +36,7 @@ def test_syntax_2():
     compile_source(source, 'Main')
 
 
-def test_syntax_3():
+def test_attr_syntax_3():
     source = dedent("""\
     from datetime import date
     from enaml.widgets.api import *
@@ -47,7 +47,7 @@ def test_syntax_3():
     compile_source(source, 'Main')
 
 
-def test_syntax_4():
+def test_attr_syntax_4():
     source = dedent("""\
     import datetime
     from enaml.widgets.api import *
@@ -58,7 +58,7 @@ def test_syntax_4():
     compile_source(source, 'Main')
 
 
-def test_syntax_5():
+def test_attr_syntax_5():
     source = dedent("""\
     import datetime
     from enaml.widgets.api import *
@@ -69,7 +69,7 @@ def test_syntax_5():
     compile_source(source, 'Main')
 
 
-def test_syntax_6():
+def test_attr_syntax_6():
     source = dedent("""\
     import datetime
     from enaml.widgets.api import *
@@ -83,7 +83,7 @@ def test_syntax_6():
 #------------------------------------------------------------------------------
 # Bad attr Syntax
 #------------------------------------------------------------------------------
-def test_bad_syntax_1():
+def test_bad_attr_syntax_1():
     # Invalid type
     source = dedent("""\
     import datetime
@@ -97,7 +97,7 @@ def test_bad_syntax_1():
         compile_source(source, 'Main')
 
 
-def test_bad_syntax_2():
+def test_bad_attr_syntax_2():
     # Dot in attr name
     source = dedent("""\
     from enaml.widgets.api import *
@@ -110,7 +110,7 @@ def test_bad_syntax_2():
         compile_source(source, 'Main')
 
 
-def test_bad_syntax_3():
+def test_bad_attr_syntax_3():
     # No operator
     source = dedent("""\
     from enaml.widgets.api import *
@@ -126,7 +126,7 @@ def test_bad_syntax_3():
 # Typechecks
 #------------------------------------------------------------------------------
 @pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
-def test_type_1(enaml_qtbot, enaml_sleep):
+def test_attr_type_1(enaml_qtbot, enaml_sleep):
     import datetime
     source = dedent("""\
     import datetime
@@ -148,4 +148,3 @@ def test_type_1(enaml_qtbot, enaml_sleep):
     # Should raise a type error
     with pytest.raises(TypeError):
         tester.d = datetime.time(7, 0)
-

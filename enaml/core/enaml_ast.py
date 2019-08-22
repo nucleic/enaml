@@ -107,6 +107,18 @@ class ChildDef(ASTNode):
     body = List()
 
 
+class DottedTypeName(ASTNode):
+    """ An AST node which represents a dotted type name.
+
+    """
+    #: The name of the object accessed.
+    name = Str()
+
+    #: The chain of names being accessed on the object.
+    chain = Tuple()
+
+
+
 class ConstExpr(ASTNode):
     """ An AST node which represents a 'const' expression.
 
@@ -115,7 +127,7 @@ class ConstExpr(ASTNode):
     name = Str()
 
     #: The name of the type of allowed values for the expression.
-    typename = Str()
+    typename = Typed(DottedTypeName)
 
     #: The Python expression to evaluate.
     expr = Typed(PythonExpression)
@@ -147,9 +159,9 @@ class FuncDef(ASTNode):
 
 
 if sys.version_info >= (3, 5):
-    
+
     class AsyncFuncDef(FuncDef):
-        
+
         #: The Python function definition.
         funcdef = Typed(ast.AsyncFunctionDef)
 
@@ -198,7 +210,7 @@ class StorageExpr(ASTNode):
     name = Str()
 
     #: The name of the type of allowed values for the storage object.
-    typename = Str()
+    typename = Typed(DottedTypeName)
 
     #: The default expression bound to the storage object. This may
     #: be None if the storage object has no default expr binding.

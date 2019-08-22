@@ -259,13 +259,31 @@ def load_name(cg, name, local_names):
     """
     if name in local_names:
         cg.load_fast(name)
-    elif '.' in name:
-        parts = name.split('.')
-        load_name(cg, parts.pop(0), local_names)
-        while parts:
-            cg.load_attr(parts.pop(0))
     else:
         cg.load_global(name)
+
+
+def load_typename(cg, node, local_names):
+    """ Load a dotted name onto the TOS.
+
+    If the name exists in the local names set, it is loaded from
+    the fast locals. Otherwise, it is loaded from the globals.
+
+    Parameters
+    ----------
+    cg : CodeGenerator
+        The code generator with which to write the code.
+
+    node : ast.DottedTypeName
+        The dotted type name node to load.
+
+    local_names : set
+        The set of fast local names available to the code object.
+
+    """
+    load_name(cg, node.name, local_names)
+    for name in node.chain:
+        cg.load_attr(name)
 
 
 def make_node_list(cg, count):
@@ -770,7 +788,7 @@ def gen_storage_expr(cg, node, index, local_names):
         load_node(cg, index)
         cg.load_const(node.name)
         if node.typename:
-            load_name(cg, node.typename, local_names)
+            load_typename(cg, node.typename, local_names)
         else:
             cg.load_const(None)
         cg.load_const(node.kind)
