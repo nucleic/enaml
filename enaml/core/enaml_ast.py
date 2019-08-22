@@ -118,7 +118,6 @@ class DottedTypeName(ASTNode):
     chain = Tuple()
 
 
-
 class ConstExpr(ASTNode):
     """ An AST node which represents a 'const' expression.
 

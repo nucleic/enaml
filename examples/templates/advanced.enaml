@@ -198,7 +198,7 @@ template AutoFormBody(ModelType):
         The type of the model. This should be an Atom subclass.
 
     """
-    const Spec = form_spec(ModelType)
+    const Spec: tuple = form_spec(ModelType)
     ForEach(Spec, FormItem):
         pass
 
