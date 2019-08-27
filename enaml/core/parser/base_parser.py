@@ -532,9 +532,9 @@ class BaseEnamlParser(object):
         p[0] = node
 
     def p_const_expr2(self, p):
-        ''' const_expr : CONST NAME dotted_type_name EQUAL test NEWLINE '''
+        ''' const_expr : CONST NAME COLON dotted_name EQUAL test NEWLINE '''
         lineno = p.lineno(1)
-        body = p[5]
+        body = p[6]
         body.lineno = lineno
         ast.fix_missing_locations(body)
         expr = ast.Expression(body=body)
@@ -542,7 +542,9 @@ class BaseEnamlParser(object):
         node = enaml_ast.ConstExpr()
         node.lineno = lineno
         node.name = p[2]
-        node.typename = p[3]
+        typename = ast_for_dotted_name(p[4])
+        typename.lineno = lineno
+        node.typename = typename
         node.expr = python
         p[0] = node
 
@@ -565,7 +567,7 @@ class BaseEnamlParser(object):
         p[0] = node
 
     def p_storage_expr2(self, p):
-        ''' storage_expr : NAME NAME dotted_type_name NEWLINE '''
+        ''' storage_expr : NAME NAME COLON dotted_name NEWLINE '''
         kind = p[1]
         lineno = p.lineno(1)
         self._validate_storage_expr(kind, lineno, p.lexer.lexer)
@@ -573,7 +575,9 @@ class BaseEnamlParser(object):
         node.lineno = lineno
         node.kind = kind
         node.name = p[2]
-        node.typename = p[3]
+        typename = ast_for_dotted_name(p[4])
+        typename.lineno = lineno
+        node.typename = typename
         p[0] = node
 
     def p_storage_expr3(self, p):
@@ -589,7 +593,7 @@ class BaseEnamlParser(object):
         p[0] = node
 
     def p_storage_expr4(self, p):
-        ''' storage_expr : NAME NAME dotted_type_name operator_expr '''
+        ''' storage_expr : NAME NAME COLON dotted_name operator_expr '''
         kind = p[1]
         lineno = p.lineno(1)
         self._validate_storage_expr(kind, lineno, p.lexer.lexer)
@@ -597,8 +601,10 @@ class BaseEnamlParser(object):
         node.lineno = lineno
         node.kind = kind
         node.name = p[2]
-        node.typename = p[3]
-        node.expr = p[4]
+        typename = ast_for_dotted_name(p[4])
+        typename.lineno = lineno
+        node.typename = typename
+        node.expr = p[5]
         p[0] = node
 
 
@@ -689,24 +695,6 @@ class BaseEnamlParser(object):
     def p_ex_dotted_names2(self, p):
         ''' ex_dotted_names : DOT NAME ex_dotted_names '''
         p[0] = [p[2]] + p[3]
-
-    # -------------------------------------------------------------------------
-    # DottedTypeName
-    # -------------------------------------------------------------------------
-    def p_dotted_type_name1(self, p):
-        ''' dotted_type_name : COLON NAME '''
-        node = enaml_ast.DottedTypeName()
-        node.lineno = p.lineno(1)
-        node.name = p[2]
-        p[0] = node
-
-    def p_dotted_type_name2(self, p):
-        ''' dotted_type_name : COLON NAME ex_dotted_names '''
-        node = enaml_ast.DottedTypeName()
-        node.lineno = p.lineno(1)
-        node.name = p[2]
-        node.chain = tuple(p[3])
-        p[0] = node
 
     # -------------------------------------------------------------------------
     # OperatorExpr

@@ -274,16 +274,20 @@ def load_typename(cg, node, local_names):
     cg : CodeGenerator
         The code generator with which to write the code.
 
-    node : ast.DottedTypeName
-        The dotted type name node to load.
+    node : ast.Name or ast.Attribute
+        The name or attribute node to load.
 
     local_names : set
         The set of fast local names available to the code object.
 
     """
-    load_name(cg, node.name, local_names)
-    for name in node.chain:
-        cg.load_attr(name)
+    if isinstance(node, ast.Name):
+        load_name(cg, node.id, local_names)
+    elif isinstance(node, ast.Attribute):
+        load_typename(cg, node.value, local_names)
+        cg.load_attr(node.attr)
+    else:
+        raise TypeError('Unsupported node %s' % type(node))
 
 
 def make_node_list(cg, count):

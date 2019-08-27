@@ -107,17 +107,6 @@ class ChildDef(ASTNode):
     body = List()
 
 
-class DottedTypeName(ASTNode):
-    """ An AST node which represents a dotted type name.
-
-    """
-    #: The name of the object accessed.
-    name = Str()
-
-    #: The chain of names being accessed on the object.
-    chain = Tuple()
-
-
 class ConstExpr(ASTNode):
     """ An AST node which represents a 'const' expression.
 
@@ -126,7 +115,7 @@ class ConstExpr(ASTNode):
     name = Str()
 
     #: The name of the type of allowed values for the expression.
-    typename = Typed(DottedTypeName)
+    typename = Instance((ast.Name, ast.Attribute))
 
     #: The Python expression to evaluate.
     expr = Typed(PythonExpression)
@@ -209,7 +198,7 @@ class StorageExpr(ASTNode):
     name = Str()
 
     #: The name of the type of allowed values for the storage object.
-    typename = Typed(DottedTypeName)
+    typename = Instance((ast.Name, ast.Attribute))
 
     #: The default expression bound to the storage object. This may
     #: be None if the storage object has no default expr binding.
