@@ -43,11 +43,11 @@ enamldef Main(Window):
                 Looper: looper:
                     iterable << field.text.split()
                     Field:
-                        placeholder = 'Field %d: %s' % (loop_index, loop_item)
+                        placeholder = 'Field %d: %s' % (loop.index, loop.item)
                     PushButton:
-                        text = 'pb %s' % loop_index
+                        text = 'pb %s' % loop.index
                     Slider:
-                        value :: print('Slider %d changed' % loop_index)
+                        value :: print('Slider %d changed' % loop.index)
                     Html:
-                        source << '<h1><center>%s</center></h1>' % loop_item
+                        source << '<h1><center>%s</center></h1>' % loop.item
 

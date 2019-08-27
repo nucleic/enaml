@@ -84,10 +84,10 @@ enamldef DialogButtonBox(Container): box:
         iterable = buttons
         PushButton:
             style_class = 'dialog-box-button'
-            text = loop_item.text
-            default = loop_item.default
-            enabled << loop_item.enabled
+            text = loop.item.text
+            default = loop.item.default
+            enabled << loop.item.enabled
             clicked ::
-                loop_item.was_clicked = True
-                box.clicked(loop_item)
-                nonlocals[loop_item.action]()
+                loop.item.was_clicked = True
+                box.clicked(loop.item)
+                nonlocals[loop.item.action]()

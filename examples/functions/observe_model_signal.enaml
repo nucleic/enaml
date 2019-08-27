@@ -121,7 +121,7 @@ enamldef Main(Window):
                 text = '>'
                 constraints = [width == 15, height == 20]
                 font = 'bold 12pt Consolas'
-                clicked :: open_menu(loop_item)
+                clicked :: open_menu(loop.item)
             Field:
                 read_only = True
-                text = loop_item.text
+                text = loop.item.text
