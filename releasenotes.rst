@@ -7,6 +7,7 @@ Enaml Release Notes
 
 0.10.4 - unreleased
 -------------------
+- fix a bug in the parser preventing the use of `raise from` under Python 3 PR #364
 - add a ButtonGroup widget and a group attribute on all buttons to allow to
   group buttons belonging to different containers. PR #346
 - fix an issue in ImageView when the image is None PR #361
