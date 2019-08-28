@@ -88,7 +88,7 @@ class Python3EnamlParser(BaseEnamlParser):
     def p_raise_stmt3(self, p):
         ''' raise_stmt : RAISE test FROM test '''
         raise_stmt = ast.Raise()
-        raise_stmt.exc = p[1]
+        raise_stmt.exc = p[2]
         raise_stmt.cause = p[4]
         p[0] = raise_stmt
 
