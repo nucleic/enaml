@@ -126,7 +126,8 @@ class QtField(QtControl, ProxyField):
         # A temporary hack until styles are implemented
         if self._guard & ERROR_FLAG:
             self._guard &= ~ERROR_FLAG
-            # Replace the widget's "error" stylesheet with the one defined in the declaration
+            # Replace the widget's "error" stylesheet with
+            # the one defined in the declaration
             self.refresh_style_sheet()
             self.widget.setToolTip(u'')
 
