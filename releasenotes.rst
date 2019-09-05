@@ -10,10 +10,12 @@ Enaml Release Notes
 - add a ButtonGroup widget and a group attribute on all buttons to allow to
   group buttons belonging to different containers. PR #346
 - fix an issue in ImageView when the image is None PR #361
-- add a sync_time attribute to Field to control teh refresh rate when using the
+- add a sync_time attribute to Field to control the refresh rate when using the
   'auto_sync' trigger mode. PR #353
 - multiple improvement of the documentation PR #341 #345 #350
 - add a new example about layout PR #343
+- fix issue where fields with a validator would lose their original stylesheet when
+  the error state of the validator is cleared. PR #365
 - fix Looper's ``loop_index`` becoming invalid when items are reordered #357 via PR #358
 
 .. note:: Looper's ``loop_index`` and ``loop_item`` scope variables are now deprecated. When upgrading to 0.10.4 or newer all usage of ``loop_index`` and ``loop_item`` within a Looper should be replaced with ``loop.index`` and ``loop.item`` respectively. See #357 for details.
