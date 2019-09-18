@@ -4,7 +4,7 @@ Enaml Release Notes
 0.11.0 - unreleased
 -------------------
 
-0.10.4 - unreleased
+0.10.4 - 18/09/2019
 -------------------
 - fix a bug in the parser preventing the use of `raise from` under Python 3 PR #364
 - add a ButtonGroup widget and a group attribute on all buttons to allow to
@@ -18,7 +18,12 @@ Enaml Release Notes
   the error state of the validator is cleared. PR #365
 - fix Looper's ``loop_index`` becoming invalid when items are reordered #357 via PR #358
 
-.. note:: Looper's ``loop_index`` and ``loop_item`` scope variables are now deprecated. When upgrading to 0.10.4 or newer all usage of ``loop_index`` and ``loop_item`` within a Looper should be replaced with ``loop.index`` and ``loop.item`` respectively. See #357 for details.
+.. note::
+
+    Looper's ``loop_index`` and ``loop_item`` scope variables are now deprecated.
+    When upgrading to 0.10.4 or newer all usage of ``loop_index`` and ``loop_item``
+    within a Looper should be replaced with ``loop.index`` and ``loop.item``
+    respectively. See #357 for details.
 
 
 0.10.3 - 28/01/2019
