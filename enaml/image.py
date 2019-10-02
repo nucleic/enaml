@@ -20,6 +20,8 @@ class Image(Atom):
     """
     #: The format of the image. By default, the consumer of the image
     #: will probe the header to automatically infer a type.
+    #: Base64 images need to be decoded using the base64.b64decode function
+    #: from the standard library.
     format = Enum(
         'auto',     # Automatically determine the image format
         'png',      # Portable Network Graphics
