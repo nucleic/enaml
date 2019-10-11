@@ -102,12 +102,16 @@ class Python36EnamlParser(Python35EnamlParser):
             m = ast.parse('(' + ' '.join([s for s, _ in p[1]]) + ')')
         except SyntaxError as e:
             err_msg = e.args[0]
+            # Identify the line at which the error occurred to get a more
+            # accurate line number
             for s, lineno in p[1]:
                 try:
                     m = ast.parse(s)
                 except SyntaxError:
                     break
 
+        # Avoid getting a triple nesting in the error report that does not
+        # bring anything relevant to the traceback.
         if err_msg:
             syntax_error(err_msg, FakeToken(p.lexer.lexer, lineno))
 
@@ -123,7 +127,6 @@ class Python36EnamlParser(Python35EnamlParser):
 
     def p_atom_string_list3(self, p):
         ''' atom_string_list : FSTRING '''
-        print(p.lineno(1))
         p[0] = [('f' + repr(p[1]), p.lineno(1))]
 
     def p_atom_string_list4(self, p):
