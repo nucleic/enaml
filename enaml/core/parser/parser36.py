@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 import ast
 
+from .base_lexer import syntax_error
 from .lexer3 import Python36EnamlLexer
 from .base_parser import Store, ast_for_testlist, syntax_error, FakeToken
 from .parser35 import Python35EnamlParser
@@ -96,21 +97,35 @@ class Python36EnamlParser(Python35EnamlParser):
     # that in "(f'{a}' '{r}')" we must not format r.
     def p_atom10(self, p):
         ''' atom : atom_string_list '''
-        m = ast.parse('(' + ' '.join(p[1]) + ')')
+        err_msg = ''
+        try:
+            m = ast.parse('(' + ' '.join([s for s, _ in p[1]]) + ')')
+        except SyntaxError as e:
+            err_msg = e.args[0]
+            for s, lineno in p[1]:
+                try:
+                    m = ast.parse(s)
+                except SyntaxError:
+                    break
+
+        if err_msg:
+            syntax_error(err_msg, FakeToken(p.lexer.lexer, lineno))
+
         p[0] = m.body[0].value
 
     def p_atom_string_list1(self, p):
         ''' atom_string_list : STRING '''
-        p[0] = [repr(p[1])]
+        p[0] = [(repr(p[1]), p.lineno(1))]
 
     def p_atom_string_list2(self, p):
         ''' atom_string_list : atom_string_list STRING '''
-        p[0] = p[1] + [repr(p[2])]
+        p[0] = p[1] + [(repr(p[2]), p.lineno(2))]
 
     def p_atom_string_list3(self, p):
         ''' atom_string_list : FSTRING '''
-        p[0] = ['f' + repr(p[1])]
+        print(p.lineno(1))
+        p[0] = [('f' + repr(p[1]), p.lineno(1))]
 
     def p_atom_string_list4(self, p):
         ''' atom_string_list : atom_string_list FSTRING '''
-        p[0] = p[1] + ['f' + repr(p[2])]
+        p[0] = p[1] + [('f' + repr(p[2]), p.lineno(2))]
