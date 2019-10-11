@@ -36,15 +36,5 @@ def write_tables():
 
 
 def parse(enaml_source, filename='Enaml'):
-    # All errors in the parsing and lexing rules are raised as a custom
-    # ParsingError. This exception object can be called to return the
-    # actual exception instance that should be raised. This is done
-    # because Ply enters an error recovery mode whenever a SyntaxError
-    # is raised from within a rule. We don't want error recovery, we'd
-    # rather just fail immediately. So this mechanism allows us to
-    # stop parsing immediately and then re-raise the errors outside
-    # of the control of Ply.
-    try:
-        return _parser.parse(enaml_source, filename)
-    except ParsingError as parse_error:
-        raise parse_error()
+    """Parse an enaml file source. """
+    return _parser.parse(enaml_source, filename)
