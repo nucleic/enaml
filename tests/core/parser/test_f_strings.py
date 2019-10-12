@@ -59,6 +59,7 @@ def test_f_strings(desc):
     validate_ast(py_ast.body[0], enaml_ast.body[0], True)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 6), reason='Requires Python 3.6')
 @pytest.mark.parametrize("source, line",
                          [("f'{\\}'", 1), ("('d'\nf'{\\}')", 2)])
 def test_reporting_errors_f_strings(source, line):
