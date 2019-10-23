@@ -115,7 +115,7 @@ class ConstExpr(ASTNode):
     name = Str()
 
     #: The name of the type of allowed values for the expression.
-    typename = Str()
+    typename = Instance((ast.Name, ast.Attribute))
 
     #: The Python expression to evaluate.
     expr = Typed(PythonExpression)
@@ -147,9 +147,9 @@ class FuncDef(ASTNode):
 
 
 if sys.version_info >= (3, 5):
-    
+
     class AsyncFuncDef(FuncDef):
-        
+
         #: The Python function definition.
         funcdef = Typed(ast.AsyncFunctionDef)
 
@@ -198,7 +198,7 @@ class StorageExpr(ASTNode):
     name = Str()
 
     #: The name of the type of allowed values for the storage object.
-    typename = Str()
+    typename = Instance((ast.Name, ast.Attribute))
 
     #: The default expression bound to the storage object. This may
     #: be None if the storage object has no default expr binding.

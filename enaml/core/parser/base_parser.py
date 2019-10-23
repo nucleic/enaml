@@ -532,7 +532,7 @@ class BaseEnamlParser(object):
         p[0] = node
 
     def p_const_expr2(self, p):
-        ''' const_expr : CONST NAME COLON NAME EQUAL test NEWLINE '''
+        ''' const_expr : CONST NAME COLON dotted_name EQUAL test NEWLINE '''
         lineno = p.lineno(1)
         body = p[6]
         body.lineno = lineno
@@ -542,7 +542,9 @@ class BaseEnamlParser(object):
         node = enaml_ast.ConstExpr()
         node.lineno = lineno
         node.name = p[2]
-        node.typename = p[4]
+        typename = ast_for_dotted_name(p[4])
+        typename.lineno = lineno
+        node.typename = typename
         node.expr = python
         p[0] = node
 
@@ -565,7 +567,7 @@ class BaseEnamlParser(object):
         p[0] = node
 
     def p_storage_expr2(self, p):
-        ''' storage_expr : NAME NAME COLON NAME NEWLINE '''
+        ''' storage_expr : NAME NAME COLON dotted_name NEWLINE '''
         kind = p[1]
         lineno = p.lineno(1)
         self._validate_storage_expr(kind, lineno, p.lexer.lexer)
@@ -573,7 +575,9 @@ class BaseEnamlParser(object):
         node.lineno = lineno
         node.kind = kind
         node.name = p[2]
-        node.typename = p[4]
+        typename = ast_for_dotted_name(p[4])
+        typename.lineno = lineno
+        node.typename = typename
         p[0] = node
 
     def p_storage_expr3(self, p):
@@ -589,7 +593,7 @@ class BaseEnamlParser(object):
         p[0] = node
 
     def p_storage_expr4(self, p):
-        ''' storage_expr : NAME NAME COLON NAME operator_expr '''
+        ''' storage_expr : NAME NAME COLON dotted_name operator_expr '''
         kind = p[1]
         lineno = p.lineno(1)
         self._validate_storage_expr(kind, lineno, p.lexer.lexer)
@@ -597,7 +601,9 @@ class BaseEnamlParser(object):
         node.lineno = lineno
         node.kind = kind
         node.name = p[2]
-        node.typename = p[4]
+        typename = ast_for_dotted_name(p[4])
+        typename.lineno = lineno
+        node.typename = typename
         node.expr = p[5]
         p[0] = node
 
