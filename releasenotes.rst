@@ -4,10 +4,10 @@ Enaml Release Notes
 0.11.0 - unreleased
 -------------------
 - properly report SyntaxError in f strings PR #378
+- add support for using attributes when specifying attr types PR #359
 
 0.10.4 - 18/09/2019
 -------------------
-- add support for using attributes when specifying attr types PR #359
 - fix a bug in the parser preventing the use of `raise from` under Python 3 PR #364
 - add a ButtonGroup widget and a group attribute on all buttons to allow to
   group buttons belonging to different containers. PR #346
