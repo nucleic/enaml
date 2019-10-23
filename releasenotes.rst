@@ -3,6 +3,7 @@ Enaml Release Notes
 
 0.11.0 - unreleased
 -------------------
+- properly report SyntaxError in f strings PR #378
 
 0.10.4 - 18/09/2019
 -------------------

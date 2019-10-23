@@ -48,7 +48,8 @@ for k, v in list(TEST_SOURCE.items()):
 @pytest.mark.skipif(sys.version_info < (3, 6), reason='Requires Python 3.6')
 @pytest.mark.parametrize('desc', TEST_SOURCE.keys())
 def test_f_strings(desc):
-    """Async function with await list comp statement
+    """Test that we produce valid ast for f-strings.
+
     """
     src = TEST_SOURCE[desc].strip()
     print(src)
@@ -56,3 +57,17 @@ def test_f_strings(desc):
     py_ast = ast.parse(src)
     enaml_ast = parse(src).body[0].ast
     validate_ast(py_ast.body[0], enaml_ast.body[0], True)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 6), reason='Requires Python 3.6')
+@pytest.mark.parametrize("source, line",
+                         [("f'{\\}'", 1), ("('d'\nf'{\\}')", 2)])
+def test_reporting_errors_f_strings(source, line):
+    """Test that we properly report error on f-string.
+
+    """
+    with pytest.raises(SyntaxError) as e:
+        parse(source)
+
+    assert "backslash" in e.value.args[0]
+    assert line == e.value.args[1][1]
