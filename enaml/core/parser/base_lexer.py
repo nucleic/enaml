@@ -192,7 +192,6 @@ class BaseEnamlLexer(object):
 
     reserved = {
         'and': 'AND',
-        'alias': 'ALIAS',
         'as': 'AS',
         'assert': 'ASSERT',
         'break': 'BREAK',

@@ -439,7 +439,6 @@ class BaseEnamlParser(object):
     def p_enamldef_simple_item1(self, p):
         ''' enamldef_simple_item : binding
                                  | ex_binding
-                                 | alias_expr
                                  | storage_expr '''
         p[0] = p[1]
 
@@ -497,7 +496,7 @@ class BaseEnamlParser(object):
     # -------------------------------------------------------------------------
     # AliasExpr
     # -------------------------------------------------------------------------
-    def p_alias_expr1(self, p):
+    def d_alias_expr1(self, p):
         ''' alias_expr : ALIAS NAME NEWLINE '''
         node = enaml_ast.AliasExpr()
         node.lineno = p.lineno(1)
@@ -505,21 +504,15 @@ class BaseEnamlParser(object):
         node.target = p[2]
         p[0] = node
 
-    def p_alias_expr2(self, p):
-        ''' alias_expr : ALIAS NAME COLON NAME NEWLINE '''
+    def d_alias_expr2(self, p):
+        ''' alias_expr : ALIAS NAME COLON dotted_name NEWLINE '''
         node = enaml_ast.AliasExpr()
         node.lineno = p.lineno(1)
         node.name = p[2]
-        node.target = p[4]
-        p[0] = node
-
-    def p_alias_expr3(self, p):
-        ''' alias_expr : ALIAS NAME COLON NAME ex_dotted_names NEWLINE '''
-        node = enaml_ast.AliasExpr()
-        node.lineno = p.lineno(1)
-        node.name = p[2]
-        node.target = p[4]
-        node.chain = tuple(p[5])
+        parts = p[4].split(".")
+        node.target = parts[0]
+        if len(parts) > 1:
+            node.chain = tuple(parts[1:])
         p[0] = node
 
     # -------------------------------------------------------------------------
@@ -566,6 +559,8 @@ class BaseEnamlParser(object):
     def p_storage_expr1(self, p):
         ''' storage_expr : NAME NAME NEWLINE '''
         kind = p[1]
+        if kind == 'alias':
+            return self.d_alias_expr1(p)
         lineno = p.lineno(1)
         self._validate_storage_expr(kind, lineno, p.lexer.lexer)
         node = enaml_ast.StorageExpr()
@@ -577,6 +572,8 @@ class BaseEnamlParser(object):
     def p_storage_expr2(self, p):
         ''' storage_expr : NAME NAME COLON dotted_name NEWLINE '''
         kind = p[1]
+        if kind == 'alias':
+            return self.d_alias_expr2(p)
         lineno = p.lineno(1)
         self._validate_storage_expr(kind, lineno, p.lexer.lexer)
         node = enaml_ast.StorageExpr()
@@ -669,7 +666,6 @@ class BaseEnamlParser(object):
     def p_child_def_simple_item1(self, p):
         ''' child_def_simple_item : binding
                                   | ex_binding
-                                  | alias_expr
                                   | storage_expr '''
         p[0] = p[1]
 

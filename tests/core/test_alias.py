@@ -974,3 +974,35 @@ def test_bad_override_3():
     """)
     with pytest.raises(TypeError):
         compile_source(source, 'Main')
+
+
+#------------------------------------------------------------------------------
+# alias is not a keyword outside except in an enamldef
+#------------------------------------------------------------------------------
+def test_name_syntax_1():
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    def get_query():
+        return alias('query_name')
+
+    enamldef Main(Window):
+        Label:
+            name = get_query()
+
+    """)
+    compile_source(source, 'Main')
+
+
+def test_name_syntax_2():
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window):
+        func get_query():
+            return alias('query_name')
+        Label:
+            name = get_query()
+
+    """)
+    compile_source(source, 'Main')
