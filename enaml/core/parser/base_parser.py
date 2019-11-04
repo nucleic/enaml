@@ -522,7 +522,7 @@ class BaseEnamlParser(object):
             node.name = p[2]
             p[0] = node
 
-    def p_sstorage_alias_const_expr2(self, p):
+    def p_storage_alias_const_expr2(self, p):
         ''' storage_alias_const_expr : NAME NAME COLON dotted_name NEWLINE '''
         kind = p[1]
         lineno = p.lineno(1)
