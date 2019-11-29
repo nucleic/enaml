@@ -80,3 +80,9 @@ to the most definitive Enaml documentation: the source.
 --------------------
 
 Enaml includes a few console scripts to assist in development.
+
+:doc:`developer_notes/index`
+----------------------------
+
+Notes regarding the development of Enaml such as coding conventions and C
+extensions writing.
