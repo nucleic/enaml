@@ -27,6 +27,7 @@ A few highlights of the framework:
     Examples <examples/index>
     API Reference <api_ref/index>
     Command Reference <cmd_ref/index>
+    Developer Notes <developer_notes/index>
 
 
 :doc:`get_started/index`
