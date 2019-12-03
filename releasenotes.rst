@@ -5,6 +5,8 @@ Enaml Release Notes
 -------------------
 - properly report SyntaxError in f strings PR #378
 - add support for using attributes when specifying attr types PR #359
+- limit support to Python 3 PR #349
+- use cppy for the Python/C interface PR #349
 
 0.10.4 - 18/09/2019
 -------------------
