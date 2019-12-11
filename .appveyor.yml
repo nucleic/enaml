@@ -152,7 +152,7 @@ install:
   # of Atom which is not on PyPI. Install straight from GitHub.
   - pip install https://github.com/nucleic/atom/tarball/master
   - pip install https://github.com/nucleic/kiwi/tarball/master
-  - pip install https://github.com/nucleic/cppy/tarball/nucleic-migration
+  - pip install https://github.com/nucleic/cppy/tarball/master
 
   # We need a library for Qt.
   # PyQT4 won't pip install, so resort to conda.

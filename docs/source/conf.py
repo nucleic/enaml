@@ -68,7 +68,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Enaml'
-copyright = u'2013-2018, Nucleic Development Team'
+copyright = u'2013-2019, Nucleic Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
