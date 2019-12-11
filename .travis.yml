@@ -87,9 +87,9 @@ before_install:
      fi'
 
   # Install the dev version of the other nucleic projects
+  - $PIP_INSTALL https://github.com/nucleic/cppy/tarball/master
   - $PIP_INSTALL https://github.com/nucleic/atom/tarball/master
   - $PIP_INSTALL https://github.com/nucleic/kiwi/tarball/master
-  - $PIP_INSTALL https://github.com/nucleic/cppy/tarball/master
 
   # Intall test tools (we require pytest > 3.3 to get the builtin logging
   # features)
