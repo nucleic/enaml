@@ -3,9 +3,10 @@ Welcome to Enaml
 ================
 
 Enaml is a programming language and framework for creating professional quality
-user interfaces with minimal effort. Enaml combines a domain specific declarative language with a constraints based layout system to allow users to easily define
-rich UIs with complex and flexible layouts. Enaml applications can be run on any
-platform which supports Python and Qt.
+user interfaces with minimal effort. Enaml combines a domain specific
+declarative language with a constraints based layout system to allow users to
+easily define rich UIs with complex and flexible layouts. Enaml applications
+can be run on any platform which supports Python and Qt.
 
 A few highlights of the framework:
 
@@ -26,6 +27,7 @@ A few highlights of the framework:
     Examples <examples/index>
     API Reference <api_ref/index>
     Command Reference <cmd_ref/index>
+    Developer Notes <developer_notes/index>
 
 
 :doc:`get_started/index`
@@ -79,3 +81,9 @@ to the most definitive Enaml documentation: the source.
 --------------------
 
 Enaml includes a few console scripts to assist in development.
+
+:doc:`developer_notes/index`
+----------------------------
+
+Notes regarding the development of Enaml such as coding conventions and C
+extensions writing.

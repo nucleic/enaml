@@ -10,7 +10,6 @@ from atom.api import (
 )
 
 from enaml.core.declarative import d_
-from enaml.compat import str
 from .control import Control, ProxyControl
 
 

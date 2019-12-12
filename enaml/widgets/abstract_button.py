@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, Unicode, Coerced, Event, Typed, ForwardTyped, observe, set_default
+    Bool, Str, Coerced, Event, Typed, ForwardTyped, observe, set_default
 )
 
 from enaml.core.declarative import d_
@@ -52,7 +52,7 @@ class AbstractButton(Control):
 
     """
     #: The text to use as the button's label.
-    text = d_(Unicode())
+    text = d_(Str())
 
     #: The source url for the icon to use for the button.
     icon = d_(Typed(Icon))

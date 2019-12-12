@@ -10,9 +10,10 @@ choose from.
 Anaconda: The Easiest Way
 -------------------------
 
-If you use the `Anaconda`_ Python distribution platform (or `Miniconda`_, its lighter-weight companion), the latest 
-release of Enaml can be installed using conda from the conda-forge channel::
-    
+If you use the `Anaconda`_ Python distribution platform (or `Miniconda`_,
+its lighter-weight companion), the latest release of Enaml can be installed
+using conda from the conda-forge channel::
+
     $ conda install enaml -c conda-forge
 
 .. _Anaconda: https://store.continuum.io/cshop/anaconda
@@ -25,7 +26,7 @@ If you don't use Anaconda, you can install Enaml and its dependencies,
 pre-compiled, through PIP, for most common platforms.
 
 You will need three things:
-  
+
 * `Python`_
 * Enaml (and its dependencies)
 * a toolkit rendering library
@@ -34,8 +35,8 @@ Python
 ~~~~~~
 
 Enaml is a Python framework and requires a supported Python runtime. Enaml
-currently supports **Python 2.7**, **Python 3.4**, **Python 3.5**, and
-**Python 3.6**.
+currently supports **Python 2.7**, **Python 3.4**, **Python 3.5**,
+**Python 3.6** and **Python 3.7**.
 
 The most recent Python releases are available on the `Python Downloads`_ pages.
 Installers are available for Windows and OSX. Linux users should install Python
@@ -63,11 +64,11 @@ dependency separately.
 The recommended library is `PyQt5`_,  a robust set of Python bindings to the
 Qt 5 toolkit.  (It includes the necessary parts of Qt 5.)
 
-On 32 and 64-bit Windows, 64-bit OS X and 64-bit Linux, with Python 
+On 32 and 64-bit Windows, 64-bit OS X and 64-bit Linux, with Python
 versions >=3.5, it can be installed via pip::
 
     $ pip install pyqt5
-    
+
 .. note::
     There is no pyqt5 wheel available for 32-bit Linux.
 
@@ -76,8 +77,8 @@ Alternatives
 
 Enaml uses the `QtPy`_ library as compatibility layer to support some other QT-based libraries.
 
-* `PyQt`_, which is a robust set of Python bindings to the Qt 4 toolkit. It is no longer a 
-  supported project, but can still be installed and used with Enaml. The 
+* `PyQt`_, which is a robust set of Python bindings to the Qt 4 toolkit. It is no longer a
+  supported project, but can still be installed and used with Enaml. The
   `PyQt Downloads`_ page contains Windows installers - which also the necessary parts of Qt 4.
   OSX users can install PyQt4 via `Homebrew`_. Linux users should install via the system
   package manager.
@@ -88,14 +89,14 @@ Enaml uses the `QtPy`_ library as compatibility layer to support some other QT-b
   differences between the two libraries.  While some effort is made to support the use of
   PySide2 in Enaml, it is "use at your own risk". Patches to improve support are welcomed.
 
-  To activate PySide2 support, install `PySide2`_ separately and set the environment 
+  To activate PySide2 support, install `PySide2`_ separately and set the environment
   variable ``QT_API=pyside2`` before starting the Enaml application.
 
 * `PySide`_ is a set of Python bindings to the Qt 4 toolkit which are no longer being
   maintained. These bindings are not recommended, and not supported, but you may find they
   work anyway. Use at your own risk.
 
-  To activate PySide support, install `PySide`_ separately and set the environment 
+  To activate PySide support, install `PySide`_ separately and set the environment
   variable ``QT_API=pyside`` before starting the Enaml application.
 
 * While Enaml is architected to be toolkit agnostic, only Qt-based toolkit libraries are
@@ -116,13 +117,13 @@ tools installed and available on the system path.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Setuptools is a Python package which makes installing other Python packages a
-breeze. Pip is the default package manager for Python. The installation 
-instructions below assume that Setuptools and Pip have been installed in the 
-target Python environment. Follow the relevant `Setuptools Install`_ 
+breeze. Pip is the default package manager for Python. The installation
+instructions below assume that Setuptools and Pip have been installed in the
+target Python environment. Follow the relevant `Setuptools Install`_
 instructions for adding the package to your system.
 
 .. note::
-    Recent versions of Python (Python 2 >=2.7.9 or Python 3 >=3.4) installed 
+    Recent versions of Python (Python 2 >=2.7.9 or Python 3 >=3.4) installed
     from the official binaries install come with those tools installed.
 
 .. _Setuptools: http://pythonhosted.org/setuptools
@@ -134,9 +135,9 @@ instructions for adding the package to your system.
 ~~~~~~
 
 The Enaml framework extends the grammar Python language with new declarative
-syntax constructs. To accomplish this, Enaml has a fully compliant Python 
-2.7/3.4/3.5/3.6 lexer and parser with added support for the new syntax. These 
-components are built using the PLY parsing tools, which contain Python 
+syntax constructs. To accomplish this, Enaml has a fully compliant Python
+2.7/3.4/3.5/3.6 lexer and parser with added support for the new syntax. These
+components are built using the PLY parsing tools, which contain Python
 implementations of lex and yacc.
 
 Ply can be installed with the ``pip install`` command of `Pip`_::

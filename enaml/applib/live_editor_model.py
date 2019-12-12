@@ -15,7 +15,6 @@ import enaml
 from enaml.core.object import Object
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse
-from enaml.compat import exec_
 from enaml.widgets.widget import Widget
 
 try:
@@ -187,7 +186,7 @@ class LiveEditorModel(Atom):
                 module = ModuleType(filename.rsplit('.', 1)[0])
                 module.__file__ = filename
                 namespace = module.__dict__
-                exec_(code, namespace)
+                exec(code, namespace)
                 model = namespace.get(self.model_item, lambda: None)()
                 self.compiled_model = model
                 self._model_module = module
@@ -220,7 +219,7 @@ class LiveEditorModel(Atom):
                 module.__file__ = filename
                 namespace = module.__dict__
                 with enaml.imports():
-                    exec_(code, namespace)
+                    exec(code, namespace)
                 view = namespace.get(self.view_item, lambda: None)()
                 if isinstance(view, Object) and 'model' in view.members():
                     view.model = self.compiled_model

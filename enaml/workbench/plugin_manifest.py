@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Callable, ForwardTyped, Unicode
+from atom.api import Callable, ForwardTyped, Str
 
 from enaml.core.declarative import Declarative, d_
 
@@ -35,7 +35,7 @@ class PluginManifest(Declarative):
     """
     #: The globally unique identifier for the plugin. The suggested
     #: format is dot-separated, e.g. 'foo.bar.baz'.
-    id = d_(Unicode())
+    id = d_(Str())
 
     #: The factory which will create the Plugin instance. It should
     #: take no arguments and return an instance of Plugin. Well behaved
@@ -49,7 +49,7 @@ class PluginManifest(Declarative):
     workbench = ForwardTyped(Workbench)
 
     #: An optional description of the plugin.
-    description = d_(Unicode())
+    description = d_(Str())
 
     @property
     def extensions(self):

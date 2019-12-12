@@ -1,11 +1,15 @@
+include MANIFEST.in
 include *.txt
 include *.rst
 include *.md
 include Makefile
-recursive-include docs *.rst
-recursive-include docs *.png
-recursive-include docs *.py
-recursive-include docs *.enaml
+include LICENSE
+recursive-include docs/source *.rst
+recursive-include docs/source *.png
+recursive-include docs/source *.py
+recursive-include docs/source *.enaml
+include docs/make.bat
+include docs/Makefile
 recursive-include examples *.*
 recursive-include licenses *.txt
 recursive-include tools *.*

@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Enum, Bool, Typed, ForwardTyped, Unicode, observe, set_default
+    Enum, Bool, Typed, ForwardTyped, Str, observe, set_default
 )
 
 from enaml.core.declarative import d_
@@ -61,7 +61,7 @@ class Notebook(ConstraintsWidget):
     tabs_movable = d_(Bool(True))
 
     #: The object name for the selected tab in the notebook.
-    selected_tab = d_(Unicode())
+    selected_tab = d_(Str())
 
     #: The size hint mode for the stack. The default is 'union' and
     #: means that the size hint of the notebook is the union of all

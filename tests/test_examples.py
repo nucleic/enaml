@@ -11,8 +11,6 @@ import types
 
 import pytest
 
-from enaml.compat import exec_
-
 from enaml import imports
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
@@ -215,7 +213,7 @@ def test_examples(enaml_qtbot, enaml_sleep, path, handler):
     dir_path = os.path.abspath(os.path.split(os.path.dirname(__file__))[0])
     enaml_file = os.path.join(dir_path, 'examples', os.path.normpath(path))
 
-    with open(enaml_file, 'rU') as f:
+    with open(enaml_file, 'r') as f:
         enaml_code = f.read()
 
     # Parse and compile the Enaml source into a code object
@@ -234,7 +232,7 @@ def test_examples(enaml_qtbot, enaml_sleep, path, handler):
         # imports can work.
         sys.path.insert(0, os.path.abspath(os.path.dirname(enaml_file)))
         with imports():
-            exec_(code, ns)
+            exec(code, ns)
 
         window = ns['Main']()
         window.show()

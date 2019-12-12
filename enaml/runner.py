@@ -19,7 +19,7 @@ import types
 from enaml import imports
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
-from enaml.compat import read_source, exec_
+from enaml.compat import read_source
 
 
 def main():
@@ -58,7 +58,7 @@ def main():
     # Bung in the command line arguments.
     sys.argv = [enaml_file] + script_argv
     with imports():
-        exec_(code, ns)
+        exec(code, ns)
 
     # Make sure ^C keeps working
     signal.signal(signal.SIGINT, signal.SIG_DFL)

@@ -9,7 +9,6 @@ from atom.api import Atom, atomref
 
 from .alias import Alias
 from .code_tracing import CodeTracer
-from ..compat import IS_PY3, basestring
 
 
 class SubscriptionObserver(object):
@@ -41,10 +40,6 @@ class SubscriptionObserver(object):
 
         """
         return bool(self.ref)
-
-    if not IS_PY3:
-        __nonzero__ = __bool__
-        del __bool__
 
     def __call__(self, change):
         """ The handler for the change notification.
@@ -162,7 +157,7 @@ class StandardTracer(CodeTracer):
         nkwargs = (argspec >> 8) & 0xFF
         if (func is getattr and (nargs == 2 or nargs == 3) and nkwargs == 0):
             obj, attr = argtuple[0], argtuple[1]
-            if isinstance(obj, Atom) and isinstance(attr, basestring):
+            if isinstance(obj, Atom) and isinstance(attr, str):
                 self.trace_atom(obj, attr)
 
     def return_value(self, value):

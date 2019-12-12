@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from .base_lexer import BaseEnamlLexer
-from ...compat import decode_escapes, encode_escapes, bytes
+from ...compat import decode_escapes, encode_escapes
 
 
 class Python3EnamlLexer(BaseEnamlLexer):

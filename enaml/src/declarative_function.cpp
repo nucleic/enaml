@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013, Nucleic Development Team.
+| Copyright (c) 2013-2019, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -7,8 +7,7 @@
 |----------------------------------------------------------------------------*/
 #include <iostream>
 #include <sstream>
-#include "pythonhelpersex.h"
-#include "py23compat.h"
+#include <cppy/cppy.h>
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
@@ -18,27 +17,53 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
 
-using namespace PythonHelpers;
+
+namespace enaml
+{
 
 
-PyObject* DynamicScope;
-PyObject* call_func;
-PyObject* super_disallowed;
-
-
-typedef struct {
-    PyObject_HEAD
+// POD struct - all member fields are considered private
+struct DFunc
+{
+	PyObject_HEAD
     PyObject* im_func;  // always a function
     PyObject* im_key;   // anything
-} DFunc;
+
+	static PyType_Spec TypeObject_Spec;
+
+    static PyTypeObject* TypeObject;
+
+	static bool Ready();
+
+};
 
 
-typedef struct {
-    PyObject_HEAD
+// POD struct - all member fields are considered private
+struct BoundDMethod
+{
+	PyObject_HEAD
     PyObject* im_func;  // always a function
     PyObject* im_self;  // anything
     PyObject* im_key;   // anything
-} BoundDMethod;
+
+	static PyType_Spec TypeObject_Spec;
+
+    static PyTypeObject* TypeObject;
+
+	static bool Ready();
+
+    static PyObject* New( PyObject* im_func, PyObject* im_self, PyObject* im_key );
+
+};
+
+
+namespace
+{
+
+
+static PyObject* DynamicScope;
+static PyObject* call_func;
+static PyObject* super_disallowed;
 
 
 #define FREELIST_MAX 128
@@ -46,25 +71,25 @@ static int numfree = 0;
 static BoundDMethod* freelist[ FREELIST_MAX ];
 
 
-static PyObject*
+PyObject*
 _SuperDisallowed( PyObject* mod, PyObject* args, PyObject* kwargs)
 {
-    return py_type_fail( "super() is not allowed in a declarative function, "
-                         " use SomeClass.some_method(self, ...) instead." );
+    return cppy::type_error( "super() is not allowed in a declarative function, "
+                             " use SomeClass.some_method(self, ...) instead." );
 }
 
 
-/*Internal function used whan calling a DeclarativeFunc or
-BoundDeclarativeMethod*/
-static PyObject*
+/* Internal function used whan calling a DeclarativeFunc or
+BoundDeclarativeMethod */
+PyObject*
 _Invoke( PyObject* func, PyObject* key, PyObject* self, PyObject* args,
          PyObject* kwargs )
 {
-    PyObjectPtr pfunc( newref( func ) );
-    PyDictPtr f_globals( pfunc.getattr("__globals__") );
+    cppy::ptr pfunc( cppy::incref( func ) );
+    cppy::ptr f_globals( pfunc.getattr( "__globals__" ) );
     if( !f_globals )
-        return py_no_attr_fail( pfunc.get(), "__globals__" );
-    PyObjectPtr f_builtins( f_globals.get_item( "__builtins__" ) );
+        return cppy::attribute_error( pfunc.get(), "__globals__" );
+    cppy::ptr f_builtins( PyDict_GetItemString( f_globals.get(), "__builtins__" ) );
     if( !f_builtins ){
         PyErr_Format(
             PyExc_KeyError,
@@ -73,33 +98,29 @@ _Invoke( PyObject* func, PyObject* key, PyObject* self, PyObject* args,
         );
         return 0;
     }
-    PyObjectPtr pself( newref( self ) );
-    PyDictPtr d_storage( pself.getattr("_d_storage") );
+    cppy::ptr pself( cppy::incref( self ) );
+    cppy::ptr d_storage( pself.getattr( "_d_storage" ) );
     if( !d_storage )
-        return py_no_attr_fail( pself.get(), "_d_storage" );
+        return cppy::attribute_error( pself.get(), "_d_storage" );
 
-    PyObjectPtr empty( PyDict_New() );
-    PyObjectPtr f_locals( PyObject_CallMethod( d_storage.get(), "get", "OO", key, empty.get() ) );
-    PyObjectPtr scope(
+    cppy::ptr empty( PyDict_New() );
+    cppy::ptr f_locals( PyObject_CallMethod( d_storage.get(), "get", "OO", key, empty.get() ) );
+    cppy::ptr scope(
         PyObject_CallFunctionObjArgs( DynamicScope, self, f_locals.get(),
                                       f_globals.get(),
                                       f_builtins.get(), 0 )
         );
-    if( PyMapping_SetItemString( scope.get(), "super", newref( super_disallowed ) ) == -1 )
-        return py_bad_internal_call("Failed to set key super in dynamic scope");
+    if( PyMapping_SetItemString( scope.get(), "super", cppy::incref( super_disallowed ) ) == -1 )
+        return cppy::system_error( "Failed to set key super in dynamic scope" );
 
-    PyObjectPtr pkw( xnewref( kwargs ) );
+    cppy::ptr pkw( cppy::xincref( kwargs ) );
     if( !pkw )
         pkw.set( PyDict_New() );
     return PyObject_CallFunctionObjArgs( call_func, func, args, pkw.get(), scope.get(), 0 );
 }
 
 
-static PyObject*
-BoundDMethod_New( PyObject* im_func, PyObject* im_self, PyObject* im_key );
-
-
-static PyObject*
+PyObject*
 DFunc_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
     PyObject* self = PyType_GenericNew( type, args, kwargs );
@@ -111,15 +132,15 @@ DFunc_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     if( !PyArg_ParseTupleAndKeywords( args, kwargs, "OO:__new__", kwlist, &im_func, &im_key ) )
         return 0;
     if( !PyFunction_Check( im_func ) )
-        return py_expected_type_fail( im_func, "function" );
+        return cppy::type_error( im_func, "function" );
     DFunc* df = reinterpret_cast<DFunc*>( self );
-    df->im_func = newref( im_func );
-    df->im_key = newref( im_key );
+    df->im_func = cppy::incref( im_func );
+    df->im_key = cppy::incref( im_key );
     return self;
 }
 
 
-static void
+void
 DFunc_clear( DFunc* self )
 {
     Py_CLEAR( self->im_func );
@@ -127,7 +148,7 @@ DFunc_clear( DFunc* self )
 }
 
 
-static int
+int
 DFunc_traverse( DFunc* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->im_func );
@@ -136,7 +157,7 @@ DFunc_traverse( DFunc* self, visitproc visit, void* arg )
 }
 
 
-static void
+void
 DFunc_dealloc( DFunc* self )
 {
     DFunc_clear( self );
@@ -144,65 +165,66 @@ DFunc_dealloc( DFunc* self )
 }
 
 
-static PyObject*
+PyObject*
 DFunc_repr( DFunc* self )
 {
     std::ostringstream ostr;
     ostr << "<declarative function ";
-    PyObjectPtr mod( PyObject_GetAttrString( self->im_func, "__module__" ) );
-    if( mod && Py23Str_Check( mod.get() ) )
-        ostr << Py23Str_AS_STRING( mod.get() ) << ".";
-    PyObjectPtr name( PyObject_GetAttrString( self->im_func, "__name__" ) );
-    if( name && Py23Str_Check( name.get() ) )
-        ostr << Py23Str_AS_STRING( name.get() );
+    cppy::ptr mod( PyObject_GetAttrString( self->im_func, "__module__" ) );
+    if( mod && PyUnicode_Check( mod.get() ) )
+        ostr << PyUnicode_AsUTF8( mod.get() ) << ".";
+    cppy::ptr name( PyObject_GetAttrString( self->im_func, "__name__" ) );
+    if( name && PyUnicode_Check( name.get() ) )
+        ostr << PyUnicode_AsUTF8( name.get() );
     ostr << ">";
-    return Py23Str_FromString( ostr.str().c_str() );
+    return PyUnicode_FromString( ostr.str().c_str() );
 }
 
 
-static PyObject*
+PyObject*
 DFunc__get__( DFunc* self, PyObject* im_self, PyObject* type )
 {
     if( !im_self )
-        return newref( pyobject_cast( self ) );
-    return BoundDMethod_New( self->im_func, im_self, self->im_key );
+        return cppy::incref( pyobject_cast( self ) );
+    return BoundDMethod::New( self->im_func, im_self, self->im_key );
 }
 
 
-static PyObject*
+PyObject*
 DFunc__call__( DFunc* self, PyObject* args, PyObject* kwargs )
 {
-    PyTuplePtr argsptr( args );
-    if( argsptr.size() == 0 )
+    cppy::ptr argsptr( cppy::incref( args ) );
+    Py_ssize_t args_size = PyTuple_GET_SIZE( argsptr.get() );
+    if( args_size == 0 )
     {
         std::ostringstream ostr;
         ostr << "DeclarativeFunction.__call__() takes at least 1 argument (";
-        ostr << argsptr.size() << " given)";
-        return py_type_fail( ostr.str().c_str() );
+        ostr << args_size << " given)";
+        return cppy::type_error( ostr.str().c_str() );
     }
-    PyObjectPtr pself( argsptr.get_item(0) );
-    PyTuplePtr pargs( PyTuple_GetSlice( argsptr.get(), 1, argsptr.size() ) );
+    cppy::ptr pself( cppy::incref( PyTuple_GET_ITEM( argsptr.get(), 0 ) ) );
+    cppy::ptr pargs( PyTuple_GetSlice( argsptr.get(), 1, args_size ) );
     if( !pargs )
-        return py_bad_internal_call("DeclarativeFunction.__call__ failed to "
-                                    "slice arguments.");
+        return cppy::system_error( "DeclarativeFunction.__call__ failed to "
+                                   "slice arguments." );
     return _Invoke( self->im_func, self->im_key, pself.get(), pargs.get(), kwargs );
 }
 
 
-static PyObject*
+PyObject*
 DFunc_get_func( DFunc* self, void* ctxt )
 {
-    return newref( self->im_func );
+    return cppy::incref( self->im_func );
 }
 
 
-static PyObject*
+PyObject*
 DFunc_get_key( DFunc* self, void* ctxt )
 {
-    return newref( self->im_key );
+    return cppy::incref( self->im_key );
 }
 
-static PyObject*
+PyObject*
 DFunc_get_d_func( DFunc* self, void* ctxt )
 {
     Py_INCREF(Py_True);
@@ -210,7 +232,7 @@ DFunc_get_d_func( DFunc* self, void* ctxt )
 }
 
 
-static PyGetSetDef
+PyGetSetDef
 DFunc_getset[] = {
     { "__func__", ( getter )DFunc_get_func, 0,
       "Get the function invoked by this declarative function." },
@@ -223,63 +245,55 @@ DFunc_getset[] = {
 };
 
 
-PyTypeObject DFunc_Type = {
-    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.declarative_function.DeclarativeFunction", /* tp_name */
-    sizeof( DFunc ),                                  /* tp_basicsize */
-    0,                                                /* tp_itemsize */
-    (destructor)DFunc_dealloc,                        /* tp_dealloc */
-    (printfunc)0,                                     /* tp_print */
-    (getattrfunc)0,                                   /* tp_getattr */
-    (setattrfunc)0,                                   /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                             /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                                      /* tp_reserved */
-#else
-	( cmpfunc )0,                                     /* tp_compare */
-#endif
-    (reprfunc)DFunc_repr,                             /* tp_repr */
-    (PyNumberMethods*)0,                              /* tp_as_number */
-    (PySequenceMethods*)0,                            /* tp_as_sequence */
-    (PyMappingMethods*)0,                             /* tp_as_mapping */
-    (hashfunc)0,                                      /* tp_hash */
-    (ternaryfunc)DFunc__call__,                       /* tp_call */
-    (reprfunc)0,                                      /* tp_str */
-    (getattrofunc)0,                                  /* tp_getattro */
-    (setattrofunc)0,                                  /* tp_setattro */
-    (PyBufferProcs*)0,                                /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,            /* tp_flags */
-    0,                                                /* Documentation string */
-    (traverseproc)DFunc_traverse,                     /* tp_traverse */
-    (inquiry)DFunc_clear,                             /* tp_clear */
-    (richcmpfunc)0,                                   /* tp_richcompare */
-    0,                                                /* tp_weaklistoffset */
-    (getiterfunc)0,                                   /* tp_iter */
-    (iternextfunc)0,                                  /* tp_iternext */
-    (struct PyMethodDef*)0,                           /* tp_methods */
-    (struct PyMemberDef*)0,                           /* tp_members */
-    DFunc_getset,                                     /* tp_getset */
-    0,                                                /* tp_base */
-    0,                                                /* tp_dict */
-    (descrgetfunc)DFunc__get__,                       /* tp_descr_get */
-    (descrsetfunc)0,                                  /* tp_descr_set */
-    0,                                                /* tp_dictoffset */
-    (initproc)0,                                      /* tp_init */
-    (allocfunc)PyType_GenericAlloc,                   /* tp_alloc */
-    (newfunc)DFunc_new,                               /* tp_new */
-    (freefunc)PyObject_GC_Del,                        /* tp_free */
-    (inquiry)0,                                       /* tp_is_gc */
-    0,                                                /* tp_bases */
-    0,                                                /* tp_mro */
-    0,                                                /* tp_cache */
-    0,                                                /* tp_subclasses */
-    0,                                                /* tp_weaklist */
-    (destructor)0                                     /* tp_del */
+static PyType_Slot DFunc_Type_slots[] = {
+    { Py_tp_dealloc, void_cast( DFunc_dealloc ) },        /* tp_dealloc */
+    { Py_tp_traverse, void_cast( DFunc_traverse ) },      /* tp_traverse */
+    { Py_tp_clear, void_cast( DFunc_clear ) },            /* tp_clear */
+    { Py_tp_getset, void_cast( DFunc_getset ) },          /* tp_getset */
+    { Py_tp_descr_get, void_cast( DFunc__get__ ) },       /* tp_descr_get */
+    { Py_tp_call, void_cast( DFunc__call__ ) },           /* tp_call */
+    { Py_tp_repr, void_cast( DFunc_repr ) },              /* tp_repr */
+    { Py_tp_new, void_cast( DFunc_new ) },                /* tp_new */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },    /* tp_alloc */
+    { Py_tp_free, void_cast( PyObject_GC_Del ) },         /* tp_free */
+    { 0, 0 },
 };
 
 
-static void
+}  // namespace
+
+
+// Initialize static variables (otherwise the compiler eliminates them)
+PyTypeObject* DFunc::TypeObject = NULL;
+
+
+PyType_Spec DFunc::TypeObject_Spec = {
+	"enaml.declarative_function.DeclarativeFunction",    /* tp_name */
+	sizeof( DFunc ),                                     /* tp_basicsize */
+	0,                                                   /* tp_itemsize */
+	Py_TPFLAGS_DEFAULT|
+    Py_TPFLAGS_HAVE_GC,                                  /* tp_flags */
+    DFunc_Type_slots                                     /* slots */
+};
+
+
+bool DFunc::Ready()
+{
+    // The reference will be handled by the module to which we will add the type
+	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
+    if( !TypeObject )
+    {
+        return false;
+    }
+    return true;
+}
+
+
+namespace
+{
+
+
+void
 BoundDMethod_clear( BoundDMethod* self )
 {
     Py_CLEAR( self->im_func );
@@ -288,7 +302,7 @@ BoundDMethod_clear( BoundDMethod* self )
 }
 
 
-static int
+int
 BoundDMethod_traverse( BoundDMethod* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->im_func );
@@ -298,7 +312,7 @@ BoundDMethod_traverse( BoundDMethod* self, visitproc visit, void* arg )
 }
 
 
-static void
+void
 BoundDMethod_dealloc( BoundDMethod* self )
 {
     PyObject_GC_UnTrack( self );
@@ -310,51 +324,51 @@ BoundDMethod_dealloc( BoundDMethod* self )
 }
 
 
-static PyObject*
+PyObject*
 BoundDMethod_repr( BoundDMethod* self )
 {
     std::ostringstream ostr;
     ostr << "<bound declarative method ";
-    PyObjectPtr cls( PyObject_GetAttrString(
+    cppy::ptr cls( PyObject_GetAttrString(
         pyobject_cast( Py_TYPE( self->im_self ) ), "__name__" ) );
-    if( cls && Py23Str_Check( cls.get() ) )
-        ostr << Py23Str_AS_STRING( cls.get() ) << ".";
-    PyObjectPtr name( PyObject_GetAttrString( self->im_func, "__name__" ) );
-    if( name && Py23Str_Check( name.get() ) )
-        ostr << Py23Str_AS_STRING( name.get() );
-    PyObjectPtr obj( PyObject_Repr( self->im_self ) );
-    if( obj && Py23Str_Check( obj.get() ) )
-        ostr << " of " << Py23Str_AS_STRING( obj.get() );
+    if( cls && PyUnicode_Check( cls.get() ) )
+        ostr << PyUnicode_AsUTF8( cls.get() ) << ".";
+    cppy::ptr name( PyObject_GetAttrString( self->im_func, "__name__" ) );
+    if( name && PyUnicode_Check( name.get() ) )
+        ostr << PyUnicode_AsUTF8( name.get() );
+    cppy::ptr obj( PyObject_Repr( self->im_self ) );
+    if( obj && PyUnicode_Check( obj.get() ) )
+        ostr << " of " << PyUnicode_AsUTF8( obj.get() );
     ostr << ">";
-    return Py23Str_FromString( ostr.str().c_str() );
+    return PyUnicode_FromString( ostr.str().c_str() );
 }
 
 
-static PyObject*
+PyObject*
 BoundDMethod__call__( BoundDMethod* self, PyObject* args, PyObject* kwargs )
 {
     return _Invoke( self->im_func, self->im_key, self->im_self, args, kwargs );
 }
 
 
-static PyObject*
+PyObject*
 BoundDMethod_get_func( BoundDMethod* self, void* ctxt )
 {
-    return newref( self->im_func );
+    return cppy::incref( self->im_func );
 }
 
 
-static PyObject*
+PyObject*
 BoundDMethod_get_self( BoundDMethod* self, void* ctxt )
 {
-    return newref( self->im_self );
+    return cppy::incref( self->im_self );
 }
 
 
-static PyObject*
+PyObject*
 BoundDMethod_get_key( BoundDMethod* self, void* ctxt )
 {
-    return newref( self->im_key );
+    return cppy::incref( self->im_key );
 }
 
 
@@ -370,64 +384,49 @@ BoundDMethod_getset[] = {
 };
 
 
-PyTypeObject BoundDMethod_Type = {
-    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.declarative_function.BoundDeclarativeMethod",  /* tp_name */
-    sizeof( BoundDMethod ),                               /* tp_basicsize */
-    0,                                                    /* tp_itemsize */
-    (destructor)BoundDMethod_dealloc,                     /* tp_dealloc */
-    (printfunc)0,                                         /* tp_print */
-    (getattrfunc)0,                                       /* tp_getattr */
-    (setattrfunc)0,                                       /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                                 /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                                          /* tp_reserved */
-#else
-	( cmpfunc )0,                                         /* tp_compare */
-#endif
-    (reprfunc)BoundDMethod_repr,                          /* tp_repr */
-    (PyNumberMethods*)0,                                  /* tp_as_number */
-    (PySequenceMethods*)0,                                /* tp_as_sequence */
-    (PyMappingMethods*)0,                                 /* tp_as_mapping */
-    (hashfunc)0,                                          /* tp_hash */
-    (ternaryfunc)BoundDMethod__call__,                    /* tp_call */
-    (reprfunc)0,                                          /* tp_str */
-    (getattrofunc)0,                                      /* tp_getattro */
-    (setattrofunc)0,                                      /* tp_setattro */
-    (PyBufferProcs*)0,                                    /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,                /* tp_flags */
-    0,                                                    /* Documentation string */
-    (traverseproc)BoundDMethod_traverse,                  /* tp_traverse */
-    (inquiry)BoundDMethod_clear,                          /* tp_clear */
-    (richcmpfunc)0,                                       /* tp_richcompare */
-    0,                                                    /* tp_weaklistoffset */
-    (getiterfunc)0,                                       /* tp_iter */
-    (iternextfunc)0,                                      /* tp_iternext */
-    (struct PyMethodDef*)0,                               /* tp_methods */
-    (struct PyMemberDef*)0,                               /* tp_members */
-    BoundDMethod_getset,                                  /* tp_getset */
-    0,                                                    /* tp_base */
-    0,                                                    /* tp_dict */
-    (descrgetfunc)0,                                      /* tp_descr_get */
-    (descrsetfunc)0,                                      /* tp_descr_set */
-    0,                                                    /* tp_dictoffset */
-    (initproc)0,                                          /* tp_init */
-    (allocfunc)PyType_GenericAlloc,                       /* tp_alloc */
-    (newfunc)0,                                           /* tp_new */
-    (freefunc)PyObject_GC_Del,                            /* tp_free */
-    (inquiry)0,                                           /* tp_is_gc */
-    0,                                                    /* tp_bases */
-    0,                                                    /* tp_mro */
-    0,                                                    /* tp_cache */
-    0,                                                    /* tp_subclasses */
-    0,                                                    /* tp_weaklist */
-    (destructor)0                                         /* tp_del */
+static PyType_Slot BoundDMethod_Type_slots[] = {
+    { Py_tp_dealloc, void_cast( BoundDMethod_dealloc ) },        /* tp_dealloc */
+    { Py_tp_traverse, void_cast( BoundDMethod_traverse ) },      /* tp_traverse */
+    { Py_tp_clear, void_cast( BoundDMethod_clear ) },            /* tp_clear */
+    { Py_tp_getset, void_cast( BoundDMethod_getset ) },          /* tp_getset */
+    { Py_tp_call, void_cast( BoundDMethod__call__ ) },              /* tp_call */
+    { Py_tp_repr, void_cast( BoundDMethod_repr ) },              /* tp_repr */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },           /* tp_alloc */
+    { Py_tp_free, void_cast( PyObject_GC_Del ) },                /* tp_free */
+    { 0, 0 },
 };
 
 
-static PyObject*
-BoundDMethod_New( PyObject* im_func, PyObject* im_self, PyObject* im_key )
+}  // namespace
+
+
+// Initialize static variables (otherwise the compiler eliminates them)
+PyTypeObject* BoundDMethod::TypeObject = NULL;
+
+
+PyType_Spec BoundDMethod::TypeObject_Spec = {
+	"enaml.declarative_function.BoundDeclarativeMethod",    /* tp_name */
+	sizeof( BoundDMethod ),                                 /* tp_basicsize */
+	0,                                                      /* tp_itemsize */
+	Py_TPFLAGS_DEFAULT|
+    Py_TPFLAGS_HAVE_GC,                                     /* tp_flags */
+    BoundDMethod_Type_slots                                 /* slots */
+};
+
+
+bool BoundDMethod::Ready()
+{
+    // The reference will be handled by the module to which we will add the type
+	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
+    if( !TypeObject )
+    {
+        return false;
+    }
+    return true;
+}
+
+PyObject*
+BoundDMethod::New( PyObject* im_func, PyObject* im_self, PyObject* im_key )
 {
     PyObject* pymethod;
     if( numfree > 0 )
@@ -437,21 +436,88 @@ BoundDMethod_New( PyObject* im_func, PyObject* im_self, PyObject* im_key )
     }
     else
     {
-        pymethod = PyType_GenericAlloc( &BoundDMethod_Type, 0 );
+        pymethod = PyType_GenericAlloc( BoundDMethod::TypeObject, 0 );
         if( !pymethod )
             return 0;
     }
     BoundDMethod* method = reinterpret_cast<BoundDMethod*>( pymethod );
-    method->im_func = newref( im_func );
-    method->im_self = newref( im_self );
-    method->im_key = newref( im_key );
+    method->im_func = cppy::incref( im_func );
+    method->im_self = cppy::incref( im_self );
+    method->im_key = cppy::incref( im_key );
     return pymethod;
 }
 
 
-struct module_state {
-    PyObject *error;
-};
+// Module definition
+namespace
+{
+
+
+int
+declarative_function_modexec( PyObject *mod )
+{
+    // Borrowed reference
+    PyObject* mod_dict = PyModule_GetDict( mod );
+
+    cppy::ptr dm_mod( PyImport_ImportModuleLevel( "dynamicscope", mod_dict, 0, 0 , 1) );
+    if( !dm_mod)
+    {
+        return -1;
+    }
+    cppy::ptr dm_cls( dm_mod.getattr( "DynamicScope" ) );
+    if( !dm_cls )
+    {
+        return -1;
+    }
+
+    cppy::ptr fh_mod( PyImport_ImportModuleLevel( "funchelper", mod_dict, 0, 0, 1 ) );
+    if( !fh_mod )
+    {
+        return -1;
+    }
+    cppy::ptr fh_cls( fh_mod.getattr( "call_func" ) );
+    if( !fh_cls )
+    {
+        return -1;
+    }
+
+    cppy::ptr sup( PyObject_GetAttrString( mod, "_super_disallowed" ) );
+    if( !sup )
+    {
+        return -1;
+    }
+
+    if( !DFunc::Ready() )
+    {
+        return -1;
+    }
+    if( !BoundDMethod::Ready() )
+    {
+        return -1;
+    }
+
+    // DFunc
+    cppy::ptr dfunc( pyobject_cast( DFunc::TypeObject ) );
+	if( PyModule_AddObject( mod, "DeclarativeFunction", dfunc.get() ) < 0 )
+	{
+		return -1;
+	}
+    dfunc.release();
+
+    // BoundDMethod
+    cppy::ptr bdfunc( pyobject_cast( BoundDMethod::TypeObject ) );
+	if( PyModule_AddObject( mod, "BoundDeclarativeMethod", bdfunc.get() ) < 0 )
+	{
+		return -1;
+	}
+    bdfunc.release();
+
+    DynamicScope = dm_cls.release();
+    call_func = fh_cls.release();
+    super_disallowed = sup.release();
+
+    return 0;
+}
 
 
 static PyMethodDef
@@ -461,84 +527,33 @@ declarative_function_methods[] = {
     { 0 }  // Sentinel
 };
 
-#if PY_MAJOR_VERSION >= 3
 
-#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-
-static int declarative_function_traverse(PyObject *m, visitproc visit, void *arg) {
-    Py_VISIT(GETSTATE(m)->error);
-    return 0;
-}
-
-static int declarative_function_clear(PyObject *m) {
-    Py_CLEAR(GETSTATE(m)->error);
-    return 0;
-}
+PyModuleDef_Slot declarative_function_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>( declarative_function_modexec ) },
+    {0, NULL}
+};
 
 
-static struct PyModuleDef moduledef = {
+struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
         "declarative_function",
-        NULL,
-        sizeof(struct module_state),
+        "declarative_function extension module",
+        0,
         declarative_function_methods,
+        declarative_function_slots,
         NULL,
-        declarative_function_traverse,
-        declarative_function_clear,
+        NULL,
         NULL
 };
 
-#else
 
-#define GETSTATE(m) (&_state)
-static struct module_state _state;
+}  // namespace
 
-#endif
 
-MOD_INIT_FUNC(declarative_function)
+}  // namespace enaml
+
+
+PyMODINIT_FUNC PyInit_declarative_function( void )
 {
-#if PY_MAJOR_VERSION >= 3
-    PyObjectPtr mod( xnewref( PyModule_Create(&moduledef) ) );
-#else
-    PyObjectPtr mod( xnewref( Py_InitModule( "declarative_function", declarative_function_methods ) ) );
-#endif
-    if( !mod )
-        INITERROR;
-    PyObject* mod_dict = PyModule_GetDict( mod.get() );
-
-    PyObjectPtr dm_mod( PyImport_ImportModuleLevel( "dynamicscope", mod_dict, 0, 0 , 1) );
-    if( !dm_mod)
-        INITERROR;
-    PyObjectPtr dm_cls( dm_mod.getattr( "DynamicScope" ) );
-    if( !dm_cls )
-        INITERROR;
-
-    PyObjectPtr fh_mod( PyImport_ImportModuleLevel( "funchelper", mod_dict, 0, 0, 1 ) );
-    if( !fh_mod )
-        INITERROR;
-    PyObjectPtr fh_cls( fh_mod.getattr( "call_func" ) );
-    if( !fh_cls )
-        INITERROR;
-
-    PyObjectPtr sup( mod.getattr( "_super_disallowed" ) );
-    if( !sup )
-        INITERROR;
-
-    DynamicScope = dm_cls.release();
-    call_func = fh_cls.release();
-    super_disallowed = sup.release();
-
-    if( PyType_Ready( &DFunc_Type ) < 0 )
-        INITERROR;
-    if( PyType_Ready( &BoundDMethod_Type ) < 0 )
-        INITERROR;
-
-    if( PyModule_AddObject( mod.get(), "DeclarativeFunction", newref( pyobject_cast( &DFunc_Type ) ) ) == -1 )
-        INITERROR;
-    if( PyModule_AddObject( mod.get(), "BoundDeclarativeMethod", newref( pyobject_cast( &BoundDMethod_Type ) ) ) == -1 )
-        INITERROR;
-
-#if PY_MAJOR_VERSION >= 3
-    return mod.get();
-#endif
+    return PyModuleDef_Init( &enaml::moduledef );
 }

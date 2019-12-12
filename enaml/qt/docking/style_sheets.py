@@ -1,11 +1,10 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.compat import str
 
 #: The global dict of registered stylesheets. This dict should never be
 #: modified directly. Use the functions 'register_style_sheet' and

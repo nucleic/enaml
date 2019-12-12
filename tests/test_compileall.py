@@ -12,7 +12,6 @@ import shutil
 import pytest
 import importlib
 from enaml.compile_all import compileall
-from enaml.compat import IS_PY3
 from utils import cd, enaml_run
 
 
@@ -67,11 +66,10 @@ def test_tutorials(enaml_run, tmpdir, tutorial):
 
     # Add to example folder to the sys path or we get an import error
     with cd(example, add_to_sys_path=True):
-        if IS_PY3:
-            # PY3 only uses pyc files if copied from the pycache folder
-            for f in os.listdir('__pycache__'):
-                cf = ".".join(f.split(".")[:-2]) + ".pyc"
-                shutil.copy(os.path.join('__pycache__', f), cf)
+        # Python only uses pyc files if copied from the pycache folder
+        for f in os.listdir('__pycache__'):
+            cf = ".".join(f.split(".")[:-2]) + ".pyc"
+            shutil.copy(os.path.join('__pycache__', f), cf)
 
         # Verify it's clean
         assert not os.path.exists(tutorial+".py")

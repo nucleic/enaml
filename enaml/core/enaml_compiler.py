@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import sys
 
-from ..compat import IS_PY3, USE_WORDCODE
+from ..compat import USE_WORDCODE
 from . import compiler_common as cmn
 from .enaml_ast import Module
 from .enamldef_compiler import EnamlDefCompiler
@@ -174,11 +174,6 @@ class EnamlCompiler(cmn.CompilerBase):
         """
         assert isinstance(node, Module), 'invalid node'
 
-        # On Python 2 protect against unicode filenames, which are incompatible
-        # with code objects created via types.CodeType
-        if not IS_PY3 and isinstance(filename, type(u'')):
-            filename = filename.encode(sys.getfilesystemencoding())
-
         # Create the compiler and generate the code.
         compiler = cls(filename=filename)
         return compiler.visit(node)
@@ -222,8 +217,7 @@ class EnamlCompiler(cmn.CompilerBase):
         cg = self.code_generator
         code = EnamlDefCompiler.compile(node, cg.filename)
         cg.load_const(code)
-        if IS_PY3:
-            cg.load_const(None)  # XXX better qualified name
+        cg.load_const(None)  # XXX better qualified name
         cg.make_function()
         cg.call_function()
         cg.store_global(node.typename)
@@ -268,8 +262,7 @@ class EnamlCompiler(cmn.CompilerBase):
 
             # Under Python 3 function have a qualified name
             # XXX improve qualified name
-            if IS_PY3:
-                cg.load_const(None)
+            cg.load_const(None)
             cg.make_function(0x01 if USE_WORDCODE else
                              len(node.parameters.keywords))
 

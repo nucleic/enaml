@@ -10,8 +10,6 @@ import tokenize
 
 import ply.lex as lex
 
-from ...compat import IS_PY3, str
-
 
 #------------------------------------------------------------------------------
 # Lexing Helpers
@@ -483,7 +481,7 @@ class BaseEnamlLexer(object):
     # This is placed after the string rules so r"" is not matched as a name.
     def t_NAME(self, t):
         t.type = self.reserved.get(t.value, "NAME")
-        if IS_PY3 and not str.isidentifier(t.value):
+        if not str.isidentifier(t.value):
             msg = '{} is not a valid Python identifier (found in {}, line {}'
             raise ValueError(msg.format(t.value, self.filename, t.lineno))
         return t

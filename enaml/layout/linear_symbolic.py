@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -7,12 +7,10 @@
 #------------------------------------------------------------------------------
 from abc import ABCMeta
 
-
-from enaml.compat import with_metaclass
 import kiwisolver as kiwi
 
 
-class LinearSymbolic(with_metaclass(ABCMeta, object)):
+class LinearSymbolic(object, metaclass=ABCMeta):
     """ An abstract base class for testing linear symbolic interfaces.
 
     """

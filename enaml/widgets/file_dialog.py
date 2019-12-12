@@ -6,12 +6,11 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Enum, Bool, Callable, List, Unicode, Typed, ForwardTyped, Event
+    Enum, Bool, Callable, List, Str, Typed, ForwardTyped, Event
 )
 
 from enaml.application import deferred_call
 from enaml.core.declarative import d_
-from enaml.compat import str
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 
@@ -35,7 +34,7 @@ class FileDialog(ToolkitObject):
 
     """
     #: The title to use for the dialog.
-    title = d_(Unicode())
+    title = d_(Str())
 
     #: The mode of the dialog.
     mode = d_(Enum('open_file', 'open_files', 'save_file', 'directory'))
@@ -44,20 +43,20 @@ class FileDialog(ToolkitObject):
     #: the initial working directory and file, as appropriate, when the
     #: dialog is opened. It will aslo be updated when the dialog is
     #: closed and accepted.
-    path = d_(Unicode())
+    path = d_(Str())
 
     #: The list of selected paths in the dialog. It will be updated
     #: when the dialog is closed and accepted. It is output only and
     #: is only applicable for the `open_files` mode.
-    paths = List(Unicode())
+    paths = List(Str())
 
     #: The string filters used to restrict the user's selections.
-    filters = d_(List(Unicode()))
+    filters = d_(List(Str()))
 
     #: The selected filter from the list of filters. This value will be
     #: used as the initial working filter when the dialog is opened. It
     #: will also be updated when the dialog is closed and accepted.
-    selected_filter = d_(Unicode())
+    selected_filter = d_(Str())
 
     #: Whether to use a platform native dialog, when available. This
     #: attribute is deprecated and no longer has any effect. Native

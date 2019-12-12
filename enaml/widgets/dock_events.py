@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, IntEnum, Typed, Unicode
+from atom.api import Atom, IntEnum, Typed, Str
 
 
 class DockEvent(Atom):
@@ -61,4 +61,4 @@ class DockItemEvent(DockEvent):
     type = Typed(Type)
 
     #: The name of the relevant dock item.
-    name = Unicode()
+    name = Str()

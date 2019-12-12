@@ -15,7 +15,7 @@ and restored using a layout object which can be easily pickled.
 """
 import pickle
 
-from atom.api import Atom, ContainerList, Unicode
+from atom.api import Atom, ContainerList, Str
 
 from enaml.layout.api import (
     HSplitLayout, VSplitLayout, TabLayout, InsertItem, hbox, vbox, spacer
@@ -51,7 +51,7 @@ class LineCollector(Atom):
              u'-----------------------------------'
 
     #: The output text of the collector; updated when data changes.
-    text = Unicode(HEADER)
+    text = Str(HEADER)
 
     #: The data for the collector. This is a list of 2-tuples of
     #: the form (str, DockItemEvent.Type).

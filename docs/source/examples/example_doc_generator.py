@@ -26,7 +26,7 @@ import shutil
 import sys
 from textwrap import dedent
 
-from atom.api import Atom, Unicode, Value
+from atom.api import Atom, Str, Value
 import enaml
 from enaml.qt.qt_application import QtApplication
 from enaml.qt.QtWidgets import QApplication
@@ -39,7 +39,7 @@ class SnapShot(Atom):
     """
 
     #: The snapshot save path.
-    path = Unicode()
+    path = Str()
 
     #: The enaml view object.
     view = Value()

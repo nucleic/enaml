@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013, Nucleic Development Team.
+| Copyright (c) 2013-2019, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -7,22 +7,33 @@
 |----------------------------------------------------------------------------*/
 #include <iostream>
 #include <sstream>
-#include "pythonhelpers.h"
-#include "py23compat.h"
+#include <cppy/cppy.h>
+#include <structmember.h>  // Included to access offsetof
 
 
-using namespace PythonHelpers;
+namespace enaml
+{
 
-extern "C" {
-
-// Type structure for WeakMethod instances
-typedef struct {
-    PyObject_HEAD
+// POD struct - all member fields are considered private
+struct WeakMethod
+{
+	PyObject_HEAD
     PyObject* weakreflist;  // weakrefs to this object
     PyObject* func;         // method.im_func
     PyObject* selfref;      // weakref.ref(method.im_self)
     PyObject* cls;          // method.im_class
-} WeakMethod;
+
+	static PyType_Spec TypeObject_Spec;
+
+    static PyTypeObject* TypeObject;
+
+	static bool Ready();
+
+};
+
+
+namespace
+{
 
 
 // A dict where a key is weakref.ref(method.im_self) and the value is a
@@ -37,36 +48,36 @@ static PyObject* weak_methods;
 static PyObject* remove_str;
 
 
-static PyObject*
+PyObject*
 WeakMethod_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
-    PyDictPtr kwargsptr( kwargs, true );
-    if( ( kwargsptr ) && ( kwargsptr.size() > 0 ) )
+    cppy::ptr kwargsptr( cppy::incref( kwargs ) );
+    if( ( kwargsptr ) && ( PyDict_Size( kwargsptr.get() ) > 0 ) )
     {
         std::ostringstream ostr;
         ostr << "WeakMethod() takes no keyword arguments (";
-        ostr << kwargsptr.size() << " given)";
-        return py_type_fail( ostr.str().c_str() );
+        ostr << PyDict_Size( kwargsptr.get() ) << " given)";
+        return cppy::type_error( ostr.str().c_str() );
     }
 
-    PyTuplePtr argsptr( args, true );
-    if( argsptr.size() != 1 )
+    cppy::ptr argsptr( cppy::incref( args ) );
+    if( PyTuple_Size( argsptr.get() ) != 1 )
     {
         std::ostringstream ostr;
         ostr << "WeakMethod() takes 1 argument (";
-        ostr << argsptr.size() << " given)";
-        return py_type_fail( ostr.str().c_str() );
+        ostr << PyTuple_Size( argsptr.get() ) << " given)";
+        return cppy::type_error( ostr.str().c_str() );
     }
 
-    PyMethodPtr method( argsptr.get_item( 0 ) );
+    cppy::ptr method( argsptr.getitem( 0 ) );
     if( !PyMethod_Check( method.get() ) )
-        return py_expected_type_fail( method.get(), "MethodType" );
+        return cppy::type_error( method.get(), "MethodType" );
 
-    PyObjectPtr self( method.get_self() );
-    PyObjectPtr cls( method.get_class() );
-    PyObjectPtr func( method.get_function() );
+    cppy::ptr self( cppy::incref( PyMethod_GET_SELF( method.get() ) ) );
+    cppy::ptr cls( pyobject_cast( Py_TYPE(self.get() ) ) );
+    cppy::ptr func( cppy::incref( PyMethod_GET_FUNCTION( method.get() ) ) );
     if( !self )
-        return py_type_fail( "Expected a bound method. Got unbound method instead." );
+        return cppy::type_error( "Expected a bound method. Got unbound method instead." );
 
     /* The logic to setup the weakref is as follows:
 
@@ -109,40 +120,40 @@ WeakMethod_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 
     */
 
-    PyWeakrefPtr selfref( PyWeakref_NewRef( self.get(), 0 ) );
+    cppy::ptr selfref( PyWeakref_NewRef( self.get(), 0 ) );
     if( !selfref )
         return 0;
 
-    PyDictPtr wmethods_ptr( weak_methods, true );
-    PyListPtr items( wmethods_ptr.get_item( selfref ) );
+    cppy::ptr wmethods_ptr( cppy::incref( weak_methods ) );
+    cppy::ptr items( wmethods_ptr.getitem( selfref ) );
     if( !items )
     {
         items = PyList_New( 0 );
         if( !items )
             return 0;
-        PyObjectPtr wm_type( reinterpret_cast<PyObject*>( type ), true );
-        PyObjectPtr _remove_str( remove_str, true );
-        PyObjectPtr _remove( wm_type.get_attr( _remove_str ) );
+        cppy::ptr wm_type( cppy::incref( pyobject_cast( type ) ) );
+        cppy::ptr _remove_str( cppy::incref( remove_str ) );
+        cppy::ptr _remove( wm_type.getattr( _remove_str ) );
         if( !_remove )
             return 0;
-        PyWeakrefPtr selfrefcb( PyWeakref_NewRef( self.get(), _remove.get() ) );
+        cppy::ptr selfrefcb( PyWeakref_NewRef( self.get(), _remove.get() ) );
         if( !selfrefcb )
             return 0;
-        if( !wmethods_ptr.set_item( selfrefcb, items ) )
+        if( !wmethods_ptr.setitem( selfrefcb, items ) )
             return 0;
     }
 
     WeakMethod* pywm = 0;
-    Py_ssize_t size = items.size();
+    Py_ssize_t size = PyList_Size( items.get() );
     for( Py_ssize_t idx = 0; idx < size; idx++ )
     {
-        PyObjectPtr wmptr( items.get_item( idx ) );
+        cppy::ptr wmptr( cppy::incref( PyList_GET_ITEM( items.get(), idx ) ) );
         pywm = reinterpret_cast<WeakMethod*>( wmptr.get() );
         if( ( func.get() == pywm->func ) && ( cls.get() == pywm->cls ) )
             return wmptr.release();
     }
 
-    PyObjectPtr wm( PyType_GenericNew( type, args, kwargs ) );
+    cppy::ptr wm( PyType_GenericNew( type, args, kwargs ) );
     if( !wm )
         return 0;
 
@@ -151,14 +162,14 @@ WeakMethod_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     pywm->selfref = selfref.release();
     pywm->cls = cls.release();
 
-    if( !items.append( wm ) )
+    if( !PyList_Append( items.get(), wm.get() ) )
         return 0;
 
     return wm.release();
 }
 
 
-static void
+void
 WeakMethod_clear( WeakMethod* self )
 {
     Py_CLEAR( self->func );
@@ -167,7 +178,7 @@ WeakMethod_clear( WeakMethod* self )
 }
 
 
-static int
+int
 WeakMethod_traverse( WeakMethod* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->func );
@@ -177,34 +188,30 @@ WeakMethod_traverse( WeakMethod* self, visitproc visit, void* arg )
 }
 
 
-static void
+void
 WeakMethod_dealloc( WeakMethod* self )
 {
     PyObject_GC_UnTrack( self );
     if( self->weakreflist )
-        PyObject_ClearWeakRefs( reinterpret_cast<PyObject*>( self ) );
+        PyObject_ClearWeakRefs( pyobject_cast( self ) );
     WeakMethod_clear( self );
-    Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
+    Py_TYPE(self)->tp_free( pyobject_cast( self ) );
 }
 
 
-static PyObject*
+PyObject*
 WeakMethod_call( WeakMethod* self, PyObject* args, PyObject* kwargs )
 {
-    PyWeakrefPtr selfref( self->selfref, true );
-    PyObjectPtr mself( selfref.get_object() );
-    if( mself.is_None() )
+    cppy::ptr selfref( cppy::incref( self->selfref ) );
+    cppy::ptr mself( cppy::incref( PyWeakref_GET_OBJECT( selfref.get() ) ) );
+    if( mself.is_none() )
         Py_RETURN_NONE;
-#if PY_MAJOR_VERSION >= 3
-    PyMethodPtr method( PyMethod_New( self->func, mself.get() ) );
-#else
-    PyMethodPtr method( PyMethod_New( self->func, mself.get(), self->cls ) );
-#endif
+    cppy::ptr method( PyMethod_New( self->func, mself.get() ) );
     if( !method )
         return 0;
-    PyTuplePtr argsptr( args, true );
-    PyDictPtr kwargsptr( kwargs, true );
-    return method( argsptr, kwargsptr ).release();
+    cppy::ptr argsptr( cppy::incref( args ) );
+    cppy::ptr kwargsptr( cppy::incref( kwargs ) );
+    return method.call( argsptr, kwargsptr );
 }
 
 
@@ -212,12 +219,12 @@ WeakMethod_call( WeakMethod* self, PyObject* args, PyObject* kwargs )
 // key in the weak_methods dict when it is garbage collected. This will
 // remove the entry from the dict and allows the WeakMethod instances
 // to be garbage collected.
-static PyObject*
+PyObject*
 WeakMethod__remove( PyObject* ignored, PyObject* wr_item )
 {
-    PyDictPtr wmethods_ptr( weak_methods, true );
-    PyObjectPtr wrptr( wr_item, true );
-    if( !wmethods_ptr.del_item( wrptr ) )
+    cppy::ptr wmethods_ptr( cppy::incref( weak_methods ) );
+    cppy::ptr wrptr( cppy::incref( wr_item ) );
+    if( !wmethods_ptr.delitem( wrptr ) )
         return 0;
     Py_RETURN_NONE;
 }
@@ -246,132 +253,121 @@ PyDoc_STRVAR(WeakMethod__doc__,
 "    The bound method which should be wrapped weakly.\n\n");
 
 
-PyTypeObject WeakMethod_Type = {
-    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.weakmethod.WeakMethod",          /* tp_name */
-    sizeof( WeakMethod ),                   /* tp_basicsize */
-    0,                                      /* tp_itemsize */
-    (destructor)WeakMethod_dealloc,         /* tp_dealloc */
-    (printfunc)0,                           /* tp_print */
-    (getattrfunc)0,                         /* tp_getattr */
-    (setattrfunc)0,                         /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                   /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                            /* tp_reserved */
-#else
-	( cmpfunc )0,                           /* tp_compare */
-#endif
-    (reprfunc)0,                            /* tp_repr */
-    (PyNumberMethods*)0,                    /* tp_as_number */
-    (PySequenceMethods*)0,                  /* tp_as_sequence */
-    (PyMappingMethods*)0,                   /* tp_as_mapping */
-    (hashfunc)0,                            /* tp_hash */
-    (ternaryfunc)WeakMethod_call,           /* tp_call */
-    (reprfunc)0,                            /* tp_str */
-    (getattrofunc)0,                        /* tp_getattro */
-    (setattrofunc)0,                        /* tp_setattro */
-    (PyBufferProcs*)0,                      /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC, /* tp_flags */
-    WeakMethod__doc__,                      /* Documentation string */
-    (traverseproc)WeakMethod_traverse,      /* tp_traverse */
-    (inquiry)WeakMethod_clear,              /* tp_clear */
-    (richcmpfunc)0,                         /* tp_richcompare */
-    offsetof( WeakMethod, weakreflist ),    /* tp_weaklistoffset */
-    (getiterfunc)0,                         /* tp_iter */
-    (iternextfunc)0,                        /* tp_iternext */
-    (struct PyMethodDef*)WeakMethod_methods, /* tp_methods */
-    (struct PyMemberDef*)0,                 /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    (descrgetfunc)0,                        /* tp_descr_get */
-    (descrsetfunc)0,                        /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)0,                            /* tp_init */
-    (allocfunc)PyType_GenericAlloc,         /* tp_alloc */
-    (newfunc)WeakMethod_new,                /* tp_new */
-    (freefunc)0,                            /* tp_free */
-    (inquiry)0,                             /* tp_is_gc */
-    0,                                      /* tp_bases */
-    0,                                      /* tp_mro */
-    0,                                      /* tp_cache */
-    0,                                      /* tp_subclasses */
-    0,                                      /* tp_weaklist */
-    (destructor)0                           /* tp_del */
+static PyType_Slot WeakMethod_Type_slots[] = {
+    { Py_tp_dealloc, void_cast( WeakMethod_dealloc ) },          /* tp_dealloc */
+    { Py_tp_traverse, void_cast( WeakMethod_traverse ) },        /* tp_traverse */
+    { Py_tp_clear, void_cast( WeakMethod_clear ) },              /* tp_clear */
+    { Py_tp_methods, void_cast( WeakMethod_methods ) },          /* tp_doc */
+    { Py_tp_doc, void_cast( WeakMethod__doc__ ) },               /* tp_doc */
+    { Py_tp_call, void_cast( WeakMethod_call ) },                /* tp_call */
+    { Py_tp_new, void_cast( WeakMethod_new ) },                  /* tp_new */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },            /* tp_alloc */
+    /* tp_weaklistoffset cannot be in slots we will set after type creation
+       cf https://github.com/pyside/pyside2-setup/blob/5.11/sources/shiboken2/libshiboken/pep384impl_doc.rst */
+    { 0, 0 },
 };
 
-struct module_state {
-    PyObject *error;
+
+}  // namespace
+
+
+// Initialize static variables (otherwise the compiler eliminates them)
+PyTypeObject* WeakMethod::TypeObject = NULL;
+
+
+PyType_Spec WeakMethod::TypeObject_Spec = {
+	"enaml.weakmethod.WeakMethod",              /* tp_name */
+	sizeof( WeakMethod ),                     /* tp_basicsize */
+	0,                                          /* tp_itemsize */
+	Py_TPFLAGS_DEFAULT
+    |Py_TPFLAGS_BASETYPE
+    |Py_TPFLAGS_HAVE_GC,                         /* tp_flags */
+    WeakMethod_Type_slots                           /* slots */
 };
 
+
+bool WeakMethod::Ready()
+{
+    // The reference will be handled by the module to which we will add the type
+	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
+    if( !TypeObject )
+    {
+        return false;
+    }
+    // Delayed setting of weaklistoffset
+    TypeObject->tp_weaklistoffset = offsetof( WeakMethod, weakreflist );
+    return true;
+}
+
+
+// Module definition
+namespace
+{
+
+
+int
+weakmethod_modexec( PyObject *mod )
+{
+    weak_methods = PyDict_New();
+    if( !weak_methods )
+    {
+        return -1;
+    }
+
+    remove_str = PyUnicode_FromString( "_remove" );
+    if( !remove_str )
+    {
+        return -1;
+    }
+
+    if( !WeakMethod::Ready() )
+    {
+        return -1;
+    }
+
+    // Signal
+    cppy::ptr wmethod( pyobject_cast( WeakMethod::TypeObject ) );
+	if( PyModule_AddObject( mod, "WeakMethod", wmethod.get() ) < 0 )
+	{
+		return -1;
+	}
+    wmethod.release();
+
+    return 0;
+}
 
 static PyMethodDef
 weakmethod_methods[] = {
-    { 0 } // Sentinel
+    { 0 } // sentinel
 };
 
-#if PY_MAJOR_VERSION >= 3
 
-#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-
-static int weakmethod_traverse(PyObject *m, visitproc visit, void *arg) {
-    Py_VISIT(GETSTATE(m)->error);
-    return 0;
-}
-
-static int weakmethod_clear(PyObject *m) {
-    Py_CLEAR(GETSTATE(m)->error);
-    return 0;
-}
+PyModuleDef_Slot weakmethod_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>( weakmethod_modexec ) },
+    {0, NULL}
+};
 
 
-static struct PyModuleDef moduledef = {
+struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
         "weakmethod",
-        NULL,
-        sizeof(struct module_state),
+        "weakmethod extension module",
+        0,
         weakmethod_methods,
+        weakmethod_slots,
         NULL,
-        weakmethod_traverse,
-        weakmethod_clear,
+        NULL,
         NULL
 };
 
-#else
 
-#define GETSTATE(m) (&_state)
-static struct module_state _state;
+}  // namespace
 
-#endif
 
-MOD_INIT_FUNC(weakmethod)
+}  // namespace enaml
+
+
+PyMODINIT_FUNC PyInit_weakmethod( void )
 {
-#if PY_MAJOR_VERSION >= 3
-    PyObject *mod = PyModule_Create(&moduledef);
-#else
-    PyObject* mod = Py_InitModule( "weakmethod", weakmethod_methods );
-#endif
-    if( !mod )
-        INITERROR;
-    weak_methods = PyDict_New();
-    if( !weak_methods )
-        INITERROR;
-
-    remove_str = Py23Str_FromString( "_remove" );
-    if( !remove_str )
-        INITERROR;
-
-    if( PyType_Ready( &WeakMethod_Type ) )
-        INITERROR;
-
-    PyObjectPtr wm_type( reinterpret_cast<PyObject*>( &WeakMethod_Type ), true );
-    PyModule_AddObject( mod, "WeakMethod", wm_type.release() );
-
-#if PY_MAJOR_VERSION >= 3
-    return mod;
-#endif
+    return PyModuleDef_Init( &enaml::moduledef );
 }
-
-} // extern "C"
-

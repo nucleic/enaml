@@ -12,7 +12,6 @@ implicit functions used by comprehensions.
 import sys
 
 import pytest
-from enaml.compat import IS_PY3
 
 from utils import compile_source
 

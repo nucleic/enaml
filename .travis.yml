@@ -16,13 +16,6 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      dist: trusty
-      env:
-        - PYTHON=2.7
-        - QT_VERSION=5
-        - IPY_VERSION=5
-        - SPHINX=0
-    - os: linux
       env:
         - PYTHON=3.5
         - QT_VERSION=5
@@ -94,6 +87,7 @@ before_install:
      fi'
 
   # Install the dev version of the other nucleic projects
+  - $PIP_INSTALL https://github.com/nucleic/cppy/tarball/master
   - $PIP_INSTALL https://github.com/nucleic/atom/tarball/master
   - $PIP_INSTALL https://github.com/nucleic/kiwi/tarball/master
 

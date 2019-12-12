@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Coerced, Event, Unicode, Bool, Range, Typed, ForwardTyped, observe
+    Coerced, Event, Str, Bool, Range, Typed, ForwardTyped, observe
 )
 
 from enaml.application import deferred_call
@@ -59,7 +59,7 @@ class DockItem(Widget):
 
     """
     #: The title to use in the title bar.
-    title = d_(Unicode())
+    title = d_(Str())
 
     #: Whether or the not the title is user editable.
     title_editable = d_(Bool(False))

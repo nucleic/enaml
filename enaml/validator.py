@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import re
 
-from atom.api import Atom, Bool, Typed, Enum, Str, Unicode
+from atom.api import Atom, Bool, Typed, Enum, Str, Str
 
 
 class Validator(Atom):
@@ -20,7 +20,7 @@ class Validator(Atom):
     #: An optional message to associate with the validator. This message
     #: may be used by the toolkit to display information to the user
     #: about what went wrong.
-    message = Unicode()
+    message = Str()
 
     def validate(self, text):
         """ Validate the text as the user types.

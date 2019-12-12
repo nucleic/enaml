@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from __future__ import print_function
 
-from atom.api import Subclass, Unicode
+from atom.api import Subclass, Str
 
 from enaml.widgets.api import Container
 from enaml.workbench.api import PluginManifest
@@ -34,7 +34,7 @@ class SampleWorkspace(Workspace):
     manifest_def = Subclass(PluginManifest)
 
     #: Storage for the plugin manifest's id.
-    _manifest_id = Unicode()
+    _manifest_id = Str()
 
     def start(self):
         """ Start the workspace instance.

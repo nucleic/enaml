@@ -26,7 +26,7 @@ class WrongEnamlImporter(AbstractEnamlImporter):
         pass
 
 
-@pytest.mark.parametrize('method', ('find_module', 'find_spec'))
+@pytest.mark.parametrize('method', ('find_spec',))
 def test_handling_wrong_locate_module_implementation(method):
     """Test handling a poorly implemented locate_module method.
 

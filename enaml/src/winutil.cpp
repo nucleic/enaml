@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013, Nucleic Development Team.
+| Copyright (c) 2013-2019, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -10,12 +10,25 @@
 #define OEMRESOURCE
 #endif
 #include <windows.h>
-#include "pythonhelpersex.h"
-#include "py23compat.h"
+#include <cppy/cppy.h>
 
 
-using namespace PythonHelpers;
+namespace enaml
+{
 
+// POD struct - all member fields are considered private
+struct WinEnum
+{
+	PyObject_HEAD;
+    UINT value;
+
+	static PyType_Spec TypeObject_Spec;
+
+    static PyTypeObject* TypeObject;
+
+	static bool Ready();
+
+};
 
 // Builtin Icons
 static PyObject* Py_OIC_SAMPLE;
@@ -31,71 +44,47 @@ static PyObject* Py_OIC_INFORMATION;
 static PyObject* Py_OIC_SHIELD;
 #endif
 
+namespace
+{
 
-typedef struct {
-    PyObject_HEAD;
-    UINT value;
-} WinEnum;
-
-
-static PyTypeObject
-WinEnum_Type = {
-    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.winutil.WinEnum",                /* tp_name */
-    sizeof( WinEnum ),                      /* tp_basicsize */
-    0,                                      /* tp_itemsize */
-    (destructor)PyObject_Del,               /* tp_dealloc */
-    (printfunc)0,                           /* tp_print */
-    (getattrfunc)0,                         /* tp_getattr */
-    (setattrfunc)0,                         /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                   /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                            /* tp_reserved */
-#else
-	( cmpfunc )0,                           /* tp_compare */
-#endif
-    (reprfunc)0,                            /* tp_repr */
-    (PyNumberMethods*)0,                    /* tp_as_number */
-    (PySequenceMethods*)0,                  /* tp_as_sequence */
-    (PyMappingMethods*)0,                   /* tp_as_mapping */
-    (hashfunc)0,                            /* tp_hash */
-    (ternaryfunc)0,                         /* tp_call */
-    (reprfunc)0,                            /* tp_str */
-    (getattrofunc)0,                        /* tp_getattro */
-    (setattrofunc)0,                        /* tp_setattro */
-    (PyBufferProcs*)0,                      /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,                     /* tp_flags */
-    0,                                      /* Documentation string */
-    (traverseproc)0,                        /* tp_traverse */
-    (inquiry)0,                             /* tp_clear */
-    (richcmpfunc)0,                         /* tp_richcompare */
-    0,                                      /* tp_weaklistoffset */
-    (getiterfunc)0,                         /* tp_iter */
-    (iternextfunc)0,                        /* tp_iternext */
-    (struct PyMethodDef*)0,                 /* tp_methods */
-    (struct PyMemberDef*)0,                 /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    (descrgetfunc)0,                        /* tp_descr_get */
-    (descrsetfunc)0,                        /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)0,                            /* tp_init */
-    (allocfunc)PyType_GenericAlloc,         /* tp_alloc */
-    (newfunc)0,                             /* tp_new */
-    (freefunc)0,                            /* tp_free */
-    (inquiry)0,                             /* tp_is_gc */
-    0,                                      /* tp_bases */
-    0,                                      /* tp_mro */
-    0,                                      /* tp_cache */
-    0,                                      /* tp_subclasses */
-    0,                                      /* tp_weaklist */
-    (destructor)0                           /* tp_del */
+static PyType_Slot WinEnum_Type_slots[] = {
+    { Py_tp_dealloc, void_cast( PyObject_Del ) },          /* tp_dealloc */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },     /* tp_alloc */
+    { 0, 0 },
 };
 
 
-static PyObject*
+}  // namespace
+
+
+// Initialize static variables (otherwise the compiler eliminates them)
+PyTypeObject* WinEnum::TypeObject = NULL;
+
+
+PyType_Spec WinEnum::TypeObject_Spec = {
+	"enaml.winutil.WinEnum",              /* tp_name */
+	sizeof( WinEnum ),                     /* tp_basicsize */
+	0,                                          /* tp_itemsize */
+	Py_TPFLAGS_DEFAULT,                         /* tp_flags */
+    WinEnum_Type_slots                           /* slots */
+};
+
+
+bool WinEnum::Ready()
+{
+    // The reference will be handled by the module to which we will add the type
+	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
+    if( !TypeObject )
+    {
+        return false;
+    }
+    return true;
+}
+
+namespace
+{
+
+PyObject*
 PyBytes_FromHICON( HICON icon, int& width_out, int& height_out )
 {
     HDC screen_device = GetDC( 0 );
@@ -121,7 +110,7 @@ PyBytes_FromHICON( HICON icon, int& width_out, int& height_out )
     HGDIOBJ old_hdc = ( HBITMAP )SelectObject( hdc, win_bitmap );
     DrawIconEx( hdc, 0, 0, icon, w, h, 0, 0, DI_NORMAL );
 
-    PyObject* result = Py23Bytes_FromStringAndSize( ( const char* )bits, w * h * 4 );
+    PyObject* result = PyBytes_FromStringAndSize( ( const char* )bits, w * h * 4 );
 
     // dispose resources created by GetIconInfo
     DeleteObject( icon_info.hbmMask );
@@ -137,11 +126,11 @@ PyBytes_FromHICON( HICON icon, int& width_out, int& height_out )
 }
 
 
-static PyObject*
+PyObject*
 load_icon( PyObject* mod, PyObject* args )
 {
     WinEnum* win_enum;
-    if( !PyArg_ParseTuple( args, "O!", &WinEnum_Type, &win_enum ) )
+    if( !PyArg_ParseTuple( args, "O!", WinEnum::TypeObject, &win_enum ) )
         return 0;
     HANDLE hicon = LoadImage(
         0, MAKEINTRESOURCE( win_enum->value ), IMAGE_ICON, 0, 0, LR_SHARED
@@ -149,81 +138,31 @@ load_icon( PyObject* mod, PyObject* args )
     if( !hicon )
         return Py_BuildValue( "(s, (i, i))", "", -1, -1 );
     int width, height;
-    PyObjectPtr result( PyBytes_FromHICON( ( HICON )hicon, width, height ) );
+    cppy::ptr result( PyBytes_FromHICON( ( HICON )hicon, width, height ) );
     if( !result )
         return 0;
     return Py_BuildValue( "(O, (i, i))", result.get(), width, height );
 }
 
-struct module_state {
-    PyObject *error;
-};
 
-
-static PyMethodDef
-winutil_methods[] = {
-    { "load_icon", ( PyCFunction )load_icon, METH_VARARGS,
-      "Load a builtin Windows icon" },
-    { 0 } // Sentinel
-};
-
+int
+winutil_modexec( PyObject *mod )
+{
 
 #define MAKE_ENUM( TOKEN, VALUE ) \
     do { \
-        TOKEN = PyType_GenericNew( &WinEnum_Type, 0, 0 ); \
+        TOKEN = PyType_GenericNew( WinEnum::TypeObject, 0, 0 ); \
         if( !TOKEN ) \
-            INITERROR; \
+            return NULL; \
         reinterpret_cast<WinEnum*>( TOKEN )->value = VALUE; \
-        if( PyModule_AddObject( mod, #VALUE, newref( TOKEN ) ) < 0 ) \
-            INITERROR; \
+        if( PyModule_AddObject( mod, #VALUE, cppy::incref( TOKEN ) ) < 0 ) \
+            return NULL; \
     } while( 0 )
 
-
-#if PY_MAJOR_VERSION >= 3
-
-#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-
-static int winutil_traverse(PyObject *m, visitproc visit, void *arg) {
-    Py_VISIT(GETSTATE(m)->error);
-    return 0;
-}
-
-static int winutil_clear(PyObject *m) {
-    Py_CLEAR(GETSTATE(m)->error);
-    return 0;
-}
-
-
-static struct PyModuleDef moduledef = {
-        PyModuleDef_HEAD_INIT,
-        "winutil",
-        NULL,
-        sizeof(struct module_state),
-        winutil_methods,
-        NULL,
-        winutil_traverse,
-        winutil_clear,
-        NULL
-};
-
-#else
-
-#define GETSTATE(m) (&_state)
-static struct module_state _state;
-
-#endif
-
-MOD_INIT_FUNC(winutil)
-{
-#if PY_MAJOR_VERSION >= 3
-    PyObject *mod = PyModule_Create(&moduledef);
-#else
-    PyObject* mod = Py_InitModule( "winutil", winutil_methods );
-#endif
-    if( !mod )
-        INITERROR;
-    if( PyType_Ready( &WinEnum_Type ) )
-        INITERROR;
+    if( !WinEnum::Ready() )
+    {
+        return -1;
+    }
     MAKE_ENUM( Py_OIC_SAMPLE, OIC_SAMPLE );
     MAKE_ENUM( Py_OIC_HAND, OIC_HAND );
     MAKE_ENUM( Py_OIC_QUES, OIC_QUES );
@@ -237,7 +176,43 @@ MOD_INIT_FUNC(winutil)
     MAKE_ENUM( Py_OIC_SHIELD, OIC_SHIELD );
     #endif
 
-#if PY_MAJOR_VERSION >= 3
-    return mod;
-#endif
+    return 0;
+}
+
+static PyMethodDef
+winutil_methods[] = {
+    { "load_icon", ( PyCFunction )load_icon, METH_VARARGS,
+      "Load a builtin Windows icon" },
+    { 0 } // Sentinel
+};
+
+
+PyModuleDef_Slot winutil_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>( winutil_modexec ) },
+    {0, NULL}
+};
+
+
+struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "winutil",
+        "winutil extension module",
+        0,
+        winutil_methods,
+        winutil_slots,
+        NULL,
+        NULL,
+        NULL
+};
+
+
+}  // namespace
+
+
+}  // namespace enaml
+
+
+PyMODINIT_FUNC PyInit_winutil( void )
+{
+    return PyModuleDef_Init( &enaml::moduledef );
 }

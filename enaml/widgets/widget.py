@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, IntEnum, Unicode, Coerced, Typed, ForwardTyped, observe
+    Bool, IntEnum, Str, Coerced, Typed, ForwardTyped, observe
 )
 
 from enaml.colors import ColorMember
@@ -122,10 +122,10 @@ class Widget(ToolkitObject, Stylable):
     maximum_size = d_(Coerced(Size, (-1, -1)))
 
     #: The tool tip to show when the user hovers over the widget.
-    tool_tip = d_(Unicode())
+    tool_tip = d_(Str())
 
     #: The status tip to show when the user hovers over the widget.
-    status_tip = d_(Unicode())
+    status_tip = d_(Str())
 
     #: Set the extra features to enable for this widget. This value must
     #: be provided when the widget is instantiated. Runtime changes to

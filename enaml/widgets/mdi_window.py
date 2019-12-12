@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed, ForwardTyped, Unicode
+from atom.api import Typed, ForwardTyped, Str
 
 from enaml.core.declarative import d_
 from enaml.icon import Icon
@@ -36,7 +36,7 @@ class MdiWindow(Widget):
 
     """
     #: The titlebar text.
-    title = d_(Unicode())
+    title = d_(Str())
 
     #: The title bar icon.
     icon = d_(Typed(Icon))

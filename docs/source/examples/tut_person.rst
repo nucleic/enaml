@@ -156,9 +156,9 @@ the attribute names of the ``person`` object used by the ``PersonForm`` in the
     """ A simple class representing a person object.
 
     """
-    last_name = Unicode()
+    last_name = Str()
 
-    first_name = Unicode()
+    first_name = Str()
 
     age = Range(low=0)
 

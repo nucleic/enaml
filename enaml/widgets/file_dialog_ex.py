@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Enum, List, Unicode, Typed, ForwardTyped, observe
+from atom.api import Bool, Enum, List, Str, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
@@ -60,17 +60,17 @@ class FileDialogEx(ToolkitDialog):
     show_dirs_only = d_(Bool(False))
 
     #: The currently selected path in the dialog.
-    current_path = d_(Unicode())
+    current_path = d_(Str())
 
     #: The paths selected by the user when the dialog is accepted.
     #: This value is output only.
-    selected_paths = List(Unicode())
+    selected_paths = List(Str())
 
     #: The name filters used to restrict the available files.
-    name_filters = d_(List(Unicode()))
+    name_filters = d_(List(Str()))
 
     #: The selected name filter from the list of name filters.
-    selected_name_filter = d_(Unicode())
+    selected_name_filter = d_(Str())
 
     #: A reference to the ProxyFileDialog object.
     proxy = Typed(ProxyFileDialogEx)

@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, Unicode, Typed, ForwardTyped, Event, Callable, observe
+    Bool, Str, Typed, ForwardTyped, Event, Callable, observe
 )
 
 from enaml.application import deferred_call
@@ -51,7 +51,7 @@ class ToolkitDialog(ToolkitObject):
 
     """
     #: The title of the dialog window.
-    title = d_(Unicode())
+    title = d_(Str())
 
     #: An optional callback which will be invoked when the dialog is
     #: closed. This is a convenience to make it easier to handle a

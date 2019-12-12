@@ -10,7 +10,6 @@ import os
 
 import ply.yacc as yacc
 
-from ...compat import IS_PY3
 from .. import enaml_ast
 from .base_lexer import (syntax_error, syntax_warning, BaseEnamlLexer,
                          ParsingError)
@@ -758,8 +757,7 @@ class BaseEnamlParser(object):
         func_node.name = 'f'
         func_node.args = self._make_args([])
         func_node.decorator_list = []
-        if IS_PY3:
-            func_node.returns = None
+        func_node.returns = None
         func_node.body = p[2]
         func_node.lineno = lineno
 
@@ -798,8 +796,7 @@ class BaseEnamlParser(object):
         funcdef = ast.FunctionDef()
         funcdef.name = p[2]
         funcdef.args = p[3]
-        if IS_PY3:
-            funcdef.returns = None
+        funcdef.returns = None
         funcdef.body = p[5]
         funcdef.decorator_list = []
         funcdef.lineno = lineno
@@ -817,8 +814,7 @@ class BaseEnamlParser(object):
         funcdef = ast.FunctionDef()
         funcdef.name = p[1]
         funcdef.args = p[3]
-        if IS_PY3:
-            funcdef.returns = None
+        funcdef.returns = None
         funcdef.body = p[5]
         funcdef.decorator_list = []
         funcdef.lineno = lineno
@@ -1439,25 +1435,15 @@ class BaseEnamlParser(object):
     def p_raise_stmt1(self, p):
         ''' raise_stmt : RAISE '''
         raise_stmt = ast.Raise()
-        if IS_PY3:
-            raise_stmt.exc = None
-            raise_stmt.cause = None
-        else:
-            raise_stmt.type = None
-            raise_stmt.inst = None
-            raise_stmt.tback = None
+        raise_stmt.exc = None
+        raise_stmt.cause = None
         p[0] = raise_stmt
 
     def p_raise_stmt2(self, p):
         ''' raise_stmt : RAISE test '''
         raise_stmt = ast.Raise()
-        if IS_PY3:
-            raise_stmt.exc = p[2]
-            raise_stmt.cause = None
-        else:
-            raise_stmt.type = p[2]
-            raise_stmt.inst = None
-            raise_stmt.tback = None
+        raise_stmt.exc = p[2]
+        raise_stmt.cause = None
         p[0] = raise_stmt
 
     def p_yield_stmt(self, p):
@@ -1761,12 +1747,9 @@ class BaseEnamlParser(object):
 
     def p_try_stmt1(self, p):
         ''' try_stmt : TRY COLON suite FINALLY COLON suite '''
-        if IS_PY3:
-            try_finally = ast.Try()
-            try_finally.handlers = []
-            try_finally.orelse = []
-        else:
-            try_finally = ast.TryFinally()
+        try_finally = ast.Try()
+        try_finally.handlers = []
+        try_finally.orelse = []
         try_finally.body = p[3]
         try_finally.finalbody = p[6]
         try_finally.lineno = p.lineno(1)
@@ -1775,11 +1758,8 @@ class BaseEnamlParser(object):
 
     def p_try_stmt2(self, p):
         ''' try_stmt : TRY COLON suite except_clauses '''
-        if IS_PY3:
-            try_stmt = ast.Try()
-            try_stmt.finalbody = []
-        else:
-            try_stmt = ast.TryExcept()
+        try_stmt = ast.Try()
+        try_stmt.finalbody = []
         try_stmt.body = p[3]
         try_stmt.handlers = p[4]
         try_stmt.orelse = []
@@ -1789,11 +1769,8 @@ class BaseEnamlParser(object):
 
     def p_try_stmt3(self, p):
         ''' try_stmt : TRY COLON suite except_clauses ELSE COLON suite '''
-        if IS_PY3:
-            try_stmt = ast.Try()
-            try_stmt.finalbody = []
-        else:
-            try_stmt = ast.TryExcept()
+        try_stmt = ast.Try()
+        try_stmt.finalbody = []
         try_stmt.body = p[3]
         try_stmt.handlers = p[4]
         try_stmt.orelse = p[7]
@@ -1804,19 +1781,11 @@ class BaseEnamlParser(object):
     def p_try_stmt4(self, p):
         ''' try_stmt : TRY COLON suite except_clauses FINALLY COLON suite '''
         lineno = p.lineno(1)
-        if IS_PY3:
-            try_finally = ast.Try()
-            try_stmt = try_finally
-        else:
-            try_finally = ast.TryFinally()
-            try_stmt = ast.TryExcept()
-            try_stmt.lineno = lineno
+        try_finally = ast.Try()
+        try_stmt = try_finally
         try_stmt.body = p[3]
         try_stmt.handlers = p[4]
         try_stmt.orelse = []
-        if not IS_PY3:
-            ast.fix_missing_locations(try_stmt)
-            try_finally.body = [try_stmt]
         try_finally.finalbody = p[7]
         try_finally.lineno = lineno
         ast.fix_missing_locations(try_finally)
@@ -1825,20 +1794,11 @@ class BaseEnamlParser(object):
     def p_try_stmt5(self, p):
         ''' try_stmt : TRY COLON suite except_clauses ELSE COLON suite FINALLY COLON suite '''
         lineno = p.lineno(1)
-        if IS_PY3:
-            try_finally = ast.Try()
-            try_stmt = try_finally
-        else:
-            try_finally = ast.TryFinally()
-            try_stmt = ast.TryExcept()
-            try_stmt.lineno = lineno
+        try_finally = ast.Try()
+        try_stmt = try_finally
         try_stmt.body = p[3]
         try_stmt.handlers = p[4]
         try_stmt.orelse = p[7]
-        if not IS_PY3:
-            try_stmt.lineno = lineno
-            ast.fix_missing_locations(try_stmt)
-            try_finally.body = [try_stmt]
         try_finally.finalbody = p[10]
         try_finally.lineno = lineno
         ast.fix_missing_locations(try_finally)
@@ -1877,11 +1837,7 @@ class BaseEnamlParser(object):
                           | EXCEPT test COMMA test COLON suite '''
         excpt = ast.ExceptHandler()
         excpt.type = p[2]
-        if IS_PY3:
-            name = p[4].id
-        else:
-            name = p[4]
-            self.set_context(name, Store, p)
+        name = p[4].id
         excpt.name = name
         excpt.body = p[6]
         excpt.lineno = p.lineno(1)
@@ -1892,12 +1848,8 @@ class BaseEnamlParser(object):
         ''' with_stmt : WITH with_item COLON suite '''
         with_stmt = ast.With()
         ctxt, opt_vars = p[2]
-        if IS_PY3:
-            with_stmt.items = [ast.withitem(context_expr=ctxt,
-                                            optional_vars=opt_vars)]
-        else:
-            with_stmt.context_expr = ctxt
-            with_stmt.optional_vars = opt_vars
+        with_stmt.items = [ast.withitem(context_expr=ctxt,
+                                        optional_vars=opt_vars)]
         with_stmt.body = p[4]
         with_stmt.lineno = p.lineno(1)
         ast.fix_missing_locations(with_stmt)
@@ -1906,27 +1858,15 @@ class BaseEnamlParser(object):
     def p_with_stmt2(self, p):
         ''' with_stmt : WITH with_item with_item_list COLON suite '''
         with_stmt = ast.With()
-        if IS_PY3:
-            items = list()
-            ctxt, opt_vars = p[2]
+        items = list()
+        ctxt, opt_vars = p[2]
+        items.append(ast.withitem(context_expr=ctxt,
+                                    optional_vars=opt_vars))
+        for ctxt, opt_vars in p[3]:
             items.append(ast.withitem(context_expr=ctxt,
-                                      optional_vars=opt_vars))
-            for ctxt, opt_vars in p[3]:
-                items.append(ast.withitem(context_expr=ctxt,
-                                          optional_vars=opt_vars))
+                                        optional_vars=opt_vars))
 
-            with_stmt.items = items
-        else:
-            ctxt, opt_vars = p[2]
-            with_stmt.context_expr = ctxt
-            with_stmt.optional_vars = opt_vars
-            last = with_stmt
-            for ctxt, opt_vars in p[3]:
-                with_stmt = ast.With()
-                with_stmt.context_expr = ctxt
-                with_stmt.optional_vars = opt_vars
-                last.body = [with_stmt]
-                last = with_stmt
+        with_stmt.items = items
         with_stmt.body = p[5]
         with_stmt.lineno = p.lineno(1)
         ast.fix_missing_locations(with_stmt)
@@ -1955,8 +1895,7 @@ class BaseEnamlParser(object):
         funcdef = ast.FunctionDef()
         funcdef.name = p[2]
         funcdef.args = p[3]
-        if IS_PY3:
-            funcdef.returns = None
+        funcdef.returns = None
         funcdef.body = p[5]
         funcdef.decorator_list = []
         funcdef.lineno = p.lineno(1)

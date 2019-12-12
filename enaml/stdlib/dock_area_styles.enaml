@@ -14,9 +14,8 @@ developer is free to define their own styles completely from scratch, and
 ignore these styles in their entirety.
 
 """
-from atom.api import Atom, Typed, Unicode
+from atom.api import Atom, Typed
 from enaml.core.template_ import Template
-from enaml.compat import str, basestring
 from enaml.styling import StyleSheet, Style, Setter
 
 
@@ -720,7 +719,7 @@ def register_styles(name, styles):
         This will be raised the name is already registered.
 
     """
-    assert isinstance(name, basestring)
+    assert isinstance(name, str)
     assert isinstance(styles, Template)
     if name in __STYLE_REGISTRY:
         raise ValueError("The '%s' name is already registered." % name)

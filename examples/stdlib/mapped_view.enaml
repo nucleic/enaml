@@ -18,7 +18,7 @@ proper view is displayed.
 
 << autodoc-me >>
 """
-from atom.api import Atom, Unicode, Int, List, Range, Value, observe
+from atom.api import Atom, Str, Int, List, Range, Value, observe
 
 from enaml.layout.api import vbox
 from enaml.stdlib.mapped_view import MappedView
@@ -28,7 +28,7 @@ from enaml.widgets.api import (
 
 
 class Base(Atom):
-    name = Unicode()
+    name = Str()
 
 
 class Foo(Base):
@@ -38,10 +38,10 @@ class Foo(Base):
 
 
 class Bar(Base):
-    d = Unicode()
-    e = Unicode()
-    f = Unicode()
-    g = Unicode()
+    d = Str()
+    e = Str()
+    f = Str()
+    g = Str()
 
 
 enamldef BaseView(Form):
