@@ -1,0 +1,48 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2019, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example illustrating the tracing inside declarative function.
+
+Declarative function body can be traced. When used as the right hand side of
+the << operator it means that any change to dynamic variables used inside the
+function body will trigger an update.
+
+<< autodoc-me >>
+"""
+from __future__ import print_function
+from collections import Mapping
+from enaml.widgets.api import Window, Label, CheckBox, Container, PushButton
+from enaml.core.funchelper import call_func
+
+
+enamldef Main(Window): m:
+
+    attr state1 : bool = False
+
+    attr state2 : bool = False
+
+    func active_states():
+        if state1 and state2:
+            return 'both'
+        elif state1 or state2:
+            return 'single'
+        else:
+            return 'none'
+
+    Container:
+        CheckBox:
+            text = 'Enabled state 1'
+            checked := state1
+        CheckBox:
+            text = 'Enabled state 2'
+            checked := state2
+        PushButton:
+            text = 'Refresh'
+            clicked ::
+                lab.text = active_states()
+        Label: lab:
+            text << active_states()

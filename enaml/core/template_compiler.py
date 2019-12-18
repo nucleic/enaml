@@ -366,4 +366,5 @@ class TemplateCompiler(cmn.CompilerBase):
         cg.args = param_names
         cg.docstring = node.docstring
         cg.varargs = bool(node.parameters.starparam)
+        print("Tenplate compiler", cg.args)
         return cg.to_code()

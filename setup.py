@@ -62,11 +62,6 @@ ext_modules = [
         ['enaml/src/declarative_function.cpp'],
         language='c++',
     ),
-    Extension(
-        'enaml.c_compat',
-        ['enaml/src/c_compat.cpp'],
-        language='c++',
-    )
 ]
 
 
