@@ -501,9 +501,12 @@ class QDockContainer(QDockFrame):
 
         """
         parent = self.parent()
+        parent_area = self.parentDockArea()
         while parent is not None:
             if isinstance(parent, QDockTabWidget):
                 return parent
+            elif parent is parent_area:
+                return None
             parent = parent.parent()
 
     def unplug(self):
