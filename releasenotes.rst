@@ -3,6 +3,8 @@ Enaml Release Notes
 
 0.11.0 - unreleased
 -------------------
+- qt: avoid going higher than the dock area when looking for a DockTabWidget
+  among the parents of a QDockContainer PR #386
 - properly report SyntaxError in f strings PR #378
 - add support for using attributes when specifying attr types PR #359
 - limit support to Python 3 PR #349

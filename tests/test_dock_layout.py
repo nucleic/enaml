@@ -13,7 +13,7 @@ from utils import is_qt_available
 pytestmark = pytest.mark.skipif(not is_qt_available(),
                                 reason='Requires a Qt binding')
 
-from enaml.layout.api import HSplitLayout, DockLayoutWarning
+from enaml.layout.api import HSplitLayout, DockLayoutWarning, InsertTab
 from enaml.widgets.api import DockArea, DockItem
 
 from utils import compile_source, wait_for_window_displayed
@@ -34,6 +34,34 @@ enamldef Main(Window):
                 name = 'item1'
             DockItem:
                 name = 'item2'
+
+"""
+
+
+NESTED_DOCK_AREA =\
+"""from enaml.widgets.api import Window, DockArea, DockItem, Container
+from enaml.layout.api import InsertTab, TabLayout
+
+enamldef Main(Window):
+
+    alias outer
+    alias inner
+
+    Container:
+        DockArea: outer:
+            layout = TabLayout('Outer1', 'Outer2')
+            DockItem:
+                name = 'Outer1'
+                title = name
+                Container:
+                    DockArea: inner:
+                        layout = TabLayout('Inner1')
+                        DockItem:
+                            name = 'Inner1'
+                            title = name
+            DockItem:
+                name = 'Outer2'
+                title = name
 
 """
 
@@ -192,3 +220,20 @@ def test_dock_area_interactions(enaml_qtbot, enaml_sleep):
         enaml_qtbot.wait(enaml_sleep)
 
     enaml_qtbot.wait(enaml_sleep)
+
+
+def test_handling_nested_dock_area(enaml_qtbot, enaml_sleep):
+    """Test that an inner dock area does not look for item in the outer one.
+
+    """
+    win = compile_source(NESTED_DOCK_AREA, 'Main')()
+    win.show()
+    wait_for_window_displayed(enaml_qtbot, win)
+    enaml_qtbot.wait(enaml_sleep)
+    dock_item = DockItem(win.inner, name='Inner2', title='Inner2')
+    op = InsertTab(item=dock_item.name,
+                    target='Inner1',
+                    tab_position='top')
+    win.inner.update_layout(op)
+    enaml_qtbot.wait(enaml_sleep)
+    assert dock_item.parent is win.inner
