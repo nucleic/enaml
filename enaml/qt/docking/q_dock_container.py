@@ -491,7 +491,7 @@ class QDockContainer(QDockFrame):
             parent = parent.parent()
 
     def parentDockTabWidget(self):
-        """ Get the parent dock area of the container.
+        """ Get the parent dock tab of the container.
 
         Returns
         -------
