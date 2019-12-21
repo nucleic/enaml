@@ -239,7 +239,7 @@ class QDockTabBar(QTabBar):
         """ Handle a tab insertion in the tab bar.
 
         This handler will create the close button for the tab and then
-        update its visibilty depending on whether or not the dock item
+        update its visibility depending on whether or not the dock item
         is closable. It will also build the internal tab data structure
         for the new tab. This method assumes that this tab bar is
         parented by a QDockTabWidget.
