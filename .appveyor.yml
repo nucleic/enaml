@@ -148,6 +148,9 @@ install:
   - "python -c \"import struct; print('Architecture is win'+str(struct.calcsize('P') * 8))\""
   - pip --version
 
+  # XXX temporarily install bytecode from a custom branch
+  - pip install https://github.com/vstinner/bytecode/tarball/copy-slice-legalize
+
   # At the time of writing, the setup.py says Enaml depends on a dev version
   # of Atom which is not on PyPI. Install straight from GitHub.
   - pip install https://github.com/nucleic/cppy/tarball/master
