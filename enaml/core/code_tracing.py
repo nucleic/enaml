@@ -313,18 +313,12 @@ def inject_tracing(bytecode, nested=False):
                 bc.Instr("UNPACK_SEQUENCE", n_stack_args),   # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
             ]
             inserts[idx] = tracing_code
-        # elif USE_WORDCODE and i_name == "CALL_FUNCTION_KW":
-        #     # New in Python 3.6.
-        #     # All positional and keywords argument are in order on the stack
-        #     # and the first item is a tuple containing the keywords names.
 
-        #     # TODO implement
-        #     # This is quite low priority as tracing and inverting is only used
-        #     # to detect getattr and setattr called without keyword arguments
-        #     # both in this project and in traits-enaml. So there are no use
-        #     # case for this at the time being.
-        #     raise RuntimeError("unsupported instruction CALL_FUNCTION_KW "
-        #                        "encountered in traced code.")
+        # We do not trace CALL_FUNCTION_KW and CALL_FUNCTION_EX since
+        # tracing and inverting only require to detect getattr and setattr
+        # both in this project and in traits-enaml. Those two are always called
+        # using the CALL_FUNCTION bytecode instruction.
+
         elif i_name == "BINARY_SUBSCR":
             tracing_code = [                                     # obj -> idx
                 bc.Instr("DUP_TOP_TWO"),                 # obj -> idx -> obj -> idx
@@ -435,17 +429,12 @@ def inject_inversion(bytecode):
             bc.Instr("CALL_FUNCTION", 0x0004),        # retval
             bc.Instr("RETURN_VALUE"),                 #
         ])
-    # elif USE_WORDCODE and i_name == "CALL_FUNCTION_KW":
-    #         # New in Python 3.6.
-    #         # All positional and keywords argument are in order on the stack
-    #         # and the first item is a tuple containing the keywords names.
 
-    #         # TODO implement
-    #         # This is quite low priority as tracing and inverting is only used
-    #         # to detect getattr and setattr called without keyword arguments
-    #         # both in this project and in traits-enaml. So there are no use
-    #         # case for this at the time being.
-    #         pass
+    # We do not trace CALL_FUNCTION_KW and CALL_FUNCTION_EX since tracing and
+    # inverting only require to detect getattr and setattr both in this project
+    # and in traits-enaml. Those two are always called using the CALL_FUNCTION
+    # bytecode instruction.
+
     elif i_name == "BINARY_SUBSCR":
         new_code.extend([                             # obj -> index
             bc.Instr("LOAD_FAST", '_[inverter]'),     # obj -> index -> inverter
