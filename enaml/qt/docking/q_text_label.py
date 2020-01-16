@@ -122,4 +122,4 @@ class QTextLabel(QFrame):
         # The +1 is to fix a seeming off-by-one error in elidedText.
         # https://github.com/nucleic/enaml/issues/38
         text = metrics.elidedText(self._text, Qt.ElideRight, rect.width() + 1)
-        QPainter(self).drawText(rect, Qt.AlignLeft | Qt.AlignVCenter, text)
+        QPainter(self).drawText(rect, int(Qt.AlignLeft | Qt.AlignVCenter), text)

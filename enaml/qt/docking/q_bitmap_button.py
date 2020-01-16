@@ -120,7 +120,7 @@ class QBitmapButton(QAbstractButton):
         x = size.width() / 2 - im_size.width() / 2
         y = size.height() / 2 - im_size.height() / 2
         source = QRect(QPoint(0, 0), im_size)
-        dest = QRect(QPoint(x, y), im_size)
+        dest = QRect(QPoint(int(round(x)), int(round(y))), im_size)
         painter.drawPixmap(dest, bmp, source)
 
     def paintEvent(self, event):

@@ -407,7 +407,8 @@ class _LayoutRow(object):
                     this_y = y + delta
                 elif align == QFlowLayout.AlignCenter:
                     this_y = y + delta / 2
-            item.setGeometry(QRect(curr_x, this_y, w, h))
+            item.setGeometry(QRect(int(round(curr_x)), int(round(this_y)),
+                                   int(round(w)), int(round(h))))
             curr_x += (w + space)
 
 
