@@ -14,7 +14,7 @@ function body will trigger an update.
 << autodoc-me >>
 """
 from __future__ import print_function
-from collections import Mapping
+from collections.abc import Mapping
 from enaml.widgets.api import Window, Label, CheckBox, Container, PushButton
 from enaml.core.funchelper import call_func
 

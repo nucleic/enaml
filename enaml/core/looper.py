@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from collections import Iterable
+from collections.abc import Iterable
 
 from atom.api import Atom, Int, Instance, List, Typed, Value
 from atom.datastructures.api import sortedmap
