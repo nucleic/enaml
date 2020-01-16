@@ -258,10 +258,10 @@ static PyType_Slot WeakMethod_Type_slots[] = {
     { Py_tp_traverse, void_cast( WeakMethod_traverse ) },        /* tp_traverse */
     { Py_tp_clear, void_cast( WeakMethod_clear ) },              /* tp_clear */
     { Py_tp_methods, void_cast( WeakMethod_methods ) },          /* tp_doc */
-    { Py_tp_doc, void_cast( WeakMethod__doc__ ) },               /* tp_doc */
+    { Py_tp_doc, cast_py_tp_doc( WeakMethod__doc__ ) },          /* tp_doc */
     { Py_tp_call, void_cast( WeakMethod_call ) },                /* tp_call */
     { Py_tp_new, void_cast( WeakMethod_new ) },                  /* tp_new */
-    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },            /* tp_alloc */
+    { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },           /* tp_alloc */
     /* tp_weaklistoffset cannot be in slots we will set after type creation
        cf https://github.com/pyside/pyside2-setup/blob/5.11/sources/shiboken2/libshiboken/pep384impl_doc.rst */
     { 0, 0 },
@@ -277,12 +277,12 @@ PyTypeObject* WeakMethod::TypeObject = NULL;
 
 PyType_Spec WeakMethod::TypeObject_Spec = {
 	"enaml.weakmethod.WeakMethod",              /* tp_name */
-	sizeof( WeakMethod ),                     /* tp_basicsize */
+	sizeof( WeakMethod ),                       /* tp_basicsize */
 	0,                                          /* tp_itemsize */
 	Py_TPFLAGS_DEFAULT
     |Py_TPFLAGS_BASETYPE
     |Py_TPFLAGS_HAVE_GC,                         /* tp_flags */
-    WeakMethod_Type_slots                           /* slots */
+    WeakMethod_Type_slots                        /* slots */
 };
 
 

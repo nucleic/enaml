@@ -260,9 +260,9 @@ PyDoc_STRVAR(Signal__doc__,
 
 static PyType_Slot Signal_Type_slots[] = {
     { Py_tp_dealloc, void_cast( Signal_dealloc ) },       /* tp_dealloc */
-    { Py_tp_traverse, void_cast( Signal_traverse ) },      /* tp_dealloc */
+    { Py_tp_traverse, void_cast( Signal_traverse ) },     /* tp_dealloc */
     { Py_tp_clear, void_cast( Signal_clear ) },           /* tp_dealloc */
-    { Py_tp_doc, void_cast( Signal__doc__ ) },            /* tp_doc */
+    { Py_tp_doc, cast_py_tp_doc( Signal__doc__ ) },       /* tp_doc */
     { Py_tp_methods, void_cast( Signal_methods ) },       /* tp_methods */
     { Py_tp_descr_get, void_cast( Signal__get__ ) },      /* tp_descr_get */
     { Py_tp_descr_set, void_cast( Signal__set__ ) },      /* tp_descr_set */
@@ -447,7 +447,7 @@ static PyType_Slot _Disconnector_Type_slots[] = {
     { Py_tp_dealloc, void_cast( _Disconnector_dealloc ) },       /* tp_dealloc */
     { Py_tp_traverse, void_cast( _Disconnector_traverse ) },     /* tp_traverse */
     { Py_tp_clear, void_cast( _Disconnector_clear ) },           /* tp_clear */
-    { Py_tp_doc, void_cast( _Disconnector__doc__ ) },            /* tp_doc */
+    { Py_tp_doc, cast_py_tp_doc( _Disconnector__doc__ ) },       /* tp_doc */
     { Py_tp_call, void_cast( _Disconnector_call ) },             /* tp_call */
     { Py_tp_new, void_cast( _Disconnector_new ) },               /* tp_new */
     { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },           /* tp_alloc */
@@ -784,7 +784,7 @@ static PyType_Slot BoundSignal_Type_slots[] = {
     { Py_tp_traverse, void_cast( BoundSignal_traverse ) },        /* tp_traverse */
     { Py_tp_clear, void_cast( BoundSignal_clear ) },              /* tp_clear */
     { Py_tp_methods, void_cast( BoundSignal_methods ) },          /* tp_doc */
-    { Py_tp_doc, void_cast( BoundSignal__doc__ ) },               /* tp_doc */
+    { Py_tp_doc, cast_py_tp_doc( BoundSignal__doc__ ) },          /* tp_doc */
     { Py_tp_call, void_cast( BoundSignal_call ) },                /* tp_call */
     { Py_tp_richcompare, void_cast( BoundSignal_richcompare ) },  /* tp_richcompare */
     { Py_tp_new, void_cast( BoundSignal_new ) },                  /* tp_new */
