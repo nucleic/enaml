@@ -10,7 +10,7 @@ from contextlib import contextmanager
 import bytecode as bc
 from atom.api import Atom, Bool, Int, List, Str
 
-from ..compat import USE_WORDCODE, POS_ONLY_ARGS
+from ..compat import USE_WORDCODE, POS_ONLY_ARGS, PY38
 
 
 class CodeGenerator(Atom):
@@ -368,8 +368,9 @@ class CodeGenerator(Atom):
         """
         exc_label = bc.Label()
         end_label = bc.Label()
+        op_code = "SETUP_FINALLY" if PY38 else "SETUP_EXCEPT"
         self.code_ops.append(
-            bc.Instr("SETUP_EXCEPT", exc_label),         # TOS
+            bc.Instr(op_code, exc_label),         # TOS
         )
         yield
         self.code_ops.extend([                           # TOS
@@ -401,10 +402,13 @@ class CodeGenerator(Atom):
         """
         start_label = bc.Label()
         jump_label = bc.Label()
+        # Unused under Python 3.8+ since the compiler handle the blocks
+        # automatically
         end_label = bc.Label()
         load_op = "LOAD_FAST" if fast_var else "LOAD_GLOBAL"
+        if PY38:
+            self.code_ops.append(bc.Instr("SETUP_LOOP", end_label),)
         self.code_ops.extend([
-            bc.Instr("SETUP_LOOP", end_label),
             bc.Instr(load_op, iter_var),
             bc.Instr("GET_ITER"),
             start_label,
@@ -414,9 +418,12 @@ class CodeGenerator(Atom):
         self.code_ops.extend([
             bc.Instr("JUMP_ABSOLUTE", start_label),
             jump_label,
-            bc.Instr("POP_BLOCK"),
-            end_label,
         ])
+        if PY38:
+            self.code_ops.extend(
+                bc.Instr("POP_BLOCK"),
+                end_label,
+            )
 
     def insert_python_block(self, pydata, trim=True):
         """ Insert the compiled code for a Python Module ast or string.

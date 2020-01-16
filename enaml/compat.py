@@ -14,8 +14,7 @@ from types import CodeType
 
 USE_WORDCODE = sys.version_info >= (3, 6)
 
-
-POS_ONLY_ARGS = sys.version_info >= (3, 8)
+PY38 = POS_ONLY_ARGS = sys.version_info >= (3, 8)
 
 
 STRING_ESCAPE_SEQUENCE_RE = re.compile(r'''
