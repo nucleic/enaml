@@ -122,7 +122,7 @@ class Python35EnamlParser(Python34EnamlParser):
         async_funcdef = ast.AsyncFunctionDef()
         funcdef = p[2]
         for attr in tuple(funcdef._fields) + ('lineno', 'col_offset'):
-            setattr(async_funcdef, attr, getattr(funcdef, attr))
+            setattr(async_funcdef, attr, getattr(funcdef, attr, None))
         p[0] = async_funcdef
 
     def p_async_for_stmt(self, p):
@@ -130,7 +130,7 @@ class Python35EnamlParser(Python34EnamlParser):
         async_for = ast.AsyncFor()
         for_node = p[2]
         for attr in tuple(for_node._fields) + ('lineno', 'col_offset'):
-            setattr(async_for, attr, getattr(for_node, attr))
+            setattr(async_for, attr, getattr(for_node, attr, None))
         p[0] = async_for
 
     def p_async_with_stmt(self, p):
@@ -138,7 +138,7 @@ class Python35EnamlParser(Python34EnamlParser):
         async_with = ast.AsyncWith()
         with_node = p[2]
         for attr in tuple(with_node._fields) + ('lineno', 'col_offset'):
-            setattr(async_with, attr, getattr(with_node, attr))
+            setattr(async_with, attr, getattr(with_node, attr, None))
         p[0] = async_with
 
     def p_atom_expr3(self, p):
@@ -167,7 +167,7 @@ class Python35EnamlParser(Python34EnamlParser):
                                 | child_def
                                 | template_inst '''
         p[0] = p[1]
-    
+
     def p_child_def_suite_item(self, p):
         ''' child_def_suite_item : child_def_simple_item
                                  | decl_funcdef
@@ -175,14 +175,14 @@ class Python35EnamlParser(Python34EnamlParser):
                                  | child_def
                                  | template_inst '''
         p[0] = p[1]
-    
+
     def p_async_decl_funcdef(self, p):
         ''' async_decl_funcdef : ASYNC decl_funcdef '''
         decl_funcdef = p[2]
         funcdef = decl_funcdef.funcdef
         async_funcdef = ast.AsyncFunctionDef()
         for attr in tuple(funcdef._fields) + ('lineno', 'col_offset'):
-            setattr(async_funcdef, attr, getattr(funcdef, attr))
+            setattr(async_funcdef, attr, getattr(funcdef, attr, None))
         ast.fix_missing_locations(async_funcdef)
         # Skip validate because the original function was already validated
         async_decl_funcdef = enaml_ast.AsyncFuncDef()
