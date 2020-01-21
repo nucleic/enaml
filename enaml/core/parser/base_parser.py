@@ -438,8 +438,9 @@ class BaseEnamlParser(object):
     def p_enamldef_simple_item1(self, p):
         ''' enamldef_simple_item : binding
                                  | ex_binding
-                                 | alias_expr
-                                 | storage_expr '''
+                                 | storage_alias_const_expr '''
+        if isinstance(p[1], enaml_ast.ConstExpr):
+            syntax_error('invalid syntax', FakeToken(p.lexer.lexer, p[1].lineno))
         p[0] = p[1]
 
     def p_enamldef_simple_item2(self, p):
@@ -494,125 +495,104 @@ class BaseEnamlParser(object):
         p[0] = enaml_ast.PragmaArg(kind='string', value=p[1])
 
     # -------------------------------------------------------------------------
-    # AliasExpr
-    # -------------------------------------------------------------------------
-    def p_alias_expr1(self, p):
-        ''' alias_expr : ALIAS NAME NEWLINE '''
-        node = enaml_ast.AliasExpr()
-        node.lineno = p.lineno(1)
-        node.name = p[2]
-        node.target = p[2]
-        p[0] = node
-
-    def p_alias_expr2(self, p):
-        ''' alias_expr : ALIAS NAME COLON NAME NEWLINE '''
-        node = enaml_ast.AliasExpr()
-        node.lineno = p.lineno(1)
-        node.name = p[2]
-        node.target = p[4]
-        p[0] = node
-
-    def p_alias_expr3(self, p):
-        ''' alias_expr : ALIAS NAME COLON NAME ex_dotted_names NEWLINE '''
-        node = enaml_ast.AliasExpr()
-        node.lineno = p.lineno(1)
-        node.name = p[2]
-        node.target = p[4]
-        node.chain = tuple(p[5])
-        p[0] = node
-
-    # -------------------------------------------------------------------------
-    # ConstExpr
-    # -------------------------------------------------------------------------
-    def p_const_expr1(self, p):
-        ''' const_expr : CONST NAME EQUAL test NEWLINE '''
-        lineno = p.lineno(1)
-        body = p[4]
-        body.lineno = lineno
-        ast.fix_missing_locations(body)
-        expr = ast.Expression(body=body)
-        python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
-        node = enaml_ast.ConstExpr()
-        node.lineno = lineno
-        node.name = p[2]
-        node.expr = python
-        p[0] = node
-
-    def p_const_expr2(self, p):
-        ''' const_expr : CONST NAME COLON dotted_name EQUAL test NEWLINE '''
-        lineno = p.lineno(1)
-        body = p[6]
-        body.lineno = lineno
-        ast.fix_missing_locations(body)
-        expr = ast.Expression(body=body)
-        python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
-        node = enaml_ast.ConstExpr()
-        node.lineno = lineno
-        node.name = p[2]
-        typename = ast_for_dotted_name(p[4])
-        typename.lineno = lineno
-        node.typename = typename
-        node.expr = python
-        p[0] = node
-
-    # -------------------------------------------------------------------------
-    # StorageExpr
+    # StorageExpr | AliasExpr | ConstExpr
     # -------------------------------------------------------------------------
     def _validate_storage_expr(self, kind, lineno, lexer):
         if kind not in ('attr', 'event'):
             syntax_error('invalid syntax', FakeToken(lexer, lineno))
 
-    def p_storage_expr1(self, p):
-        ''' storage_expr : NAME NAME NEWLINE '''
+    def p_storage_alias_const_expr1(self, p):
+        ''' storage_alias_const_expr : NAME NAME NEWLINE '''
         kind = p[1]
         lineno = p.lineno(1)
-        self._validate_storage_expr(kind, lineno, p.lexer.lexer)
-        node = enaml_ast.StorageExpr()
-        node.lineno = lineno
-        node.kind = kind
-        node.name = p[2]
-        p[0] = node
+        # Alias expression
+        if kind == "alias":
+            node = enaml_ast.AliasExpr()
+            node.lineno = lineno
+            node.name = p[2]
+            node.target = p[2]
+            p[0] = node
+        # Storage expression
+        else:
+            self._validate_storage_expr(kind, lineno, p.lexer.lexer)
+            node = enaml_ast.StorageExpr()
+            node.lineno = lineno
+            node.kind = kind
+            node.name = p[2]
+            p[0] = node
 
-    def p_storage_expr2(self, p):
-        ''' storage_expr : NAME NAME COLON dotted_name NEWLINE '''
+    def p_storage_alias_const_expr2(self, p):
+        ''' storage_alias_const_expr : NAME NAME COLON dotted_name NEWLINE '''
         kind = p[1]
         lineno = p.lineno(1)
-        self._validate_storage_expr(kind, lineno, p.lexer.lexer)
-        node = enaml_ast.StorageExpr()
-        node.lineno = lineno
-        node.kind = kind
-        node.name = p[2]
-        typename = ast_for_dotted_name(p[4])
-        typename.lineno = lineno
-        node.typename = typename
-        p[0] = node
+        if kind == "alias":
+            node = enaml_ast.AliasExpr()
+            node.lineno = lineno
+            node.name = p[2]
+            t, *c = p[4].split(".")
+            node.target = t
+            node.chain = tuple(c)
+            p[0] = node
+        else:
+            self._validate_storage_expr(kind, lineno, p.lexer.lexer)
+            node = enaml_ast.StorageExpr()
+            node.lineno = lineno
+            node.kind = kind
+            node.name = p[2]
+            typename = ast_for_dotted_name(p[4])
+            typename.lineno = lineno
+            node.typename = typename
+            p[0] = node
 
-    def p_storage_expr3(self, p):
-        ''' storage_expr : NAME NAME operator_expr '''
+    def p_storage_alias_const_expr3(self, p):
+        ''' storage_alias_const_expr : NAME NAME operator_expr '''
         kind = p[1]
         lineno = p.lineno(1)
-        self._validate_storage_expr(kind, lineno, p.lexer.lexer)
-        node = enaml_ast.StorageExpr()
-        node.lineno = lineno
-        node.kind = kind
-        node.name = p[2]
-        node.expr = p[3]
-        p[0] = node
+        if kind == "const":
+            op_expr = p[3]
+            if op_expr.operator != "=":
+                syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
+            node = enaml_ast.ConstExpr()
+            node.lineno = lineno
+            node.name = p[2]
+            node.expr = op_expr.value
+            p[0] = node
+        else:
+            self._validate_storage_expr(kind, lineno, p.lexer.lexer)
+            node = enaml_ast.StorageExpr()
+            node.lineno = lineno
+            node.kind = kind
+            node.name = p[2]
+            node.expr = p[3]
+            p[0] = node
 
-    def p_storage_expr4(self, p):
-        ''' storage_expr : NAME NAME COLON dotted_name operator_expr '''
+    def p_storage_alias_const_expr4(self, p):
+        ''' storage_alias_const_expr : NAME NAME COLON dotted_name operator_expr '''
         kind = p[1]
         lineno = p.lineno(1)
-        self._validate_storage_expr(kind, lineno, p.lexer.lexer)
-        node = enaml_ast.StorageExpr()
-        node.lineno = lineno
-        node.kind = kind
-        node.name = p[2]
-        typename = ast_for_dotted_name(p[4])
-        typename.lineno = lineno
-        node.typename = typename
-        node.expr = p[5]
-        p[0] = node
+        if kind == "const":
+            op_expr = p[5]
+            if op_expr.operator != "=":
+                syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
+            node = enaml_ast.ConstExpr()
+            node.lineno = lineno
+            node.name = p[2]
+            typename = ast_for_dotted_name(p[4])
+            typename.lineno = lineno
+            node.typename = typename
+            node.expr = op_expr.value
+            p[0] = node
+        else:
+            self._validate_storage_expr(kind, lineno, p.lexer.lexer)
+            node = enaml_ast.StorageExpr()
+            node.lineno = lineno
+            node.kind = kind
+            node.name = p[2]
+            typename = ast_for_dotted_name(p[4])
+            typename.lineno = lineno
+            node.typename = typename
+            node.expr = p[5]
+            p[0] = node
 
     # -------------------------------------------------------------------------
     # ChildDef
@@ -668,8 +648,9 @@ class BaseEnamlParser(object):
     def p_child_def_simple_item1(self, p):
         ''' child_def_simple_item : binding
                                   | ex_binding
-                                  | alias_expr
-                                  | storage_expr '''
+                                  | storage_alias_const_expr '''
+        if isinstance(p[1], enaml_ast.ConstExpr):
+            syntax_error('invalid syntax', FakeToken(p.lexer.lexer, p[1].lineno))
         p[0] = p[1]
 
     def p_child_def_simple_item2(self, p):
@@ -962,7 +943,9 @@ class BaseEnamlParser(object):
         p[0] = p[1]
 
     def p_template_simple_item1(self, p):
-        ''' template_simple_item : const_expr '''
+        ''' template_simple_item : storage_alias_const_expr '''
+        if not isinstance(p[1], enaml_ast.ConstExpr):
+            syntax_error('invalid syntax', FakeToken(p.lexer.lexer, p[1].lineno))
         p[0] = p[1]
 
     def p_template_simple_item2(self, p):
