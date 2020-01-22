@@ -200,6 +200,17 @@ def test_set_comprehension_func(value):
     assert win.call()
 
 
+# Test that we can access the non local values and the closure variables
+@pytest.mark.parametrize('value', ['self', 'test'])
+def test_generator_expression_func(value):
+    """Test running a generator expression in a declarative function.
+
+    """
+    source = FUNCTION_TEMPLATE.format('any(%s for i in range(10))' % value)
+    win = compile_source(source, 'Main')()
+    assert win.call()
+
+
 def test_handling_nested_comprehension():
     """Test handling nested comprehensions.
 
