@@ -663,6 +663,29 @@ DynamicScope_getitem( DynamicScope* self, PyObject* key )
     return 0;
 }
 
+PyObject*
+DynamicScope_get( DynamicScope* self, PyObject* args)
+{
+    PyObject *key;
+    PyObject *default_value = NULL;
+
+    if (!PyArg_ParseTuple(args, "O|O", &key, &default_value))
+        return cppy::type_error( args, "str" );
+
+    PyObject* res = DynamicScope_getitem(self, key);
+    if ( res )
+        return res; // Ref already incremented
+    if( PyErr_Occurred() )
+    {
+        if( !PyErr_ExceptionMatches( PyExc_KeyError ) )
+            return 0;
+        PyErr_Clear();
+    }
+
+    if ( !default_value )
+        Py_RETURN_NONE;
+    return cppy::incref( default_value );
+}
 
 int
 DynamicScope_setitem( DynamicScope* self, PyObject* key, PyObject* value )
@@ -745,6 +768,11 @@ DynamicScope_contains( DynamicScope* self, PyObject* key )
 }
 
 
+static PyMethodDef DynamicScope_methods[] = {
+    {"get",    reinterpret_cast<PyCFunction>(DynamicScope_get), METH_VARARGS, ""},
+    { 0 }  // Sentinel
+};
+
 static PyType_Slot DynamicScope_Type_slots[] = {
     { Py_tp_dealloc, void_cast( DynamicScope_dealloc ) },           /* tp_dealloc */
     { Py_tp_traverse, void_cast( DynamicScope_traverse ) },         /* tp_traverse */
@@ -752,12 +780,12 @@ static PyType_Slot DynamicScope_Type_slots[] = {
     { Py_tp_new, void_cast( DynamicScope_new ) },                /* tp_new */
     { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },           /* tp_alloc */
     { Py_tp_free, void_cast( PyObject_GC_Del ) },                /* tp_free */
+    { Py_tp_methods, void_cast( DynamicScope_methods ) },        /* tp_methods */
     { Py_mp_subscript, void_cast( DynamicScope_getitem ) },      /* mp_subscript */
     { Py_mp_ass_subscript, void_cast( DynamicScope_setitem ) },  /* mp_ass_subscript */
     { Py_sq_contains, void_cast( DynamicScope_contains ) },      /* sq_contains */
     { 0, 0 },
 };
-
 
 }  // namespace
 

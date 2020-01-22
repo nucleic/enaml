@@ -154,8 +154,8 @@ def test_dynamicscope_contains(dynamicscope):
         1 in dynamicscope
 
 
-def test_dynamicscope_get(dynamicscope):
-    """Test the get method.
+def test_dynamicscope_getitem(dynamicscope):
+    """Test the getitem method.
 
     """
     dynamicscope, args = dynamicscope
@@ -173,6 +173,28 @@ def test_dynamicscope_get(dynamicscope):
     with pytest.raises(TypeError) as excinfo:
         dynamicscope[1]
     assert 'str' in excinfo.exconly()
+
+
+def test_dynamicscope_get(dynamicscope):
+    """Test the get method.
+
+    """
+    dynamicscope, args = dynamicscope
+    nlocals = dynamicscope['nonlocals']
+    for key, value in zip(['a', 'b', 'c', 'e', 'self', 'change',
+                           'nonlocals', '__scope__', '_[tracer]'],
+                          [1, 2, 3, 5,
+                           args[0], args[-2],
+                           nlocals, dynamicscope, args[-1]]):
+        assert dynamicscope.get(key) == value
+
+    assert dynamicscope.get('z') == None
+    assert dynamicscope.get('z', 'abc') == 'abc'
+
+    with pytest.raises(TypeError) as excinfo:
+        dynamicscope.get(1)
+    assert 'str' in excinfo.exconly()
+
 
 
 def test_dynamicscope_set(dynamicscope):
