@@ -669,21 +669,30 @@ DynamicScope_get( DynamicScope* self, PyObject* args)
     PyObject *key;
     PyObject *default_value = NULL;
 
-    if (!PyArg_ParseTuple(args, "O|O", &key, &default_value))
-        return cppy::type_error( args, "str" );
+    if ( !PyArg_ParseTuple(args, "O|O", &key, &default_value) )
+    {
+        return 0;
+    }
 
     PyObject* res = DynamicScope_getitem(self, key);
     if ( res )
+    {
         return res; // Ref already incremented
+    }
+
     if( PyErr_Occurred() )
     {
         if( !PyErr_ExceptionMatches( PyExc_KeyError ) )
+        {
             return 0;
+        }
         PyErr_Clear();
     }
 
     if ( !default_value )
+    {
         Py_RETURN_NONE;
+    }
     return cppy::incref( default_value );
 }
 

@@ -193,8 +193,12 @@ def test_dynamicscope_get(dynamicscope):
 
     with pytest.raises(TypeError) as excinfo:
         dynamicscope.get(1)
-    assert 'str' in excinfo.exconly()
 
+    with pytest.raises(TypeError) as excinfo:
+        dynamicscope.get()
+
+    with pytest.raises(TypeError) as excinfo:
+        dynamicscope.get("name", "default", "extra")
 
 
 def test_dynamicscope_set(dynamicscope):
