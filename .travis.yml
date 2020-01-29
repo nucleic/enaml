@@ -93,8 +93,8 @@ before_install:
          $PIP_INSTALL Cython QScintilla;
      fi'
 
-  # XXX temporarily install bytecode from a custom branch
-  - $PIP_INSTALL https://github.com/vstinner/bytecode/tarball/copy-slice-legalize
+  # XXX temporarily install bytecode from master
+  - $PIP_INSTALL https://github.com/vstinner/bytecode/tarball/master
 
   # Install the dev version of the other nucleic projects
   - $PIP_INSTALL https://github.com/nucleic/cppy/tarball/master

@@ -150,7 +150,7 @@ install:
   - pip --version
 
   # XXX temporarily install bytecode from a custom branch
-  - pip install https://github.com/vstinner/bytecode/tarball/copy-slice-legalize
+  - pip install https://github.com/vstinner/bytecode/tarball/master
 
   # At the time of writing, the setup.py says Enaml depends on a dev version
   # of Atom which is not on PyPI. Install straight from GitHub.
