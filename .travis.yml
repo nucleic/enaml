@@ -93,8 +93,8 @@ before_install:
          $PIP_INSTALL Cython QScintilla;
      fi'
 
-  # XXX temporarily install bytecode from master
-  - $PIP_INSTALL https://github.com/vstinner/bytecode/tarball/master
+  # Install bytecode
+  - $PIP_INSTALL bytecode
 
   # Install the dev version of the other nucleic projects
   - $PIP_INSTALL https://github.com/nucleic/cppy/tarball/master
