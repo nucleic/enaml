@@ -191,7 +191,7 @@ class QDockTabBar(QTabBar):
         normal = QPixmap(opt.rect.size())
         normal.fill(Qt.transparent)
         painter = QStylePainter(normal, self)
-        painter.setFont(self.font())
+        self.initPainter(painter)
         painter.drawControl(QStyle.CE_TabBarTab, opt)
 
         # Snap the selected pixmap
@@ -199,7 +199,7 @@ class QDockTabBar(QTabBar):
         selected = QPixmap(opt.rect.size())
         selected.fill(Qt.transparent)
         painter = QStylePainter(selected, self)
-        painter.setFont(self.font())
+        self.initPainter(painter)
         painter.drawControl(QStyle.CE_TabBarTab, opt)
 
         # Reset the internal stylesheet style
