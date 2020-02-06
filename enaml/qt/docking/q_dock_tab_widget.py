@@ -8,7 +8,7 @@
 from weakref import ref
 
 from enaml.qt import QT_API, PYQT5_API, PYSIDE2_API
-from enaml.qt.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent
+from enaml.qt.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent, QRect
 from enaml.qt.QtGui import (
     QMouseEvent, QResizeEvent, QCursor, QPainter, QPixmap
 )
@@ -191,7 +191,7 @@ class QDockTabBar(QTabBar):
         normal = QPixmap(opt.rect.size())
         normal.fill(Qt.transparent)
         painter = QStylePainter(normal, self)
-        painter.initFrom(self)
+        painter.setFont(self.font())
         painter.drawControl(QStyle.CE_TabBarTab, opt)
 
         # Snap the selected pixmap
@@ -199,7 +199,7 @@ class QDockTabBar(QTabBar):
         selected = QPixmap(opt.rect.size())
         selected.fill(Qt.transparent)
         painter = QStylePainter(selected, self)
-        painter.initFrom(self)
+        painter.setFont(self.font())
         painter.drawControl(QStyle.CE_TabBarTab, opt)
 
         # Reset the internal stylesheet style
@@ -358,6 +358,7 @@ class QDockTabBar(QTabBar):
             for index, data in enumerate(self._tab_data):
                 if data.alerted:
                     rect = self.tabRect(index)
+                    print("drawn on", rect)
                     pm = data.selected if index == current else data.normal
                     painter.drawPixmap(rect, pm)
 
