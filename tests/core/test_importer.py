@@ -9,10 +9,12 @@ import importlib
 import os
 import sys
 import time
+from importlib.machinery import ModuleSpec
+
+from enaml.core.import_hooks import (AbstractEnamlImporter, EnamlImporter,
+                                     imports)
 
 import pytest
-
-from enaml.core.import_hooks import AbstractEnamlImporter, imports
 
 
 # Test handling wrong loader type
@@ -76,6 +78,14 @@ def test_import_and_cache_generation(enaml_module):
         importlib.import_module(name)
 
     assert name in sys.modules
+
+    # Check that the module attributes are properly populated
+    mod = sys.modules[name]
+    assert mod.__name__ == name
+    assert mod.__file__ == os.path.join(folder, name + ".enaml")
+    assert os.path.join(folder, "__enamlcache__") in mod.__cached__
+    assert isinstance(mod.__loader__, EnamlImporter)
+    assert isinstance(mod.__spec__, ModuleSpec)
 
     cache_folder = os.path.join(folder, '__enamlcache__')
     assert os.path.isdir(cache_folder)
