@@ -155,6 +155,5 @@ class DockItem(Widget):
         """ Called by the proxy when the toolkit item is closed.
 
         """
-        # TODO allow the user to veto the close request
         self.closed()
         deferred_call(self.destroy)
