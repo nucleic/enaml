@@ -3,6 +3,7 @@ Enaml Release Notes
 
 0.11.0 - unreleased
 -------------------
+- qt: fix alerts on tabbed DockItem PR #396
 - qt: avoid going higher than the dock area when looking for a DockTabWidget
   among the parents of a QDockContainer PR #386
 - properly report SyntaxError in f strings PR #378
