@@ -11,12 +11,13 @@ import enaml
 import struct
 import marshal
 import zipfile
+from importlib.machinery import ModuleSpec
 
 import pytest
 
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
-from enaml.core.import_hooks import MAGIC_NUMBER, make_file_info
+from enaml.core.import_hooks import MAGIC_NUMBER, make_file_info, EnamlImporter
 from utils import wait_for_window_displayed, is_qt_available
 
 
@@ -115,6 +116,12 @@ def test_zipimport_from_module(enaml_qtbot, enaml_sleep, zip_library):
     with enaml.imports():
         # Test import from library.zip/buttons.enaml
         import buttons
+
+    assert buttons.__name__ == "buttons"
+    assert buttons.__file__
+    assert buttons.__cached__
+    assert isinstance(buttons.__loader__, EnamlImporter)
+    assert isinstance(buttons.__spec__, ModuleSpec)
 
     assert_window_displays(enaml_qtbot, enaml_sleep, buttons.Main())
 

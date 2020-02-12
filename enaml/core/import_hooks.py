@@ -120,6 +120,8 @@ class AbstractEnamlImporter(object, metaclass=ABCMeta):
 
             spec = ModuleSpec(fullname, loader,
                               origin=loader.file_info.src_path)
+            spec.cached = loader.file_info.cache_path
+            spec.has_location = True
 
             return spec
 
