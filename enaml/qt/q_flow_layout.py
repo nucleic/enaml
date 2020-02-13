@@ -320,7 +320,8 @@ class _LayoutRow(object):
                     y += delta_h
                 elif align == QFlowLayout.AlignCenter:
                     y += delta_h / 2
-            item.setGeometry(QRect(x, y, w, h))
+            item.setGeometry(QRect(x, int(round(y)),
+                                   int(round(w)), int(round(h))))
             return
 
         # Reversing the items reverses the layout direction. All of the
