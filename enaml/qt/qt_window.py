@@ -237,7 +237,7 @@ class QtWindow(QtWidget, ProxyWindow):
         """ Set the geometry of the window.
 
         """
-        rect = QRect(*rect)
+        rect = QRect(*(int(round(x)) for x in rect))
         if rect.isValid():
             self.widget.setGeometry(rect)
 

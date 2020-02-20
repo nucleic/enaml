@@ -62,11 +62,6 @@ ext_modules = [
         ['enaml/src/declarative_function.cpp'],
         language='c++',
     ),
-    Extension(
-        'enaml.c_compat',
-        ['enaml/src/c_compat.cpp'],
-        language='c++',
-    )
 ]
 
 
@@ -164,12 +159,17 @@ setup(
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
           'Programming Language :: Python :: Implementation :: CPython',
       ],
     python_requires='>=3.5',
     requires=['atom', 'PyQt', 'ply', 'kiwisolver'],
-    install_requires=['setuptools', 'atom>=0.4.3',
-                      'kiwisolver>=1.0.1', 'ply>=3.4'],
+    install_requires=['setuptools',
+                      'atom>=0.4.3',
+                      'kiwisolver>=1.0.1',
+                      'ply>=3.4',
+                      "bytecode>=0.10.0"
+                      ],
     setup_requires=['cppy>=1.1.0'],
     packages=find_packages(),
     package_data={

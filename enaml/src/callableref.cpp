@@ -150,7 +150,7 @@ static PyType_Slot CallableRef_Type_slots[] = {
     { Py_tp_traverse, void_cast( CallableRef_traverse) },         /* tp_traverse */
     { Py_tp_clear, void_cast( CallableRef_clear ) },              /* tp_clear */
     { Py_tp_call, void_cast( CallableRef_call ) },                /* tp_call */
-    { Py_tp_doc, void_cast( CallableRef__doc__ ) },               /* tp_doc */
+    { Py_tp_doc, cast_py_tp_doc( CallableRef__doc__ ) },          /* tp_doc */
     { Py_tp_richcompare, void_cast( CallableRef_richcompare ) },  /* tp_methods */
     { Py_tp_new, void_cast( CallableRef_new ) },                  /* tp_new */
     { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },            /* tp_alloc */

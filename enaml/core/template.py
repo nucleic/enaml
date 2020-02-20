@@ -7,9 +7,9 @@
 #------------------------------------------------------------------------------
 from types import FunctionType
 
+from bytecode import CompilerFlags
 from atom.api import Atom, List, Str, Tuple, Typed
 
-from .byteplay import CO_VARARGS
 from .compiler_nodes import TemplateNode
 
 
@@ -170,7 +170,7 @@ class Template(Atom):
             if n_args < n_params:
                 continue
             n_total = n_params + len(spec.func.__defaults__ or ())
-            variadic = spec.func.__code__.co_flags & CO_VARARGS
+            variadic = spec.func.__code__.co_flags & CompilerFlags.VARARGS
             if n_args > n_total and not variadic:
                 continue
 
@@ -179,7 +179,7 @@ class Template(Atom):
                 argspec = self.make_paramspec(args)
 
             # Scoring a match is done by ranking the arguments using a
-            # closeness meausure. If an argument is an exact match to
+            # closeness measure. If an argument is an exact match to
             # the parameter, it gets a score of 0. If an argument is a
             # subtype of a type parameter, it gets a score equal to the
             # index of the type in the mro of the subtype. If the arg

@@ -245,6 +245,12 @@ class BaseEnamlParser(object):
             for item in items:
                 self.set_context(item, ctx, p)
 
+    def create_module(self, body: list, **kwargs):
+        """Create a module object using the provided body and kwargs.
+
+        """
+        return ast.Module(body=body)
+
     def set_call_arguments(self, node, args):
         """Set the arguments for an ast.Call node.
 
@@ -289,7 +295,7 @@ class BaseEnamlParser(object):
         for item in p[1]:
             if isinstance(item, (enaml_ast.EnamlDef, enaml_ast.Template)):
                 if stmts:
-                    mod = ast.Module(body=stmts)
+                    mod = self.create_module(stmts)
                     python = enaml_ast.PythonModule(ast=mod,
                                                     lineno=stmts[0].lineno)
                     body.append(python)
@@ -298,7 +304,7 @@ class BaseEnamlParser(object):
             else:
                 stmts.append(item)
         if stmts:
-            mod = ast.Module(body=stmts)
+            mod = self.create_module(stmts)
             python = enaml_ast.PythonModule(ast=mod, lineno=stmts[0].lineno)
             body.append(python)
         p[0] = enaml_ast.Module(body=body)
@@ -728,7 +734,7 @@ class BaseEnamlParser(object):
         ''' operator_expr : DOUBLECOLON suite '''
         lineno = p.lineno(1)
 
-        for item in ast.walk(ast.Module(body=p[2])):
+        for item in ast.walk(self.create_module(p[2])):
             if type(item) in self._NOTIFICATION_DISALLOWED:
                 msg = '%s not allowed in a notification block'
                 msg = msg % self._NOTIFICATION_DISALLOWED[type(item)]
@@ -742,7 +748,7 @@ class BaseEnamlParser(object):
         func_node.body = p[2]
         func_node.lineno = lineno
 
-        mod = ast.Module(body=[func_node])
+        mod = self.create_module([func_node])
         ast.fix_missing_locations(mod)
 
         python = enaml_ast.PythonModule(ast=mod, lineno=lineno)

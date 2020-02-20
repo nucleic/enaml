@@ -117,8 +117,8 @@ class QBitmapButton(QAbstractButton):
         painter.setPen(QColor.fromRgba(0xffffffff & fg))
         size = self.size()
         im_size = bmp.size()
-        x = size.width() / 2 - im_size.width() / 2
-        y = size.height() / 2 - im_size.height() / 2
+        x = int(round(size.width() / 2 - im_size.width() / 2))
+        y = int(round(size.height() / 2 - im_size.height() / 2))
         source = QRect(QPoint(0, 0), im_size)
         dest = QRect(QPoint(x, y), im_size)
         painter.drawPixmap(dest, bmp, source)

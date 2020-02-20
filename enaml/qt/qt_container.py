@@ -162,7 +162,10 @@ class QtLayoutItem(LayoutItem):
         offset = self.offset
         x -= offset.x
         y -= offset.y
-        self.widget_item.setGeometry(QRect(x, y, width, height))
+        self.widget_item.setGeometry(
+            QRect(int(round(x)), int(round(y)),
+                  int(round(width)), int(round(height)))
+        )
 
 
 class QtContainerItem(QtLayoutItem):
@@ -563,9 +566,9 @@ class QtContainer(QtFrame, ProxyContainer):
             min_size = DEFAULT_MIN_SIZE
             max_size = DEFAULT_MAX_SIZE
         else:
-            best_size = QSize(*manager.best_size())
-            min_size = QSize(*manager.min_size())
-            max_size = QSize(*manager.max_size())
+            best_size = QSize(*(int(round(s)) for s in manager.best_size()))
+            min_size = QSize(*(int(round(s)) for s in manager.min_size()))
+            max_size = QSize(*(int(round(s)) for s in manager.max_size()))
 
         # Store the computed min and max size, which is used by the
         # QtChildContainerItem to provide min and max size constraints.

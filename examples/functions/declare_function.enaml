@@ -16,7 +16,7 @@ dynamic scope which is rooted on `self`.
 << autodoc-me >>
 """
 from __future__ import print_function
-from collections import Mapping
+from collections.abc import Mapping
 from enaml.widgets.api import Window, PushButton, SpinBox, Container
 from enaml.core.funchelper import call_func
 

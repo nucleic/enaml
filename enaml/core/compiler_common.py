@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2020, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,17 +9,17 @@
 
 """
 import ast
+from types import CodeType
 
+import bytecode as bc
 from atom.api import Str, Typed
 
-from ..compat import USE_WORDCODE
-from . import byteplay as bp
+from ..compat import USE_WORDCODE, PY38
 from .code_generator import CodeGenerator
 from .enaml_ast import (
     AliasExpr, ASTVisitor, Binding, ChildDef, EnamlDef, StorageExpr, Template,
     TemplateInst, PythonExpression, PythonModule, FuncDef
 )
-
 
 #: The name of the compiler helpers in the global scope.
 COMPILER_HELPERS = '__compiler_helpers'
@@ -64,8 +64,8 @@ _FUNC_DEF_NODES = [ast.Lambda,
 _FUNC_DEF_NODES = tuple(_FUNC_DEF_NODES)
 
 #: Opcode used to create a function
-_MAKE_FUNC = ((bp.MAKE_FUNCTION,) +
-              ((bp.MAKE_CLOSURE,) if not USE_WORDCODE else ()))
+_MAKE_FUNC = (("MAKE_FUNCTION",) +
+              (("MAKE_CLOSURE",) if not USE_WORDCODE else ()))
 
 
 def unhandled_pragma(name, filename, lineno):
@@ -429,10 +429,10 @@ def rewrite_globals_access(code, global_vars):
     made global via the 'global' keyword.
 
     """
-    inner_ops = code.code
-    for idx, (op, op_arg) in enumerate(inner_ops):
-        if op == bp.LOAD_GLOBAL and op_arg not in global_vars:
-            inner_ops[idx] = (bp.LOAD_NAME, op_arg)
+    for idx, instr in enumerate(code):
+        if (getattr(instr, "name", None) == "LOAD_GLOBAL" and
+                instr.arg not in global_vars):
+            instr.name = "LOAD_NAME"
 
 
 def run_in_dynamic_scope(code, global_vars):
@@ -445,7 +445,7 @@ def run_in_dynamic_scope(code, global_vars):
 
     Parameters
     ----------
-    code :
+    code : bytecode.Bytecode
         Code object in which functions are defined.
 
     """
@@ -454,26 +454,37 @@ def run_in_dynamic_scope(code, global_vars):
     fetch_helpers(cg)
 
     # Scan all ops to detect function call after GET_ITER
-    ops = enumerate(code.code)
-    for idx, (op, op_arg) in ops:
-        if isinstance(op_arg, bp.Code):
+    for instr in code:
+        if not isinstance(instr, bc.Instr):
+            cg.code_ops.append(instr)
+            continue
+        i_name, i_arg = instr.name, instr.arg
+        if isinstance(i_arg, CodeType):
             # Allow to pass the dynamic scope as locals. There is no need
             # to copy it as internal variables are stored in fast locals
             # and hence does not affect the scope content.
-            op_arg.newlocals = False
-            run_in_dynamic_scope(op_arg, global_vars)
-        elif any(op == make_fun_op for make_fun_op in _MAKE_FUNC):
-            cg.code_ops.append((op, op_arg))  # func
-            load_helper(cg, 'wrap_func')      # func -> wrap
-            cg.rot_two()                      # wrap -> func
-            cg.load_global('__scope__')       # wrap -> func -> scope
-            cg.call_function(2)               # wrapped
+            inner = bc.Bytecode.from_code(i_arg)
+            inner.flags ^= (inner.flags & bc.CompilerFlags.NEWLOCALS)
+            # Set the NESTED flag since even though we may have obtained the
+            # outer code from an expr it will run as a function.
+            inner.flags |= bc.CompilerFlags.NESTED
+            run_in_dynamic_scope(inner, global_vars)
+            inner.update_flags()
+            i_arg = inner.to_code()
+        elif any(i_name == make_fun_op for make_fun_op in _MAKE_FUNC):
+            cg.code_ops.append(bc.Instr(i_name, i_arg))  # func
+            load_helper(cg, 'wrap_func')                 # func -> wrap
+            cg.rot_two()                                 # wrap -> func
+            cg.load_global('__scope__')                  # wrap -> func -> scope
+            cg.call_function(2)                          # wrapped
             continue
 
-        cg.code_ops.append((op, op_arg))
+        cg.code_ops.append(bc.Instr(i_name, i_arg))
 
-    code.code = cg.code_ops
+    del code[:]
+    code.extend(cg.code_ops)
     rewrite_globals_access(code, global_vars)
+    code.update_flags()
 
 
 def gen_child_def_node(cg, node, local_names):
@@ -517,10 +528,10 @@ def gen_child_def_node(cg, node, local_names):
         class_cg.firstlineno = node.lineno
         class_cg.set_lineno(node.lineno)
 
-        class_cg.code_ops.append((bp.LOAD_NAME, '__name__'),)
-        class_cg.code_ops.append((bp.STORE_NAME, '__module__'),)
+        class_cg.load_name('__name__')
+        class_cg.store_name('__module__')
         class_cg.load_const(node.typename)
-        class_cg.code_ops.append((bp.STORE_NAME, '__qualname__'),)
+        class_cg.store_name('__qualname__')
         class_cg.load_const(None)  # XXX better qualified name
         class_cg.return_value()
 
@@ -676,14 +687,15 @@ def gen_operator_binding(cg, node, index, name):
     # after the compilation we extract the function code
     if mode == 'exec':
         code = compile(node.value.ast, cg.filename, mode=mode)
-        for op, op_arg in bp.Code.from_code(code).code:
-            if isinstance(op_arg, bp.Code):
-                code = op_arg.to_code()
+        for instr in bc.Bytecode.from_code(code):
+            i_arg = instr.arg
+            if isinstance(i_arg, CodeType):
+                code = i_arg
                 break
     else:
         code = compile(node.value.ast, cg.filename, mode=mode)
 
-    b_code = bp.Code.from_code(code)
+    b_code = bc.Bytecode.from_code(code)
     if has_defs:
         run_in_dynamic_scope(b_code, global_vars)
     else:
@@ -785,31 +797,36 @@ def _insert_decl_function(cg, funcdef):
     global_vars, has_defs = analyse_globals_and_func_defs(funcdef)
 
     # generate the code object which will create the function
-    mod = ast.Module(body=[funcdef])
+    if PY38:
+        mod = ast.Module(body=[funcdef], type_ignores=[])
+    else:
+        mod = ast.Module(body=[funcdef])
     code = compile(mod, cg.filename, mode='exec')
 
-    # convert to a byteplay object and remove the leading and
-    # trailing ops: SetLineno STORE_NAME LOAD_CONST RETURN_VALUE
-    outer_ops = bp.Code.from_code(code).code[1:-3]
+    # convert to a bytecode object and remove the leading and
+    # trailing ops: STORE_NAME LOAD_CONST RETURN_VALUE
+    outer_ops = bc.Bytecode.from_code(code)[0:-3]
 
     # the stack now looks like the following:
     #   ...
     #   ...
     #   LOAD_CONST      (<code object>)
+    #   LOAD_CONST      (qualified name)
     #   MAKE_FUCTION    (num defaults)      // TOS
 
     # extract the inner code object which represents the actual
     # function code and update its flags
-    inner = outer_ops[-3][1]  # On Python 3 a function has a qualified name
-    inner.newlocals = False
+    inner = bc.Bytecode.from_code(outer_ops[-3].arg)
+    inner.flags ^= (inner.flags & bc.CompilerFlags.NEWLOCALS)
 
-    # On Python 3 all comprehensions use a function call (on Python 2 only dict
-    # and set). To avoid scoping issues the function call is run in the dynamic
-    # scope.
+    # On Python 3 all comprehensions use a function call. To avoid scoping
+    # issues the function call is run in the dynamic scope.
     if has_defs:
         run_in_dynamic_scope(inner, global_vars)
     else:
         rewrite_globals_access(inner, global_vars)
+
+    outer_ops[-3].arg = inner.to_code()
 
     # inline the modified code ops into the code generator
     cg.code_ops.extend(outer_ops)

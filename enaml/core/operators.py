@@ -8,10 +8,8 @@
 from contextlib import contextmanager
 from types import FunctionType
 
-from .byteplay import (
-    Code, LOAD_NAME, LOAD_FAST, STORE_NAME, STORE_FAST, DELETE_NAME,
-    DELETE_FAST
-)
+import bytecode as bc
+
 from .code_tracing import inject_tracing, inject_inversion
 from .expression_engine import HandlerPair
 from .standard_handlers import (
@@ -20,8 +18,8 @@ from .standard_handlers import (
 )
 
 
-def optimize_locals(codelist):
-    """ Optimize the codelist for fast locals access.
+def optimize_locals(bytecode):
+    """ Optimize the bytecode for fast locals access.
 
     All STORE_NAME opcodes will be replaced with STORE_FAST. Names
     which are stored and then loaded via LOAD_NAME are rewritten to
@@ -30,20 +28,28 @@ def optimize_locals(codelist):
 
     Parameters
     ----------
-    codelist : list
-        The list of byteplay code ops to modify.
+    bytecode : bc.Bytecode
+        Bytecode to modify.
 
     """
     fast_locals = set()
-    for idx, (op, op_arg) in enumerate(codelist):
-        if op == STORE_NAME:
-            fast_locals.add(op_arg)
-            codelist[idx] = (STORE_FAST, op_arg)
-    for idx, (op, op_arg) in enumerate(codelist):
-        if op == LOAD_NAME and op_arg in fast_locals:
-            codelist[idx] = (LOAD_FAST, op_arg)
-        elif op == DELETE_NAME and op_arg in fast_locals:
-            codelist[idx] = (DELETE_FAST, op_arg)  # py2.6 list comps
+    for instr in bytecode:
+        # Filter out SetLineno and Label
+        if not isinstance(instr, bc.Instr):
+            continue
+        if instr.name == "STORE_NAME":
+            fast_locals.add(instr.arg)
+            instr.name = "STORE_FAST"
+    for instr in bytecode:
+        # Filter out SetLineno and Label
+        if not isinstance(instr, bc.Instr):
+            continue
+        i_name, i_arg = instr.name, instr.arg
+        if i_name == "LOAD_NAME" and i_arg in fast_locals:
+            instr.name = "LOAD_FAST"
+        elif i_name == "DELETE_NAME" and i_arg in fast_locals:
+            instr.name = "DELETE_FAST"
+    bytecode.update_flags()
 
 
 def gen_simple(code, f_globals):
@@ -63,10 +69,10 @@ def gen_simple(code, f_globals):
         A new function with optimized local variable access.
 
     """
-    bp_code = Code.from_code(code)
-    optimize_locals(bp_code.code)
-    bp_code.newlocals = False
-    new_code = bp_code.to_code()
+    bc_code = bc.Bytecode.from_code(code)
+    optimize_locals(bc_code)
+    bc_code.flags ^= (bc_code.flags & bc.CompilerFlags.NEWLOCALS)
+    new_code = bc_code.to_code()
     return FunctionType(new_code, f_globals)
 
 
@@ -88,12 +94,13 @@ def gen_tracer(code, f_globals):
         and instrumentation for invoking a code tracer.
 
     """
-    bp_code = Code.from_code(code)
-    optimize_locals(bp_code.code)
-    bp_code.code = inject_tracing(bp_code.code)
-    bp_code.newlocals = False
-    bp_code.args = ('_[tracer]',) + bp_code.args
-    new_code = bp_code.to_code()
+    bc_code = bc.Bytecode.from_code(code)
+    optimize_locals(bc_code)
+    bc_code = inject_tracing(bc_code)
+    bc_code.flags ^= (bc_code.flags & bc.CompilerFlags.NEWLOCALS)
+    bc_code.argnames = ['_[tracer]'] + bc_code.argnames
+    bc_code.argcount += 1
+    new_code = bc_code.to_code()
     return FunctionType(new_code, f_globals)
 
 
@@ -115,12 +122,13 @@ def gen_inverter(code, f_globals):
         and instrumentation for inverting the operation.
 
     """
-    bp_code = Code.from_code(code)
-    optimize_locals(bp_code.code)
-    bp_code.code = inject_inversion(bp_code.code)
-    bp_code.newlocals = False
-    bp_code.args = ('_[inverter]', '_[value]') + bp_code.args
-    new_code = bp_code.to_code()
+    bc_code = bc.Bytecode.from_code(code)
+    optimize_locals(bc_code)
+    bc_code = inject_inversion(bc_code)
+    bc_code.flags ^= (bc_code.flags & bc.CompilerFlags.NEWLOCALS)
+    bc_code.argnames = ['_[inverter]', '_[value]'] + bc_code.argnames
+    bc_code.argcount += 2
+    new_code = bc_code.to_code()
     return FunctionType(new_code, f_globals)
 
 

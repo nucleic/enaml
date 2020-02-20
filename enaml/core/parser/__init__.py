@@ -11,11 +11,10 @@ from .base_parser import ParsingError
 
 py_version = sys.version_info
 if py_version < (3,):
-    from .parser2 import Python2EnamlParser
-    _parser = Python2EnamlParser()
+    raise ImportError('Only Python 3 is supported.')
 else:
     if py_version[1] < 3:
-        raise ImportError('Python < 3.3 is not supported')
+        raise ImportError('Python < 3.3 is not supported.')
     elif py_version[1] == 3:
         from .parser3 import Python3EnamlParser
         _parser = Python3EnamlParser()
@@ -25,9 +24,12 @@ else:
     elif py_version[1] == 5:
         from .parser35 import Python35EnamlParser
         _parser = Python35EnamlParser()
-    else:
+    elif py_version[1] in (6, 7):
         from .parser36 import Python36EnamlParser
         _parser = Python36EnamlParser()
+    else:
+        from .parser38 import Python38EnamlParser
+        _parser = Python38EnamlParser()
 
 
 def write_tables():

@@ -1,23 +1,15 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2019, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from types import CodeType
+
+import bytecode as bc
+
 from ..compat import USE_WORDCODE
-from .byteplay import (
-    LOAD_ATTR, LOAD_CONST, ROT_TWO, DUP_TOP, CALL_FUNCTION, POP_TOP, LOAD_FAST,
-    BUILD_TUPLE, ROT_THREE, UNPACK_SEQUENCE, BINARY_SUBSCR, GET_ITER,
-    LOAD_NAME, RETURN_VALUE
-)
-
-
-from . import byteplay as bp
-from .byteplay import DUP_TOP_TWO
-
-if USE_WORDCODE:
-    from .byteplay import CALL_FUNCTION_KW
 
 
 class CodeTracer(object):
@@ -241,7 +233,7 @@ class CodeInverter(object):
         self.fail()
 
 
-def inject_tracing(codelist, nested=False):
+def inject_tracing(bytecode, nested=False):
     """ Inject tracing code into the given code list.
 
     This will inject the bytecode operations required to trace the
@@ -251,8 +243,8 @@ def inject_tracing(codelist, nested=False):
 
     Parameters
     ----------
-    codelist : list
-        The list of byteplay code ops to modify.
+    bytecode : bytecode.Bytecode
+        The bytecode to modify.
     nested : bool
         Is the code modified defined inside an already traced code in which
         case the tracer is in the local namespace and not the fast locals.
@@ -265,7 +257,7 @@ def inject_tracing(codelist, nested=False):
     """
     # If the code is nested into another already traced code, we need to use
     # LOAD_NAME to access it rather than LOAD_FAST
-    tracer_op = LOAD_NAME if nested else LOAD_FAST
+    tracer_op = "LOAD_NAME" if nested else "LOAD_FAST"
 
     # This builds a mapping of code idx to a list of ops, which are the
     # tracing bytecode instructions which will be inserted into the code
@@ -275,22 +267,27 @@ def inject_tracing(codelist, nested=False):
     # that the tracer has no visible side effects, the tracing is
     # transparent.
     inserts = {}
-    for idx, (op, op_arg) in enumerate(codelist):
-        if op == LOAD_ATTR:
-            code = [                        # obj
-                (DUP_TOP, None),            # obj -> obj
-                (tracer_op, '_[tracer]'),   # obj -> obj -> tracer
-                (LOAD_ATTR, 'load_attr'),   # obj -> obj -> tracefunc
-                (ROT_TWO, None),            # obj -> tracefunc -> obj
-                (LOAD_CONST, op_arg),       # obj -> tracefunc -> obj -> attr
-                (CALL_FUNCTION, 0x0002),    # obj -> retval
-                (POP_TOP, None),            # obj
+    for idx, instr in enumerate(bytecode):
+        # Filter out SetLineno and Label
+        if not isinstance(instr, bc.Instr):
+            continue
+        i_name = instr.name
+        i_arg = instr.arg
+        if i_name == "LOAD_ATTR":
+            tracing_code = [                           # obj
+                bc.Instr("DUP_TOP"),                   # obj -> obj
+                bc.Instr(tracer_op, '_[tracer]'),      # obj -> obj -> tracer
+                bc.Instr("LOAD_ATTR", 'load_attr'),    # obj -> obj -> tracefunc
+                bc.Instr("ROT_TWO"),                   # obj -> tracefunc -> obj
+                bc.Instr("LOAD_CONST", i_arg),         # obj -> tracefunc -> obj -> attr
+                bc.Instr("CALL_FUNCTION", 0x0002),     # obj -> retval
+                bc.Instr("POP_TOP"),                   # obj
             ]
-            inserts[idx] = code
-        elif op == CALL_FUNCTION:
+            inserts[idx] = tracing_code
+        elif i_name == "CALL_FUNCTION":
             # This computes the number of objects on the stack between
             # TOS and the object being called. Only the last 16bits of
-            # the op_arg are signifcant. The lowest 8 are the number of
+            # the i_arg are signifcant. The lowest 8 are the number of
             # positional args on the stack, the upper 8 is the number of
             # kwargs. For kwargs, the number of items on the stack is
             # twice this number since the values on the stack alternate
@@ -299,74 +296,71 @@ def inject_tracing(codelist, nested=False):
             # arguments and the argument is directly the number of arguments
             # on the stack.
             if USE_WORDCODE:
-                n_stack_args = op_arg
+                n_stack_args = i_arg
             else:
-                n_stack_args = (op_arg & 0xFF) + 2 * ((op_arg >> 8) & 0xFF)
-            code = [                                               # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
-                (BUILD_TUPLE, n_stack_args),                       # func -> argtuple
-                (DUP_TOP_TWO, None),                               # func -> argtuple -> func -> argtuple
-                (tracer_op, '_[tracer]'),                          # func -> argtuple -> func -> argtuple -> tracer
-                (LOAD_ATTR, 'call_function'),                      # func -> argtuple -> func -> argtuple -> tracefunc
-                (ROT_THREE, None),                                 # func -> argtuple -> tracefunc -> func -> argtuple
-                (LOAD_CONST, op_arg),                              # func -> argtuple -> tracefunc -> func -> argtuple -> argspec
-                (CALL_FUNCTION, 0x0003),                           # func -> argtuple -> retval
-                (POP_TOP, None),                                   # func -> argtuple
-                (UNPACK_SEQUENCE, n_stack_args),                   # func -> arg(n-1) -> arg(n-2) -> ... -> arg(0)
-                (BUILD_TUPLE, n_stack_args),                       # func -> reversedargtuple
-                (UNPACK_SEQUENCE, n_stack_args),                   # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
+                n_stack_args = (i_arg & 0xFF) + 2 * ((i_arg >> 8) & 0xFF)
+            tracing_code = [                                         # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
+                bc.Instr("BUILD_TUPLE", n_stack_args),       # func -> argtuple
+                bc.Instr("DUP_TOP_TWO"),                     # func -> argtuple -> func -> argtuple
+                bc.Instr(tracer_op, '_[tracer]'),            # func -> argtuple -> func -> argtuple -> tracer
+                bc.Instr("LOAD_ATTR", 'call_function'),      # func -> argtuple -> func -> argtuple -> tracefunc
+                bc.Instr("ROT_THREE"),                       # func -> argtuple -> tracefunc -> func -> argtuple
+                bc.Instr("LOAD_CONST", i_arg),               # func -> argtuple -> tracefunc -> func -> argtuple -> argspec
+                bc.Instr("CALL_FUNCTION", 0x0003),           # func -> argtuple -> retval
+                bc.Instr("POP_TOP"),                         # func -> argtuple
+                bc.Instr("UNPACK_SEQUENCE", n_stack_args),   # func -> arg(n-1) -> arg(n-2) -> ... -> arg(0)
+                bc.Instr("BUILD_TUPLE", n_stack_args),       # func -> reversedargtuple
+                bc.Instr("UNPACK_SEQUENCE", n_stack_args),   # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
             ]
-            inserts[idx] = code
-        elif USE_WORDCODE and op == CALL_FUNCTION_KW:
-            # New in Python 3.6.
-            # All positional and keywords argument are in order on the stack
-            # and the first item is a tuple containing the keywords names.
+            inserts[idx] = tracing_code
 
-            # TODO implement
-            # This is quite low priority as tracing and inverting is only used
-            # to detect getattr and setattr called without keyword arguments
-            # both in this project and in traits-enaml. So there are no use
-            # case for this at the time being.
-            pass
-        elif op == BINARY_SUBSCR:
-            code = [                                               # obj -> idx
-                (DUP_TOP_TWO, None),                               # obj -> idx -> obj -> idx
-                (tracer_op, '_[tracer]'),                          # obj -> idx -> obj -> idx -> tracer
-                (LOAD_ATTR, 'binary_subscr'),                      # obj -> idx -> obj -> idx -> tracefunc
-                (ROT_THREE, None),                                 # obj -> idx -> tracefunc -> obj -> idx
-                (CALL_FUNCTION, 0x0002),                           # obj -> idx -> retval
-                (POP_TOP, None),                                   # obj -> idx
+        # We do not trace CALL_FUNCTION_KW and CALL_FUNCTION_EX since
+        # tracing and inverting only require to detect getattr and setattr
+        # both in this project and in traits-enaml. Those two are always called
+        # using the CALL_FUNCTION bytecode instruction.
+
+        elif i_name == "BINARY_SUBSCR":
+            tracing_code = [                                     # obj -> idx
+                bc.Instr("DUP_TOP_TWO"),                 # obj -> idx -> obj -> idx
+                bc.Instr(tracer_op, '_[tracer]'),        # obj -> idx -> obj -> idx -> tracer
+                bc.Instr("LOAD_ATTR", 'binary_subscr'),  # obj -> idx -> obj -> idx -> tracefunc
+                bc.Instr("ROT_THREE"),                   # obj -> idx -> tracefunc -> obj -> idx
+                bc.Instr("CALL_FUNCTION", 0x0002),       # obj -> idx -> retval
+                bc.Instr("POP_TOP"),                     # obj -> idx
             ]
-            inserts[idx] = code
-        elif op == GET_ITER:
-            code = [                        # obj
-                (DUP_TOP, None),            # obj -> obj
-                (tracer_op, '_[tracer]'),   # obj -> obj -> tracer
-                (LOAD_ATTR, 'get_iter'),    # obj -> obj -> tracefunc
-                (ROT_TWO, None),            # obj -> tracefunc -> obj
-                (CALL_FUNCTION, 0x0001),    # obj -> retval
-                (POP_TOP, None),            # obj
+            inserts[idx] = tracing_code
+        elif i_name == "GET_ITER":
+            tracing_code = [                               # obj
+                bc.Instr("DUP_TOP"),               # obj -> obj
+                bc.Instr(tracer_op, '_[tracer]'),  # obj -> obj -> tracer
+                bc.Instr("LOAD_ATTR", 'get_iter'), # obj -> obj -> tracefunc
+                bc.Instr("ROT_TWO"),               # obj -> tracefunc -> obj
+                bc.Instr("CALL_FUNCTION", 0x0001), # obj -> retval
+                bc.Instr("POP_TOP"),               # obj
             ]
-            inserts[idx] = code
-        elif op == RETURN_VALUE:
-            code = [
-                (DUP_TOP, None),                # obj
-                (tracer_op, '_[tracer]'),       # obj -> obj -> tracer
-                (LOAD_ATTR, 'return_value'),    # obj -> obj -> tracefunc
-                (ROT_TWO, None),                # obj -> tracefunc -> obj
-                (CALL_FUNCTION, 0x0001),        # obj -> retval
-                (POP_TOP, None),                # obj
+            inserts[idx] = tracing_code
+        elif i_name == "RETURN_VALUE":
+            tracing_code = [
+                bc.Instr("DUP_TOP"),                   # obj
+                bc.Instr(tracer_op, '_[tracer]'),      # obj -> obj -> tracer
+                bc.Instr("LOAD_ATTR", 'return_value'), # obj -> obj -> tracefunc
+                bc.Instr("ROT_TWO"),                   # obj -> tracefunc -> obj
+                bc.Instr("CALL_FUNCTION", 0x0001),     # obj -> retval
+                bc.Instr("POP_TOP"),                   # obj
             ]
-            inserts[idx] = code
-        elif isinstance(op_arg, bp.Code):
+            inserts[idx] = tracing_code
+        elif isinstance(i_arg, CodeType):
             # Inject tracing in nested code object if they use their parent
             # locals.
-            if not op_arg.newlocals:
-                op_arg.code = inject_tracing(op_arg.code, nested=True)
+            inner = bc.Bytecode.from_code(i_arg)
+            if not inner.flags & bc.CompilerFlags.NEWLOCALS:
+                instr.arg = inject_tracing(inner, nested=True).to_code()
 
     # Create a new code list which interleaves the generated code with
     # the original code at the appropriate location.
-    new_code = []
-    for idx, code_op in enumerate(codelist):
+    new_code = bytecode.copy()
+    new_code.clear()
+    for idx, code_op in enumerate(bytecode):
         if idx in inserts:
             new_code.extend(inserts[idx])
         new_code.append(code_op)
@@ -374,8 +368,8 @@ def inject_tracing(codelist, nested=False):
     return new_code
 
 
-def inject_inversion(codelist):
-    """ Inject inversion code into the given code list.
+def inject_inversion(bytecode):
+    """ Inject inversion code into the given bytecode.
 
     This will inject the bytecode operations required to invert the
     execution of the code using a `CodeInverter` object. The generated
@@ -384,8 +378,8 @@ def inject_inversion(codelist):
 
     Parameters
     ----------
-    codelist : list
-        The list of byteplay code ops to modify.
+    bytecode : bc.Bytecode
+        The list of code ops to modify.
 
     Returns
     -------
@@ -398,61 +392,57 @@ def inject_inversion(codelist):
         The given code is not suitable for inversion.
 
     """
-    opcode, oparg = codelist[-2]
-    new_code = codelist[:-2]
-    if opcode == LOAD_NAME and len(codelist) == 3:
-        new_code.extend([                   #:
-            (LOAD_FAST, '_[inverter]'),     #: inverter
-            (LOAD_ATTR, 'load_name'),       #: invertfunc
-            (LOAD_CONST, oparg),            #: invertfunc -> name
-            (LOAD_FAST, '_[value]'),        #: invertfunc -> name - > value
-            (CALL_FUNCTION, 0x0002),        #: retval
-            (RETURN_VALUE, None),           #:
+    instr = bytecode[-2]
+    i_name, i_arg = instr.name, instr.arg
+    new_code = bytecode[:-2]
+    if i_name == "LOAD_NAME" and len(bytecode) == 2:
+        new_code.extend([                             #
+            bc.Instr("LOAD_FAST", '_[inverter]'),     # inverter
+            bc.Instr("LOAD_ATTR", 'load_name'),       # invertfunc
+            bc.Instr("LOAD_CONST", i_arg),            # invertfunc -> name
+            bc.Instr("LOAD_FAST", '_[value]'),        # invertfunc -> name - > value
+            bc.Instr("CALL_FUNCTION", 0x0002),        # retval
+           bc.Instr ("RETURN_VALUE"),                 #
         ])
-    elif opcode == LOAD_ATTR:
-        new_code.extend([                   #: obj
-            (LOAD_FAST, '_[inverter]'),     #: obj -> inverter
-            (LOAD_ATTR, 'load_attr'),       #: obj -> invertfunc
-            (ROT_TWO, None),                #: invertfunc -> obj
-            (LOAD_CONST, oparg),            #: invertfunc -> obj -> attr
-            (LOAD_FAST, '_[value]'),        #: invertfunc -> obj -> attr -> value
-            (CALL_FUNCTION, 0x0003),        #: retval
-            (RETURN_VALUE, None),           #:
+    elif i_name == "LOAD_ATTR":
+        new_code.extend([                   # obj
+            bc.Instr("LOAD_FAST", '_[inverter]'),     # obj -> inverter
+            bc.Instr("LOAD_ATTR", 'load_attr'),       # obj -> invertfunc
+            bc.Instr("ROT_TWO"),                      # invertfunc -> obj
+            bc.Instr("LOAD_CONST", i_arg),            # invertfunc -> obj -> attr
+            bc.Instr("LOAD_FAST", '_[value]'),        # invertfunc -> obj -> attr -> value
+            bc.Instr("CALL_FUNCTION", 0x0003),        # retval
+            bc.Instr("RETURN_VALUE"),                 #
         ])
-    elif opcode == CALL_FUNCTION:
+    elif i_name == "CALL_FUNCTION":
         if USE_WORDCODE:
-            n_stack_args = oparg
+            n_stack_args = i_arg
         else:
-            n_stack_args = (oparg & 0xFF) + 2 * ((oparg >> 8) & 0xFF)
-        new_code.extend([                   #: func -> arg(0) -> arg(1) -> ... -> arg(n-1)
-            (BUILD_TUPLE, n_stack_args),    #: func -> argtuple
-            (LOAD_FAST, '_[inverter]'),     #: func -> argtuple -> inverter
-            (LOAD_ATTR, 'call_function'),   #: func -> argtuple -> invertfunc
-            (ROT_THREE, None),              #: invertfunc -> func -> argtuple
-            (LOAD_CONST, oparg),            #: invertfunc -> func -> argtuple -> argspec
-            (LOAD_FAST, '_[value]'),        #: invertfunc -> func -> argtuple -> argspec -> value
-            (CALL_FUNCTION, 0x0004),        #: retval
-            (RETURN_VALUE, None),           #:
+            n_stack_args = (i_arg & 0xFF) + 2 * ((i_arg >> 8) & 0xFF)
+        new_code.extend([                             # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
+            bc.Instr("BUILD_TUPLE", n_stack_args),    # func -> argtuple
+            bc.Instr("LOAD_FAST", '_[inverter]'),     # func -> argtuple -> inverter
+            bc.Instr("LOAD_ATTR", 'call_function'),   # func -> argtuple -> invertfunc
+            bc.Instr("ROT_THREE"),                    # invertfunc -> func -> argtuple
+            bc.Instr("LOAD_CONST", i_arg),            # invertfunc -> func -> argtuple -> argspec
+            bc.Instr("LOAD_FAST", '_[value]'),        # invertfunc -> func -> argtuple -> argspec -> value
+            bc.Instr("CALL_FUNCTION", 0x0004),        # retval
+            bc.Instr("RETURN_VALUE"),                 #
         ])
-    elif USE_WORDCODE and opcode == CALL_FUNCTION_KW:
-            # New in Python 3.6.
-            # All positional and keywords argument are in order on the stack
-            # and the first item is a tuple containing the keywords names.
 
-            # TODO implement
-            # This is quite low priority as tracing and inverting is only used
-            # to detect getattr and setattr called without keyword arguments
-            # both in this project and in traits-enaml. So there are no use
-            # case for this at the time being.
-            pass
-    elif opcode == BINARY_SUBSCR:
-        new_code.extend([                   #: obj -> index
-            (LOAD_FAST, '_[inverter]'),     #: obj -> index -> inverter
-            (LOAD_ATTR, 'binary_subscr'),   #: obj -> index -> invertfunc
-            (ROT_THREE, None),              #: invertfunc -> obj -> index
-            (LOAD_FAST, '_[value]'),        #: invertfunc -> obj -> index -> value
-            (CALL_FUNCTION, 0x0003),        #: retval
-            (RETURN_VALUE, None),           #:
+    # We do not trace CALL_FUNCTION_KW and CALL_FUNCTION_EX since tracing and
+    # inverting only require to detect getattr and setattr both in this project
+    # and in traits-enaml. Those two are always called using the CALL_FUNCTION
+    # bytecode instruction.
+
+    elif i_name == "BINARY_SUBSCR":
+        new_code.extend([                             # obj -> index
+            bc.Instr("LOAD_FAST", '_[inverter]'),     # obj -> index -> inverter
+            bc.Instr("LOAD_ATTR", 'binary_subscr'),   # obj -> index -> invertfunc
+            bc.Instr("ROT_THREE"),                    # invertfunc -> obj -> index
+            bc.Instr("LOAD_FAST", '_[value]'),        # invertfunc -> obj -> index -> value
+            bc.Instr("CALL_FUNCTION", 0x0003),        # retval
+            bc.Instr("RETURN_VALUE"),                 #
         ])
     else:
         raise ValueError("can't invert code")

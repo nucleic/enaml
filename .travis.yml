@@ -38,6 +38,13 @@ matrix:
         - SPHINX=0
     - os: linux
       env:
+        - PYTHON=3.8
+        - QT_VERSION=5
+        - IPY_VERSION=6
+        - QSCINTILLA=1
+        - SPHINX=0
+    - os: linux
+      env:
         - PYTHON=3.6
         - QT_VERSION=5
         - SPHINX=1
@@ -85,6 +92,9 @@ before_install:
   - 'if [ $QT_VERSION -gt 4 ] && [ $QSCINTILLA -eq 1 ]; then
          $PIP_INSTALL Cython QScintilla;
      fi'
+
+  # Install bytecode
+  - $PIP_INSTALL bytecode
 
   # Install the dev version of the other nucleic projects
   - $PIP_INSTALL https://github.com/nucleic/cppy/tarball/master
