@@ -3,6 +3,10 @@ Enaml Release Notes
 
 0.11.0 - unreleased
 -------------------
+- add support for Python 3.8 (not Python 3.8 only syntax) PR #391
+- enforce conversion of float to int at the Qt boudary PR #391
+- replace byteplay by bytecode PR #391
+- add get method to DynamicScope PR #394
 - properly set the attributes of imported of module PR #398
 - qt: fix alerts on tabbed DockItem PR #396
 - qt: avoid going higher than the dock area when looking for a DockTabWidget
@@ -11,7 +15,6 @@ Enaml Release Notes
 - add support for using attributes when specifying attr types PR #359
 - limit support to Python 3 PR #349
 - use cppy for the Python/C interface PR #349
-- add get method to DynamicScope PR #394
 
 0.10.4 - 18/09/2019
 -------------------
