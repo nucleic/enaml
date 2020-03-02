@@ -168,7 +168,7 @@ setup(
                       'atom>=0.4.3',
                       'kiwisolver>=1.0.1',
                       'ply>=3.4',
-                      "bytecode>=0.10.0"
+                      "bytecode>=0.11.0"
                       ],
     setup_requires=['cppy>=1.1.0'],
     packages=find_packages(),
