@@ -3,7 +3,7 @@
 #
 # Distributed under the terms of the Modified BSD License.
 #
-# The full license is in the file COPYING.txt, distributed with this software.
+# The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 import os
 import sys
@@ -45,10 +45,10 @@ def validate_ast(py_node, enaml_node, dump_ast=False, offset=0):
 
 def test_syntax_error_traceback_correct_path(tmpdir):
     """ Test that a syntax error retains the path to the file
-    
+
     """
     test_module_path = os.path.join(tmpdir.strpath, 'view.enaml')
-    
+
     with open(os.path.join(tmpdir.strpath, 'test_main.enaml'), 'w') as f:
         f.write(dedent("""
         from enaml.widgets.api import Window, Container, Label
@@ -59,7 +59,7 @@ def test_syntax_error_traceback_correct_path(tmpdir):
                 pass
 
         """))
-    
+
     with open(test_module_path, 'w') as f:
         f.write(dedent("""
         from enaml.widgets.api import Container, Label
@@ -69,7 +69,7 @@ def test_syntax_error_traceback_correct_path(tmpdir):
                 text = "Hello world"
 
         """))
-    
+
     try:
         sys.path.append(tmpdir.strpath)
         with enaml.imports():

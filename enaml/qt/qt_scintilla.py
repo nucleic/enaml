@@ -3,7 +3,7 @@
 #
 # Distributed under the terms of the Modified BSD License.
 #
-# The full license is in the file COPYING.txt, distributed with this software.
+# The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 from . import QT_API, PYSIDE_API, PYSIDE2_API, PYQT4_API, PYQT5_API
 if QT_API in PYSIDE_API or QT_API in PYSIDE2_API:
@@ -322,7 +322,7 @@ class QtScintilla(QtControl, ProxyScintilla):
     def refresh_autocomplete(self):
         """ If the lexer changes, update the API options as these depend
         on the lexer.
-        
+
         """
         d = self.declaration
         if d.autocomplete in ['api', 'all'] and d.autocompletions:
@@ -331,7 +331,7 @@ class QtScintilla(QtControl, ProxyScintilla):
     def refresh_line_number_width(self):
         """ When the number of lines changes update the width accordingly.
         Always shows one more than the width of the number of lines.
-        
+
         """
         w = self.widget
         # Only update it if show_line_numbers=True
@@ -340,10 +340,10 @@ class QtScintilla(QtControl, ProxyScintilla):
 
     def get_indicator_style_id(self, indicator):
         """ Get the indicator style id for this indicator. The key
-        is simply the style and fg color. 
-          
+        is simply the style and fg color.
+
         If the key does not exist, define a new style.
-        
+
         """
         style = "{},{}".format(indicator.style, indicator.color)
         if style not in self._indicator_styles:
@@ -481,14 +481,14 @@ class QtScintilla(QtControl, ProxyScintilla):
 
     def set_autocomplete(self, mode):
         """ Set the autocompletion mode
-        
+
         """
         self.widget.setAutoCompletionSource(AUTOCOMPLETION_SOURCE[mode])
 
     def set_autocompletions(self, options):
         """ Set the autocompletion options for when the autocompletion mode
         is in 'all' or 'apis'.
-            
+
         """
         # Delete the old if one exists
         if self.qsci_api:
@@ -505,8 +505,8 @@ class QtScintilla(QtControl, ProxyScintilla):
         api.prepare()
 
     def set_autocompletion_images(self, images):
-        """ Set the images that can be used in autocompletion results. 
-            
+        """ Set the images that can be used in autocompletion results.
+
         """
         w = self.widget
         w.clearRegisteredImages()
@@ -515,8 +515,8 @@ class QtScintilla(QtControl, ProxyScintilla):
 
     def set_show_line_numbers(self, show):
         """ Set whether line numbers are shown or not by setting
-        the margin width of the LineNumber margin. 
-        
+        the margin width of the LineNumber margin.
+
         """
         w = self.widget
         w.setMarginType(NUMBER_MARGIN, QsciScintilla.NumberMargin)
@@ -525,9 +525,9 @@ class QtScintilla(QtControl, ProxyScintilla):
 
     def set_markers(self, markers):
         """ Set the markers on the left margin of the widget.
-        
+
         If the image is not a defined marker, one will be created.
-        
+
         """
         w = self.widget
 
@@ -547,10 +547,10 @@ class QtScintilla(QtControl, ProxyScintilla):
 
     def set_indicators(self, indicators):
         """ Set the indicators of the widget.
-        
-        This lets certain text be highlighted or underlined with a given 
+
+        This lets certain text be highlighted or underlined with a given
         style to indicate something (errors) within the editor.
-        
+
         """
         w = self.widget
 

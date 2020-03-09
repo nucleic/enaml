@@ -3,7 +3,7 @@
 #
 # Distributed under the terms of the Modified BSD License.
 #
-# The full license is in the file COPYING.txt, distributed with this software.
+# The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 """ Command-line tool to compile .py and .enaml files.
 
@@ -22,7 +22,7 @@ compile_py_file = compileall.compile_file
 def compile_enaml_file(fullname, ddir=None, force=0, rx=None, quiet=0,
                        *args, **kwargs):
     """Byte-compile one file using the EnamlImporter.
-    
+
     """
     fullname = os.path.abspath(fullname)
     importer = EnamlImporter(make_file_info(fullname))
@@ -46,20 +46,20 @@ def compile_file(fullname, ddir=None, force=0, rx=None, quiet=0,
                  *args, **kwargs):
     """Byte-compile one file. Invokes the standard compiler for
     py files and the enaml compiler for enaml files.
-    
+
     Parameters
     ----------
     fullname:  String
         the file to byte-compile
-    ddir: String     
+    ddir: String
         if given, the directory name compiled in to the
         byte-code file.
-    force: Bool     
+    force: Bool
         if True, force compilation, even if timestamps are up-to-date
-    quiet: Bool     
+    quiet: Bool
         full output with False or 0, errors only with 1,
         no output with 2
-    
+
     """
     name = os.path.basename(fullname)
     if os.path.isfile(fullname):

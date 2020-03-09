@@ -3,7 +3,7 @@
 #
 # Distributed under the terms of the Modified BSD License.
 #
-# The full license is in the file COPYING.txt, distributed with this software.
+# The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 import sys
 import ast
@@ -147,7 +147,7 @@ def test_async(desc):
     """Async function with await list comp statement
     """
     src = FUNC_TEMPLATE.format(dedent(TEST_SOURCE[desc]))
-    # Ensure it's valid 
+    # Ensure it's valid
     py_ast = ast.parse(src)
     enaml_ast = parse(src).body[0].ast
     validate_ast(py_ast.body[0], enaml_ast.body[0], True)
@@ -160,24 +160,24 @@ def test_decl_async_func():
     py_src = dedent("""
     from enaml.core.declarative import d_func
     from enaml.widgets.api import Window, Label
-    
+
     async def fetch(query):
         return query
-    
+
     class MainWindow(Window):
         @d_func
         async def search(self, query):
             result = await fetch(query)
             return result
     """)
-    
+
     enaml_src = dedent("""
     from enaml.core.declarative import d_func
     from enaml.widgets.api import Window, Label
-    
+
     async def fetch(query):
         return query
-        
+
     enamldef MainWindow(Window):
         async func search(query):
             result = await fetch(query)
@@ -187,16 +187,16 @@ def test_decl_async_func():
         async search => (query):
             result = await fetch(query)
             return result
-    
+
     """)
     py_ast = ast.parse(py_src)
     enaml_ast = parse(enaml_src)
-    validate_ast(py_ast.body[3].body[0], 
+    validate_ast(py_ast.body[3].body[0],
                  enaml_ast.body[1].body[0].funcdef, True)
-    
+
     # Check override syntax
-    validate_ast(py_ast.body[3].body[0], 
+    validate_ast(py_ast.body[3].body[0],
                  enaml_ast.body[2].body[0].funcdef, True)
-    
+
     # Make sure it compiles
     CustomWindow = compile_source(enaml_src, 'CustomWindow')

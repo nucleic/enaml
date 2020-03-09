@@ -3,7 +3,7 @@
 #
 # Distributed under the terms of the Modified BSD License.
 #
-# The full license is in the file COPYING.txt, distributed with this software.
+# The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import Typed
 
@@ -113,7 +113,7 @@ class FirstPassBlockCompiler(BaseBlockCompiler):
     def visit_FuncDef(self, node):
         # Grab the index of the parent node for later use.
         self.aux_index_map[node] = self.parent_index()
-        
+
     def visit_AsyncFuncDef(self, node):
         # Grab the index of the parent node for later use.
         self.aux_index_map[node] = self.parent_index()
@@ -182,7 +182,7 @@ class SecondPassBlockCompiler(BaseBlockCompiler):
         cg = self.code_generator
         index = self.parent_index()
         cmn.gen_decl_funcdef(cg, node, index)
-        
+
     def visit_AsyncFuncDef(self, node):
         # Generate the code for the async function declaration.
         self.visit_FuncDef(node)

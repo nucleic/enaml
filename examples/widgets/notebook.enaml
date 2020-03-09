@@ -3,7 +3,7 @@
 #
 # Distributed under the terms of the Modified BSD License.
 #
-# The full license is in the file COPYING.txt, distributed with this software.
+# The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 """ An example of the `Notebook` widget.
 
@@ -48,12 +48,12 @@ enamldef Main(Window):
                     PushButton:
                         text = 'Go to Bar Page'
                         enabled << bar.visible
-                        clicked :: 
+                        clicked ::
                             nbook.selected_tab = 'bar_page'
                     PushButton:
                         text = 'Go to Baz Page'
                         enabled << baz.visible
-                        clicked :: 
+                        clicked ::
                             nbook.selected_tab = 'baz_page'
                     CheckBox:
                         text = 'Tabs Closable'
