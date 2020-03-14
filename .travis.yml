@@ -33,14 +33,14 @@ matrix:
       env:
         - PYTHON=3.7
         - QT_VERSION=5
-        - IPY_VERSION=6
+        - IPY_VERSION=7
         - QSCINTILLA=1
         - SPHINX=0
     - os: linux
       env:
         - PYTHON=3.8
         - QT_VERSION=5
-        - IPY_VERSION=6
+        - IPY_VERSION=7
         - QSCINTILLA=1
         - SPHINX=0
     - os: linux
