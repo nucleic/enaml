@@ -19,7 +19,7 @@ matrix:
       env:
         - PYTHON=3.6
         - QT_VERSION=5
-        - IPYTHON=1
+        - IPYTHON=0
         - QSCINTILLA=0
         - SPHINX=0
     - os: linux
