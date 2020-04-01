@@ -64,12 +64,6 @@ environment:
           PYTHON_ARCH: "64"
           PYQT_VERSION: "5"
 
-        - NAME: "Py 3.5"
-          PYTHON: "C:\\Python35-x64"
-          PYTHON_VERSION: "3.5.5"
-          PYTHON_ARCH: "64"
-          PYQT_VERSION: "5"
-
         # 32-bit versions, PyQt, latest
 
         - NAME: "32-bit, Latest "

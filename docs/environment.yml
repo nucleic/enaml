@@ -7,9 +7,7 @@ dependencies:
 - enaml
 - numpy
 - pyqt
-- python=3.6
-- matplotlib
-- ipython
+- python=3.7
 - sphinx
 - sphinx_rtd_theme
 - enaml-pygments

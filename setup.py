@@ -156,7 +156,6 @@ setup(
           # https://pypi.org/pypi?%3Aaction=list_classifiers
           'Programming Language :: Python',
           'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',
           'Programming Language :: Python :: 3.8',
@@ -165,8 +164,8 @@ setup(
     python_requires='>=3.5',
     requires=['atom', 'PyQt', 'ply', 'kiwisolver'],
     install_requires=['setuptools',
-                      'atom>=0.4.3',
-                      'kiwisolver>=1.0.1',
+                      'atom>=0.5.0',
+                      'kiwisolver>=1.2.0',
                       'ply>=3.4',
                       "bytecode>=0.11.0"
                       ],
