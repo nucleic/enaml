@@ -13,56 +13,15 @@ branches:
 
 environment:
     matrix:
-        # Version Restrictions
-        #    Enaml supports Python 2.7 and also 3.4 onwards.
-        #    PyQt4 only available for Python <3.6, tested only on Python 2
-        #    PyQt5 only available for Python >=3.5.
-        #       PyQt5 version 5.11.2 doesn't run on Python 3.5.
-        #    PySide1 only available for 2.6 <= Python <=3.4. Wheels only for 32-bit.
-
-        # Strategy:
-        #    Run all tests using only pip (Travis uses conda)
-        #    Test each 64-bit Python version, but only the latest known patch.
-        #    Test the oldest and the latest 32-bit Python versions release.
-        #    Test with PyQt4 where available, otherwise PyQt5 in each version.
-        #    Test QScintilla on latest Python version available.
-        #    Test PySide1 in latest Python version it runs on.
-        #        - Failure is allowed and won't block PRs.
-        #    Test PySide2 in latest Python version available
-        #        - Failure is allowed and won't block PRs.
-        #    Only test single toolkit installs (e.g. not QT4 and QT5 on same install)
 
         # VARIABLES
         #    NAME: just a comment for distinguishing builds in Appveyor.
         #    PYQT_VERSION: Determines PyQt versions installation
         #    PY_QT: Determines Pyside version installation (if present), and is used by
         #           Enaml.
-        #    PYTEST_QT_API: In Python 3.4, pytest-qt needs a hint about the right interface.
-        #    QSCINTILLA: Set to "Yes" to install it.
 
 
-        # 64-bit versions, PyQT, latest to oldest. Test QScintilla support on
-        # latest.
-
-        - NAME: "Py 3.8"
-          PYTHON: "C:\\Python38-x64"
-          PYTHON_VERSION: "3.8.0"
-          PYTHON_ARCH: "64"
-          PYQT_VERSION: "5"
-          QSCINTILLA: "Yes"
-
-        - NAME: "Py 3.7"
-          PYTHON: "C:\\Python37-x64"
-          PYTHON_VERSION: "3.7.3"
-          PYTHON_ARCH: "64"
-          PYQT_VERSION: "5"
-          QSCINTILLA: "Yes"
-
-        - NAME: "Py 3.6"
-          PYTHON: "C:\\Python36-x64"
-          PYTHON_VERSION: "3.6.7"
-          PYTHON_ARCH: "64"
-          PYQT_VERSION: "5"
+        # 64-bit versions, are tested on Github actions
 
         # 32-bit versions, PyQt, latest
 
@@ -111,19 +70,6 @@ install:
 
   - ECHO "Environment Variables"
   - set
-
-  # Python 2
-  # Prepare Miniconda
-  # - Avoid warning from conda info.
-  # - Dump the setup for debugging.
-  # - Upgrade to the latest version of pip to avoid it displaying warnings
-  #   about it being out of date.
-  - "if %PYTHON_VERSION%==2.7.15 set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
-  - if %PYTHON_VERSION%==2.7.15 conda config --set always_yes yes --set changeps1 no
-  - if %PYTHON_VERSION%==2.7.15 conda update -q conda
-  - if %PYTHON_VERSION%==2.7.15 conda install -q -n root _license
-  - if %PYTHON_VERSION%==2.7.15 conda info -a
-  - if %PYTHON_VERSION%==2.7.15 conda upgrade -q pip setuptools
 
   # Python 3
   # Prepend desired Python to the PATH of this build (this cannot be

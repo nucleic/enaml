@@ -1,0 +1,44 @@
+name: Documentation building
+on:
+  schedule:
+    - cron: '0 0 * * 2'
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+    paths:
+      - .github/workflows/docs.yml
+      - enaml/*
+      - examples/*
+      - docs/*
+      - setup.py
+
+jobs:
+  docs:
+    name: Docs building
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v1
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install bytecode ply
+          pip install https://github.com/nucleic/cppy/tarball/master
+          pip install https://github.com/nucleic/atom/tarball/master
+          pip install https://github.com/nucleic/kiwi/tarball/master
+      - name: Install project
+        run: |
+          python setup.py develop
+      - name: Install graphviz
+        uses: kamiazya/setup-graphviz@v1
+      - name: Install doc building tools
+        run: |
+          pip install sphinx sphinx_rtd_theme
+      - name: Build documentation
+        run: |
+          mkdir docs_output;
+          sphinx-build docs/source docs_output -W -b html;

@@ -1,0 +1,78 @@
+name: Continuous Integration
+on:
+  schedule:
+    - cron: '0 0 * * 2'
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+    paths:
+      - .github/workflows/ci.yml
+      - enaml/*
+      - examples/*
+      - tests/*
+      - setup.py
+
+jobs:
+  tests:
+    name: Unit tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [3.6, 3.7, 3.8]
+        # Add PySide2 when github will allow for allowed-failures or when it works
+        qt-binding: [pyqt5]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install bytecode ply qtpy numpy
+          pip install https://github.com/nucleic/cppy/tarball/master
+          pip install https://github.com/nucleic/atom/tarball/master
+          pip install https://github.com/nucleic/kiwi/tarball/master
+      - name: Install PyQt as Qt bindings
+        if: ${{ python-version }} >= 3.7
+        run: |
+          pip install numpy pyqt5
+      - name: Install extra dependencies
+        if: ${{ python-version }} >= 3.7
+        run: |
+          pip install matplotlib ipython qtconsole Cython QScintilla
+      - name: Install project
+        env:
+          CPPFLAGS: --coverage
+        run: |
+          python setup.py develop
+      - name: Test with pytest
+        run: |
+          pip install pytest pytest-cov pytest-qt pytest-xvfb
+          pytest tests --cov enaml --cov-report xml
+
+      # Windows does not have C coverage so the upload is a bit different
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        if: matrix.os == 'windows-latest'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          yml: ./codecov.yml
+          fail_ci_if_error: true
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        if: matrix.os != 'windows-latest'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unittests
+          name: codecov-umbrella
+          yml: ./codecov.yml
+          fail_ci_if_error: true
