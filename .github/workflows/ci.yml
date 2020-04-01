@@ -39,11 +39,11 @@ jobs:
           pip install https://github.com/nucleic/atom/tarball/master
           pip install https://github.com/nucleic/kiwi/tarball/master
       - name: Install PyQt as Qt bindings
-        if: ${{ python-version }} >= 3.7
+        if: ${{ matrix.python-version }} >= 3.7
         run: |
           pip install numpy pyqt5
       - name: Install extra dependencies
-        if: ${{ python-version }} >= 3.7
+        if: ${{ matrix.python-version }} >= 3.7
         run: |
           pip install matplotlib ipython qtconsole Cython QScintilla
       - name: Install project
