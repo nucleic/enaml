@@ -25,6 +25,7 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
         # Add PySide2 when github will allow for allowed-failures or when it works
         qt-binding: [pyqt5]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}

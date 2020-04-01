@@ -37,6 +37,10 @@ jobs:
         uses: kamiazya/setup-graphviz@v1
       - name: Install doc building tools
         run: |
+          cd tools/pygments
+          python setup.py install
+          cd ..
+          cd ..
           pip install sphinx sphinx_rtd_theme
       - name: Build documentation
         run: |
