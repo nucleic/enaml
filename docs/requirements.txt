@@ -1,0 +1,3 @@
+https://github.com/nucleic/cppy/tarball/master
+https://github.com/nucleic/atom/tarball/master
+https://github.com/nucleic/kiwi/tarball/master
