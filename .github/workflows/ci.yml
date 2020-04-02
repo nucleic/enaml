@@ -52,10 +52,14 @@ jobs:
           CPPFLAGS: --coverage
         run: |
           python setup.py develop
-      - name: Test with pytest
+      - name: Install pytest
+        uses:
         run: |
           pip install pytest pytest-cov pytest-qt pytest-xvfb
-          python -m pytest tests --cov enaml --cov-report xml
+      - name: Run tests
+        uses: GabrielBB/xvfb-action@v1.0
+        with:
+          run: python -m pytest tests --cov enaml --cov-report xml
 
       # Windows does not have C coverage so the upload is a bit different
       - name: Upload coverage to Codecov
