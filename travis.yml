@@ -1,0 +1,120 @@
+sudo: false
+language: generic
+dist: xenial
+services:
+  - xvfb
+
+branches:
+  only:
+    - master
+
+env:
+  global:
+    - CPPFLAGS=--coverage
+
+matrix:
+  fast_finish: true
+  include:
+    - os: linux
+      env:
+        - PYTHON=3.6
+        - QT_VERSION=5
+        - IPYTHON=0
+        - QSCINTILLA=0
+        - SPHINX=0
+    - os: linux
+      env:
+        - PYTHON=3.7
+        - QT_VERSION=5
+        - IPYTHON=1
+        - QSCINTILLA=1
+        - SPHINX=0
+    - os: linux
+      env:
+        - PYTHON=3.8
+        - QT_VERSION=5
+        - IPYTHON=1
+        - QSCINTILLA=1
+        - SPHINX=0
+    - os: linux
+      env:
+        - PYTHON=3.6
+        - QT_VERSION=5
+        - SPHINX=1
+
+before_install:
+
+  # Install Miniconda
+  - travis_retry wget -q https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b -p ~/anaconda
+  - export PATH=~/anaconda/bin:$PATH
+
+  # Setup environment
+  - travis_retry conda update --yes conda
+  - conda config --set always_yes yes
+
+  # Display those for debug purposes
+  - conda info -a
+  - conda create -n travisci python=$PYTHON pip
+  - source activate travisci
+  - CONDA_INSTALL="conda install -q"
+  - PIP_INSTALL="pip install"
+
+  # Install enaml dependencies and include special widgets dependencies
+  # We do not test vtk as it segfaults on Travis
+  - 'if [ $QSCINTILLA -eq 1 ]; then
+        $PIP_INSTALL pyqt5 ply matplotlib;
+     else
+        $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib;
+     fi;'
+
+  - $CONDA_INSTALL qtpy
+  - 'if [ $IPYTHON -eq 1 ] && [ $QSCINTILLA -eq 1 ]; then
+        $PIP_INSTALL ipython qtconsole;
+     elif [ $IPYTHON -eq 1 ]; then
+        $CONDA_INSTALL ipython=$IPY_VERSION qtconsole;
+     fi'
+
+  # Install QScintilla for Qt5 if requested
+  # This will force qt to the last available version on PyPI and means that
+  # we will have two versions of qt at the same time but it seems to work fine
+  - 'if [ $QT_VERSION -gt 4 ] && [ $QSCINTILLA -eq 1 ]; then
+         $PIP_INSTALL Cython QScintilla;
+     fi'
+
+  # Install bytecode
+  - $PIP_INSTALL bytecode
+
+  # Install the dev version of the other nucleic projects
+  - $PIP_INSTALL https://github.com/nucleic/cppy/tarball/master
+  - $PIP_INSTALL https://github.com/nucleic/atom/tarball/master
+  - $PIP_INSTALL https://github.com/nucleic/kiwi/tarball/master
+
+  # Intall test tools (we require pytest > 3.3 to get the builtin logging
+  # features)
+  # Pytest-xvfb allows to run on CI (without a display with less magic)
+  - $PIP_INSTALL pytest pytest-cov pytest-qt pytest-xvfb
+
+  # Avoid annoying focus problems when running tests
+  # See discussion in e.g. https://github.com/spyder-ide/spyder/pull/6132
+  - sudo apt-get -qq update
+  - sudo apt-get install -y matchbox-window-manager xterm libxkbcommon-x11-0
+  - matchbox-window-manager&
+  - sleep 5
+
+install:
+
+  # Install ecpy (check that build script is not broken
+  - cd $TRAVIS_BUILD_DIR
+  - python setup.py develop
+  - cd ~
+
+script:
+  # Run the enaml test suite
+  - cd $TRAVIS_BUILD_DIR
+  - pytest tests --cov enaml --cov-report xml
+
+after_success:
+  - cd $TRAVIS_BUILD_DIR
+  - bash <(curl -s https://codecov.io/bash)

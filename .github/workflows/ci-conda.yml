@@ -34,6 +34,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
+          conda activate test
           python -m pip install --upgrade pip
           pip install bytecode ply qtpy numpy
           pip install https://github.com/nucleic/cppy/tarball/master
