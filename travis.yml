@@ -27,7 +27,7 @@ matrix:
         - PYTHON=3.7
         - QT_VERSION=5
         - IPYTHON=1
-        - QSCINTILLA=1
+        - QSCINTILLA=0
         - SPHINX=0
     - os: linux
       env:
