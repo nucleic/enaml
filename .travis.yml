@@ -19,23 +19,14 @@ matrix:
       env:
         - PYTHON=3.6
         - QT_VERSION=5
-        - IPYTHON=0
-        - QSCINTILLA=0
-        - SPHINX=0
     - os: linux
       env:
         - PYTHON=3.7
         - QT_VERSION=5
-        - IPYTHON=0
-        - QSCINTILLA=0
-        - SPHINX=0
     - os: linux
       env:
         - PYTHON=3.8
         - QT_VERSION=5
-        - IPYTHON=1
-        - QSCINTILLA=1
-        - SPHINX=0
 
 before_install:
 
@@ -58,25 +49,11 @@ before_install:
 
   # Install enaml dependencies and include special widgets dependencies
   # We do not test vtk as it segfaults on Travis
-  - 'if [ $QSCINTILLA -eq 1 ]; then
-        $PIP_INSTALL pyqt5 ply matplotlib;
-     else
-        $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib;
-     fi;'
-
+  - $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib;
   - $CONDA_INSTALL qtpy
-  - 'if [ $IPYTHON -eq 1 ] && [ $QSCINTILLA -eq 1 ]; then
-        $PIP_INSTALL ipython qtconsole;
-     elif [ $IPYTHON -eq 1 ]; then
-        $CONDA_INSTALL ipython=$IPY_VERSION qtconsole;
-     fi'
 
-  # Install QScintilla for Qt5 if requested
-  # This will force qt to the last available version on PyPI and means that
-  # we will have two versions of qt at the same time but it seems to work fine
-  - 'if [ $QT_VERSION -gt 4 ] && [ $QSCINTILLA -eq 1 ]; then
-         $PIP_INSTALL Cython QScintilla;
-     fi'
+  # We do not test IPython nor QScintilla, because one is bugged on conda and the
+  # other is not available
 
   # Install bytecode
   - $PIP_INSTALL bytecode
