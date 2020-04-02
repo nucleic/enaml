@@ -44,7 +44,7 @@ jobs:
         run: |
           pip install numpy pyqt5
       - name: Install extra dependencies
-        if: ${{ matrix.python-version }} >= 3.7
+        if: ${{ matrix.python-version }} == 3.7
         run: |
           pip install matplotlib ipython qtconsole Cython QScintilla
       - name: Install project

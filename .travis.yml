@@ -26,7 +26,7 @@ matrix:
       env:
         - PYTHON=3.7
         - QT_VERSION=5
-        - IPYTHON=1
+        - IPYTHON=0
         - QSCINTILLA=0
         - SPHINX=0
     - os: linux
@@ -36,11 +36,6 @@ matrix:
         - IPYTHON=1
         - QSCINTILLA=1
         - SPHINX=0
-    - os: linux
-      env:
-        - PYTHON=3.6
-        - QT_VERSION=5
-        - SPHINX=1
 
 before_install:
 
