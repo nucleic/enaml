@@ -5,8 +5,6 @@ channels:
 
 dependencies:
 - enaml
-- numpy
-- pyqt
 - python=3.7
 - sphinx
 - sphinx_rtd_theme
