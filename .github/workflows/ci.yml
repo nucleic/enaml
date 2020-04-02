@@ -53,7 +53,6 @@ jobs:
         run: |
           python setup.py develop
       - name: Install pytest
-        uses:
         run: |
           pip install pytest pytest-cov pytest-qt pytest-xvfb
       - name: Run tests
