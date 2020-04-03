@@ -173,7 +173,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         widget = self.focus_target()
-        if not widget.focusPolicy & Qt.TabFocus:
+        if not widget.focusPolicy() & Qt.TabFocus:
             return False
         if not widget.isEnabled():
             return False

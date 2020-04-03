@@ -15,6 +15,9 @@ Enaml Release Notes
 - add support for using attributes when specifying attr types PR #359
 - limit support to Python 3 PR #349
 - use cppy for the Python/C interface PR #349
+- qt: add missing brackets to widget.focusPolicy within
+  qt_widget.py/QtWidget.tab_focus_request() PR #403
+
 
 0.10.4 - 18/09/2019
 -------------------
