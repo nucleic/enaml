@@ -17,6 +17,7 @@ Enaml Release Notes
 - use cppy for the Python/C interface PR #349
 - qt: add missing brackets to widget.focusPolicy within
   qt_widget.py/QtWidget.tab_focus_request() PR #403
+- qt: fix return value of QtWidget.tab_focus_request() PR #404
 
 
 0.10.4 - 18/09/2019
