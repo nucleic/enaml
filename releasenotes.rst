@@ -1,18 +1,20 @@
 Enaml Release Notes
 ===================
 
-0.11.0 - unreleased
+Dates are written as DD/MM/YYYY
+
+0.11.0 - 05/04/2020
 -------------------
 - add support for Python 3.8 (not Python 3.8 only syntax) PR #391
 - enforce conversion of float to int at the Qt boudary PR #391
 - replace byteplay by bytecode PR #391
 - add get method to DynamicScope PR #394
-- properly set the attributes of imported of module PR #398
+- properly set the attributes of imported module PR #398
 - qt: fix alerts on tabbed DockItem PR #396
 - qt: avoid going higher than the dock area when looking for a DockTabWidget
   among the parents of a QDockContainer PR #386
 - properly report SyntaxError in f strings PR #378
-- add support for using attributes when specifying attr types PR #359
+- add support for using attributes (. access) when specifying attr types PR #359
 - limit support to Python 3 PR #349
 - use cppy for the Python/C interface PR #349
 - qt: add missing brackets to widget.focusPolicy within
@@ -87,6 +89,8 @@ this.
 - refactor the parser to be based on classes PR #227
 - move every parser/lexer related module in the parser package PR #227
 - support for dict and set comprehensions in enaml files PR #227
+
+Below dates are in MM/DD/YYYY
 
 0.9.8 - 08/04/2014
 ------------------
