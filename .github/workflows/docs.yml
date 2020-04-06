@@ -10,9 +10,9 @@ on:
       - master
     paths:
       - .github/workflows/docs.yml
-      - enaml/*
-      - examples/*
-      - docs/*
+      - "enaml/**"
+      - "examples/**"
+      - "docs/**"
       - setup.py
 
 jobs:
