@@ -8,6 +8,8 @@
 """Test the focus tracker capabilities.
 
 """
+import os
+
 import pytest
 
 from utils import is_qt_available, compile_source, wait_for_window_displayed
@@ -41,6 +43,7 @@ enamldef Main(Window):
 
 """
 
+@pytest.mark.skipif("TRAVIS" in os.environ, reason='Skip on Travis')
 @pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 def test_focus_tracking(enaml_qtbot, enaml_sleep):
     """Test moving the focus forward in the presence of a custom focus traversal.
