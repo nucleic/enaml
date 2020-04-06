@@ -180,7 +180,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         if not widget.isVisibleTo(widget.window()):
             return False
         widget.setFocus(reason)
-        return False
+        return widget.hasFocus()
 
     def focus_target(self):
         """ Return the current focus target for a focus request.
