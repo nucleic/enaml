@@ -10,9 +10,9 @@ on:
       - master
     paths:
       - .github/workflows/ci.yml
-      - enaml/*
-      - examples/*
-      - tests/*
+      - "enaml/**"
+      - "examples/**"
+      - "tests/**"
       - setup.py
 
 jobs:
