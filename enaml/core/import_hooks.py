@@ -87,12 +87,12 @@ class AbstractEnamlImporter(object, metaclass=ABCMeta):
 
     @classmethod
     def install(cls):
-        """ Appends this importer into sys.meta_path.
+        """ Installs this importer into sys.meta_path.
 
         """
         cls._install_count[cls] += 1
         if cls not in sys.meta_path:
-            sys.meta_path.append(cls)
+            sys.meta_path.insert(0, cls)
 
     @classmethod
     def uninstall(cls):
@@ -665,9 +665,9 @@ class imports(object):
         """ Installs the current importer upon entering the context.
 
         """
-        # Install the importers reversed so that the newest ones
+        # Install the importers - ensuring that the newest ones
         # get first crack at the import on sys.meta_path.
-        for importer in reversed(self.importers):
+        for importer in self.importers:
             importer.install()
 
     def __exit__(self, *args, **kwargs):
