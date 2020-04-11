@@ -18,21 +18,6 @@ from enaml.version import __version__
 
 ext_modules = [
     Extension(
-        'enaml.weakmethod',
-        ['enaml/src/weakmethod.cpp'],
-        language='c++',
-    ),
-    Extension(
-        'enaml.callableref',
-        ['enaml/src/callableref.cpp'],
-        language='c++',
-    ),
-    Extension(
-       'enaml.signaling',
-       ['enaml/src/signaling.cpp'],
-       language='c++',
-    ),
-    Extension(
         'enaml.core.funchelper',
         ['enaml/src/funchelper.cpp'],
         language='c++',
