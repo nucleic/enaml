@@ -31,7 +31,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 fluxbox
+          sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 herbstluftwm
       - name: Checkout branch
         uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -67,10 +67,11 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash -l {0}
         run: |
-          export DISPLAY=:1
-          Xvfb $DISPLAY -screen 0 1024x768x16 &
-          fluxbox &
-          sleep 5
+          export DISPLAY=:99.0
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset
+          sleep 3
+          herbstluftwm &
+          sleep 1
           python -m pytest tests --cov enaml --cov-report xml
 
       # Windows does not have C coverage so the upload is a bit different
