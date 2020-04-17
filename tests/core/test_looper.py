@@ -55,3 +55,52 @@ def test_looper_refresh(enaml_qtbot, enaml_sleep):
         assert [c.text for c in tester.container.children
                 if isinstance(c, Label)] == expected
 
+
+@pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
+def test_looper_refresh_iterator(enaml_qtbot, enaml_sleep):
+    """ Test that a looper properly refreshes when given an iterator.
+
+    """
+    source = dedent("""\
+    from enaml.core.api import Looper, Conditional
+    from enaml.widgets.api import Window, Container, Label, ObjectCombo
+
+
+    enamldef Main(Window): window:
+        attr data: list = []
+        attr flag: str = 'a'
+        attr show_more: bool << flag == 'b' or flag == 'c'
+        alias container
+        Container: container:
+            ObjectCombo: combo:
+                items = ['a', 'b', 'c']
+                selected := window.flag
+            Conditional:
+                condition << show_more
+                # Nested loop forces re-eval twice
+                Conditional:
+                    condition << flag == 'c'
+                    Looper:
+                        iterable << reversed(data)
+                        Label:
+                            text << '{} {}'.format(loop.index, loop.item)
+
+    """)
+    tester = compile_source(source, 'Main')()
+    tester.show()
+    wait_for_window_displayed(enaml_qtbot, tester)
+
+    enaml_qtbot.wait(enaml_sleep)
+    data = [1, 2, 3]
+    tester.data = data
+
+    # Conditional is still hiding it
+    assert not any(
+        c for c in tester.container.children if isinstance(c, Label))
+
+    # Now they should all be shown
+    tester.flag = 'c'
+    enaml_qtbot.wait(enaml_sleep)
+    expected = ['{} {}'.format(*it) for it in enumerate(reversed(data))]
+    assert [c.text for c in tester.container.children
+            if isinstance(c, Label)] == expected
