@@ -3,6 +3,11 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+0.11.1 - Unreleased
+-------------------
+- Coerce iterator iterables of loopers to tuple so refresh works properly PR #414
+
+
 0.11.0 - 05/04/2020
 -------------------
 - add support for Python 3.8 (not Python 3.8 only syntax) PR #391
