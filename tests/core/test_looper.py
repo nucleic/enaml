@@ -104,3 +104,51 @@ def test_looper_refresh_iterator(enaml_qtbot, enaml_sleep):
     expected = ['{} {}'.format(*it) for it in enumerate(reversed(data))]
     assert [c.text for c in tester.container.children
             if isinstance(c, Label)] == expected
+
+
+@pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
+def test_looper_iterable(enaml_qtbot, enaml_sleep):
+    """ Test that a looper validates the iterator properly.
+
+    """
+    source = dedent("""\
+    from enaml.core.api import Looper
+    from enaml.widgets.api import Window, Container, Label
+
+
+    enamldef Main(Window): window:
+        alias iterable: looper.iterable
+        alias container
+        Container: container:
+            Looper: looper:
+                iterable = (1, 2, 3)
+                Label:
+                    text << '{} {}'.format(loop.index, loop.item)
+
+    """)
+    tester = compile_source(source, 'Main')()
+    tester.show()
+    wait_for_window_displayed(enaml_qtbot, tester)
+
+    enaml_qtbot.wait(enaml_sleep)
+    tester.iterable = range(10)
+
+    enaml_qtbot.wait(enaml_sleep)
+    tester.iterable = {1, 2, 3}
+
+    enaml_qtbot.wait(enaml_sleep)
+    tester.iterable = {'a': 1, 'b': 2}
+
+    enaml_qtbot.wait(enaml_sleep)
+    tester.iterable = 'abc'
+
+    enaml_qtbot.wait(enaml_sleep)
+    with pytest.raises(TypeError):
+        tester.iterable = 1
+
+    enaml_qtbot.wait(enaml_sleep)
+    with pytest.raises(TypeError):
+        tester.iterable = None
+
+
+

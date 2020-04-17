@@ -5,6 +5,7 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from abc import ABCMeta
 from collections.abc import Iterable, Iterator
 
 from atom.api import Atom, Int, Coerced, List, Typed, Value
@@ -21,10 +22,12 @@ def coerce_iterable(iterable):
     """
     if isinstance(iterable, Iterator):
         return tuple(iterable)
-    return iterable
+    elif isinstance(iterable, Iterable):
+        return iterable
+    raise TypeError("%s object is not iterable" % type(iterable))
 
 
-class LooperIterableMeta(type):
+class LooperIterableMeta(ABCMeta):
     """ Metaclass which checks if an instance is Iterable but not an Iterator.
 
     """
@@ -34,8 +37,8 @@ class LooperIterableMeta(type):
         return isinstance(instance, Iterable)
 
 
-class LooperIterable(object, metaclass=LooperIterableMeta):
-    """ A concrete Iterable that is not an Iterator
+class LooperIterable(Iterable, metaclass=LooperIterableMeta):
+    """ An Iterable that is not an Iterator
 
     """
 
