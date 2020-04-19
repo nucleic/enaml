@@ -5,14 +5,42 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from collections.abc import Iterable
+from abc import ABCMeta
+from collections.abc import Iterable, Iterator
 
-from atom.api import Atom, Int, Instance, List, Typed, Value
+from atom.api import Atom, Int, Coerced, List, Typed, Value
 from atom.datastructures.api import sortedmap
 
 from .compiler_nodes import new_scope
 from .declarative import d_
 from .pattern import Pattern
+
+
+def coerce_iterable(iterable):
+    """ Coerce iterators to a tuple or return the iterable as is.
+
+    """
+    if isinstance(iterable, Iterator):
+        return tuple(iterable)
+    elif isinstance(iterable, Iterable):
+        return iterable
+    raise TypeError("%s object is not iterable" % type(iterable))
+
+
+class LooperIterableMeta(ABCMeta):
+    """ Metaclass which checks if an instance is Iterable but not an Iterator.
+
+    """
+    def __instancecheck__(self, instance):
+        if isinstance(instance, Iterator):
+            return False
+        return isinstance(instance, Iterable)
+
+
+class LooperIterable(Iterable, metaclass=LooperIterableMeta):
+    """ An Iterable that is not an Iterator
+
+    """
 
 
 class Iteration(Atom):
@@ -57,7 +85,8 @@ class Looper(Pattern):
     #: The iterable to use when creating the items for the looper.
     #: The items in the iterable must be unique. This allows the
     #: Looper to optimize the creation and destruction of widgets.
-    iterable = d_(Instance(Iterable))
+    #: If the iterable is an Iterator it is first coerced to a tuple.
+    iterable = d_(Coerced(LooperIterable, coercer=coerce_iterable))
 
     #: The list of items created by the conditional. Each item in the
     #: list represents one iteration of the loop and is a list of the
