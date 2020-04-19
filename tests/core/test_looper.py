@@ -122,6 +122,3 @@ def test_looper_iterable(enaml_qtbot, enaml_sleep):
 
     with pytest.raises(TypeError):
         looper.iterable = None
-
-
-
