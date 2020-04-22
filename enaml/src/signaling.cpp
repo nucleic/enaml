@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013-2019, Nucleic Development Team.
+| Copyright (c) 2013-2020, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -88,14 +88,16 @@ static PyObject* WeakMethod;
 static PyObject* CallableRef;
 
 
-inline bool load_obj_dict( cppy::ptr& objptr, cppy::ptr& out, bool forcecreate=false )
+inline bool load_obj_dict( cppy::ptr objptr, cppy::ptr& out, bool forcecreate=false )
 {
     PyObject** dict = _PyObject_GetDictPtr( objptr.get() );
     if( !dict )
         return false;
     if( forcecreate && !*dict )
+    {
         *dict = PyDict_New();
-    out = cppy::ptr( cppy::incref( *dict ) );
+    }
+    out = cppy::ptr( cppy::xincref( *dict ) );
     return true;
 }
 
@@ -161,10 +163,14 @@ Signal__get__( PyObject* self, PyObject* obj, PyObject* type )
 {
     cppy::ptr selfptr( cppy::incref( self ) );
     if( !obj )
+    {
         return selfptr.release();
+    }
     cppy::ptr objref( PyWeakref_NewRef( obj, 0 ) );
     if( !objref )
+    {
         return 0;
+    }
     cppy::ptr boundsig( BoundSignal::New( self, objref.get() ) );
     if( !boundsig )
         return 0;
@@ -188,11 +194,12 @@ Signal__set__( Signal* self, PyObject* obj, PyObject* value )
         cppy::attribute_error( objptr.get(), "__dict__" );
         return -1;
     }
+    // In the absence of a dictionary instance there is nothing to do.
     if( !dict )
         return 0;
 
     cppy::ptr key( cppy::incref( SignalsKey ) );
-    cppy::ptr signals( dict.getitem( key ) );
+    cppy::ptr signals( cppy::xincref( PyDict_GetItem( dict.get(), key.get() ) ) );
     if( !signals )
         return 0;
     if( !PyDict_CheckExact( signals.get() ) )
@@ -202,13 +209,13 @@ Signal__set__( Signal* self, PyObject* obj, PyObject* value )
     }
 
     cppy::ptr owner( cppy::incref( pyobject_cast( self ) ) );
-    if( signals.getitem( owner ) )
+    if( PyDict_GetItem( signals.get(), owner.get() ) )
     {
-        if( !signals.delitem( owner ) )
+        if( PyDict_DelItem( signals.get(), owner.get() ) != 0 )
             return -1;
         if( PyDict_Size( signals.get() ) == 0 )
         {
-            if( !dict.delitem( key ) )
+            if( PyDict_DelItem( dict.get(), key.get() ) != 0 )
                 return -1;
         }
     }
@@ -223,14 +230,21 @@ Signal_disconnect_all( PyObject* ignored, PyObject* obj )
     cppy::ptr objptr( cppy::incref( obj ) );
     cppy::ptr dict;
     if( !load_obj_dict( objptr, dict ) )
-        return cppy::attribute_error( obj, "__dict__" );
-    if( !dict )
-        return 0;
-    cppy::ptr key( cppy::incref( SignalsKey ) );
-    if( dict.getitem( key ) )
     {
-        if( !dict.delitem( key ) )
+        return cppy::attribute_error( obj, "__dict__" );
+    }
+    // In the absence of a dictionary instance there is nothing to do.
+    if( !dict )
+    {
+        Py_RETURN_NONE;
+    }
+    cppy::ptr key( cppy::incref( SignalsKey ) );
+    if( PyDict_GetItem( dict.get(), key.get() ) )
+    {
+        if( PyDict_DelItem( dict.get(), key.get() ) != 0 )
+        {
             return 0;
+        }
     }
     Py_RETURN_NONE;
 }
@@ -314,7 +328,7 @@ _Disconnector_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     PyObject* owner;
     PyObject* objref;
     static char* kwlist[] = { "signal", "objref", 0 };
-    // The C++ code for BoundSignal calls _Diconnector_New directly.
+    // The C++ code for BoundSignal calls _Diconnector::New directly.
     // This new method will only be called by Python code, which should
     // not normally be creating _Disconnector instances. So, using the
     // slow but convenient arg parsing is fine here.
@@ -357,7 +371,7 @@ _Disconnector_dealloc( _Disconnector* self )
 PyObject*
 _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
 {
-    cppy::ptr kwargsptr( kwargs, true );
+    cppy::ptr kwargsptr( cppy::xincref( kwargs ) );
     if( ( kwargsptr ) && ( PyDict_Size( kwargsptr.get() ) > 0 ) )
     {
         std::ostringstream ostr;
@@ -366,7 +380,7 @@ _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
         return cppy::type_error( ostr.str().c_str() );
     }
 
-    cppy::ptr argsptr( args, true );
+    cppy::ptr argsptr( cppy::incref( args ) );
     if( PyTuple_Size( argsptr.get() ) != 1 )
     {
         std::ostringstream ostr;
@@ -378,27 +392,41 @@ _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
     cppy::ptr objref( cppy::incref( self->objref ) );
     cppy::ptr obj( cppy::incref( PyWeakref_GET_OBJECT( objref.get() ) ) );
     if( obj.is_none() )
+    {
         Py_RETURN_NONE;
+    }
 
     cppy::ptr dict;
     if( !load_obj_dict( obj, dict ) )
+    {
         return cppy::attribute_error( obj.get(), "__dict__" );
+    }
     if( !dict )
+    {
         Py_RETURN_NONE;
+    }
 
     cppy::ptr key( cppy::incref( SignalsKey ) );
-    cppy::ptr signals( dict.getitem( key ) );
+    cppy::ptr signals( cppy::xincref( PyDict_GetItem( dict.get(), key.get() ) ) );
     if( !signals )
+    {
         Py_RETURN_NONE;
+    }
     if( !PyDict_CheckExact( signals.get() ) )
+    {
         return cppy::type_error( signals.get(), "dict" );
+    }
 
     cppy::ptr owner( cppy::incref( self->owner ) );
-    cppy::ptr slots( signals.getitem( owner ) );
+    cppy::ptr slots( cppy::xincref( PyDict_GetItem( signals.get(),  owner.get() ) ) );
     if( !slots )
+    {
         Py_RETURN_NONE;
-    if( !PyDict_CheckExact( slots.get() ) )
+    }
+    if( !PyList_CheckExact( slots.get() ) )
+    {
         return cppy::type_error( slots.get(), "list" );
+    }
 
     cppy::ptr slot( cppy::incref( PyTuple_GET_ITEM( argsptr.get(), 0 ) ) );
     Py_ssize_t index = -1;
@@ -416,17 +444,23 @@ _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
     if( index != -1 )
     {
         if( PySequence_DelItem( slots.get(), index ) != 0 )
+        {
             return 0;
+        }
         // A _Disconnector is the first item in the list and is created
         // on demand. The list is deleted when that is the only item left.
         if( PyList_Size( slots.get() ) == 1 )
         {
-            if( !signals.delitem( owner ) )
+            if( PyDict_DelItem( signals.get(), owner.get() ) != 0 )
+            {
                 return 0;
+            }
             if( PyDict_Size( signals.get() ) == 0 )
             {
-                if( !dict.delitem( key ) )
+                if( PyDict_DelItem( dict.get(), key.get() )  != 0  )
+                {
                     return 0;
+                }
             }
         }
     }
@@ -463,12 +497,12 @@ PyTypeObject* _Disconnector::TypeObject = NULL;
 
 
 PyType_Spec _Disconnector::TypeObject_Spec = {
-	"enaml.signaling._Disconnector",            /* tp_name */
+	"enaml.signaling._Disconnector",             /* tp_name */
 	sizeof( _Disconnector ),                     /* tp_basicsize */
-	0,                                          /* tp_itemsize */
+	0,                                           /* tp_itemsize */
 	Py_TPFLAGS_DEFAULT|
-    Py_TPFLAGS_HAVE_GC,                         /* tp_flags */
-    _Disconnector_Type_slots                           /* slots */
+    Py_TPFLAGS_HAVE_GC,                          /* tp_flags */
+    _Disconnector_Type_slots                     /* slots */
 };
 
 
@@ -491,7 +525,9 @@ _Disconnector::New( PyObject* owner, PyObject* objref )
     cppy::ptr objrefptr( cppy::incref( objref ) );
     cppy::ptr self( PyType_GenericAlloc( _Disconnector::TypeObject, 0 ) );
     if( !self )
+    {
         return 0;
+    }
     _Disconnector* disc = reinterpret_cast<_Disconnector*>( self.get() );
     disc->owner = ownerptr.release();
     disc->objref = objrefptr.release();
@@ -549,9 +585,13 @@ BoundSignal_dealloc( BoundSignal* self )
     PyObject_GC_UnTrack( self );
     BoundSignal_clear( self );
     if( numfree < FREELIST_MAX )
+    {
         freelist[ numfree++ ] = self;
+    }
     else
+    {
         Py_TYPE(self)->tp_free( pyobject_cast( self ) );
+    }
 }
 
 
@@ -583,30 +623,46 @@ BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
     cppy::ptr objref( cppy::incref( self->objref ) );
     cppy::ptr obj( cppy::incref( PyWeakref_GET_OBJECT( objref.get() ) ) );
     if( obj.is_none() )
+    {
         Py_RETURN_NONE;
+    }
     cppy::ptr dict;
     if( !load_obj_dict( obj, dict ) )
+    {
         return cppy::attribute_error( obj.get(), "__dict__" );
+    }
     if( !dict )
+    {
         Py_RETURN_NONE;
+    }
 
     cppy::ptr key( cppy::incref( SignalsKey ) );
-    cppy::ptr signals( dict.getitem( key ) );
+    cppy::ptr signals( cppy::xincref( PyDict_GetItem( dict.get(), key.get() ) ) );
     if( !signals )
+    {
         Py_RETURN_NONE;
+    }
     if( !PyDict_CheckExact( signals.get() ) )
+    {
         return cppy::type_error( signals.get(), "dict" );
+    }
 
     cppy::ptr owner( cppy::incref( self->owner ) );
-    cppy::ptr slots( signals.getitem( owner ) );
+    cppy::ptr slots( cppy::xincref( PyDict_GetItem( signals.get(), owner.get() ) ) );
     if( !slots )
+    {
         Py_RETURN_NONE;
+    }
     if( !PyList_CheckExact( slots.get() ) )
+    {
         return cppy::type_error( slots.get(), "list" );
+    }
 
     Py_ssize_t size = PyList_Size( slots.get() );
     if( size <= 1 ) // First item is a _Disconnector
+    {
         Py_RETURN_NONE;
+    }
 
     // Copy the list into a tuple before calling the slots. The act of
     // calling a slot may trigger connect/disconnect which will modify
@@ -616,7 +672,9 @@ BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
     // heap allocations.
     cppy::ptr cslots( PyTuple_New( size - 1 ) );
     if( !cslots )
+    {
         return 0;
+    }
     for( Py_ssize_t idx = 1; idx < size; idx++ )
     {
         cppy::ptr slot( cppy::incref( PyList_GET_ITEM( slots.get(), idx ) ) );
@@ -625,12 +683,14 @@ BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
 
     size--;
     cppy::ptr argsptr( cppy::incref( args ) );
-    cppy::ptr kwargsptr( cppy::incref( kwargs ) );
+    cppy::ptr kwargsptr( cppy::xincref( kwargs ) );
     for( Py_ssize_t idx = 0; idx < size; idx++ )
     {
         cppy::ptr slot( cppy::incref( PyTuple_GET_ITEM( cslots.get(), idx ) ) );
         if( !slot.call( argsptr, kwargsptr ) )
+        {
             return 0;
+        }
     }
 
     Py_RETURN_NONE;
@@ -648,56 +708,77 @@ PyObject*
 BoundSignal_connect( BoundSignal* self, PyObject* slot )
 {
     cppy::ptr objref( cppy::incref( self->objref ) );
-    cppy::ptr obj( PyWeakref_GET_OBJECT( objref.get() ) );
+    cppy::ptr obj( cppy::incref( PyWeakref_GET_OBJECT( objref.get() ) ) );
     if( obj.is_none() )
+    {
         Py_RETURN_NONE;
+    }
 
     cppy::ptr dict;
     if( !load_obj_dict( obj, dict, true ) )
+    {
         return cppy::attribute_error( obj.get(), "__dict__" );
+    }
     if( !dict )
+    {
         return 0;
+    }
 
     cppy::ptr key( cppy::incref( SignalsKey ) );
-    cppy::ptr signals( dict.getitem( key ) );
+    cppy::ptr signals( cppy::xincref( PyDict_GetItem( dict.get(), key.get() ) ) );
     if( signals )
     {
         if( !PyDict_CheckExact( signals.get() ) )
+        {
             return cppy::type_error( signals.get(), "dict" );
+        }
     }
     else
     {
         signals = PyDict_New();
         if( !signals )
+        {
             return 0;
-        if( !dict.setitem( key, signals ) )
+        }
+        if( PyDict_SetItem( dict.get(), key.get(), signals.get() ) != 0  )
+        {
             return 0;
+        }
     }
 
     cppy::ptr owner( cppy::incref( self->owner ) );
-    cppy::ptr slots( signals.getitem( owner ) );
+    cppy::ptr slots( cppy::xincref( PyDict_GetItem( signals.get(), owner.get() ) ) );
     if( slots )
     {
         if( !PyList_CheckExact( slots.get() ) )
+        {
             return cppy::type_error( slots.get(), "list" );
+        }
     }
     else
     {
         slots = PyList_New( 0 );
         if( !slots )
+        {
             return 0;
-        if( !signals.setitem( owner, slots ) )
+        }
+        if( PyDict_SetItem( signals.get(), owner.get(), slots.get() ) != 0 )
+        {
             return 0;
+        }
     }
 
     if( PyList_Size( slots.get() ) == 0 )
     {
         cppy::ptr disc( _Disconnector::New( owner.get(), objref.get() ) );
         if( !disc )
+        {
             return 0;
+        }
         if( PyList_Append( slots.get(), disc.get() ) != 0 )
+        {
             return 0;
-        disc.release();
+        }
     }
 
     cppy::ptr slotptr( cppy::incref( slot ) );
@@ -705,27 +786,36 @@ BoundSignal_connect( BoundSignal* self, PyObject* slot )
     {
         cppy::ptr args( PyTuple_New( 1 ) );
         if( !args )
+        {
             return 0;
+        }
         PyTuple_SET_ITEM( args.get(), 0, slotptr.release() );
         cppy::ptr wm_cls( cppy::incref( WeakMethod ) );
         cppy::ptr wm( wm_cls.call( args ) );
         if( !wm )
+        {
             return 0;
+        }
         args = PyTuple_New( 2 );
         if( !args )
+        {
             return 0;
-        cppy::ptr disc( slots.getitem( 0 ) );
+        }
+        cppy::ptr disc( cppy::incref( PyList_GET_ITEM( slots.get(), 0 ) ) );
         PyTuple_SET_ITEM( args.get(), 0, wm.release() );
         PyTuple_SET_ITEM( args.get(), 1, disc.release() );
         cppy::ptr cr_cls( cppy::incref( CallableRef ) );
         slotptr = cr_cls.call( args );
         if( !slotptr )
+        {
             return 0;
+        }
     }
 
-    if( !PyList_Append( slots.get(), slotptr.get() ) )
+    if( PyList_Append( slots.get(), slotptr.get() ) != 0 )
+    {
         return 0;
-    slotptr.release();
+    }
 
     Py_RETURN_NONE;
 }
@@ -737,23 +827,31 @@ BoundSignal_disconnect( BoundSignal* self, PyObject* slot )
     cppy::ptr slotptr( cppy::incref( slot ) );
     cppy::ptr args( PyTuple_New( 1 ) );
     if( !args )
+    {
         return 0;
+    }
     if( PyMethod_Check( slot ) && PyMethod_GET_SELF( slot ) )
     {
-        args.setitem( 0, slotptr.get() );
+        PyTuple_SET_ITEM( args.get(), 0, slotptr.release() );
         cppy::ptr wm_cls( cppy::incref( WeakMethod ) );
         cppy::ptr wm( wm_cls.call( args ) );
         if( !wm )
+        {
             return 0;
-        args.setitem( 0, wm );
+        }
+        PyTuple_SET_ITEM( args.get(), 0, wm.release() );
         cppy::ptr cr_cls( cppy::incref( CallableRef ) );
         slotptr = cr_cls.call( args );
         if( !slotptr )
+        {
             return 0;
+        }
     }
     cppy::ptr disc( _Disconnector::New( self->owner, self->objref ) );
     if( !disc )
+    {
         return 0;
+    }
     PyTuple_SET_ITEM( args.get(), 0, slotptr.release() );
     return disc.call( args );
 }
@@ -761,7 +859,7 @@ BoundSignal_disconnect( BoundSignal* self, PyObject* slot )
 
 static PyMethodDef
 BoundSignal_methods[] = {
-    { "emit", ( PyCFunction )BoundSignal_emit, METH_KEYWORDS,
+    { "emit", ( PyCFunction )BoundSignal_emit, METH_VARARGS | METH_KEYWORDS,
       "Emit the signal with the given arguments and keywords." },
     { "connect", ( PyCFunction )BoundSignal_connect, METH_O,
       "Connect the given slot to the signal" },
@@ -845,7 +943,9 @@ BoundSignal::New( PyObject* owner, PyObject* objref )
     {
         bsigptr = PyType_GenericAlloc( BoundSignal::TypeObject, 0 );
         if( !bsigptr )
+        {
             return 0;
+        }
     }
     BoundSignal* bsig = reinterpret_cast<BoundSignal*>( bsigptr.get() );
     bsig->owner = ownerptr.release();
