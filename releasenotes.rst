@@ -5,7 +5,8 @@ Dates are written as DD/MM/YYYY
 
 0.11.1 - Unreleased
 -------------------
-- Coerce iterator iterables of loopers to tuple so refresh works properly PR #414
+- fix signaling/weakmethod/callableref that were broken since 0.10.0 PR #416
+- coerce iterator iterables of loopers to tuple so refresh works properly PR #414
 
 
 0.11.0 - 05/04/2020

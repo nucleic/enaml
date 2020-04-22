@@ -128,7 +128,7 @@ def test_signal_set_del():
     """Test setting/deleting a signal
 
     """
-    s = Signal()
+    s = SignalTester()
     with pytest.raises(AttributeError):
         s.signal = 1
 
