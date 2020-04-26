@@ -51,7 +51,7 @@ static PyObject* remove_str;
 PyObject*
 WeakMethod_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
-    cppy::ptr kwargsptr( cppy::incref( kwargs ) );
+    cppy::ptr kwargsptr( cppy::xincref( kwargs ) );
     if( ( kwargsptr ) && ( PyDict_Size( kwargsptr.get() ) > 0 ) )
     {
         std::ostringstream ostr;
@@ -69,15 +69,15 @@ WeakMethod_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
         return cppy::type_error( ostr.str().c_str() );
     }
 
-    cppy::ptr method( argsptr.getitem( 0 ) );
+    cppy::ptr method( cppy::incref( PyTuple_GET_ITEM( argsptr.get(), 0 ) ) );
     if( !PyMethod_Check( method.get() ) )
+    {
         return cppy::type_error( method.get(), "MethodType" );
+    }
 
     cppy::ptr self( cppy::incref( PyMethod_GET_SELF( method.get() ) ) );
-    cppy::ptr cls( pyobject_cast( Py_TYPE(self.get() ) ) );
+    cppy::ptr cls( cppy::incref( pyobject_cast( Py_TYPE(self.get() ) ) ) );
     cppy::ptr func( cppy::incref( PyMethod_GET_FUNCTION( method.get() ) ) );
-    if( !self )
-        return cppy::type_error( "Expected a bound method. Got unbound method instead." );
 
     /* The logic to setup the weakref is as follows:
 
@@ -122,25 +122,34 @@ WeakMethod_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 
     cppy::ptr selfref( PyWeakref_NewRef( self.get(), 0 ) );
     if( !selfref )
+    {
         return 0;
+    }
 
-    cppy::ptr wmethods_ptr( cppy::incref( weak_methods ) );
-    cppy::ptr items( wmethods_ptr.getitem( selfref ) );
+    cppy::ptr items( cppy::xincref( PyDict_GetItem( weak_methods, selfref.get() ) ) );
     if( !items )
     {
         items = PyList_New( 0 );
         if( !items )
+        {
             return 0;
+        }
         cppy::ptr wm_type( cppy::incref( pyobject_cast( type ) ) );
         cppy::ptr _remove_str( cppy::incref( remove_str ) );
         cppy::ptr _remove( wm_type.getattr( _remove_str ) );
         if( !_remove )
+        {
             return 0;
+        }
         cppy::ptr selfrefcb( PyWeakref_NewRef( self.get(), _remove.get() ) );
         if( !selfrefcb )
+        {
             return 0;
-        if( !wmethods_ptr.setitem( selfrefcb, items ) )
+        }
+        if( PyDict_SetItem( weak_methods, selfrefcb.get(), items.get() ) != 0 )
+        {
             return 0;
+        }
     }
 
     WeakMethod* pywm = 0;
@@ -150,20 +159,26 @@ WeakMethod_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
         cppy::ptr wmptr( cppy::incref( PyList_GET_ITEM( items.get(), idx ) ) );
         pywm = reinterpret_cast<WeakMethod*>( wmptr.get() );
         if( ( func.get() == pywm->func ) && ( cls.get() == pywm->cls ) )
+        {
             return wmptr.release();
+        }
     }
 
     cppy::ptr wm( PyType_GenericNew( type, args, kwargs ) );
     if( !wm )
+    {
         return 0;
+    }
 
     pywm = reinterpret_cast<WeakMethod*>( wm.get() );
     pywm->func = func.release();
     pywm->selfref = selfref.release();
     pywm->cls = cls.release();
 
-    if( !PyList_Append( items.get(), wm.get() ) )
+    if( PyList_Append( items.get(), wm.get() ) != 0 )
+    {
         return 0;
+    }
 
     return wm.release();
 }
@@ -205,12 +220,16 @@ WeakMethod_call( WeakMethod* self, PyObject* args, PyObject* kwargs )
     cppy::ptr selfref( cppy::incref( self->selfref ) );
     cppy::ptr mself( cppy::incref( PyWeakref_GET_OBJECT( selfref.get() ) ) );
     if( mself.is_none() )
+    {
         Py_RETURN_NONE;
+    }
     cppy::ptr method( PyMethod_New( self->func, mself.get() ) );
     if( !method )
+    {
         return 0;
+    }
     cppy::ptr argsptr( cppy::incref( args ) );
-    cppy::ptr kwargsptr( cppy::incref( kwargs ) );
+    cppy::ptr kwargsptr( cppy::xincref( kwargs ) );
     return method.call( argsptr, kwargsptr );
 }
 
@@ -225,7 +244,9 @@ WeakMethod__remove( PyObject* ignored, PyObject* wr_item )
     cppy::ptr wmethods_ptr( cppy::incref( weak_methods ) );
     cppy::ptr wrptr( cppy::incref( wr_item ) );
     if( !wmethods_ptr.delitem( wrptr ) )
+    {
         return 0;
+    }
     Py_RETURN_NONE;
 }
 
@@ -325,7 +346,7 @@ weakmethod_modexec( PyObject *mod )
         return -1;
     }
 
-    // Signal
+    // WeakMethod
     cppy::ptr wmethod( pyobject_cast( WeakMethod::TypeObject ) );
 	if( PyModule_AddObject( mod, "WeakMethod", wmethod.get() ) < 0 )
 	{

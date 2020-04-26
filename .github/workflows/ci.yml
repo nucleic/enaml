@@ -21,13 +21,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: [3.6, 3.7, 3.8]
         # Add PySide2 when github will allow for allowed-failures or when it works
         qt-binding: [pyqt5]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - name: Install linux only test dependency
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 matchbox-window-manager
+      - name: Checkout branch
+        uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
@@ -53,11 +59,20 @@ jobs:
           python setup.py develop
       - name: Install pytest
         run: |
-          pip install pytest pytest-cov pytest-qt pytest-xvfb
-      - name: Run tests
-        uses: GabrielBB/xvfb-action@v1.0
-        with:
-          run: python -m pytest tests --cov enaml --cov-report xml
+          pip install pytest pytest-cov pytest-qt
+      - name: Run tests (Windows, Mac)
+        if: matrix.os != 'ubuntu-latest'
+        run: python -m pytest tests --cov enaml --cov-report xml
+      - name: Run tests (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash -l {0}
+        run: |
+          export DISPLAY=:99.0
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset
+          sleep 3
+          matchbox-window-manager &
+          sleep 1
+          python -m pytest tests --cov enaml --cov-report xml
 
       # Windows does not have C coverage so the upload is a bit different
       - name: Upload coverage to Codecov
