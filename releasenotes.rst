@@ -3,7 +3,7 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.11.1 - Unreleased
+0.11.1 - 01/05/2020
 -------------------
 - fix signaling/weakmethod/callableref that were broken since 0.10.0 PR #416
 - coerce iterator iterables of loopers to tuple so refresh works properly PR #414
