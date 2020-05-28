@@ -89,7 +89,7 @@ _Invoke( PyObject* func, PyObject* key, PyObject* self, PyObject* args,
     cppy::ptr f_globals( pfunc.getattr( "__globals__" ) );
     if( !f_globals )
         return cppy::attribute_error( pfunc.get(), "__globals__" );
-    cppy::ptr f_builtins( PyDict_GetItemString( f_globals.get(), "__builtins__" ) );
+    cppy::ptr f_builtins( cppy::xincref( PyDict_GetItemString( f_globals.get(), "__builtins__" ) ) );
     if( !f_builtins ){
         PyErr_Format(
             PyExc_KeyError,
