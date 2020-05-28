@@ -83,7 +83,6 @@ jobs:
           file: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
-          yml: ./codecov.yml
           fail_ci_if_error: true
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
@@ -92,5 +91,4 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
           name: codecov-umbrella
-          yml: ./codecov.yml
           fail_ci_if_error: true
