@@ -69,18 +69,21 @@ def test_declarative_function_get_and_call():
     tester = compile_source(source, 'MyWindow')()
     bdmethod = tester.call
     assert isinstance(bdmethod, BoundDeclarativeMethod)
-    assert bdmethod(1) is tester
-    assert bdmethod(arg=2) is tester
-    assert bdmethod(1, kwarg=1) is tester
+    for i in range(100):
+        assert bdmethod(1) is tester
+        assert bdmethod(arg=2) is tester
+        assert bdmethod(1, kwarg=1) is tester
     func = type(tester).call
     assert isinstance(func, DeclarativeFunction)
-    assert func(tester, 1) is tester
-    assert func(tester, arg=1) is tester
-    assert func(tester, arg=1, kwarg=2) is tester
+    for i in range(100):
+        assert func(tester, 1) is tester
+        assert func(tester, arg=1) is tester
+        assert func(tester, arg=1, kwarg=2) is tester
     func = type(tester).call2
     assert isinstance(func, DeclarativeFunction)
-    assert func(tester) is tester
-    assert func(tester) is tester
+    for i in range(100):
+        assert func(tester) is tester
+        assert func(tester) is tester
 
     with pytest.raises(TypeError) as excinfo:
         type(tester).call2()
