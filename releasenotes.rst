@@ -3,6 +3,11 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+0.11.2 - unreleased
+-------------------
+- fix reference counting in declarative function PR #417
+
+
 0.11.1 - 01/05/2020
 -------------------
 - fix signaling/weakmethod/callableref that were broken since 0.10.0 PR #416
