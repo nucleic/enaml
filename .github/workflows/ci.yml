@@ -47,7 +47,7 @@ jobs:
           pip install https://github.com/nucleic/kiwi/tarball/master
       - name: Install PyQt as Qt bindings
         run: |
-          pip install numpy pyqt5
+          pip install numpy pyqt5<5.15
       - name: Install extra dependencies
         if: matrix.python-version == 3.7
         run: |
