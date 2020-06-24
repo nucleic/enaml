@@ -61,10 +61,10 @@ jobs:
         run: |
           pip install pytest pytest-cov pytest-qt
       - name: Run tests (Windows, Mac)
-        if: matrix.os != 'ubuntu-latest'
+        if: matrix.os != 'ubuntu-latest' & matrix.python-version == '3.6'
         run: python -m pytest tests --cov enaml --cov-report xml
       - name: Run tests (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' & matrix.python-version == '3.6'
         shell: bash -l {0}
         run: |
           export DISPLAY=:99.0
@@ -73,6 +73,19 @@ jobs:
           matchbox-window-manager &
           sleep 1
           python -m pytest tests --cov enaml --cov-report xml
+      - name: Run tests (Windows, Mac)
+        if: matrix.os != 'ubuntu-latest' & matrix.python-version != '3.6'
+        run: python -X dev -m pytest tests --cov enaml --cov-report xml
+      - name: Run tests (Linux)
+        if: matrix.os == 'ubuntu-latest' & matrix.python-version != '3.6'
+        shell: bash -l {0}
+        run: |
+          export DISPLAY=:99.0
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset
+          sleep 3
+          matchbox-window-manager &
+          sleep 1
+          python -X dev -m pytest tests --cov enaml --cov-report xml
 
       # Windows does not have C coverage so the upload is a bit different
       - name: Upload coverage to Codecov
