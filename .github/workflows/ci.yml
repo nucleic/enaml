@@ -61,10 +61,10 @@ jobs:
         run: |
           pip install pytest pytest-cov pytest-qt
       - name: Run tests (Windows, Mac)
-        if: matrix.os != 'ubuntu-latest' & matrix.python-version == '3.6'
+        if: matrix.os != 'ubuntu-latest' && matrix.python-version == '3.6'
         run: python -m pytest tests --cov enaml --cov-report xml
       - name: Run tests (Linux)
-        if: matrix.os == 'ubuntu-latest' & matrix.python-version == '3.6'
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.6'
         shell: bash -l {0}
         run: |
           export DISPLAY=:99.0
@@ -74,10 +74,10 @@ jobs:
           sleep 1
           python -m pytest tests --cov enaml --cov-report xml
       - name: Run tests (Windows, Mac)
-        if: matrix.os != 'ubuntu-latest' & matrix.python-version != '3.6'
+        if: matrix.os != 'ubuntu-latest' && matrix.python-version != '3.6'
         run: python -X dev -m pytest tests --cov enaml --cov-report xml
       - name: Run tests (Linux)
-        if: matrix.os == 'ubuntu-latest' & matrix.python-version != '3.6'
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version != '3.6'
         shell: bash -l {0}
         run: |
           export DISPLAY=:99.0
