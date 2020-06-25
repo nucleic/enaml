@@ -66,7 +66,7 @@ before_install:
   # Intall test tools (we require pytest > 3.3 to get the builtin logging
   # features)
   # Pytest-xvfb allows to run on CI (without a display with less magic)
-  - $PIP_INSTALL pytest pytest-cov pytest-qt pytest-xvfb "pyvirtualdisplay<1.0"
+  - $PIP_INSTALL pytest pytest-cov pytest-qt pytest-xvfb pyvirtualdisplay
 
   # Avoid annoying focus problems when running tests
   # See discussion in e.g. https://github.com/spyder-ide/spyder/pull/6132
