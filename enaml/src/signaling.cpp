@@ -145,6 +145,10 @@ int
 Signal_traverse( Signal* self, visitproc visit, void* arg )
 {
     // nothing to traverse
+#if PY_VERSION_HEX >= 0x03090000
+    // This was not needed before Python 3.9 (Python issue 35810 and 40217)
+    Py_VISIT(Py_TYPE(self));
+#endif
     return 0;
 }
 
@@ -355,6 +359,10 @@ _Disconnector_traverse( _Disconnector* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->owner );
     Py_VISIT( self->objref );
+#if PY_VERSION_HEX >= 0x03090000
+    // This was not needed before Python 3.9 (Python issue 35810 and 40217)
+    Py_VISIT(Py_TYPE(self));
+#endif
     return 0;
 }
 
@@ -575,6 +583,10 @@ BoundSignal_traverse( BoundSignal* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->owner );
     Py_VISIT( self->objref );
+#if PY_VERSION_HEX >= 0x03090000
+    // This was not needed before Python 3.9 (Python issue 35810 and 40217)
+    Py_VISIT(Py_TYPE(self));
+#endif
     return 0;
 }
 

@@ -325,6 +325,10 @@ Nonlocals_traverse( Nonlocals* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->owner );
     Py_VISIT( self->tracer );
+#if PY_VERSION_HEX >= 0x03090000
+    // This was not needed before Python 3.9 (Python issue 35810 and 40217)
+    Py_VISIT(Py_TYPE(self));
+#endif
     return 0;
 }
 
@@ -572,6 +576,10 @@ DynamicScope_traverse( DynamicScope* self, visitproc visit, void* arg )
     Py_VISIT( self->f_builtins );
     Py_VISIT( self->f_writes );
     Py_VISIT( self->f_nonlocals );
+#if PY_VERSION_HEX >= 0x03090000
+    // This was not needed before Python 3.9 (Python issue 35810 and 40217)
+    Py_VISIT(Py_TYPE(self));
+#endif
     return 0;
 }
 
