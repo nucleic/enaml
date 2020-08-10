@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import sys
 from textwrap import dedent
 
 import pytest
@@ -300,3 +301,32 @@ def test_subscription_block_observers5():
     window.a = 1
     assert label.text == 'a'
     assert window.counter == 4
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Require Python 3.8+")
+def test_subscription_operator_walrus():
+    """Test handling the walrus operator inside a subscription.
+
+    """
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    enamldef Main(Window):
+        alias label
+        alias label2
+        attr a = 1
+        attr b = 2
+        attr c = 5
+        Label: label:
+            text << f"{a + (c := b + 1)}"
+        Label: label2:
+            text << f"{c}"
+
+    """)
+    Main = compile_source(source, 'Main')
+    window = Main()
+    label = window.label
+    assert label.text == '4'
+    # This is the same behavior as everywhere else where access can use a bare name
+    # but assignment needs a qualified name.
+    assert window.label2.text == '5'
