@@ -103,8 +103,8 @@ class Python3EnamlParser(BaseEnamlParser):
 
     def p_yield_expr3(self, p):
         ''' yield_expr : YIELD FROM testlist '''
-        value = ast_for_testlist(p[2])
-        p[0] = ast.Yield(value=value, lineno=p.lineno(1))
+        value = ast_for_testlist(p[3])
+        p[0] = ast.YieldFrom(value=value, lineno=p.lineno(1))
 
     def p_funcdef2(self, p):
         ''' funcdef : DEF NAME parameters RETURNARROW test COLON suite '''
