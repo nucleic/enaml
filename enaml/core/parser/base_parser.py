@@ -766,7 +766,7 @@ class BaseEnamlParser(object):
         ''' operator_expr : LEFTSHIFT suite '''
         lineno = p.lineno(1)
 
-        for item in ast.walk(ast.Module(body=p[2])):
+        for item in ast.walk(self.create_module(p[2])):
             if type(item) in self._SUBSCRIPTION_DISALLOWED:
                 msg = '%s not allowed in a subscription block'
                 msg = msg % self._SUBSCRIPTION_DISALLOWED[type(item)]
@@ -779,7 +779,7 @@ class BaseEnamlParser(object):
         func_node.body = p[2]
         func_node.lineno = lineno
 
-        mod = ast.Module(body=[func_node])
+        mod = self.create_module([func_node])
         ast.fix_missing_locations(mod)
 
         python = enaml_ast.PythonModule(ast=mod, lineno=lineno)
