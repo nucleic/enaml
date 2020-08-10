@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 import ast
 
+from .base_parser import Store
 from .parser36 import Python36EnamlParser
 
 
@@ -16,6 +17,7 @@ class Python38EnamlParser(Python36EnamlParser):
     Main differences from 3.6 parser are :
 
     - set type_ignore to [] on Module
+    - add support for the walrus operator
 
     """
     parser_id = '38'
@@ -37,3 +39,25 @@ class Python38EnamlParser(Python36EnamlParser):
                              defaults=defaults, vararg=vararg,
                              kwonlyargs=kwonlyargs, kw_defaults=kw_defaults,
                              kwarg=kwarg)
+
+    # This keyword argument needs to be asserted as a NAME, but using NAME
+    # here causes ambiguity in the parse tables.
+    def p_argument4(self, p):
+        ''' argument : test COLONEQUAL test '''
+        arg = p[1]
+        if not isinstance(arg, ast.Name):
+            msg = 'Keyword arg must be a Name.'
+            tok = FakeToken(p.lexer.lexer, p.lineno(2))
+            syntax_error(msg, tok)
+        p[0] = ast.NamedExpr(target=ast.Name(arg.id, ctx=Store),
+                                             value=p[3], lineno=p.lineno(2))
+
+    def p_namedexpr_test2(self, p):
+        ''' namedexpr_test : test COLONEQUAL test '''
+        arg = p[1]
+        if not isinstance(arg, ast.Name):
+            msg = 'Keyword arg must be a Name.'
+            tok = FakeToken(p.lexer.lexer, p.lineno(2))
+            syntax_error(msg, tok)
+        p[0] = ast.NamedExpr(target=ast.Name(arg.id, ctx=Store),
+                             value=p[3], lineno=p.lineno(2))
