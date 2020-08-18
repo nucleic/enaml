@@ -121,6 +121,13 @@ def test_subscription_block_syntax(name):
         Main = compile_source(source, 'Main')
         window = Main()
 
+# The following tests need to ensure that assignment in subscription block
+# (either through a direct assignment or through the use of the walrus
+# operator) do not cause issue with the tracer.
+# Assignments can target the following scopes:
+# - local to the block (only scope that the walrus operator target)
+# - global module scope
+# - widget and dynamic scope that can only be accessed qualified names (self.)
 
 def test_subscription_block_observers1():
     """Test a subscription block operator.
@@ -155,7 +162,7 @@ def test_subscription_block_observers1():
 
 
 def test_subscription_block_observers2():
-    """Test that intermediate assignments do not confuse the tracer.
+    """Test that intermediate assignments (local) do not confuse the tracer.
 
     """
     source = dedent("""\
