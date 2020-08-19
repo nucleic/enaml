@@ -3,6 +3,16 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+0.12.0 - unreleased
+-------------------
+- add support for subscription block PR #348
+  Subscription blocks allow to write right to left synchronization logic over
+  multiple lines and using statements. The assigned value is the value returned
+  from the block.
+- add support for Python 3.8 only syntax PR #348
+  This covers: the walrus operator (:=), and the use of * in return and yields
+
+
 0.11.2 - 03/06/2020
 -------------------
 - fix reference counting in declarative function PR #417
