@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import ast
 
-from .base_parser import Store, ast_for_testlist
+from .base_parser import FakeToken, Store, ast_for_testlist, syntax_error
 from .parser36 import Python36EnamlParser
 
 

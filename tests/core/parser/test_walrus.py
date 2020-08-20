@@ -58,3 +58,25 @@ def test_walrus_operator(desc):
     py_ast = ast.parse(src)
     enaml_ast = parse(src).body[0].ast
     validate_ast(py_ast.body[0], enaml_ast.body[0], True)
+
+
+TEST_BAD_SOURCE = {
+    ':= in while': r"""
+    while 2 := 1:
+        pass
+    """,
+    ':= in function argument': r"""
+    f(a, 2 := c or None)
+    """
+}
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason='Requires Python 3.8')
+@pytest.mark.parametrize('desc', TEST_BAD_SOURCE.keys())
+def test_invalid_walrus_operator(desc):
+    """Test that we produce valid ast use of the := walrus operator.
+
+    """
+    src = dedent(TEST_BAD_SOURCE[desc]).strip()
+    print(src)
+    with pytest.raises(SyntaxError):
+        enaml_ast = parse(src).body[0].ast
