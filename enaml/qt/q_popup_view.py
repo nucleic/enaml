@@ -318,74 +318,75 @@ def adjust_arrow_rect(screen, rect, arrow_edge, target_pos, offset):
     """
     ax = ay = 0
     rect = QRect(rect)
+    desk_geo = screen.availableGeometry()
 
     if arrow_edge == ArrowEdge.Left:
-        bottom_edge = bottom_screen_edge(screen, rect)
+        bottom_edge = desk_geo.bottom()
         if rect.bottom() > bottom_edge:
             ay += rect.bottom() - bottom_edge
             rect.moveBottom(bottom_edge)
-        top_edge = top_screen_edge(screen, rect)
+        top_edge = desk_geo.top()
         if rect.top() < top_edge:
             ay -= top_edge - rect.top()
             rect.moveTop(top_edge)
-        left_edge = left_screen_edge(screen, rect)
+        left_edge = desk_geo.left()
         if rect.left() < left_edge:
             rect.moveLeft(left_edge)
-        right_edge = right_screen_edge(screen, rect)
+        right_edge = desk_geo.right()
         if rect.right() > right_edge:
             arrow_edge = ArrowEdge.Right
             right = target_pos.x() - offset.x()
             rect.moveRight(min(right, right_edge))
 
     elif arrow_edge == ArrowEdge.Top:
-        right_edge = right_screen_edge(screen, rect)
+        right_edge = desk_geo.rigth()
         if rect.right() > right_edge:
             ax += rect.right() - right_edge
             rect.moveRight(right_edge)
-        left_edge = left_screen_edge(screen, rect)
+        left_edge = desk_geo.left()
         if rect.left() < left_edge:
             ax -= left_edge - rect.left()
             rect.moveLeft(left_edge)
-        top_edge = top_screen_edge(screen, rect)
+        top_edge = desk_geo.top()
         if rect.top() < top_edge:
             rect.moveTop(top_edge)
-        bottom_edge = bottom_screen_edge(screen, rect)
+        bottom_edge = desk_geo.bottom()
         if rect.bottom() > bottom_edge:
             arrow_edge = ArrowEdge.Bottom
             bottom = target_pos.y() - offset.y()
             rect.moveBottom(min(bottom, bottom_edge))
 
     elif arrow_edge == ArrowEdge.Right:
-        bottom_edge = bottom_screen_edge(screen, rect)
+        bottom_edge = desk_geo.bottom()
         if rect.bottom() > bottom_edge:
             ay += rect.bottom() - bottom_edge
             rect.moveBottom(bottom_edge)
-        top_edge = top_screen_edge(screen, rect)
+        top_edge = desk_geo.top()
         if rect.top() < top_edge:
             ay -= top_edge - rect.top()
             rect.moveTop(top_edge)
-        right_edge = right_screen_edge(screen, rect)
+        right_edge = desk_geo.right()
         if rect.right() > right_edge:
             rect.moveRight(right_edge)
-        left_edge = left_screen_edge(screen, rect)
+        left_edge = desk_geo.left()
         if rect.left() < left_edge:
             arrow_edge = ArrowEdge.Left
             left = target_pos.x() - offset.x()
             rect.moveLeft(max(left, left_edge))
 
     else:  # ArrowEdge.Bottom
-        right_edge = right_screen_edge(screen, rect)
+        right_edge = desk_geo.right()
         if rect.right() > right_edge:
             ax += rect.right() - right_edge
             rect.moveRight(right_edge)
-        left_edge = left_screen_edge(screen, rect)
+        left_edge = desk_geo.left()
         if rect.left() < left_edge:
             ax -= left_edge - rect.left()
             rect.moveLeft(left_edge)
-        bottom_edge = bottom_screen_edge(screen, rect)
+        bottom_edge = desk_geo.bottom()
         if rect.bottom() > bottom_edge:
             rect.moveBottom(bottom_edge)
-        top_edge = top_screen_edge(screen, rect)
+        top_edge = desk_geo.top()
         if rect.top() < top_edge:
             arrow_edge = ArrowEdge.Top
             top = target_pos.y() - offset.y()
