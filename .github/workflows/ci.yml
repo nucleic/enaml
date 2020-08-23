@@ -23,8 +23,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: [3.6, 3.7, 3.8]
-        # Add PySide2 when github will allow for allowed-failures or when it works
-        qt-binding: [pyqt5]
+        qt-binding: [pyqt5, pyside2]
       fail-fast: false
     steps:
       - name: Install linux only test dependency
@@ -48,7 +47,7 @@ jobs:
           pip install https://github.com/nucleic/kiwi/tarball/master
       - name: Install PyQt as Qt bindings
         run: |
-          pip install numpy 'pyqt5!=5.15.*'
+          pip install numpy '${{matrix.qt-binding}}!=5.15.*'
       - name: Install extra dependencies
         if: matrix.python-version == 3.7
         run: |
