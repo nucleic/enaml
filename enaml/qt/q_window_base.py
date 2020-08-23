@@ -1,12 +1,14 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2020, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.widgets.close_event import CloseEvent
+
 from .QtCore import Qt, QSize
-from .QtWidgets import QWidget, QLayout
+from .QtWidgets import QLayout, QWidget
 
 from .q_single_widget_layout import QSingleWidgetLayout
 
@@ -47,119 +49,140 @@ class QWindowLayout(QSingleWidgetLayout):
         return super(QWindowLayout, self).maximumSize()
 
 
-class QWindowBase(QWidget):
-    """ A QWidget which forms the base for derived window classes.
+# =============================================================================
+# --- Base window implenmentation ---------------------------------------------
+# =============================================================================
 
-    The window base provides support for a central widget as well as
+
+def add_base_window_methods(additional_flags=None):
+    """ Add methods to a window class.
+
+    The patching provides support for a central widget as well as
     explicitly specified min and max sizes which override what would
     normally be computed by the layout.
 
+    We use patching rather than a mixing class to avoid multiple inheritance
+    which causes an issue in PySide2 that affects dialogs. Since this is the
+    only blocker to support Pyside2 it is worth it.
+
     """
-    def __init__(self, parent=None, flags=Qt.WindowFlags(0)):
-        """ Initialize a QWindowBase.
 
-        Parameters
-        ----------
-        parent : QWidget, optional
-            The parent of the window.
+    def inner(window_class):
 
-        flags : Qt.WindowFlags, optional
-            The window flags to pass to the parent constructor.
+        # This will appear as a cell var to
+        __class__ = window_class
 
-        """
-        super(QWindowBase, self).__init__(parent, flags)
-        self._expl_min_size = QSize()
-        self._expl_max_size = QSize()
-        layout = QWindowLayout()
-        layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
-        self.setLayout(layout)
+        def closeEvent(self, event):
+            """ Handle the close event for the window.
 
-    def centralWidget(self):
-        """ Get the central widget installed on the window.
+            """
+            event.accept()
+            if not self._proxy_ref:
+                return
+            proxy = self._proxy_ref()
+            d = proxy.declaration
+            d_event = CloseEvent()
+            d.closing(d_event)
+            if d_event.is_accepted():
+                self.accept_closing(event, d)
+            else:
+                event.ignore()
 
-        Returns
-        -------
-        result : QWidget or None
-            The central widget of the window, or None if no widget
-            was provided.
+        def centralWidget(self):
+            """ Get the central widget installed on the window.
 
-        """
-        return self.layout().getWidget()
+            Returns
+            -------
+            result : QWidget or None
+                The central widget of the window, or None if no widget
+                was provided.
 
-    def setCentralWidget(self, widget):
-        """ Set the central widget for this window.
+            """
+            return self.layout().getWidget()
 
-        Parameters
-        ----------
-        widget : QWidget
-            The widget to use as the content of the window.
+        def setCentralWidget(self, widget):
+            """ Set the central widget for this window.
 
-        """
-        self.layout().setWidget(widget)
+            Parameters
+            ----------
+            widget : QWidget
+                The widget to use as the content of the window.
 
-    def explicitMinimumSize(self):
-        """ Get the explicit minimum size for this widget.
+            """
+            self.layout().setWidget(widget)
 
-        Returns
-        -------
-        result : QSize
-            If the user has explitly set the minimum size of the
-            widget, that size will be returned. Otherwise, an
-            invalid QSize will be returned.
+        def explicitMinimumSize(self):
+            """ Get the explicit minimum size for this widget.
 
-        """
-        return self._expl_min_size
+            Returns
+            -------
+            result : QSize
+                If the user has explitly set the minimum size of the
+                widget, that size will be returned. Otherwise, an
+                invalid QSize will be returned.
 
-    def explicitMaximumSize(self):
-        """ Get the explicit maximum size for this widget.
+            """
+            return self._expl_min_size
 
-        Returns
-        -------
-        result : QSize
-            If the user has explitly set the maximum size of the
-            widget, that size will be returned. Otherwise, an
-            invalid QSize will be returned.
+        def explicitMaximumSize(self):
+            """ Get the explicit maximum size for this widget.
 
-        """
-        return self._expl_max_size
+            Returns
+            -------
+            result : QSize
+                If the user has explitly set the maximum size of the
+                widget, that size will be returned. Otherwise, an
+                invalid QSize will be returned.
 
-    def setMinimumSize(self, size):
-        """ Set the minimum size for the QWindow.
+            """
+            return self._expl_max_size
 
-        This is an overridden parent class method which stores the
-        provided size as the explictly set QSize. The explicit
-        size can be reset by passing a QSize of (0, 0).
+        def setMinimumSize(self, size):
+            """ Set the minimum size for the QWindow.
 
-        Parameters
-        ----------
-        size : QSize
-            The minimum size for the QWindow.
+            This is an overridden parent class method which stores the
+            provided size as the explictly set QSize. The explicit
+            size can be reset by passing a QSize of (0, 0).
 
-        """
-        super(QWindowBase, self).setMinimumSize(size)
-        if size == QSize(0, 0):
-            self._expl_min_size = QSize()
-        else:
-            self._expl_min_size = size
-        self.layout().update()
+            Parameters
+            ----------
+            size : QSize
+                The minimum size for the QWindow.
 
-    def setMaximumSize(self, size):
-        """ Set the maximum size for the QWindow.
+            """
+            super().setMinimumSize(size)
+            if size == QSize(0, 0):
+                self._expl_min_size = QSize()
+            else:
+                self._expl_min_size = size
+            self.layout().update()
 
-        This is an overridden parent class method which stores the
-        provided size as the explictly set QSize. The explicit
-        size can be reset by passing a QSize equal to the maximum
-        widget size of QSize(16777215, 16777215).
+        def setMaximumSize(self, size):
+            """ Set the maximum size for the QWindow.
 
-        Parameters
-        ----------
-        size : QSize
-            The maximum size for the QWindow.
+            This is an overridden parent class method which stores the
+            provided size as the explictly set QSize. The explicit
+            size can be reset by passing a QSize equal to the maximum
+            widget size of QSize(16777215, 16777215).
 
-        """
-        super(QWindowBase, self).setMaximumSize(size)
-        if size == QSize(16777215, 16777215):
-            self._expl_max_size = QSize()
-        else:
-            self._expl_max_size = size
-        self.layout().update()
+            Parameters
+            ----------
+            size : QSize
+                The maximum size for the QWindow.
+
+            """
+            super().setMaximumSize(size)
+            if size == QSize(16777215, 16777215):
+                self._expl_max_size = QSize()
+            else:
+                self._expl_max_size = size
+            self.layout().update()
+
+        for func in (closeEvent, centralWidget, setCentralWidget,
+                    explicitMinimumSize, explicitMaximumSize, setMinimumSize,
+                    setMaximumSize):
+            setattr(window_class, func.__name__, func)
+
+        return window_class
+
+    return inner
