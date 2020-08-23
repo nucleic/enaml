@@ -339,7 +339,7 @@ def adjust_arrow_rect(screen, rect, arrow_edge, target_pos, offset):
             rect.moveRight(min(right, right_edge))
 
     elif arrow_edge == ArrowEdge.Top:
-        right_edge = desk_geo.rigth()
+        right_edge = desk_geo.right()
         if rect.right() > right_edge:
             ax += rect.right() - right_edge
             rect.moveRight(right_edge)
