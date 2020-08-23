@@ -9,7 +9,7 @@ Dates are written as DD/MM/YYYY
   Subscription blocks allow to write right to left synchronization logic over
   multiple lines and using statements. The assigned value is the value returned
   from the block.
-- add support for Python 3.8 only syntax PR #348
+- add support for Python 3.8 only syntax PR #422
   This covers: the walrus operator (:=), and the use of * in return and yields
 
 
