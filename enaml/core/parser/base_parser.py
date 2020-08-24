@@ -755,6 +755,37 @@ class BaseEnamlParser(object):
         p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python,
                                       lineno=lineno)
 
+    # The disallowed ast types on the rhs of a << operator
+    _SUBSCRIPTION_DISALLOWED = {
+        ast.FunctionDef: 'function definition',
+        ast.ClassDef: 'class definition',
+        ast.Yield: 'yield statement',
+    }
+
+    def p_operator_expr4(self, p):
+        ''' operator_expr : LEFTSHIFT suite '''
+        lineno = p.lineno(1)
+
+        for item in ast.walk(self.create_module(p[2])):
+            if type(item) in self._SUBSCRIPTION_DISALLOWED:
+                msg = '%s not allowed in a subscription block'
+                msg = msg % self._SUBSCRIPTION_DISALLOWED[type(item)]
+                syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
+
+        func_node = ast.FunctionDef()
+        func_node.name = 'f'
+        func_node.args = self._make_args([])
+        func_node.decorator_list = []
+        func_node.body = p[2]
+        func_node.lineno = lineno
+
+        mod = self.create_module([func_node])
+        ast.fix_missing_locations(mod)
+
+        python = enaml_ast.PythonModule(ast=mod, lineno=lineno)
+        p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python,
+                                      lineno=lineno)
+
     # -------------------------------------------------------------------------
     # Declarative Function Definition
     # -------------------------------------------------------------------------

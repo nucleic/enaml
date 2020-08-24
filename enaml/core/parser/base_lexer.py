@@ -666,7 +666,7 @@ class BaseEnamlLexer(object):
             # by suppressing NEWLINE tokens in a multiline expression.
             # So, we can treat double colon the same as colon here for
             # handling the logic surrounding indentation state.
-            if token.type in ("COLON", "DOUBLECOLON"):
+            if token.type in ("COLON", "DOUBLECOLON", "LEFTSHIFT"):
                 at_line_start = False
                 indent = MAY_INDENT
                 token.must_indent = False

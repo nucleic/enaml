@@ -38,6 +38,10 @@ class Python35EnamlParser(Python34EnamlParser):
         dict(list(Python34EnamlParser._NOTIFICATION_DISALLOWED.items()) +
              [(ast.AsyncFunctionDef, 'async function definition')])
 
+    _SUBSCRIPTION_DISALLOWED =\
+        dict(list(Python34EnamlParser._SUBSCRIPTION_DISALLOWED.items()) +
+             [(ast.AsyncFunctionDef, 'async function definition')])
+
     _DECL_FUNCDEF_DISALLOWED =\
         dict(list(Python34EnamlParser._DECL_FUNCDEF_DISALLOWED.items()) +
              [(ast.AsyncFunctionDef, 'async function definition')])
