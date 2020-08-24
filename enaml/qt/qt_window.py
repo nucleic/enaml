@@ -43,7 +43,7 @@ def finalize_close(d):
         d.destroy()
 
 
-@add_base_window_methods(Qt.Window)
+@add_base_window_methods
 class QWindow(QWidget):
     """ A window base subclass which handles the close event.
 

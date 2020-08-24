@@ -54,7 +54,7 @@ class QWindowLayout(QSingleWidgetLayout):
 # =============================================================================
 
 
-def add_base_window_methods(additional_flags=None):
+def add_base_window_methods(window_class):
     """ Add methods to a window class.
 
     The patching provides support for a central widget as well as
@@ -67,122 +67,118 @@ def add_base_window_methods(additional_flags=None):
 
     """
 
-    def inner(window_class):
+    # This will appear as a cell var to
+    __class__ = window_class
 
-        # This will appear as a cell var to
-        __class__ = window_class
+    def closeEvent(self, event):
+        """ Handle the close event for the window.
 
-        def closeEvent(self, event):
-            """ Handle the close event for the window.
+        """
+        event.accept()
+        if not self._proxy_ref:
+            return
+        proxy = self._proxy_ref()
+        d = proxy.declaration
+        d_event = CloseEvent()
+        d.closing(d_event)
+        if d_event.is_accepted():
+            self.accept_closing(event, d)
+        else:
+            event.ignore()
 
-            """
-            event.accept()
-            if not self._proxy_ref:
-                return
-            proxy = self._proxy_ref()
-            d = proxy.declaration
-            d_event = CloseEvent()
-            d.closing(d_event)
-            if d_event.is_accepted():
-                self.accept_closing(event, d)
-            else:
-                event.ignore()
+    def centralWidget(self):
+        """ Get the central widget installed on the window.
 
-        def centralWidget(self):
-            """ Get the central widget installed on the window.
+        Returns
+        -------
+        result : QWidget or None
+            The central widget of the window, or None if no widget
+            was provided.
 
-            Returns
-            -------
-            result : QWidget or None
-                The central widget of the window, or None if no widget
-                was provided.
+        """
+        return self.layout().getWidget()
 
-            """
-            return self.layout().getWidget()
+    def setCentralWidget(self, widget):
+        """ Set the central widget for this window.
 
-        def setCentralWidget(self, widget):
-            """ Set the central widget for this window.
+        Parameters
+        ----------
+        widget : QWidget
+            The widget to use as the content of the window.
 
-            Parameters
-            ----------
-            widget : QWidget
-                The widget to use as the content of the window.
+        """
+        self.layout().setWidget(widget)
 
-            """
-            self.layout().setWidget(widget)
+    def explicitMinimumSize(self):
+        """ Get the explicit minimum size for this widget.
 
-        def explicitMinimumSize(self):
-            """ Get the explicit minimum size for this widget.
+        Returns
+        -------
+        result : QSize
+            If the user has explitly set the minimum size of the
+            widget, that size will be returned. Otherwise, an
+            invalid QSize will be returned.
 
-            Returns
-            -------
-            result : QSize
-                If the user has explitly set the minimum size of the
-                widget, that size will be returned. Otherwise, an
-                invalid QSize will be returned.
+        """
+        return self._expl_min_size
 
-            """
-            return self._expl_min_size
+    def explicitMaximumSize(self):
+        """ Get the explicit maximum size for this widget.
 
-        def explicitMaximumSize(self):
-            """ Get the explicit maximum size for this widget.
+        Returns
+        -------
+        result : QSize
+            If the user has explitly set the maximum size of the
+            widget, that size will be returned. Otherwise, an
+            invalid QSize will be returned.
 
-            Returns
-            -------
-            result : QSize
-                If the user has explitly set the maximum size of the
-                widget, that size will be returned. Otherwise, an
-                invalid QSize will be returned.
+        """
+        return self._expl_max_size
 
-            """
-            return self._expl_max_size
+    def setMinimumSize(self, size):
+        """ Set the minimum size for the QWindow.
 
-        def setMinimumSize(self, size):
-            """ Set the minimum size for the QWindow.
+        This is an overridden parent class method which stores the
+        provided size as the explictly set QSize. The explicit
+        size can be reset by passing a QSize of (0, 0).
 
-            This is an overridden parent class method which stores the
-            provided size as the explictly set QSize. The explicit
-            size can be reset by passing a QSize of (0, 0).
+        Parameters
+        ----------
+        size : QSize
+            The minimum size for the QWindow.
 
-            Parameters
-            ----------
-            size : QSize
-                The minimum size for the QWindow.
+        """
+        super().setMinimumSize(size)
+        if size == QSize(0, 0):
+            self._expl_min_size = QSize()
+        else:
+            self._expl_min_size = size
+        self.layout().update()
 
-            """
-            super().setMinimumSize(size)
-            if size == QSize(0, 0):
-                self._expl_min_size = QSize()
-            else:
-                self._expl_min_size = size
-            self.layout().update()
+    def setMaximumSize(self, size):
+        """ Set the maximum size for the QWindow.
 
-        def setMaximumSize(self, size):
-            """ Set the maximum size for the QWindow.
+        This is an overridden parent class method which stores the
+        provided size as the explictly set QSize. The explicit
+        size can be reset by passing a QSize equal to the maximum
+        widget size of QSize(16777215, 16777215).
 
-            This is an overridden parent class method which stores the
-            provided size as the explictly set QSize. The explicit
-            size can be reset by passing a QSize equal to the maximum
-            widget size of QSize(16777215, 16777215).
+        Parameters
+        ----------
+        size : QSize
+            The maximum size for the QWindow.
 
-            Parameters
-            ----------
-            size : QSize
-                The maximum size for the QWindow.
+        """
+        super().setMaximumSize(size)
+        if size == QSize(16777215, 16777215):
+            self._expl_max_size = QSize()
+        else:
+            self._expl_max_size = size
+        self.layout().update()
 
-            """
-            super().setMaximumSize(size)
-            if size == QSize(16777215, 16777215):
-                self._expl_max_size = QSize()
-            else:
-                self._expl_max_size = size
-            self.layout().update()
+    for func in (closeEvent, centralWidget, setCentralWidget,
+                explicitMinimumSize, explicitMaximumSize, setMinimumSize,
+                setMaximumSize):
+        setattr(window_class, func.__name__, func)
 
-        for func in (closeEvent, centralWidget, setCentralWidget,
-                    explicitMinimumSize, explicitMaximumSize, setMinimumSize,
-                    setMaximumSize):
-            setattr(window_class, func.__name__, func)
-
-        return window_class
-
-    return inner
+    return window_class

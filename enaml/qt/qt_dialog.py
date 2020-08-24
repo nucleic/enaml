@@ -19,7 +19,7 @@ from .q_window_base import add_base_window_methods, QWindowLayout
 from .qt_window import QtWindow, finalize_close
 
 
-@add_base_window_methods()
+@add_base_window_methods
 class QWindowDialog(QDialog):
     """ A window base subclass which implements dialog behavior.
 
