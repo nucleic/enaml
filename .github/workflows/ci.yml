@@ -45,13 +45,17 @@ jobs:
           pip install https://github.com/nucleic/cppy/tarball/master
           pip install https://github.com/nucleic/atom/tarball/master
           pip install https://github.com/nucleic/kiwi/tarball/master
-      - name: Install PyQt as Qt bindings
+      - name: Install Qt bindings
         run: |
           pip install numpy '${{matrix.qt-binding}}!=5.15.*'
       - name: Install extra dependencies
         if: matrix.python-version == 3.7
         run: |
-          pip install matplotlib ipython qtconsole Cython QScintilla
+          pip install matplotlib ipython qtconsole
+      - name: Install QScintilla
+        if: matrix.python-version == 3.7 && matrix.qt-binding == pyqt5
+        run: |
+          pip Cython QScintilla
       - name: Install project
         env:
           CPPFLAGS: --coverage
@@ -60,10 +64,10 @@ jobs:
       - name: Install pytest
         run: |
           pip install pytest pytest-cov pytest-qt
-      - name: Run tests (Windows, Mac)
+      - name: Run tests (Windows, Mac) (Py 3.6)
         if: matrix.os != 'ubuntu-latest' && matrix.python-version == '3.6'
         run: python -m pytest tests --cov enaml --cov-report xml
-      - name: Run tests (Linux)
+      - name: Run tests (Linux) (Py 3.6)
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.6'
         shell: bash -l {0}
         run: |
