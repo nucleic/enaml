@@ -55,7 +55,7 @@ jobs:
       - name: Install QScintilla
         if: matrix.python-version == '3.7' && matrix.qt-binding == 'pyqt5'
         run: |
-          pip Cython QScintilla
+          pip install Cython QScintilla
       - name: Install project
         env:
           CPPFLAGS: --coverage
