@@ -49,11 +49,11 @@ jobs:
         run: |
           pip install numpy '${{matrix.qt-binding}}!=5.15.*'
       - name: Install extra dependencies
-        if: matrix.python-version == 3.7
+        if: matrix.python-version == '3.7'
         run: |
           pip install matplotlib ipython qtconsole
       - name: Install QScintilla
-        if: matrix.python-version == 3.7 && matrix.qt-binding == pyqt5
+        if: matrix.python-version == '3.7' && matrix.qt-binding == 'pyqt5'
         run: |
           pip Cython QScintilla
       - name: Install project
