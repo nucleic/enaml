@@ -36,7 +36,7 @@ Dates are written as DD/MM/YYYY
   among the parents of a QDockContainer PR #386
 - properly report SyntaxError in f strings PR #378
 - add support for using attributes (. access) when specifying attr types PR #359
-- limit support to Python 3 PR #349
+- limit support to Python 3.6+ PR #349
 - use cppy for the Python/C interface PR #349
 - qt: add missing brackets to widget.focusPolicy within
   qt_widget.py/QtWidget.tab_focus_request() PR #403

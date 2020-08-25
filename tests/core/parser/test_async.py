@@ -141,11 +141,9 @@ if sys.version_info < (3, 7):
     })
 
 
-@pytest.mark.skipif(sys.version_info < (3, 5), reason='Requires Python 3.5')
 @pytest.mark.parametrize('desc', TEST_SOURCE.keys())
 def test_async(desc):
-    """Async function with await list comp statement
-    """
+    """Async function with await list comp statement. """
     src = FUNC_TEMPLATE.format(dedent(TEST_SOURCE[desc]))
     # Ensure it's valid
     py_ast = ast.parse(src)
@@ -155,7 +153,6 @@ def test_async(desc):
     validate_ast(py_ast.body[2], enaml_ast.body[2], True)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 5), reason='Requires Python 3.5')
 def test_decl_async_func():
     py_src = dedent("""
     from enaml.core.declarative import d_func
