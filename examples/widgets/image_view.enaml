@@ -12,6 +12,7 @@ This example shows how a PNG image (in an enaml Image object) can displayed.
 << autodoc-me >>
 """
 import os
+from pathlib import Path
 
 from enaml.image import Image
 from enaml.layout.api import vbox, hbox, spacer
@@ -25,9 +26,9 @@ def image_path(name):
 
 IMAGES = {
     'None': None,
-    'Image A': Image(data=open(image_path('img1.png'), 'rb').read()),
-    'Image B': Image(data=open(image_path('img2.png'), 'rb').read()),
-    'Image C': Image(data=open(image_path('img3.png'), 'rb').read()),
+    'Image A': Image(data=Path(image_path('img1.png')).read_bytes()),
+    'Image B': Image(data=Path(image_path('img2.png')).read_bytes()),
+    'Image C': Image(data=Path(image_path('img3.png')).read_bytes()),
 }
 
 

@@ -14,7 +14,7 @@ from types import CodeType
 import bytecode as bc
 from atom.api import Str, Typed
 
-from ..compat import USE_WORDCODE, PY38
+from ..compat import PY38
 from .code_generator import CodeGenerator
 from .enaml_ast import (
     AliasExpr, ASTVisitor, Binding, ChildDef, EnamlDef, StorageExpr, Template,
@@ -56,16 +56,13 @@ COMPILE_MODE = {
 
 #: Ast nodes associated with comprehensions which uses a function call that we
 #: will have to call in proper scope
-_FUNC_DEF_NODES = [ast.Lambda,
+_FUNC_DEF_NODES = (ast.Lambda,
                    ast.ListComp,
                    ast.DictComp,
-                   ast.SetComp]
-
-_FUNC_DEF_NODES = tuple(_FUNC_DEF_NODES)
+                   ast.SetComp)
 
 #: Opcode used to create a function
-_MAKE_FUNC = (("MAKE_FUNCTION",) +
-              (("MAKE_CLOSURE",) if not USE_WORDCODE else ()))
+_MAKE_FUNC = ("MAKE_FUNCTION",)
 
 
 def unhandled_pragma(name, filename, lineno):

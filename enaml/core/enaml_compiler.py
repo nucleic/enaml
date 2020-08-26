@@ -7,7 +7,6 @@
 #------------------------------------------------------------------------------
 import sys
 
-from ..compat import USE_WORDCODE
 from . import compiler_common as cmn
 from .enaml_ast import Module
 from .enamldef_compiler import EnamlDefCompiler
@@ -253,8 +252,7 @@ class EnamlCompiler(cmn.CompilerBase):
             # Under Python 3.6+ default positional arguments are passed as a
             # single tuple and MAKE_FUNCTION is passed the flag 0x01 to
             # indicate that there is default positional arguments.
-            if USE_WORDCODE:
-                cg.build_tuple(len(node.parameters.keywords))
+            cg.build_tuple(len(node.parameters.keywords))
 
             # Generate the template code and function
             code = TemplateCompiler.compile(node, cg.filename)
@@ -263,8 +261,7 @@ class EnamlCompiler(cmn.CompilerBase):
             # Under Python 3 function have a qualified name
             # XXX improve qualified name
             cg.load_const(None)
-            cg.make_function(0x01 if USE_WORDCODE else
-                             len(node.parameters.keywords))
+            cg.make_function(0x01)
 
             # Load and call the helper which will build the template
             cmn.load_helper(cg, 'make_template', from_globals=True)

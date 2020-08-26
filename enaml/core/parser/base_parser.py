@@ -1580,39 +1580,39 @@ class BaseEnamlParser(object):
         p[0] = [p[2]] + p[3]
 
     def p_testlist1(self, p):
-        ''' testlist : test '''
+        ''' testlist : namedexpr_test '''
         p[0] = p[1]
 
     def p_testlist2(self, p):
-        ''' testlist : test COMMA '''
+        ''' testlist : namedexpr_test COMMA '''
         p[0] = [p[1]]
 
     def p_testlist3(self, p):
-        ''' testlist : test testlist_list '''
+        ''' testlist : namedexpr_test testlist_list '''
         p[0] = [p[1]] + p[2]
 
     def p_testlist4(self, p):
-        ''' testlist : test testlist_list COMMA '''
+        ''' testlist : namedexpr_test testlist_list COMMA '''
         p[0] = [p[1]] + p[2]
 
     def p_testlist_list1(self, p):
-        ''' testlist_list : COMMA test '''
+        ''' testlist_list : COMMA namedexpr_test '''
         p[0] = [p[2]]
 
     def p_testlist_list2(self, p):
-        ''' testlist_list : testlist_list COMMA test '''
+        ''' testlist_list : testlist_list COMMA namedexpr_test '''
         p[0] = p[1] + [p[3]]
 
     # Star expr does not exist before Python 3 but to avoid redefining many
     # rules we take it into account here and add the star_expr rule only under
     # Python 3
     def p_test_or_star1(self, p):
-        ''' test_or_star : test '''
+        ''' test_or_star : namedexpr_test '''
         p[0] = p[1]
 
     # Under Python 3.5 star expr can occur in new places
     def p_test_or_star_new1(self, p):
-        ''' test_or_star_new : test '''
+        ''' test_or_star_new : namedexpr_test '''
         p[0] = p[1]
 
     def p_testlist_star_expr1(self, p):
@@ -1651,7 +1651,7 @@ class BaseEnamlParser(object):
         p[0] = p[1]
 
     def p_if_stmt1(self, p):
-        ''' if_stmt : IF test COLON suite '''
+        ''' if_stmt : IF namedexpr_test COLON suite '''
         if_stmt = ast.If()
         if_stmt.test = p[2]
         if_stmt.body = p[4]
@@ -1661,7 +1661,7 @@ class BaseEnamlParser(object):
         p[0] = if_stmt
 
     def p_if_stmt2(self, p):
-        ''' if_stmt : IF test COLON suite elif_stmts '''
+        ''' if_stmt : IF namedexpr_test COLON suite elif_stmts '''
         if_stmt = ast.If()
         if_stmt.test = p[2]
         if_stmt.body = p[4]
@@ -1671,7 +1671,7 @@ class BaseEnamlParser(object):
         p[0] = if_stmt
 
     def p_if_stmt3(self, p):
-        ''' if_stmt : IF test COLON suite else_stmt '''
+        ''' if_stmt : IF namedexpr_test COLON suite else_stmt '''
         if_stmt = ast.If()
         if_stmt.test = p[2]
         if_stmt.body = p[4]
@@ -1681,7 +1681,7 @@ class BaseEnamlParser(object):
         p[0] = if_stmt
 
     def p_if_stmt4(self, p):
-        ''' if_stmt : IF test COLON suite elif_stmts else_stmt '''
+        ''' if_stmt : IF namedexpr_test COLON suite elif_stmts else_stmt '''
         if_stmt = ast.If()
         if_stmt.test = p[2]
         if_stmt.body = p[4]
@@ -1706,7 +1706,7 @@ class BaseEnamlParser(object):
         p[0] = p[1]
 
     def p_elif_stmt(self, p):
-        ''' elif_stmt : ELIF test COLON suite '''
+        ''' elif_stmt : ELIF namedexpr_test COLON suite '''
         if_stmt = ast.If()
         if_stmt.test = p[2]
         if_stmt.body = p[4]
@@ -1720,7 +1720,7 @@ class BaseEnamlParser(object):
         p[0] = p[3]
 
     def p_while_stmt1(self, p):
-        ''' while_stmt : WHILE test COLON suite '''
+        ''' while_stmt : WHILE namedexpr_test COLON suite '''
         while_stmt = ast.While()
         while_stmt.test = p[2]
         while_stmt.body = p[4]
@@ -1730,7 +1730,7 @@ class BaseEnamlParser(object):
         p[0] = while_stmt
 
     def p_while_stmt2(self, p):
-        ''' while_stmt : WHILE test COLON suite ELSE COLON suite '''
+        ''' while_stmt : WHILE namedexpr_test COLON suite ELSE COLON suite '''
         while_stmt = ast.While()
         while_stmt.test = p[2]
         while_stmt.body = p[4]
@@ -2154,6 +2154,11 @@ class BaseEnamlParser(object):
     def p_dotted_name_list2(self, p):
         ''' dotted_name_list : dotted_name_list DOT NAME '''
         p[0] = p[1] + p[2] + p[3]
+
+    # Defined here to make the implementation of Py38 parser easier
+    def p_namedexpr_test1(self, p):
+        ''' namedexpr_test : test '''
+        p[0] = p[1]
 
     def p_test1(self, p):
         ''' test : or_test '''

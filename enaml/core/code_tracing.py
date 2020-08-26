@@ -9,8 +9,6 @@ from types import CodeType
 
 import bytecode as bc
 
-from ..compat import USE_WORDCODE
-
 
 class CodeTracer(object):
     """ A base class for implementing code tracers.
@@ -63,31 +61,20 @@ class CodeTracer(object):
     def call_function(self, func, argtuple, argspec):
         """ Called before the CALL_FUNCTION opcode is executed.
 
+        The CALL_FUNCTION is only used for function call with only positional
+        arguments in Python 3.6+ so argspec is actually just the argument
+        number but is kept for backward compatibility.
+
         Parameters
         ----------
         func : object
             The object being called.
 
         argtuple : tuple
-            The argument tuple from the stack (see notes).
+            The argument tuple from the stack.
 
         argspec : int
-            The argument tuple specification.
-
-        Notes
-        -----
-        The `argstuple` contains both positional and keyword argument
-        information. `argspec` is an int which specifies how to parse
-        the information. The lower 16bits of `argspec` are significant.
-        The lowest 8 bits are the number of positional arguments which
-        are the first n items in `argtuple`. The second 8 bits are the
-        number of keyword arguments which follow the positional args in
-        `argtuple` and alternate name -> value. `argtuple` can be parsed
-        into a conventional tuple and dict with the following:
-
-            nargs = argspec & 0xFF
-            args = argtuple[:nargs]
-            kwargs = dict(zip(argtuple[nargs::2], argtuple[nargs+1::2]))
+            Len of the argtuple kept for backward compatibility.
 
         """
         pass
@@ -189,6 +176,10 @@ class CodeInverter(object):
     def call_function(self, func, argtuple, argspec, value):
         """ Called before the CALL_FUNCTION opcode is executed.
 
+        The CALL_FUNCTION is only used for function call with only positional
+        arguments in Python 3.6+ so argspec is actually just the argument
+        number but is kept for backward compatibility.
+
         This method should perform an appropriate store operation.
 
         Parameters
@@ -197,10 +188,10 @@ class CodeInverter(object):
             The object being called.
 
         argtuple : tuple
-            The argument tuple from the stack (see Notes).
+            The argument tuple from the stack.
 
         argspec : int
-            The argument tuple specification.
+            Len of the argtuple kept for backward compatibility.
 
         value : object
             The value to store.
@@ -256,7 +247,7 @@ def inject_tracing(bytecode, nested=False):
 
     """
     # If the code is nested into another already traced code, we need to use
-    # LOAD_NAME to access it rather than LOAD_FAST
+    # LOAD_NAME to access the tracer rather than LOAD_FAST
     tracer_op = "LOAD_NAME" if nested else "LOAD_FAST"
 
     # This builds a mapping of code idx to a list of ops, which are the
@@ -285,20 +276,10 @@ def inject_tracing(bytecode, nested=False):
             ]
             inserts[idx] = tracing_code
         elif i_name == "CALL_FUNCTION":
-            # This computes the number of objects on the stack between
-            # TOS and the object being called. Only the last 16bits of
-            # the i_arg are signifcant. The lowest 8 are the number of
-            # positional args on the stack, the upper 8 is the number of
-            # kwargs. For kwargs, the number of items on the stack is
-            # twice this number since the values on the stack alternate
-            # name, value.
             # From Python 3.6, CALL_FUNCTION is only used for positional
             # arguments and the argument is directly the number of arguments
             # on the stack.
-            if USE_WORDCODE:
-                n_stack_args = i_arg
-            else:
-                n_stack_args = (i_arg & 0xFF) + 2 * ((i_arg >> 8) & 0xFF)
+            n_stack_args = i_arg
             tracing_code = [                                         # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
                 bc.Instr("BUILD_TUPLE", n_stack_args),       # func -> argtuple
                 bc.Instr("DUP_TOP_TWO"),                     # func -> argtuple -> func -> argtuple
@@ -414,11 +395,11 @@ def inject_inversion(bytecode):
             bc.Instr("CALL_FUNCTION", 0x0003),        # retval
             bc.Instr("RETURN_VALUE"),                 #
         ])
+
+    # In Python 3.6+ CALL_FUNCTION is only used for calls with positional arguments
+    # and the argument of the opcode is teh number of argument on the stack.
     elif i_name == "CALL_FUNCTION":
-        if USE_WORDCODE:
-            n_stack_args = i_arg
-        else:
-            n_stack_args = (i_arg & 0xFF) + 2 * ((i_arg >> 8) & 0xFF)
+        n_stack_args = i_arg
         new_code.extend([                             # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
             bc.Instr("BUILD_TUPLE", n_stack_args),    # func -> argtuple
             bc.Instr("LOAD_FAST", '_[inverter]'),     # func -> argtuple -> inverter
