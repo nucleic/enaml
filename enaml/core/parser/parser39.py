@@ -8,10 +8,10 @@
 import ast
 
 from .base_parser import FakeToken, Store, ast_for_testlist, syntax_error
-from .parser36 import Python36EnamlParser
+from .parser38 import Python38EnamlParser
 
 
-class Python39EnamlParser(Python36EnamlParser):
+class Python39EnamlParser(Python38EnamlParser):
     """Enaml parser supporting Python 3.8 syntax.
 
     Main differences from 3.8 parser are :
