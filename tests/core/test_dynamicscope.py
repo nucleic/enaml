@@ -120,10 +120,14 @@ def test_dynamic_scope_creation():
     tracer = object()
 
     dynamicscope = DynamicScope(owner, locs, globs, builtins, change, tracer)
-    assert (Counter(gc.get_referents(dynamicscope)) ==
-        Counter([owner, change, tracer, locs, globs, builtins, None, None] +
-                 ([type(dynamicscope)] if PY39 else []))
-        )
+    referents = gc.get_referents(dynamicscope)
+    supposed_referents = (
+        [owner, change, tracer, locs, globs, builtins] +
+        ([type(dynamicscope)] if PY39 else [])
+    )
+    assert len(referents) == len(supposed_referents)
+    for r in referents:
+        assert r in supposed_referents
 
     with pytest.raises(TypeError) as excinfo:
         DynamicScope(owner, None, globs, builtins)
