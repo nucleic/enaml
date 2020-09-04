@@ -10,7 +10,7 @@ from contextlib import contextmanager
 import bytecode as bc
 from atom.api import Atom, Bool, Int, List, Str
 
-from ..compat import POS_ONLY_ARGS, PY38
+from ..compat import POS_ONLY_ARGS, PY38, PY39
 
 
 class CodeGenerator(Atom):
@@ -364,18 +364,21 @@ class CodeGenerator(Atom):
             bc.Instr(op_code, exc_label),         # TOS
         )
         yield
-        self.code_ops.extend([                           # TOS
-            bc.Instr("POP_BLOCK"),                       # TOS
-            bc.Instr("JUMP_FORWARD", end_label),         # TOS
-            exc_label,                                   # TOS -> tb -> val -> exc
-            bc.Instr("ROT_THREE"),                       # TOS -> exc -> tb -> val
-            bc.Instr("ROT_TWO"),                         # TOS -> exc -> val -> tb
-            bc.Instr("POP_TOP"),                         # TOS -> exc -> val
-            bc.Instr("RAISE_VARARGS", 2),                # TOS
-            bc.Instr("JUMP_FORWARD", end_label),         # TOS
-            bc.Instr("END_FINALLY"),                     # TOS
-            end_label,                                   # TOS
-        ])
+        ops = [                                     # TOS
+            bc.Instr("POP_BLOCK"),                  # TOS
+            bc.Instr("JUMP_FORWARD", end_label),    # TOS
+            exc_label,                              # TOS -> tb -> val -> exc
+            bc.Instr("ROT_THREE"),                  # TOS -> exc -> tb -> val
+            bc.Instr("ROT_TWO"),                    # TOS -> exc -> val -> tb
+            bc.Instr("POP_TOP"),                    # TOS -> exc -> val
+            bc.Instr("RAISE_VARARGS", 2),           # TOS
+            bc.Instr("JUMP_FORWARD", end_label),    # TOS
+            end_label,                              # TOS
+        ]
+        if not PY39:
+            ops.insert(-1, bc.Instr("END_FINALLY"))
+        self.code_ops.extend(ops)
+
 
     @contextmanager
     def for_loop(self, iter_var, fast_var=True):
