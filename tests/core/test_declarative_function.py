@@ -7,9 +7,11 @@
 #------------------------------------------------------------------------------
 import gc
 from textwrap import dedent
+from collections import Counter
 
 import pytest
 
+from enaml.compat import PY39
 from enaml.core.declarative_function import (DeclarativeFunction,
                                              BoundDeclarativeMethod)
 from utils import compile_source
@@ -154,8 +156,9 @@ def test_traversing_bound_method():
 
     """)
     tester = compile_source(source, 'MyWindow')()
-    assert (gc.get_referents(tester.call) ==
-            [tester.call.__func__, tester, tester.call.__key__])
+    assert Counter(gc.get_referents(tester.call) ==
+            Counter([tester.call.__func__, tester, tester.call.__key__] +
+                    [type(tester.call)] if PY39 else [])
 
 
 if __name__ == '__main__':
