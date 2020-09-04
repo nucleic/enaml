@@ -121,7 +121,7 @@ def test_dynamic_scope_creation():
 
     dynamicscope = DynamicScope(owner, locs, globs, builtins, change, tracer)
     assert (Counter(gc.get_referents(dynamicscope)) ==
-        Counter([[owner, change, tracer, locs, globs, builtins, None, None] +
+        Counter([owner, change, tracer, locs, globs, builtins, None, None] +
                  [type(dynamicscope)] if PY39 else [])
         )
 
