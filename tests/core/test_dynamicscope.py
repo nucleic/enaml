@@ -254,7 +254,7 @@ def test_dynamicscope_lifecycle(dynamicscope, nonlocals):
     owner, tracer = dynamicscope[1][0], dynamicscope[1][-1]
     assert 'Nonlocals[' in repr(nonlocals)
     assert (Counter(gc.get_referents(nonlocals)) ==
-        Counter([owner, tracer] + [type(nonlocals)] if PY39 else []
+        Counter([owner, tracer] + [type(nonlocals)] if PY39 else [])
     )
 
     del dynamicscope
