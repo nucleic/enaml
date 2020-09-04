@@ -63,6 +63,11 @@ jobs:
         run: |
           python setup.py develop
       - name: Install pytest
+        if: matrix.python-version == '3.9.0-rc.1'
+        run: |
+          pip install pytest pytest-cov
+      - name: Install pytest
+        if: matrix.python-version != '3.9.0-rc.1'
         run: |
           pip install pytest pytest-cov pytest-qt
       - name: Run tests (Windows, Mac) (Py 3.6)
