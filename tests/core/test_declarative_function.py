@@ -158,7 +158,7 @@ def test_traversing_bound_method():
     tester = compile_source(source, 'MyWindow')()
     assert (Counter(gc.get_referents(tester.call)) ==
         Counter([tester.call.__func__, tester, tester.call.__key__] +
-                [type(tester.call)] if PY39 else [])
+                ([type(tester.call)] if PY39 else []))
     )
 
 

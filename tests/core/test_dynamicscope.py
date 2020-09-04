@@ -122,7 +122,7 @@ def test_dynamic_scope_creation():
     dynamicscope = DynamicScope(owner, locs, globs, builtins, change, tracer)
     assert (Counter(gc.get_referents(dynamicscope)) ==
         Counter([owner, change, tracer, locs, globs, builtins, None, None] +
-                 [type(dynamicscope)] if PY39 else [])
+                 ([type(dynamicscope)] if PY39 else []))
         )
 
     with pytest.raises(TypeError) as excinfo:
@@ -254,7 +254,7 @@ def test_dynamicscope_lifecycle(dynamicscope, nonlocals):
     owner, tracer = dynamicscope[1][0], dynamicscope[1][-1]
     assert 'Nonlocals[' in repr(nonlocals)
     assert (Counter(gc.get_referents(nonlocals)) ==
-        Counter([owner, tracer] + [type(nonlocals)] if PY39 else [])
+        Counter([owner, tracer] + ([type(nonlocals)] if PY39 else []))
     )
 
     del dynamicscope
