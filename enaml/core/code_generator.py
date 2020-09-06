@@ -361,19 +361,29 @@ class CodeGenerator(Atom):
         end_label = bc.Label()
         op_code = "SETUP_FINALLY" if PY38 else "SETUP_EXCEPT"
         self.code_ops.append(
-            bc.Instr(op_code, exc_label),         # TOS
+            bc.Instr(op_code, exc_label),              # TOS
         )
         yield
-        ops = [                                     # TOS
-            bc.Instr("POP_BLOCK"),                  # TOS
-            bc.Instr("JUMP_FORWARD", end_label),    # TOS
-            exc_label,                              # TOS -> tb -> val -> exc
-            bc.Instr("ROT_THREE"),                  # TOS -> exc -> tb -> val
-            bc.Instr("ROT_TWO"),                    # TOS -> exc -> val -> tb
-            bc.Instr("POP_TOP"),                    # TOS -> exc -> val
-            bc.Instr("RAISE_VARARGS", 2),           # TOS
-            bc.Instr("JUMP_FORWARD", end_label),    # TOS
-            end_label,                              # TOS
+        # exc is only the exception type which can be used for matching
+        # val is the exception value, raising it directly preserve the traceback
+        # tb is the traceback and is of little interest
+        # We reset the traceback to None to make it appear as if the code
+        # raised the exception instead of a function called by it
+        ops = [                                       # TOS
+            bc.Instr("POP_BLOCK"),                    # TOS
+            bc.Instr("JUMP_FORWARD", end_label),      # TOS
+            exc_label,                                # TOS -> tb -> val -> exc
+            bc.Instr("POP_TOP"),                      # TOS -> tb -> val
+            bc.Instr("ROT_TWO"),                      # TOS -> val -> tb
+            bc.Instr("POP_TOP"),                      # TOS -> val
+            bc.Instr("DUP_TOP"),                      # TOS -> val -> val
+            bc.Instr("LOAD_CONST", None),             # TOS -> val -> val -> None
+            bc.Instr("ROT_TWO"),                      # TOS -> val -> None -> val
+            bc.Instr("STORE_ATTR", "__traceback__"),  # TOS -> val
+            bc.Instr("RAISE_VARARGS", 1),             # TOS
+            bc.Instr("POP_EXCEPT"),
+            bc.Instr("JUMP_FORWARD", end_label),      # TOS
+            end_label,                                # TOS
         ]
         if not PY39:
             ops.insert(-1, bc.Instr("END_FINALLY"))
