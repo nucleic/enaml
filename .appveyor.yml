@@ -23,7 +23,7 @@ environment:
 
         # 64-bit versions, are tested on Github actions
 
-        # 32-bit versions, PyQt, latest
+        # 32-bit versions, PyQt and PySide2, latest
 
         - NAME: "32-bit, Latest "
           PYTHON: "C:\\Python37"
@@ -31,23 +31,12 @@ environment:
           PYTHON_ARCH: "32"
           PYQT_VERSION: "5"
 
-        # PySide versions
-        # See "allow_failures" section below.
-
         - NAME: "PySide2"
           PYTHON: "C:\\Python37-x64"
           PYTHON_VERSION: "3.7.3"
-          PYTHON_ARCH: "64"
+          PYTHON_ARCH: "32"
           PYQT_VERSION: "None"
           QT_API: "pyside2"
-
-
-matrix:
-  allow_failures:
-     # PySide is not fully supported.
-     # Errors are monitored, but should not stop PRs being delivered.
-     - QT_API: "pyside"
-     - QT_API: "pyside2"
 
 
 install:
@@ -98,13 +87,7 @@ install:
   - pip install https://github.com/nucleic/atom/tarball/master
   - pip install https://github.com/nucleic/kiwi/tarball/master
 
-  # We need a library for Qt.
-  # PyQT4 won't pip install, so resort to conda.
-  - if %PYQT_VERSION%==4 conda install -q pyqt=4
-  # Pyqt5 5.11.2 doesn't work on Python 3.5 (although it does on other versions)
-  # Avoid using it for now, but optimistically assume that they will fix in next release.
-  - if %PYQT_VERSION%==5 pip install pyqt5!=5.11.2
-  - ps: if ($env:QT_API -eq "pyside") {pip install PySide}
+  - if %PYQT_VERSION%==5 pip install pyqt5
   - ps: if ($env:QT_API -eq "pyside2") {pip install pyside2}
   - if "%QSCINTILLA%"=="Yes" pip install QScintilla
 

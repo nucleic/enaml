@@ -1,12 +1,14 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2020, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.widgets.close_event import CloseEvent
+
 from .QtCore import Qt, QSize
-from .QtWidgets import QWidget, QLayout
+from .QtWidgets import QLayout, QWidget
 
 from .q_single_widget_layout import QSingleWidgetLayout
 
@@ -47,32 +49,42 @@ class QWindowLayout(QSingleWidgetLayout):
         return super(QWindowLayout, self).maximumSize()
 
 
-class QWindowBase(QWidget):
-    """ A QWidget which forms the base for derived window classes.
+# =============================================================================
+# --- Base window implenmentation ---------------------------------------------
+# =============================================================================
 
-    The window base provides support for a central widget as well as
+
+def add_base_window_methods(window_class):
+    """ Add methods to a window class.
+
+    The patching provides support for a central widget as well as
     explicitly specified min and max sizes which override what would
     normally be computed by the layout.
 
+    We use patching rather than a mixing class to avoid multiple inheritance
+    which causes an issue in PySide2 that affects dialogs. Since this is the
+    only blocker to support Pyside2 it is worth it.
+
     """
-    def __init__(self, parent=None, flags=Qt.WindowFlags(0)):
-        """ Initialize a QWindowBase.
 
-        Parameters
-        ----------
-        parent : QWidget, optional
-            The parent of the window.
+    # This will appear as a cell var to
+    __class__ = window_class
 
-        flags : Qt.WindowFlags, optional
-            The window flags to pass to the parent constructor.
+    def closeEvent(self, event):
+        """ Handle the close event for the window.
 
         """
-        super(QWindowBase, self).__init__(parent, flags)
-        self._expl_min_size = QSize()
-        self._expl_max_size = QSize()
-        layout = QWindowLayout()
-        layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
-        self.setLayout(layout)
+        event.accept()
+        if not self._proxy_ref:
+            return
+        proxy = self._proxy_ref()
+        d = proxy.declaration
+        d_event = CloseEvent()
+        d.closing(d_event)
+        if d_event.is_accepted():
+            self.accept_closing(event, d)
+        else:
+            event.ignore()
 
     def centralWidget(self):
         """ Get the central widget installed on the window.
@@ -136,7 +148,7 @@ class QWindowBase(QWidget):
             The minimum size for the QWindow.
 
         """
-        super(QWindowBase, self).setMinimumSize(size)
+        super().setMinimumSize(size)
         if size == QSize(0, 0):
             self._expl_min_size = QSize()
         else:
@@ -157,9 +169,16 @@ class QWindowBase(QWidget):
             The maximum size for the QWindow.
 
         """
-        super(QWindowBase, self).setMaximumSize(size)
+        super().setMaximumSize(size)
         if size == QSize(16777215, 16777215):
             self._expl_max_size = QSize()
         else:
             self._expl_max_size = size
         self.layout().update()
+
+    for func in (closeEvent, centralWidget, setCentralWidget,
+                explicitMinimumSize, explicitMaximumSize, setMinimumSize,
+                setMaximumSize):
+        setattr(window_class, func.__name__, func)
+
+    return window_class

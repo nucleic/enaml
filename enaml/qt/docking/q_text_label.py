@@ -92,7 +92,7 @@ class QTextLabel(QFrame):
         base = self._text_size
         if not base.isValid():
             metrics = self.fontMetrics()
-            base = QSize(metrics.width(self._text), metrics.height())
+            base = metrics.boundingRect(self._text).size()
             self._text_size = base
         left, top, right, bottom = self.getContentsMargins()
         return base + QSize(left + right, top + bottom)
@@ -105,7 +105,7 @@ class QTextLabel(QFrame):
         if not base.isValid():
             metrics = self.fontMetrics()
             text = self._computeElidedText(self._text)
-            base = QSize(metrics.width(text), metrics.height())
+            base = metrics.boundingRect(text).size()
             self._min_text_size = base
         left, top, right, bottom = self.getContentsMargins()
         return base + QSize(left + right, top + bottom)

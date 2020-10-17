@@ -78,7 +78,7 @@ enamldef DialogButtonBox(Container): box:
     """
     attr buttons: list = []
     event clicked: DialogButton
-    padding = 0
+    padding = 1  # Fix a small clipping issue observed on MacOSX
     constraints = [hbox(*sum(looper.items, []), spacing=6)]
     Looper: looper:
         iterable = buttons

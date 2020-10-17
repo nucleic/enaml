@@ -35,8 +35,7 @@ Python
 ~~~~~~
 
 Enaml is a Python framework and requires a supported Python runtime. Enaml
-currently supports **Python 2.7**, **Python 3.4**, **Python 3.5**,
-**Python 3.6** and **Python 3.7**.
+currently supports **Python 3.6**, **Python 3.7** and **Python 3.8**.
 
 The most recent Python releases are available on the `Python Downloads`_ pages.
 Installers are available for Windows and OSX. Linux users should install Python
@@ -65,7 +64,7 @@ The recommended library is `PyQt5`_,  a robust set of Python bindings to the
 Qt 5 toolkit.  (It includes the necessary parts of Qt 5.)
 
 On 32 and 64-bit Windows, 64-bit OS X and 64-bit Linux, with Python
-versions >=3.5, it can be installed via pip::
+versions >=3.6, it can be installed via pip::
 
     $ pip install pyqt5
 
@@ -75,29 +74,16 @@ versions >=3.5, it can be installed via pip::
 Alternatives
 ++++++++++++
 
-Enaml uses the `QtPy`_ library as compatibility layer to support some other QT-based libraries.
-
-* `PyQt`_, which is a robust set of Python bindings to the Qt 4 toolkit. It is no longer a
-  supported project, but can still be installed and used with Enaml. The
-  `PyQt Downloads`_ page contains Windows installers - which also the necessary parts of Qt 4.
-  OSX users can install PyQt4 via `Homebrew`_. Linux users should install via the system
-  package manager.
+Enaml uses the `QtPy`_ library as compatibility layer to support some other
+QT-based libraries.
 
 * `PySide2`_ (a.k.a. Qt for Python) is a set of Python bindings to the Qt 5 toolkit.
-  This is not recommended. These bindings are not nearly as stable as PyQt. They contain
-  several bugs which can and will cause applications to crash. There are also some API
-  differences between the two libraries.  While some effort is made to support the use of
-  PySide2 in Enaml, it is "use at your own risk". Patches to improve support are welcomed.
+  As of 0.12.0 PySide2 is fully supported. However it has not been as heavily
+  tested as the PyQt5 backend in real world applications.
 
-  To activate PySide2 support, install `PySide2`_ separately and set the environment
-  variable ``QT_API=pyside2`` before starting the Enaml application.
-
-* `PySide`_ is a set of Python bindings to the Qt 4 toolkit which are no longer being
-  maintained. These bindings are not recommended, and not supported, but you may find they
-  work anyway. Use at your own risk.
-
-  To activate PySide support, install `PySide`_ separately and set the environment
-  variable ``QT_API=pyside`` before starting the Enaml application.
+  To activate PySide2 support, install `PySide2`_ separately. If multiple backends
+  are installed, set the environment variable ``QT_API=pyside2`` before starting
+  the Enaml application.
 
 * While Enaml is architected to be toolkit agnostic, only Qt-based toolkit libraries are
   supported. There are third-party projects that provide support for other back-ends.
@@ -136,7 +122,7 @@ instructions for adding the package to your system.
 
 The Enaml framework extends the grammar Python language with new declarative
 syntax constructs. To accomplish this, Enaml has a fully compliant Python
-2.7/3.4/3.5/3.6 lexer and parser with added support for the new syntax. These
+3.6/3.7/3.8 lexer and parser with added support for the new syntax. These
 components are built using the PLY parsing tools, which contain Python
 implementations of lex and yacc.
 

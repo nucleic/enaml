@@ -358,7 +358,6 @@ class QDockTabBar(QTabBar):
             for index, data in enumerate(self._tab_data):
                 if data.alerted:
                     rect = self.tabRect(index)
-                    print("drawn on", rect)
                     pm = data.selected if index == current else data.normal
                     painter.drawPixmap(rect, pm)
 
