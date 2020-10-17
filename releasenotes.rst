@@ -5,6 +5,7 @@ Dates are written as DD/MM/YYYY
 
 0.12.0 - unreleased
 -------------------
+- add support for PySide2 and fix Qt deprecation PR #423
 - add support for subscription block PR #348
   Subscription blocks allow to write right to left synchronization logic over
   multiple lines and using statements. The assigned value is the value returned
