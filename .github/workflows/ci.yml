@@ -47,7 +47,7 @@ jobs:
           pip install https://github.com/nucleic/kiwi/tarball/master
       - name: Install Qt bindings
         run: |
-          pip install numpy '${{matrix.qt-binding}}!=5.15.*'
+          pip install numpy '${{matrix.qt-binding}}'
       - name: Install extra dependencies
         if: matrix.python-version == '3.7'
         run: |
