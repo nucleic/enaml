@@ -18,8 +18,8 @@ def main():
     view = Main(message="Hello World, from Python!")
     view.show()
 
-    # Start the application event loop
-    app.start()
+    # # Start the application event loop
+    # app.start()
 
 
 if __name__ == "__main__":
