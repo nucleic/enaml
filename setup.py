@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2019, Nucleic Development Team.
+# Copyright (c) 2013-2020, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -15,6 +15,8 @@ from setuptools.command.develop import develop
 
 sys.path.insert(0, os.path.abspath('.'))
 from enaml.version import __version__
+
+# Use the env var ENAML_DISABLE_FH4 to disable linking against VCRUNTIME140_1.dll
 
 ext_modules = [
     Extension(
@@ -101,6 +103,12 @@ class BuildExt(build_ext):
             if sys.platform == 'darwin':
                 ext.extra_compile_args += ['-stdlib=libc++']
                 ext.extra_link_args += ['-stdlib=libc++']
+            if (ct == 'msvc' and os.environ.get('ENAML_DISABLE_FH4')):
+                # Disable FH4 Exception Handling implementation so that we don't
+                # require VCRUNTIME140_1.dll. For more details, see:
+                # https://devblogs.microsoft.com/cppblog/making-cpp-exception-handling-smaller-x64/
+                # https://github.com/joerick/cibuildwheel/issues/423#issuecomment-677763904
+                ext.extra_compile_args.append('/d2FH4-')
         build_ext.build_extensions(self)
 
 
@@ -154,6 +162,7 @@ setup(
     license='BSD',
     classifiers=[
           # https://pypi.org/pypi?%3Aaction=list_classifiers
+          'License :: OSI Approved :: BSD License',
           'Programming Language :: Python',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.6',
