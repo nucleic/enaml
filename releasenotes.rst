@@ -3,7 +3,7 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.12.0 - unreleased
+0.12.0 - 04/11/2020
 -------------------
 - add support for Python 3.9 PR #424
 - add support for PySide2 and fix Qt deprecation PR #423
