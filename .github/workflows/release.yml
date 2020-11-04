@@ -26,7 +26,7 @@ jobs:
       - name: Test sdist
         run: |
           pip install pytest pytest-qt
-          pip install --no-index --find-links dist atom
+          pip install --no-index --find-links dist enaml
           cd ..
           python -m pytest enaml/tests
       - name: Store artifacts
