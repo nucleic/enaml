@@ -25,7 +25,7 @@ jobs:
           python setup.py sdist
       - name: Test sdist
         run: |
-          pip install pytest pytest-qt
+          pip install pytest
           pip install dist/*.tar.gz
           cd ..
           python -m pytest enaml/tests
@@ -56,7 +56,7 @@ jobs:
       - name: Build wheels
         env:
           CIBW_BUILD: cp${{ matrix.python }}-*
-          CIBW_TEST_REQUIRES: pytest pytest-qt
+          CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: python -m pytest {package}/tests -v
           # Disable FH4 to avoid linking against VC2014_1
           ENAML_DISABLE_FH4: 1
