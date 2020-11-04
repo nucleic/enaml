@@ -529,7 +529,7 @@ def gen_child_def_node(cg, node, local_names):
         class_cg.store_name('__module__')
         class_cg.load_const(node.typename)
         class_cg.store_name('__qualname__')
-        class_cg.load_const(None)  # XXX better qualified name
+        class_cg.load_const(None)
         class_cg.return_value()
 
         class_code = class_cg.to_code()

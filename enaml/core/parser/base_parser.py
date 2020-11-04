@@ -205,7 +205,7 @@ class BaseEnamlParser(object):
             lexer = self.lexer(filename)
             return self.parser.parse(source, debug=0, lexer=lexer)
         except ParsingError as parse_error:
-            raise parse_error()
+            raise parse_error() from None
 
     def set_context(self, node, ctx, p):
         """ Recursively sets the context of the node to the given context

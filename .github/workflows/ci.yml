@@ -22,21 +22,23 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.6, 3.7, 3.8]
-        # Add PySide2 when github will allow for allowed-failures or when it works
-        qt-binding: [pyqt5]
+        python-version: [3.6, 3.7, 3.8, 3.9]
+        qt-binding: [pyqt5, pyside2]
       fail-fast: false
     steps:
       - name: Install linux only test dependency
         if: matrix.os == 'ubuntu-latest'
         shell: bash
+        # Install all dependencies needed to run Qt on linux (taken from the qt website
+        # and completed by adding package marked missing when running with
+        # QT_DEBUG_PLUGINS=1)
         run: |
-          sudo apt-get update
-          sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 matchbox-window-manager
+          sudo apt-get update --fix-missing
+          sudo apt-get install libfontconfig1-dev libfreetype6-dev libx11-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync0-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-xinerama0-dev libxcb-xkb-dev libxkbcommon-x11-dev libxcb-xtest0-dev  libegl1-mesa xvfb matchbox-window-manager --fix-missing
       - name: Checkout branch
         uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -46,13 +48,17 @@ jobs:
           pip install https://github.com/nucleic/cppy/tarball/master
           pip install https://github.com/nucleic/atom/tarball/master
           pip install https://github.com/nucleic/kiwi/tarball/master
-      - name: Install PyQt as Qt bindings
+      - name: Install Qt bindings
         run: |
-          pip install numpy 'pyqt5!=5.15.*'
+          pip install numpy '${{matrix.qt-binding}}'
       - name: Install extra dependencies
-        if: matrix.python-version == 3.7
+        if: matrix.python-version == '3.7'
         run: |
-          pip install matplotlib ipython qtconsole Cython QScintilla
+          pip install matplotlib ipython qtconsole
+      - name: Install QScintilla
+        if: matrix.python-version == '3.7' && matrix.qt-binding == 'pyqt5'
+        run: |
+          pip install Cython QScintilla
       - name: Install project
         env:
           CPPFLAGS: --coverage
@@ -61,10 +67,10 @@ jobs:
       - name: Install pytest
         run: |
           pip install pytest pytest-cov pytest-qt
-      - name: Run tests (Windows, Mac)
+      - name: Run tests (Windows, Mac) (Py 3.6)
         if: matrix.os != 'ubuntu-latest' && matrix.python-version == '3.6'
         run: python -m pytest tests --cov enaml --cov-report xml
-      - name: Run tests (Linux)
+      - name: Run tests (Linux) (Py 3.6)
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.6'
         shell: bash -l {0}
         run: |

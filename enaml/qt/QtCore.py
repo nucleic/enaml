@@ -6,13 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 from qtpy import QT_VERSION
-from . import QT_API, PYQT4_API, PYQT5_API
+from . import QT_API, PYQT5_API
 
 __version__ = QT_VERSION
 __version_info__ = tuple(map(int, QT_VERSION.split('.')))
 from qtpy.QtCore import *
 
-if QT_API in PYQT4_API or QT_API in PYQT5_API:
+if QT_API in PYQT5_API:
     QDateTime.toPython = QDateTime.__dict__['toPyDateTime']
     QDate.toPython = QDate.__dict__['toPyDate']
     QTime.toPython = QTime.__dict__['toPyTime']
