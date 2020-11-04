@@ -13,6 +13,8 @@ import pytest
 import traceback
 from textwrap import dedent
 
+from enaml.compat import PY39
+
 
 def validate_ast(py_node, enaml_node, dump_ast=False, offset=0):
     """Validate each node of an ast against another ast.
@@ -79,6 +81,7 @@ def test_syntax_error_traceback_correct_path(tmpdir):
         tb = traceback.format_exc()
         print(tb)
         lines = tb.strip().split("\n")
-        assert 'File "{}", line 5'.format(test_module_path) in lines[-4]
+        assert ('File "{}", line 5'.format(test_module_path) in
+            (lines[-3] if PY39 else lines[-4]))
     finally:
         sys.path.remove(tmpdir.strpath)

@@ -27,9 +27,12 @@ else:
     elif py_version[1] in (6, 7):
         from .parser36 import Python36EnamlParser
         _parser = Python36EnamlParser()
-    else:
+    elif py_version[1] == 8:
         from .parser38 import Python38EnamlParser
         _parser = Python38EnamlParser()
+    else:
+        from .parser39 import Python39EnamlParser
+        _parser = Python39EnamlParser()
 
 
 def write_tables():
