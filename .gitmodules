@@ -1,0 +1,3 @@
+[submodule "tools/sublimetext"]
+	path = tools/sublimetext
+	url = https://github.com/nucleic/sublime-enaml-syntax
