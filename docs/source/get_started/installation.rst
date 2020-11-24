@@ -116,8 +116,8 @@ instructions for adding the package to your system.
 .. _Setuptools Install: https://pypi.python.org/pypi/setuptools/1.1.6
 .. _Pip Install: https://pip.pypa.io/en/stable/installing/
 
-`Ply`_ and `Cppy`_
-~~~~~~~~~~~~~~~~~~
+`Ply`_
+~~~~~~
 
 The Enaml framework extends the grammar Python language with new declarative
 syntax constructs. To accomplish this, Enaml has a fully compliant Python
@@ -129,6 +129,11 @@ Ply can be installed with the ``pip install`` command of `Pip`_::
 
     $ pip install ply
 
+.. _Ply: http://www.dabeaz.com/ply
+
+`Cppy`_
+~~~~~~~
+
 Enaml also uses Cppy, a small C++ header library, to build some pre-compiled
 `Python extensions`_.
 
@@ -136,7 +141,6 @@ Cppy can be installed with the ``pip install`` command of `Pip`_::
 
     $ pip install cppy
 
-.. _Ply: http://www.dabeaz.com/ply
 .. _Cppy: https://github.com/nucleic/cppy
 .. _Python extensions: https://docs.python.org/3/extending/extending.html
 
