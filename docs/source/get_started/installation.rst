@@ -93,9 +93,8 @@ Compiling it yourself: The Hard Way
 
 Building Enaml from scratch requires a few external dependencies. The
 sections below describe how to install Enaml and all of its dependencies from
-scratch, starting with the installation of a Python runtime. The instructions
-assume that the user's system has a C++ compiler and the `Git`_ command line
-tools installed and available on the system path.
+scratch. The instructions assume that the user's system has a C++ compiler and
+the `Git`_ command line tools installed and available on the system path.
 
 .. _Git: http://git-scm.com
 
@@ -130,6 +129,21 @@ Ply can be installed with the ``pip install`` command of `Pip`_::
 
     $ pip install ply
 
+.. _Ply: http://www.dabeaz.com/ply
+
+`Cppy`_
+~~~~~~~
+
+Enaml also uses Cppy, a small C++ header library, to build some pre-compiled
+`Python extensions`_.
+
+Cppy can be installed with the ``pip install`` command of `Pip`_::
+
+    $ pip install cppy
+
+.. _Cppy: https://github.com/nucleic/cppy
+.. _Python extensions: https://docs.python.org/3/extending/extending.html
+
 `QtPy`_
 ~~~~~~~
 
@@ -140,7 +154,6 @@ QtPy can be installed with the ``pip install`` command of `Pip`_::
 
     $ pip install QtPy
 
-.. _Ply: http://www.dabeaz.com/ply
 .. _PyQt: http://www.riverbankcomputing.com/software/pyqt/intro
 .. _PyQt5: https://pypi.org/project/PyQt5/
 .. _QtPy: https://pypi.python.org/pypi/QtPy/
@@ -165,6 +178,18 @@ Kiwisolver can be installed with the ``pip install`` command of `Pip`_::
 .. _Kiwisolver: https://github.com/nucleic/kiwi
 .. _Cassowary: http://www.cs.washington.edu/research/constraints/cassowary
 
+`Bytecode`_
+~~~~~~~~~~~
+
+The Enaml compiler depends on the ``bytecode`` module, which is a Python
+library used to generate and modify bytecode.
+
+Bytecode can be installed with the ``pip install`` command of `Pip`_::
+
+    $ pip install bytecode
+
+.. _Bytecode: https://github.com/vstinner/bytecode
+
 `Atom`_
 ~~~~~~~
 
@@ -174,7 +199,11 @@ implementation of the `Observer Pattern`_. If these traits seem all too ideal
 for a project like Enaml, it's because Enaml was the primary motivation behind
 the development of Atom.
 
-Cloning and building Atom from source is simple::
+Atom can be installed with the ``pip install`` command of `Pip`_::
+
+    $ pip install atom
+
+Alternatively, cloning and building the latest (unstable dev) version of Atom from source is simple::
 
     $ git clone https://github.com/nucleic/atom.git
     $ cd atom
