@@ -29,6 +29,12 @@ class QtApplication(Application):
 
     def __init__(self,  appname=None):
         """ Initialize a QtApplication.
+        
+        Parameters
+        ----------
+        appname : str, optional
+            Explicit application name to use for setting the WM_CLASS attribute 
+            on Linux.
 
         """
         super(QtApplication, self).__init__()
