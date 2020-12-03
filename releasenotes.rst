@@ -3,6 +3,11 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+0.13.0 - 03/12/2020
+-------------------
+- add support for explicit Qt app name PR #430
+  Allows setting the WM_CLASS property for X11 (Linux) apps.
+
 0.12.0 - 04/11/2020
 -------------------
 - add support for Python 3.9 PR #424
