@@ -27,12 +27,22 @@ class QtApplication(Application):
     #: The private QApplication instance.
     _qapp = Typed(QApplication)
 
-    def __init__(self):
+    def __init__(self,  appname=None):
         """ Initialize a QtApplication.
+        
+        Parameters
+        ----------
+        appname : str, optional
+            Explicit application name to use for setting the WM_CLASS attribute 
+            on Linux.
 
         """
         super(QtApplication, self).__init__()
-        self._qapp = QApplication.instance() or QApplication([])
+        if appname is not None:
+            self._qapp = QApplication.instance() or QApplication([appname])
+        else:
+            self._qapp = QApplication.instance() or QApplication([])
+            
         self.resolver = ProxyResolver(factories=QT_FACTORIES)
 
     #--------------------------------------------------------------------------
