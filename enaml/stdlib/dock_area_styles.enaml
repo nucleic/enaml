@@ -66,6 +66,16 @@ enamldef TabBarTabStyle(BasicStyle):
     pseudo_element = 'tab-bar-tab'
 
 
+enamldef TabBarCornerBarStyle(BasicStyle):
+    element = 'DockArea'
+    pseudo_element = 'tab-bar-corner-bar'
+
+
+enamldef TabBarCornerButtonStyle(BasicStyle):
+    element = 'DockArea'
+    pseudo_element = 'tab-bar-corner-button'
+
+
 enamldef TabBarCloseButtonStyle(BasicStyle):
     element = 'DockArea'
     pseudo_element = 'tab-bar-close-button'
@@ -188,6 +198,23 @@ template CommonStyles():
             field = 'width'
             value = '20px'
 
+    # Tab Bar Corner Widget
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-corner'
+        Setter:
+            field = 'top'
+            value = '-5px'
+        Setter:
+            field = 'height'
+            value = '22px'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-corner-bar'
+        Setter:
+            field = 'padding-top'
+            value = '5px'
+
     # Dock Bar
     Style:
         element = 'DockArea'
@@ -241,7 +268,6 @@ template CommonStyles():
             value = ('lineargradient(x1:0, y1:0, x2:1, y2:0,'
                         'stop:0 rgba(50, 50, 50, 175),'
                         'stop:1 rgba(50, 50, 50, 0))')
-
 
 #------------------------------------------------------------------------------
 # Concrete Styles
@@ -306,7 +332,17 @@ template VS2010Style():
         background = 'rgb(250, 251, 254)'
         color = 'black'
 
+    TabBarCornerButtonStyle:
+        pseudo_class = 'hover'
+        border = '1px solid rgb(229, 195, 101)'
+        background = 'rgb(250, 251, 254)'
+        color = 'black'
+
     TitleBarButtonStyle:
+        pseudo_class = 'pressed'
+        background = 'rgb(255, 229, 128)'
+
+    TabBarCornerButtonStyle:
         pseudo_class = 'pressed'
         background = 'rgb(255, 229, 128)'
 
@@ -419,7 +455,15 @@ template GreyWindStyle():
         pseudo_class = 'hover'
         color = 'rgb(80, 80, 80)'
 
+    TabBarCornerButtonStyle:
+        pseudo_class = 'hover'
+        color = 'rgb(80, 80, 80)'
+
     TitleBarButtonStyle:
+        pseudo_class = 'pressed'
+        color = 'black'
+
+    TabBarCornerButtonStyle:
         pseudo_class = 'pressed'
         color = 'black'
 
@@ -529,7 +573,15 @@ template NewMoonStyle():
         pseudo_class = 'hover'
         color = 'rgb(50, 50, 50)'
 
+    TabBarCornerButtonStyle:
+        pseudo_class = 'hover'
+        color = 'rgb(50, 50, 50)'
+
     TitleBarButtonStyle:
+        pseudo_class = 'pressed'
+        color = 'black'
+
+    TabBarCornerButtonStyle:
         pseudo_class = 'pressed'
         color = 'black'
 
@@ -636,11 +688,19 @@ template MetroStyle():
         pseudo_class = 'hover'
         color = 'black'
 
+    TabBarCornerButtonStyle:
+        pseudo_class = 'hover'
+        color = 'black'
+
     TabBarTabStyle:
         background = '#838587'
         color = 'rgb(240, 240, 240)'
 
     TabBarTabStyle:
+        pseudo_class = 'hover'
+        background = '#959799'
+
+    TabBarCornerButtonStyle:
         pseudo_class = 'hover'
         background = '#959799'
 

@@ -367,7 +367,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         tabs_button = self._tabs_button = QBitmapButton(self)
         tabs_button.setObjectName('docktitlebar-tabs-button')
         tabs_button.setBitmap(TAB_BUTTON.toBitmap())
-        tabs_button.setIconSize(QSize(13, 13))
+        tabs_button.setIconSize(btn_size)
         tabs_button.setVisible(self._buttons & self.TabsButton)
         tabs_button.setToolTip('List all tabs')
 

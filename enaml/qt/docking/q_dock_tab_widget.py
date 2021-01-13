@@ -393,6 +393,7 @@ class QDockTabWidget(QTabWidget):
         self._saved_layout = None
 
         corner_widget = QDockTitleBar()
+        corner_widget.setObjectName('docktab-corner-widget')
         corner_widget.setButtons(
             QDockTitleBar.MaximizeButton |
             QDockTitleBar.CloseButton | QDockTitleBar.TabsButton)
