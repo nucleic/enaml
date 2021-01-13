@@ -20,8 +20,11 @@ if QT_API in PYQT5_API or QT_API in PYSIDE2_API:
 else:
     from enaml.qt.QtWidgets import QStyleOptionTabV3 as QStyleOptionTab
 
+from enaml.qt.qt_menu import QCustomMenu
+
 from .event_types import QDockItemEvent, DockTabSelected
 from .q_bitmap_button import QBitmapButton
+from .q_dock_title_bar import QDockTitleBar
 from .utils import repolish
 from .xbms import CLOSE_BUTTON
 
@@ -370,6 +373,7 @@ class QDockTabWidget(QTabWidget):
     instances used elsewhere in the application.
 
     """
+
     def __init__(self, parent=None):
         """ Initialize a QDockTabWidget.
 
@@ -386,6 +390,22 @@ class QDockTabWidget(QTabWidget):
         self.setTabsClosable(True)
         self.setDocumentMode(True)
         self.setMovable(True)
+        self._saved_layout = None
+
+        corner_widget = QDockTitleBar()
+        corner_widget.setButtons(
+            QDockTitleBar.MaximizeButton |
+            QDockTitleBar.CloseButton | QDockTitleBar.TabsButton)
+        self.setCornerWidget(corner_widget)
+        corner_widget.tabsButtonClicked.connect(
+            self._onCornerTabsButtonClicked)
+        corner_widget.restoreButtonClicked.connect(
+            self._onCornerRestoreButtonClicked)
+        corner_widget.maximizeButtonClicked.connect(
+            self._onCornerMaximizeButtonClicked)
+        corner_widget.closeButtonClicked.connect(
+            self._onCornerCloseButtonClicked)
+
         self.tabBar().setDrawBase(False)
         self.tabCloseRequested.connect(self._onTabCloseRequested)
         self.currentChanged.connect(self._onCurrentChanged)
@@ -418,6 +438,81 @@ class QDockTabWidget(QTabWidget):
         if area.dockEventsEnabled():
             event = QDockItemEvent(DockTabSelected, container.objectName())
             QApplication.postEvent(area, event)
+
+    def _onCornerTabsButtonClicked(self, event):
+        """ Opens a context menu that lists all tabs.
+
+        """
+        context_menu = QCustomMenu(self)
+        context_menu.setContextMenu(True)
+        current_index = self.currentIndex()
+        for i in range(self.count()):
+            tab = self.widget(i)
+            if tab is not None:
+                action = context_menu.addAction(tab.title())
+                action.setCheckable(True)
+                action.setChecked(i == current_index)
+                icon = self.tabIcon(i)
+                if icon is not None:
+                    # FIXME This overlays the icon over the checkbox
+                    action.setIcon(icon)
+                action.setData(i)
+        action = context_menu.exec_(QCursor.pos())
+        if action is not None:
+            i = action.data()
+            self.setCurrentIndex(i)
+        context_menu.setContextMenu(False)
+        del context_menu
+
+    def _onCornerMaximizeButtonClicked(self, event):
+        """ Handle which maximizes the tab area.
+
+        """
+        container = self.widget(0)
+        if container is None:
+            return
+        manager = container.manager()
+        if manager is None:
+            return
+        area = manager.dock_area()
+        if area is None:
+            return
+        self._saved_layout = manager.save_layout()
+        corner_widget = self.cornerWidget()
+        btns = corner_widget.buttons()
+        btns |= QDockTitleBar.RestoreButton
+        btns &= ~QDockTitleBar.MaximizeButton
+        corner_widget.setButtons(btns)
+
+        area.setMaximizedWidget(self)
+
+    def _onCornerRestoreButtonClicked(self, event):
+        container = self.widget(0)
+        if container is None:
+            return
+        manager = container.manager()
+        if manager is None:
+            return
+        area = manager.dock_area()
+        if area is None:
+            return
+        corner_widget = self.cornerWidget()
+        btns = corner_widget.buttons()
+        btns &= ~QDockTitleBar.RestoreButton
+        btns |= QDockTitleBar.MaximizeButton
+        corner_widget.setButtons(btns)
+        area.setMaximizedWidget(None)
+        manager.apply_layout(self._saved_layout)
+
+    def _onCornerCloseButtonClicked(self, event):
+        """ Handle which closes all closable tabs.
+
+        """
+        tab_bar = self.tabBar()
+        for i in range(tab_bar.count()):
+            button = tab_bar.tabButton(i, QTabBar.RightSide)
+            if button is not None and button.isVisibleTo(tab_bar):
+                tab_bar.tabCloseRequested.emit(i)
 
     #--------------------------------------------------------------------------
     # Public API
