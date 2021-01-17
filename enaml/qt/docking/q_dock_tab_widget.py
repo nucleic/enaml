@@ -13,7 +13,7 @@ from enaml.qt.QtGui import (
     QMouseEvent, QResizeEvent, QCursor, QPainter, QPixmap
 )
 from enaml.qt.QtWidgets import (
-    QApplication, QTabBar, QTabWidget, QStyle, QStylePainter
+    QApplication, QTabBar, QTabWidget, QSplitter, QStyle, QStylePainter
 )
 if QT_API in PYQT5_API or QT_API in PYSIDE2_API:
     from enaml.qt.QtWidgets import QStyleOptionTab
@@ -390,7 +390,14 @@ class QDockTabWidget(QTabWidget):
         self.setTabsClosable(True)
         self.setDocumentMode(True)
         self.setMovable(True)
-        self._saved_layout = None
+        self._is_maximized = False
+
+        if isinstance(parent, QSplitter):
+            index = parent.indexOf(self)
+        else:
+            index = 0
+        self._original_parent_index = index
+        self._original_parent = parent
 
         corner_widget = QDockTitleBar()
         corner_widget.setObjectName('docktab-corner-widget')
@@ -414,6 +421,18 @@ class QDockTabWidget(QTabWidget):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
+    def parentDockArea(self):
+        """ Return the parent dock area if any.
+
+        """
+        container = self.widget(0)
+        if container is None:
+            return
+        manager = container.manager()
+        if manager is None:
+            return
+        return manager.dock_area()
+
     def _onTabCloseRequested(self, index):
         """ Handle the close request for the given tab index.
 
@@ -466,47 +485,19 @@ class QDockTabWidget(QTabWidget):
         del context_menu
 
     def _onCornerMaximizeButtonClicked(self, event):
-        """ Handle which maximizes the tab area.
+        """ Handler which maximizes the tab area.
 
         """
-        container = self.widget(0)
-        if container is None:
-            return
-        manager = container.manager()
-        if manager is None:
-            return
-        area = manager.dock_area()
-        if area is None:
-            return
-        self._saved_layout = manager.save_layout()
-        corner_widget = self.cornerWidget()
-        btns = corner_widget.buttons()
-        btns |= QDockTitleBar.RestoreButton
-        btns &= ~QDockTitleBar.MaximizeButton
-        corner_widget.setButtons(btns)
-
-        area.setMaximizedWidget(self)
+        self.showMaximized()
 
     def _onCornerRestoreButtonClicked(self, event):
-        container = self.widget(0)
-        if container is None:
-            return
-        manager = container.manager()
-        if manager is None:
-            return
-        area = manager.dock_area()
-        if area is None:
-            return
-        corner_widget = self.cornerWidget()
-        btns = corner_widget.buttons()
-        btns &= ~QDockTitleBar.RestoreButton
-        btns |= QDockTitleBar.MaximizeButton
-        corner_widget.setButtons(btns)
-        area.setMaximizedWidget(None)
-        manager.apply_layout(self._saved_layout)
+        """ Handler which restores the tab area to the normal view.
+
+        """
+        self.showNormal()
 
     def _onCornerCloseButtonClicked(self, event):
-        """ Handle which closes all closable tabs.
+        """ Handler which closes all closable tabs.
 
         """
         tab_bar = self.tabBar()
@@ -518,6 +509,65 @@ class QDockTabWidget(QTabWidget):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
+    def showMaximized(self):
+        """ Set this widget as the maximized widget in the dock area.
+
+        """
+        if self._is_maximized:
+            return
+        area = self.parentDockArea()
+        if area is None:
+            return
+        corner_widget = self.cornerWidget()
+        btns = corner_widget.buttons()
+        btns |= QDockTitleBar.RestoreButton
+        btns &= ~QDockTitleBar.MaximizeButton
+        corner_widget.setButtons(btns)
+
+        parent = self.parent()
+        if isinstance(parent, QSplitter):
+            index = parent.indexOf(self)  # Save position in splitter
+        else:
+            index = 0
+        self._original_parent_index = index
+        self._original_parent = parent
+        self._is_maximized = True
+        area.setMaximizedWidget(self)
+
+    def showNormal(self):
+        """ Set this widget as the maximized widget in the dock area.
+
+        """
+        if not self._is_maximized:
+            return
+        area = self.parentDockArea()
+        if area is None:
+            return
+        corner_widget = self.cornerWidget()
+        btns = corner_widget.buttons()
+        btns &= ~QDockTitleBar.RestoreButton
+        btns |= QDockTitleBar.MaximizeButton
+        corner_widget.setButtons(btns)
+
+        self._is_maximized = False
+        area.setMaximizedWidget(None)
+        original_parent = self._original_parent
+        if original_parent is None:
+            return
+        parent_index = self._original_parent_index
+        if isinstance(original_parent, QSplitter):
+            layout = original_parent
+        else:
+            layout = original_parent.layout()
+        layout.insertWidget(parent_index, self)
+        self.show()
+
+    def isMaximized(self):
+        """ Return whether this widget is maximized.
+
+        """
+        return self._is_maximized
+
     def setCloseButtonVisible(self, index, visible):
         """ Set the close button visibility for the given tab index.
 

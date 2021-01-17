@@ -324,6 +324,8 @@ class LayoutBuilder(NodeVisitor):
             child.hideTitleBar()
             tab_widget.addTab(child, child.icon(), child.title())
         tab_widget.setCurrentIndex(node.index)
+        if node.maximized:
+            tab_widget.showMaximized()
         self.stack.append(tab_widget)
 
     def visit_SplitLayout(self, node):

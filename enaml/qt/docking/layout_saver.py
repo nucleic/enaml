@@ -108,6 +108,7 @@ class LayoutSaver(NodeVisitor):
             self.visit(tabs.widget(index))
             children.append(self.stack.pop())
         layout = TabLayout(*children)
+        layout.maximized = tabs.isMaximized()
         layout.index = tabs.currentIndex()
         layout.tab_position = self.TAB_POSITION[tabs.tabPosition()]
         self.stack.append(layout)
