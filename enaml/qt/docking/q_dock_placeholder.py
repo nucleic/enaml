@@ -17,18 +17,14 @@ class QDockPlaceholder(QWidget):
 
         parent = self.parent = widget.parent()
         self.widget = widget
-
         if isinstance(parent, QSplitter):
-            # Save position in splitter
             index = parent.indexOf(widget)
             layout = parent
         else:
-            layout = parent.layout()
             index = 0
-
+            layout = parent.layout()
+        layout.replaceWidget(index, self)
         widget.hide()
-        widget.setParent(None)
-        layout.insertWidget(index, self)
 
     def restore(self):
         """ Restore the placeholder widget back into it's original position.
@@ -37,17 +33,19 @@ class QDockPlaceholder(QWidget):
         parent = self.parent
         if parent is None:
             return
+        widget = self.widget
         if isinstance(parent, QSplitter):
-            # Save position in splitter
             index = parent.indexOf(self)
             layout = parent
         else:
-            layout = parent.layout()
             index = 0
-        self.setParent(None)
-        widget = self.widget
-        layout.insertWidget(index, widget)
+            layout = parent.layout()
+        layout.replaceWidget(index, widget)
         widget.show()
 
     def getPlaceholder(self):
+        """ Get the widget this is holding a place for.
+
+        """
         return self.widget
+
