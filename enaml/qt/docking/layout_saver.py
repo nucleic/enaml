@@ -96,6 +96,14 @@ class LayoutSaver(NodeVisitor):
             self.init_floating_node(layout, container)
         self.stack.append(layout)
 
+    def visit_QDockPlaceholder(self, placeholder):
+        """ Visit a QDockPlaceholder node.
+
+        This delegates to the placeholder widget.
+
+        """
+        self.visit(placeholder.getPlaceholder())
+
     def visit_QDockTabWidget(self, tabs):
         """ Visit a QDockTabWidget node.
 

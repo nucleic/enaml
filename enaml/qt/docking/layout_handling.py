@@ -12,6 +12,7 @@ from .event_types import DockAreaContentsChanged
 from .q_dock_bar import QDockBar
 from .q_dock_container import QDockContainer
 from .q_dock_splitter import QDockSplitter, QDockSplitterHandle
+from .q_dock_placeholder import QDockPlaceholder
 from .q_dock_tab_widget import QDockTabWidget
 from .q_dock_window import QDockWindow
 
@@ -229,6 +230,8 @@ def _unplug(widget, container):
         return _unplug_tab_widget(widget, container)
     if isinstance(widget, QDockSplitter):
         return _unplug_splitter(widget, container)
+    if isinstance(widget, QDockPlaceholder):
+        return _unplug(widget.getPlaceholder(), container)
     raise TypeError("unhandled layout widget '%s'" % type(widget).__name__)
 
 

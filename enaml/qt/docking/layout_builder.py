@@ -13,7 +13,7 @@ from enaml.nodevisitor import NodeVisitor
 from enaml.qt.QtCore import Qt, QRect
 from enaml.qt.QtWidgets import QApplication
 
-from enaml.layout.dock_layout import ItemLayout, AreaLayout
+from enaml.layout.dock_layout import ItemLayout, AreaLayout, TabLayout
 
 from .event_types import QDockItemEvent, DockItemDocked
 from .layout_handling import plug_frame
@@ -180,12 +180,31 @@ class LayoutBuilder(NodeVisitor):
                 container = containers.get(item.name)
                 if container is not None:
                     area.addToDockBar(container, position)
+
         for item in layout.find_all(ItemLayout):
             if item.maximized:
                 container = containers.get(item.name)
                 if container is not None:
                     container.showMaximized()
                     break
+
+        if area.maximizedWidget() is None:
+            # If no dock item is maximized, see if any tab layouts are
+            for item in layout.find_all(TabLayout):
+                if not item.maximized:
+                    continue
+
+                container = None
+                for c in item.children():
+                    container = containers.get(c.name)
+                    if container is not None:
+                        break
+
+                if container is not None:
+                    tab_widget = container.parentDockTabWidget()
+                    if tab_widget is not None:
+                        tab_widget.showMaximized()
+                        break
 
     def init_floating_frame(self, frame, layout):
         """ Initialize a floating frame.
@@ -324,8 +343,6 @@ class LayoutBuilder(NodeVisitor):
             child.hideTitleBar()
             tab_widget.addTab(child, child.icon(), child.title())
         tab_widget.setCurrentIndex(node.index)
-        if node.maximized:
-            tab_widget.showMaximized()
         self.stack.append(tab_widget)
 
     def visit_SplitLayout(self, node):
@@ -372,6 +389,10 @@ class LayoutBuilder(NodeVisitor):
         dock_area = manager.dock_area()
         dock_area.clearDockBars()
         dock_area.setCentralWidget(None)
+
+        if isinstance(dock_area.maximizedWidget(), QDockTabWidget):
+            # This must be cleared for tabs
+            dock_area.setMaximizedWidget(None)
 
         has_primary = False
         for item in node.items:

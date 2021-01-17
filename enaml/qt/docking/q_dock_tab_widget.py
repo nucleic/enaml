@@ -25,6 +25,7 @@ from enaml.qt.qt_menu import QCustomMenu
 from .event_types import QDockItemEvent, DockTabSelected
 from .q_bitmap_button import QBitmapButton
 from .q_dock_title_bar import QDockTitleBar
+from .q_dock_placeholder import QDockPlaceholder
 from .utils import repolish
 from .xbms import CLOSE_BUTTON
 
@@ -391,13 +392,7 @@ class QDockTabWidget(QTabWidget):
         self.setDocumentMode(True)
         self.setMovable(True)
         self._is_maximized = False
-
-        if isinstance(parent, QSplitter):
-            index = parent.indexOf(self)
-        else:
-            index = 0
-        self._original_parent_index = index
-        self._original_parent = parent
+        self._placeholder = None
 
         corner_widget = QDockTitleBar()
         corner_widget.setObjectName('docktab-corner-widget')
@@ -524,13 +519,8 @@ class QDockTabWidget(QTabWidget):
         btns &= ~QDockTitleBar.MaximizeButton
         corner_widget.setButtons(btns)
 
-        parent = self.parent()
-        if isinstance(parent, QSplitter):
-            index = parent.indexOf(self)  # Save position in splitter
-        else:
-            index = 0
-        self._original_parent_index = index
-        self._original_parent = parent
+        # Create a placeholder in the layout and maximize the widget
+        placeholder = self._placeholder = QDockPlaceholder(self)
         self._is_maximized = True
         area.setMaximizedWidget(self)
 
@@ -538,7 +528,8 @@ class QDockTabWidget(QTabWidget):
         """ Set this widget as the maximized widget in the dock area.
 
         """
-        if not self._is_maximized:
+        placeholder = self._placeholder
+        if not self._is_maximized or placeholder is None:
             return
         area = self.parentDockArea()
         if area is None:
@@ -551,16 +542,11 @@ class QDockTabWidget(QTabWidget):
 
         self._is_maximized = False
         area.setMaximizedWidget(None)
-        original_parent = self._original_parent
-        if original_parent is None:
-            return
-        parent_index = self._original_parent_index
-        if isinstance(original_parent, QSplitter):
-            layout = original_parent
-        else:
-            layout = original_parent.layout()
-        layout.insertWidget(parent_index, self)
-        self.show()
+
+        # Restore this widget into the placeholder and discard
+        placeholder.restore()
+        del placeholder
+        self._placeholder = None
 
     def isMaximized(self):
         """ Return whether this widget is maximized.
