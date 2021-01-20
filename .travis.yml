@@ -6,7 +6,7 @@ services:
 
 branches:
   only:
-    - master
+    - main
 
 env:
   global:
@@ -59,9 +59,9 @@ before_install:
   - $PIP_INSTALL bytecode
 
   # Install the dev version of the other nucleic projects
-  - $PIP_INSTALL https://github.com/nucleic/cppy/tarball/master
-  - $PIP_INSTALL https://github.com/nucleic/atom/tarball/master
-  - $PIP_INSTALL https://github.com/nucleic/kiwi/tarball/master
+  - $PIP_INSTALL https://github.com/nucleic/cppy/tarball/main
+  - $PIP_INSTALL https://github.com/nucleic/atom/tarball/main
+  - $PIP_INSTALL https://github.com/nucleic/kiwi/tarball/main
 
   # Intall test tools (we require pytest > 3.3 to get the builtin logging
   # features)

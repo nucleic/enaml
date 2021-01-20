@@ -9,7 +9,7 @@
 
 branches:
   only:
-    - master
+    - main
 
 environment:
     matrix:
@@ -43,7 +43,7 @@ install:
   # If there is a newer build queued for the same PR, cancel this one.
   # The AppVeyor 'rollout builds' option is supposed to serve the same
   # purpose but it is problematic because it tends to cancel builds pushed
-  # directly to master instead of just PR builds (or the converse).
+  # directly to main instead of just PR builds (or the converse).
   # credits: JuliaLang developers.
   - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
         https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
@@ -83,9 +83,9 @@ install:
 
   # At the time of writing, the setup.py says Enaml depends on a dev version
   # of Atom which is not on PyPI. Install straight from GitHub.
-  - pip install https://github.com/nucleic/cppy/tarball/master
-  - pip install https://github.com/nucleic/atom/tarball/master
-  - pip install https://github.com/nucleic/kiwi/tarball/master
+  - pip install https://github.com/nucleic/cppy/tarball/main
+  - pip install https://github.com/nucleic/atom/tarball/main
+  - pip install https://github.com/nucleic/kiwi/tarball/main
 
   - if %PYQT_VERSION%==5 pip install pyqt5
   - ps: if ($env:QT_API -eq "pyside2") {pip install pyside2}

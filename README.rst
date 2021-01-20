@@ -1,7 +1,7 @@
 Welcome to Enaml
 ================
 
-.. image:: https://travis-ci.org/nucleic/enaml.svg?branch=master
+.. image:: https://travis-ci.org/nucleic/enaml.svg?branch=main
     :target: https://travis-ci.org/nucleic/enaml
     :alt: Build Status
 .. image:: https://ci.appveyor.com/api/projects/status/p2bapt3y6n7xixcl?svg=true
@@ -9,7 +9,7 @@ Welcome to Enaml
     :alt: Appveyor Build Status
 .. image:: https://github.com/nucleic/enaml/workflows/Continuous%20Integration/badge.svg
     :target: https://github.com/nucleic/enaml/actions
-.. image:: https://codecov.io/gh/nucleic/enaml/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/nucleic/enaml/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/nucleic/enaml
     :alt: Code Coverage Status
 .. image:: https://github.com/nucleic/enaml/workflows/Documentation%20building/badge.svg
@@ -69,7 +69,7 @@ The Qt backend requires Qt (5.9+, see https://doc.qt.io/qt-5/supported-platforms
 
 This includes Linux, Windows, MacOSX, Android and iOS. (Automated testing of Enaml runs on Linux, Windows and MacOSX.)
 
-Enaml is licensed under the `Modified BSD License <https://github.com/nucleic/enaml/blob/master/LICENSE>`_.
+Enaml is licensed under the `Modified BSD License <https://github.com/nucleic/enaml/blob/main/LICENSE>`_.
 
 Learn More
 ==========
@@ -92,7 +92,7 @@ The `Enaml documentation <http://enaml.readthedocs.io/en/latest>`_ includes all 
 You can ask questions on the `Enaml Google Group <http://groups.google.com/d/forum/enaml>`_
 or with the `Enaml tag on StackOverflow <https://stackoverflow.com/questions/tagged/enaml>`_.
 
-For version information, see the  `release notes <https://github.com/nucleic/enaml/blob/master/releasenotes.rst>`_.
+For version information, see the  `release notes <https://github.com/nucleic/enaml/blob/main/releasenotes.rst>`_.
 
 Examples
 ========
