@@ -168,6 +168,7 @@ setup(
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',
           'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
           'Programming Language :: Python :: Implementation :: CPython',
       ],
     python_requires='>=3.6',
@@ -178,6 +179,10 @@ setup(
                       "bytecode>=0.11.0"
                       ],
     setup_requires=['cppy>=1.1.0'],
+    extras_require={
+        "qt5-pyqt": ["qtpy", "pyqt5"],
+        "qt5-pyside": ["qtpy", "pyside2"]
+    },
     packages=find_packages(),
     package_data={
         'enaml.applib': ['*.enaml'],
