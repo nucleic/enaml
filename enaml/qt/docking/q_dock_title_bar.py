@@ -15,7 +15,7 @@ from .q_icon_widget import QIconWidget
 from .q_text_label import QTextLabel
 from .xbms import (
     CLOSE_BUTTON, MAXIMIZE_BUTTON, RESTORE_BUTTON, LINKED_BUTTON,
-    UNLINKED_BUTTON, PIN_BUTTON, UNPIN_BUTTON
+    UNLINKED_BUTTON, PIN_BUTTON, UNPIN_BUTTON, TAB_BUTTON
 )
 
 
@@ -37,6 +37,9 @@ class IDockTitleBar(QWidget):
 
     #: A signal emitted when the pin button is toggled.
     pinButtonToggled = Signal(bool)
+
+    #: A signal emitted when the tabs button is clicked.
+    tabsButtonClicked = Signal(bool)
 
     #: A signal emitted when the title is edited by the user.
     titleEdited = Signal(str)
@@ -64,6 +67,9 @@ class IDockTitleBar(QWidget):
 
     #: Show the pin button in the title bar.
     PinButton = 0x10
+
+    #: Show the tabs menu button in the title bar.
+    TabsButton = 0x20
 
     def buttons(self):
         """ Get the buttons to show in the title bar.
@@ -279,6 +285,9 @@ class QDockTitleBar(QFrame, IDockTitleBar):
     #: A signal emitted when the pin button is toggled.
     pinButtonToggled = Signal(bool)
 
+    #: A signal emitted when the tabs button is clicked.
+    tabsButtonClicked = Signal(bool)
+
     #: A signal emitted when the title is edited by the user.
     titleEdited = Signal(str)
 
@@ -355,6 +364,13 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         pin_button.setToolTip('Pin Window')
         pin_button.setCheckedToolTip('Unpin Window')
 
+        tabs_button = self._tabs_button = QBitmapButton(self)
+        tabs_button.setObjectName('docktitlebar-tabs-button')
+        tabs_button.setBitmap(TAB_BUTTON.toBitmap())
+        tabs_button.setIconSize(btn_size)
+        tabs_button.setVisible(self._buttons & self.TabsButton)
+        tabs_button.setToolTip('List all tabs')
+
         layout = QHBoxLayout()
         layout.setContentsMargins(QMargins(5, 2, 5, 2))
         layout.setSpacing(1)
@@ -363,6 +379,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         layout.addWidget(title_label)
         layout.addWidget(spacer)
         layout.addSpacing(4)
+        layout.addWidget(tabs_button)
         layout.addWidget(pin_button)
         layout.addWidget(link_button)
         layout.addWidget(max_button)
@@ -376,6 +393,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         close_button.clicked.connect(self.closeButtonClicked)
         link_button.toggled.connect(self.linkButtonToggled)
         pin_button.toggled.connect(self.pinButtonToggled)
+        tabs_button.clicked.connect(self.tabsButtonClicked)
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -526,6 +544,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         self._close_button.setVisible(buttons & self.CloseButton)
         self._link_button.setVisible(buttons & self.LinkButton)
         self._pin_button.setVisible(buttons & self.PinButton)
+        self._tabs_button.setVisible(buttons & self.TabsButton)
 
     def title(self):
         """ Get the title string of the title bar.

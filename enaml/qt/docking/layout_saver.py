@@ -96,6 +96,14 @@ class LayoutSaver(NodeVisitor):
             self.init_floating_node(layout, container)
         self.stack.append(layout)
 
+    def visit_QDockPlaceholder(self, placeholder):
+        """ Visit a QDockPlaceholder node.
+
+        This delegates to the placeholder widget.
+
+        """
+        self.visit(placeholder.getPlaceholder())
+
     def visit_QDockTabWidget(self, tabs):
         """ Visit a QDockTabWidget node.
 
@@ -108,6 +116,7 @@ class LayoutSaver(NodeVisitor):
             self.visit(tabs.widget(index))
             children.append(self.stack.pop())
         layout = TabLayout(*children)
+        layout.maximized = tabs.isMaximized()
         layout.index = tabs.currentIndex()
         layout.tab_position = self.TAB_POSITION[tabs.tabPosition()]
         self.stack.append(layout)

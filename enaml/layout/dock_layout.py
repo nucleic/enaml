@@ -153,6 +153,9 @@ class TabLayout(LayoutNode):
     #: The index of the currently selected tab.
     index = Int(0)
 
+    #: Whether or not the tab layout is maximized.
+    maximized = Bool(False)
+
     #: The list of item layouts to include in the tab layout.
     items = List(Coerced(ItemLayout))
 

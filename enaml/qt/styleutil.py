@@ -269,6 +269,18 @@ def _tab_bar_close_button(name, pc):
     return _basic_pc('QBitmapButton#docktab-close-button', pc)
 
 
+def _tab_bar_corner(name, pc):
+    return _basic_pc('QDockTabWidget::right-corner', pc)
+
+
+def _tab_bar_corner_bar(name, pc):
+    return _basic_pc('QDockTitleBar#docktab-corner-widget', pc)
+
+
+def _tab_bar_corner_button(name, pc):
+    return _basic_pc('QDockTitleBar#docktab-corner-widget > QBitmapButton', pc)
+
+
 def _maybe_alert(root, name, pc):
     rest = []
     alert = ''
@@ -351,6 +363,9 @@ _DOCK_AREA_PSEUDO_ELEMENTS = {
     'splitter-handle': _splitter_handle,
     'tab-bar': _tab_bar,
     'tab-bar-tab': _tab_bar_tab,
+    'tab-bar-corner': _tab_bar_corner,
+    'tab-bar-corner-bar': _tab_bar_corner_bar,
+    'tab-bar-corner-button': _tab_bar_corner_button,
     'tab-bar-close-button': _tab_bar_close_button,
 }
 

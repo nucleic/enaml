@@ -13,15 +13,19 @@ from enaml.qt.QtGui import (
     QMouseEvent, QResizeEvent, QCursor, QPainter, QPixmap
 )
 from enaml.qt.QtWidgets import (
-    QApplication, QTabBar, QTabWidget, QStyle, QStylePainter
+    QApplication, QTabBar, QTabWidget, QSplitter, QStyle, QStylePainter
 )
 if QT_API in PYQT5_API or QT_API in PYSIDE2_API:
     from enaml.qt.QtWidgets import QStyleOptionTab
 else:
     from enaml.qt.QtWidgets import QStyleOptionTabV3 as QStyleOptionTab
 
+from enaml.qt.qt_menu import QCustomMenu
+
 from .event_types import QDockItemEvent, DockTabSelected
 from .q_bitmap_button import QBitmapButton
+from .q_dock_title_bar import QDockTitleBar
+from .q_dock_placeholder import QDockPlaceholder
 from .utils import repolish
 from .xbms import CLOSE_BUTTON
 
@@ -370,6 +374,7 @@ class QDockTabWidget(QTabWidget):
     instances used elsewhere in the application.
 
     """
+
     def __init__(self, parent=None):
         """ Initialize a QDockTabWidget.
 
@@ -386,6 +391,24 @@ class QDockTabWidget(QTabWidget):
         self.setTabsClosable(True)
         self.setDocumentMode(True)
         self.setMovable(True)
+        self._is_maximized = False
+        self._placeholder = None
+
+        corner_widget = QDockTitleBar()
+        corner_widget.setObjectName('docktab-corner-widget')
+        corner_widget.setButtons(
+            QDockTitleBar.MaximizeButton |
+            QDockTitleBar.CloseButton | QDockTitleBar.TabsButton)
+        self.setCornerWidget(corner_widget)
+        corner_widget.tabsButtonClicked.connect(
+            self._onCornerTabsButtonClicked)
+        corner_widget.restoreButtonClicked.connect(
+            self._onCornerRestoreButtonClicked)
+        corner_widget.maximizeButtonClicked.connect(
+            self._onCornerMaximizeButtonClicked)
+        corner_widget.closeButtonClicked.connect(
+            self._onCornerCloseButtonClicked)
+
         self.tabBar().setDrawBase(False)
         self.tabCloseRequested.connect(self._onTabCloseRequested)
         self.currentChanged.connect(self._onCurrentChanged)
@@ -393,6 +416,18 @@ class QDockTabWidget(QTabWidget):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
+    def parentDockArea(self):
+        """ Return the parent dock area if any.
+
+        """
+        container = self.widget(0)
+        if container is None:
+            return
+        manager = container.manager()
+        if manager is None:
+            return
+        return manager.dock_area()
+
     def _onTabCloseRequested(self, index):
         """ Handle the close request for the given tab index.
 
@@ -419,9 +454,106 @@ class QDockTabWidget(QTabWidget):
             event = QDockItemEvent(DockTabSelected, container.objectName())
             QApplication.postEvent(area, event)
 
+    def _onCornerTabsButtonClicked(self, event):
+        """ Opens a context menu that lists all tabs.
+
+        """
+        context_menu = QCustomMenu(self)
+        context_menu.setContextMenu(True)
+        current_index = self.currentIndex()
+        for i in range(self.count()):
+            tab = self.widget(i)
+            if tab is not None:
+                action = context_menu.addAction(tab.title())
+                action.setCheckable(True)
+                action.setChecked(i == current_index)
+                icon = self.tabIcon(i)
+                if icon is not None:
+                    # FIXME This overlays the icon over the checkbox
+                    action.setIcon(icon)
+                action.setData(i)
+        action = context_menu.exec_(QCursor.pos())
+        if action is not None:
+            i = action.data()
+            self.setCurrentIndex(i)
+        context_menu.setContextMenu(False)
+        del context_menu
+
+    def _onCornerMaximizeButtonClicked(self, event):
+        """ Handler which maximizes the tab area.
+
+        """
+        self.showMaximized()
+
+    def _onCornerRestoreButtonClicked(self, event):
+        """ Handler which restores the tab area to the normal view.
+
+        """
+        self.showNormal()
+
+    def _onCornerCloseButtonClicked(self, event):
+        """ Handler which closes all closable tabs.
+
+        """
+        tab_bar = self.tabBar()
+        for i in range(tab_bar.count()):
+            button = tab_bar.tabButton(i, QTabBar.RightSide)
+            if button is not None and button.isVisibleTo(tab_bar):
+                tab_bar.tabCloseRequested.emit(i)
+
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
+    def showMaximized(self):
+        """ Set this widget as the maximized widget in the dock area.
+
+        """
+        if self._is_maximized:
+            return
+        area = self.parentDockArea()
+        if area is None:
+            return
+        corner_widget = self.cornerWidget()
+        btns = corner_widget.buttons()
+        btns |= QDockTitleBar.RestoreButton
+        btns &= ~QDockTitleBar.MaximizeButton
+        corner_widget.setButtons(btns)
+
+        # Create a placeholder in the layout and maximize the widget
+        placeholder = self._placeholder = QDockPlaceholder(self)
+        self._is_maximized = True
+        area.setMaximizedWidget(self)
+
+    def showNormal(self):
+        """ Set this widget as the maximized widget in the dock area.
+
+        """
+        placeholder = self._placeholder
+        if not self._is_maximized or placeholder is None:
+            return
+        area = self.parentDockArea()
+        if area is None:
+            return
+        corner_widget = self.cornerWidget()
+        btns = corner_widget.buttons()
+        btns &= ~QDockTitleBar.RestoreButton
+        btns |= QDockTitleBar.MaximizeButton
+        corner_widget.setButtons(btns)
+
+        self._is_maximized = False
+        area.setMaximizedWidget(None)
+
+        # Restore this widget into the placeholder and discard
+        placeholder.restore()
+        del placeholder
+        self._placeholder = None
+
+    def isMaximized(self):
+        """ Return whether this widget is maximized.
+
+        """
+        return self._is_maximized
+
     def setCloseButtonVisible(self, index, visible):
         """ Set the close button visibility for the given tab index.
 
