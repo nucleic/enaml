@@ -62,12 +62,11 @@ Sublime Text can also use the TextMate language definition at
 ``tools/sublimetext/Enaml.tmLanguage``.
 
 The preferred method to access it is to use the Sublime Package Manager.
-Alternatively, the files can be obtained on github and manually used::
-
-https://github.com/nucleic/sublimetext-enaml-syntax
+Alternatively, the files can be obtained on `Github`_ and manually used.
 
 For installation instructions, see the `Sublime Text manual`_.
 
+.. _Github: https://github.com/nucleic/sublimetext-enaml-syntax
 .. _Sublime Text: https://www.sublimetext.com/
 .. _Sublime Text manual: http://docs.sublimetext.info/en/latest/extensibility/packages.html#installing-packages
 
