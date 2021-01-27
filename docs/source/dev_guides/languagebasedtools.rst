@@ -61,6 +61,11 @@ Sublime Text is a cross-platform, commercial IDE.
 Sublime Text can also use the TextMate language definition at
 ``tools/sublimetext/Enaml.tmLanguage``.
 
+The preferred method to access it is to use the Sublime Package Manager.
+Alternatively, the files can be obtained on github and manually used::
+
+https://github.com/nucleic/sublimetext-enaml-syntax
+
 For installation instructions, see the `Sublime Text manual`_.
 
 .. _Sublime Text: https://www.sublimetext.com/
@@ -79,7 +84,7 @@ For installation instructions, see the
 `Visual Studio manual`_.
 
 Alternatively, there is a third-party Visual Studio extension, `enaml-vs`_ available
-free from the Visual Studio Marketplace, which offers simpler installation of the 
+free from the Visual Studio Marketplace, which offers simpler installation of the
 same definitions.
 
 .. _Visual Studio: https://visualstudio.microsoft.com/

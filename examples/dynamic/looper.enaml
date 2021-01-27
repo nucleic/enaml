@@ -50,4 +50,3 @@ enamldef Main(Window):
                         value :: print('Slider %d changed' % loop.index)
                     Html:
                         source << '<h1><center>%s</center></h1>' % loop.item
-
