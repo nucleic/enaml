@@ -35,7 +35,8 @@ Python
 ~~~~~~
 
 Enaml is a Python framework and requires a supported Python runtime. Enaml
-currently supports **Python 3.6**, **Python 3.7** and **Python 3.8**.
+currently supports **Python 3.6**, **Python 3.7**, **Python 3.8** and
+**Python 3.9**.
 
 The most recent Python releases are available on the `Python Downloads`_ pages.
 Installers are available for Windows and OSX. Linux users should install Python
@@ -66,10 +67,18 @@ Qt 5 toolkit.  (It includes the necessary parts of Qt 5.)
 On 32 and 64-bit Windows, 64-bit OS X and 64-bit Linux, with Python
 versions >=3.6, it can be installed via pip::
 
-    $ pip install pyqt5
+    $ pip install qtpy pyqt5
 
 .. note::
     There is no pyqt5 wheel available for 32-bit Linux.
+
+.. note::
+    On Enaml >= 0.13 you can specify a rendering library using extra_requires, ie::
+
+    $ pip install enaml[qt5-pyqt]
+
+    Currently, you can use either [qt5-pyqt] or [qt5-pyside] to use either PyQt5
+    or Pyside2.
 
 Alternatives
 ++++++++++++
