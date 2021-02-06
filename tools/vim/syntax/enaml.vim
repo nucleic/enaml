@@ -22,9 +22,10 @@ endif
 
 " Enaml extensions
 syn keyword enamlStatement      enamldef
+syn match enamlAttribute        "\%(\s*\)\zs\(attr\)\ze\%(\s\w\)"
 " FIXME: This captures the predefined operators, not any extensions that may be
 " added.
-syn match enamlOperator         "\%(\w\|\s\)\(::\|<<\|>>\|=\|:=\)\%(\w\|\s\)"
+syn match enamlOperator         "\%(\w\|\s\)\zs\(::\|<<\|>>\|=\|:=\)\ze\%(\w\|\s\|$\)"
 if exists("python_highlight_builtins") || exists("enaml_highlight_builtins")
     syn keyword enamlBuiltin    horizontal vertical hbox vbox align spacer
 endif
@@ -39,6 +40,7 @@ if version >= 508 || !exists("did_enaml_syntax_inits")
   endif
   HiLink enamlStatement         Statement
   HiLink enamlOperator          Operator
+  HiLink enamlAttribute         Define
   if exists("python_highlight_builtins") || exists("enaml_highlight_builtins")
       HiLink enamlBuiltin       Function
   endif
