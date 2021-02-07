@@ -5,6 +5,8 @@ Dates are written as DD/MM/YYYY
 
 0.13.0 - unreleased
 -------------------
+- fixes to vim synatx highlighting PR #439
+- fix documentation of ScrollArea example PR #438
 - add extra_requires to provide an easy way to install qt bindings
   when relevant PR # 434
 - add support for explicit Qt app name PR #430
