@@ -21,10 +21,10 @@ else
 endif
 
 " Enaml extensions
-syn keyword enamlStatement      enamldef
+syn keyword enamlStatement      enamldef attr func alias
 " FIXME: This captures the predefined operators, not any extensions that may be
 " added.
-syn match enamlOperator         "\%(\w\|\s\)\(::\|<<\|>>\|=\|:=\)\%(\w\|\s\)"
+syn match enamlOperator         "\%(\w\|\s\)\zs\(::\|<<\|>>\|=\|:=\)\ze\%(\w\|\s\|$\)"
 if exists("python_highlight_builtins") || exists("enaml_highlight_builtins")
     syn keyword enamlBuiltin    horizontal vertical hbox vbox align spacer
 endif
