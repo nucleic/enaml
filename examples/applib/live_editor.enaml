@@ -12,6 +12,9 @@ stitched together to form a live Enaml code editor application.
 
 << autodoc-me >>
 """
+import sys
+import traceback
+
 from enaml.applib.live_editor_model import LiveEditorModel
 from enaml.applib.live_editor_view import (
     ModelEditorPanel, ViewEditorPanel, TracebackPanel, ViewPanel
@@ -52,6 +55,14 @@ enamldef Main(Window):
         view_item='DemoContainer',
         view_filename='demo.enaml',
     )
+
+    func handle_uncaught_exception(exc, value, tb):
+        """Send uncaught exception to the model to avoid crashing the editor."""
+        editor_model.traceback = "".join(traceback.format_exception(exc, value, tb))
+
+    initialized::
+        sys.excepthook = handle_uncaught_exception
+
     Container:
         padding = 0
         DockArea:
