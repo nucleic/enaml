@@ -7,8 +7,9 @@
 #------------------------------------------------------------------------------
 import ast
 
-from .base_parser import FakeToken, Store, ast_for_testlist, syntax_error, Load
+from .base_parser import FakeToken, Store, ast_for_testlist, syntax_error
 from .parser38 import Python38EnamlParser
+from ast import Load
 
 
 class Python39EnamlParser(Python38EnamlParser):
