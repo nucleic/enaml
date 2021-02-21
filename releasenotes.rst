@@ -5,6 +5,7 @@ Dates are written as DD/MM/YYYY
 
 0.13.0 - unreleased
 -------------------
+- fix Python 3.9 only syntax issue PR #443
 - make app editor more resilient to errors PR #440
 - fixes to vim synatx highlighting PR #439
 - fix documentation of ScrollArea example PR #438
