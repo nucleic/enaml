@@ -2652,7 +2652,7 @@ class BaseEnamlParser(object):
         ''' subscript : ELLIPSIS '''
         p[0] = ast.Ellipsis()
 
-    def p_subcript2(self, p):
+    def p_subscript2(self, p):
         ''' subscript : test '''
         p[0] = ast.Index(value=p[1])
 
