@@ -70,7 +70,7 @@ jobs:
         run: |
           pip install pytest pytest-cov
       - name: Install pytest-qt
-        if: matrix.python-version != '3.10.0-alpha.5'
+        if: matrix.python-version != '3.10.0-alpha.6'
         run: |
           pip install  pytest-qt
       - name: Run tests (Windows, Mac)
