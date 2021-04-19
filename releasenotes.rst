@@ -3,11 +3,11 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.13.0 - unreleased
+0.13.0 - 19/04/2021
 -------------------
 - fix Python 3.9 only syntax issue PR #443
 - make app editor more resilient to errors PR #440
-- fixes to vim synatx highlighting PR #439
+- fixes to vim syntax highlighting PR #439
 - fix documentation of ScrollArea example PR #438
 - add extra_requires to provide an easy way to install qt bindings
   when relevant PR # 434
