@@ -621,6 +621,45 @@ def gen_template_inst_node(cg, node, local_names):
     cg.call_function(5)
 
 
+def sanitize_operator_code(filename, mode, ast):
+    """ Take special care of handling globals and function definitions.
+
+    If an operator contains global access using the global keyword, those should
+    keep using LOAD_GLOBAL while others should use LOAD_NAME to look-up the dynamic
+    namespace. If the operator contains function definitions (i.e. comprehensions)
+    those functions need to be called with access to the dynamic namespace.
+
+    Parameters
+    ----------
+    filename : str
+        Filename from which the ast originates from.
+
+    mode : {"eval", "exec"}
+        The mode to use to compile the AST.
+
+    ast :
+        Ast node to compile.
+
+    """
+    global_vars, has_defs = analyse_globals_and_func_defs(ast)
+    # In mode exec, the body of the operator has been wrapped in a function def
+    # after the compilation we extract the function code
+    code = compile(ast, filename, mode=mode)
+    if mode == 'exec':
+        for instr in bc.Bytecode.from_code(code):
+            i_arg = instr.arg
+            if isinstance(i_arg, CodeType):
+                code = i_arg
+                break
+
+    b_code = bc.Bytecode.from_code(code)
+    if has_defs:
+        run_in_dynamic_scope(b_code, global_vars)
+    else:
+        rewrite_globals_access(b_code, global_vars)
+    return b_code.to_code()
+
+
 def gen_template_inst_binding(cg, node, index):
     """ Generate the code for a template inst binding.
 
@@ -641,7 +680,10 @@ def gen_template_inst_binding(cg, node, index):
     """
     op_node = node.expr
     mode = COMPILE_MODE[type(op_node.value)]
-    code = compile(op_node.value.ast, cg.filename, mode=mode)
+    # Make sure the operator handle properly global and function definition
+    # (from comprehensions)
+    code = sanitize_operator_code(cg.filename, mode, op_node.value.ast)
+
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
         load_helper(cg, 'run_operator')
@@ -679,30 +721,16 @@ def gen_operator_binding(cg, node, index, name):
 
     """
     mode = COMPILE_MODE[type(node.value)]
-    global_vars, has_defs = analyse_globals_and_func_defs(node.value.ast)
-    # In mode exec, the body of the operator has been wrapped in a function def
-    # after the compilation we extract the function code
-    if mode == 'exec':
-        code = compile(node.value.ast, cg.filename, mode=mode)
-        for instr in bc.Bytecode.from_code(code):
-            i_arg = instr.arg
-            if isinstance(i_arg, CodeType):
-                code = i_arg
-                break
-    else:
-        code = compile(node.value.ast, cg.filename, mode=mode)
-
-    b_code = bc.Bytecode.from_code(code)
-    if has_defs:
-        run_in_dynamic_scope(b_code, global_vars)
-    else:
-        rewrite_globals_access(b_code, global_vars)
-    code = b_code.to_code()
+    # Make sure the operator handle properly global and function definition
+    # (from comprehensions)
+    code = sanitize_operator_code(cg.filename, mode, node.value.ast)
 
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
         load_helper(cg, 'run_operator')
         load_node(cg, index)
+        # For operators not in a template instance the scope_node and the node
+        # are one and the same hence the dup_top.
         cg.dup_top()
         cg.load_const(name)
         cg.load_const(node.operator)
