@@ -57,7 +57,7 @@ def enaml_sleep():
     return DIALOG_SLEEP
 
 
-@pytest.yield_fixture(scope='session')
+@pytest.fixture(scope='session')
 def qt_app():
     """Make sure a QtApplication is active.
 
@@ -76,7 +76,7 @@ def qt_app():
         yield app
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def enaml_qtbot(qt_app, qtbot):
     qtbot.enaml_app = qt_app
     with close_all_windows(qtbot), close_all_popups(qtbot):
