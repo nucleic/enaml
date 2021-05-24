@@ -3,6 +3,10 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+0.14.0 - unreleased
+-------------------
+- fix operator bindings in template instances PR #445
+
 0.13.0 - 19/04/2021
 -------------------
 - fix Python 3.9 only syntax issue PR #443
