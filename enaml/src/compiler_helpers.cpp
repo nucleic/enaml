@@ -378,7 +378,7 @@ type_check_expr( PyObject* mod, PyObject* args )
         PyErr_Format(
             PyExc_TypeError,
             "expression value has invalid type '%s'",
-            value->ob_type->tp_name
+            Py_TYPE( value )->tp_name
         );
         return 0;
     }
@@ -461,7 +461,7 @@ validate_spec( PyObject* mod, PyObject* args )
         PyErr_Format(
             "template parameter %d has unhashable type: '%s'",
             PyInt_AS_LONG( index ),
-            spec->ob_type->tp_name
+            Py_TYPE( spec )->tp_name
         );
         return 0;
     }

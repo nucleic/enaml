@@ -91,7 +91,7 @@ test_dynamic_attr( PyObject* obj, PyObject* name )
         descr = cppy::xincref( _PyType_Lookup( tp, name ) );
         if( descr )
         {
-            descr_f = descr.get()->ob_type->tp_descr_get;
+            descr_f = descr.type()->tp_descr_get;
             if( descr_f && PyDescr_IsData( descr.get() ) )
                 return 1;
         }
@@ -178,7 +178,7 @@ load_dynamic_attr( PyObject* obj, PyObject* name, PyObject* tracer=0 )
         descr = cppy::xincref( _PyType_Lookup( tp, name ) );
         if( descr )
         {
-            descr_f = descr.get()->ob_type->tp_descr_get;
+            descr_f = descr.type()->tp_descr_get;
             if( descr_f && PyDescr_IsData( descr.get() ) )
             {
                 cppy::ptr res(
@@ -257,7 +257,7 @@ set_dynamic_attr( PyObject* obj, PyObject* name, PyObject* value )
         descr = cppy::xincref( _PyType_Lookup( tp, name ) );
         if( descr )
         {
-            descr_f = descr.get()->ob_type->tp_descr_set;
+            descr_f = descr.type()->tp_descr_set;
             if( descr_f && PyDescr_IsData( descr.get() ) )
                 return descr_f( descr.get(), objptr.get(), value );
         }
