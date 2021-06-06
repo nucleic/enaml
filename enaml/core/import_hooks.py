@@ -145,8 +145,6 @@ class AbstractEnamlImporter(object, metaclass=ABCMeta):
         # that the import hooks are always installed when executing the
         # module code of an Enaml file.
         with imports():
-            import dis
-            dis.dis(code)
             exec(code, module.__dict__)
 
     #--------------------------------------------------------------------------
@@ -365,7 +363,6 @@ class EnamlImporter(AbstractEnamlImporter):
         file_info = self.file_info
         src_mod_time = self.get_source_modified_time()
         ast = parse(self.read_source(), file_info.src_path)
-        print(ast)
         code = EnamlCompiler.compile(ast, file_info.src_path)
         self._write_cache(code, src_mod_time, file_info)
         return (code, file_info.src_path)
