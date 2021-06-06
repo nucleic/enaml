@@ -75,7 +75,7 @@ jobs:
           pip install  pytest-qt
       - name: Run tests (Windows, Mac)
         if: matrix.os != 'ubuntu-latest'
-        run: python -X dev -m pytest tests --cov enaml --cov-report xml
+        run: python -X dev -m pytest tests -x --cov enaml --cov-report xml
       - name: Run tests (Linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash -l {0}
