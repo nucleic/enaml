@@ -21,7 +21,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest] #ubuntu-latest,
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.7', '3.8', '3.9', '3.10.0-beta.3']
         qt-binding: [pyqt5, pyside2]
       fail-fast: false
@@ -54,11 +54,11 @@ jobs:
         run: |
           pip install numpy qtpy '${{matrix.qt-binding}}'
       - name: Install extra dependencies
-        if: matrix.python-version == '3.8'
+        if: matrix.python-version == '3.9'
         run: |
           pip install matplotlib ipython qtconsole
       - name: Install QScintilla
-        if: matrix.python-version == '3.8' && matrix.qt-binding == 'pyqt5'
+        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt5'
         run: |
           pip install Cython QScintilla
       - name: Install project
@@ -90,7 +90,7 @@ jobs:
       # Windows does not have C coverage so the upload is a bit different
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
-        if: matrix.os == 'windows-latest'
+        if: (github.event_name != 'schedule' && matrix.os == 'windows-latest')
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
@@ -99,7 +99,7 @@ jobs:
           fail_ci_if_error: true
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
-        if: matrix.os != 'windows-latest'
+        if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
