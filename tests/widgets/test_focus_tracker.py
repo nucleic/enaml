@@ -44,6 +44,10 @@ enamldef Main(Window):
 """
 
 @pytest.mark.skipif("TRAVIS" in os.environ, reason='Skip on Travis')
+@pytest.mark.skipif(
+    "CI" in os.environ and sys.platform.startswith("linux"),
+    reason='Skip on linux CI where setting up a windows manager is a nightmare'
+)
 @pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 def test_focus_tracking(enaml_qtbot, enaml_sleep):
     """Test moving the focus forward in the presence of a custom focus traversal.
