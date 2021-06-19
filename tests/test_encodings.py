@@ -58,8 +58,6 @@ def test_bytes_literal():
     myWindow = compile_source(source, 'MyWindow')()
     bytes_literal = b'I also do bytes with\nescapes: \785 and \x12'
     assert bytes_literal == myWindow.test
-    bytes_literal = b'And handle unicode escapes \u0320 gracefully'
-    assert bytes_literal == myWindow.test2
 
 
 def test_raw_bytes_literal1():
