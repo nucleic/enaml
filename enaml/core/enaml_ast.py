@@ -1,21 +1,31 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2021, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 import ast
-import sys
 from atom.api import Atom, Bool, Enum, Int, List, Str, Instance, Tuple, Typed
 
 
-class ASTNode(Atom):
+class ASTNode(ast.AST, Atom):
     """ The base class for Enaml ast nodes.
 
     """
-    #: The line number in the .enaml file which generated the node.
+    #: The line number in the .enaml file at which the source for the generated
+    #: node starts.
     lineno = Int(-1)
+
+    #: Offset in the start line at which the source corresponding to the node starts.
+    col_offset = Int(-1)
+
+    #: The line number in the .enaml file at which the source for the generated
+    #: node ends.
+    end_lineno = Int(-1)
+
+    #: Offset in the end line at which the source corresponding to the node ends.
+    end_col_offset = Int(-1)
 
 
 class PragmaArg(Atom):
@@ -39,6 +49,8 @@ class Pragma(ASTNode):
     #: The list of arguments for the command.
     arguments = List(PragmaArg)
 
+    _fields = ("command", "arguments")
+
 
 class Module(ASTNode):
     """ An ASTNode representing an Enaml module.
@@ -51,6 +63,8 @@ class Module(ASTNode):
     #: The pragmas to apply for the module.
     pragmas = List(Pragma)
 
+    _fields = ("body", "pragmas")
+
 
 class PythonExpression(ASTNode):
     """ An ASTNode representing a Python expression.
@@ -59,6 +73,8 @@ class PythonExpression(ASTNode):
     #: The python ast node for the given python code.
     ast = Typed(ast.Expression)
 
+    _fields = ("ast",)
+
 
 class PythonModule(ASTNode):
     """ An ASTNode representing a chunk of Python code.
@@ -66,6 +82,8 @@ class PythonModule(ASTNode):
     """
     #: The python ast node for the given python code.
     ast = Typed(ast.Module)
+
+    _fields = ("ast",)
 
 
 class EnamlDef(ASTNode):
@@ -91,6 +109,8 @@ class EnamlDef(ASTNode):
     #: of StorageExpr, Binding, FuncDef, ChildDef and TemplateInst nodes.
     body = List()
 
+    _fields = ("typename", "base", "identifier", "docstring", "pragmas", "body")
+
 
 class ChildDef(ASTNode):
     """ An ASTNode representing a child definition.
@@ -106,6 +126,8 @@ class ChildDef(ASTNode):
     #: of StorageExpr, Binding, FuncDef, ChildDef and TemplateInst nodes.
     body = List()
 
+    _fields = ("typename", "identifier", "body")
+
 
 class ConstExpr(ASTNode):
     """ An AST node which represents a 'const' expression.
@@ -119,6 +141,8 @@ class ConstExpr(ASTNode):
 
     #: The Python expression to evaluate.
     expr = Typed(PythonExpression)
+
+    _fields = ("name", "typename", "expr")
 
 
 class AliasExpr(ASTNode):
@@ -134,6 +158,8 @@ class AliasExpr(ASTNode):
     #: The chain of names being accessed by the alias.
     chain = Tuple()
 
+    _fields = ("name", "target", "chain")
+
 
 class FuncDef(ASTNode):
     """ An AST node which represents a 'func' declaration or override.
@@ -145,13 +171,15 @@ class FuncDef(ASTNode):
     #: Whether the function is an override or a 'func' declaration.
     is_override = Bool(False)
 
+    _fields = ("funcdef", "is_override")
 
-if sys.version_info >= (3, 5):
 
-    class AsyncFuncDef(FuncDef):
+class AsyncFuncDef(FuncDef):
 
-        #: The Python function definition.
-        funcdef = Typed(ast.AsyncFunctionDef)
+    #: The Python function definition.
+    funcdef = Typed(ast.AsyncFunctionDef)
+
+    _fields = ("funcdef", "is_override")
 
 
 class OperatorExpr(ASTNode):
@@ -164,6 +192,8 @@ class OperatorExpr(ASTNode):
     #: The python ast node for the bound python code.
     value = Instance((PythonExpression, PythonModule))
 
+    _fields = ("operator", "value")
+
 
 class Binding(ASTNode):
     """ An AST node which represents a code binding.
@@ -175,6 +205,8 @@ class Binding(ASTNode):
     #: The operator expression for the binding.
     expr = Typed(OperatorExpr)
 
+    _fields = ("name", "expr")
+
 
 class ExBinding(ASTNode):
     """ An AST node which represents an extended code binding.
@@ -185,6 +217,8 @@ class ExBinding(ASTNode):
 
     #: The operator expression for the binding.
     expr = Typed(OperatorExpr)
+
+    _fields = ("chain", "expr")
 
 
 class StorageExpr(ASTNode):
@@ -204,6 +238,8 @@ class StorageExpr(ASTNode):
     #: be None if the storage object has no default expr binding.
     expr = Typed(OperatorExpr)
 
+    _fields = ("kind", "name", "typename", "expr")
+
 
 class PositionalParameter(ASTNode):
     """ An AST node for storing a positional template parameter.
@@ -215,6 +251,8 @@ class PositionalParameter(ASTNode):
     #: The parameter specialization.
     specialization = Typed(PythonExpression)
 
+    _fields = ("name", "specialization")
+
 
 class KeywordParameter(ASTNode):
     """ An AST node for storing a keyword template parameter.
@@ -225,6 +263,8 @@ class KeywordParameter(ASTNode):
 
     #: The default value for the parameter.
     default = Typed(PythonExpression)
+
+    _fields = ("name", "default")
 
 
 class TemplateParameters(ASTNode):
@@ -239,6 +279,8 @@ class TemplateParameters(ASTNode):
 
     #: The variadic star param.
     starparam = Str()
+
+    _fields = ("positional", "keywords", "starparam")
 
 
 class Template(ASTNode):
@@ -261,9 +303,11 @@ class Template(ASTNode):
     #: ChildDef, and TemplateInst nodes.
     body = List()
 
+    _fields = ("name", "pragmas", "parameters", "docstring", "body")
+
 
 class TemplateArguments(ASTNode):
-    """ An ASTNode representing template instatiation arguments.
+    """ An ASTNode representing template instantiation arguments.
 
     """
     #: The list of python expressions for the arguments.
@@ -271,6 +315,8 @@ class TemplateArguments(ASTNode):
 
     #: The variadic argument.
     stararg = Typed(PythonExpression)
+
+    _fields = ("args", "stararg")
 
 
 class TemplateIdentifiers(ASTNode):
@@ -282,6 +328,8 @@ class TemplateIdentifiers(ASTNode):
 
     #: The capturing star name.
     starname = Str()
+
+    _fields = ("name", "starname")
 
 
 class TemplateInst(ASTNode):
@@ -303,6 +351,8 @@ class TemplateInst(ASTNode):
     #: The body of the template instance.
     body = List()
 
+    _fields = ("name", "pragmas", "arguments", "identifiers", "body")
+
 
 class TemplateInstBinding(ASTNode):
     """ An AST node for a template binding.
@@ -316,6 +366,8 @@ class TemplateInstBinding(ASTNode):
 
     #: The operator expression for the binding.
     expr = Typed(OperatorExpr)
+
+    _fields = ("name", "chain", "expr")
 
 
 class ASTVisitor(Atom):
