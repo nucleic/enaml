@@ -357,7 +357,7 @@ class _LayoutRow(object):
                     h = item.sizeHint().width()
                     m = item.maximumSize().width()
                     diffs.append((m - h, item))
-            diffs.sort()
+            diffs.sort(key=lambda i: i[0])
             for ignored, item in diffs:
                 item_stretch = item.data.stretch
                 max_width = item.maximumSize().width()
@@ -573,7 +573,7 @@ class _LayoutColumn(object):
                     h = item.sizeHint().height()
                     m = item.maximumSize().height()
                     diffs.append((m - h, item))
-            diffs.sort()
+            diffs.sort(key=lambda i: i[0])
             for ignored, item in diffs:
                 item_stretch = item.data.stretch
                 max_height = item.maximumSize().height()
