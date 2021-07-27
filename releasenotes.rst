@@ -6,6 +6,7 @@ Dates are written as DD/MM/YYYY
 0.14.0 - unreleased
 -------------------
 - fix operator bindings in template instances PR #445
+- fix FlowLayout error with FlowItems that have non-zero stretch or ortho_stretch PR #448
 
 0.13.0 - 19/04/2021
 -------------------
