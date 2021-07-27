@@ -180,7 +180,7 @@ Color__reduce__( Color* self, void* context )
     uint32_t r = ( self->argb >> 16 ) & 0xFF;
     uint32_t g = ( self->argb >> 8 ) & 0xFF;
     uint32_t b = self->argb & 0xFF;
-    return Py_BuildValue( "O (iiii)", obj->ob_type, r, g, b, a );
+    return Py_BuildValue( "O (iiii)", Py_TYPE( obj ), r, g, b, a );
 }
 
 

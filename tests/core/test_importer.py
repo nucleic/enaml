@@ -50,7 +50,7 @@ enamldef Main(Window):
 """
 
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def enaml_module(tmpdir):
     """Create an enaml module in a tempdir and add it to sys.path.
 
@@ -145,6 +145,7 @@ def test_handling_importing_a_bugged_module(enaml_module):
     with open(path, 'a') as f:
         f.write('\nraise RuntimeError()')
 
+    assert name not in sys.modules
     with imports():
         with pytest.raises(RuntimeError):
             importlib.import_module(name)
@@ -152,7 +153,7 @@ def test_handling_importing_a_bugged_module(enaml_module):
     assert name not in sys.modules
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def enaml_importer():
     """Standard enaml importer whose state is restored after testing.
 

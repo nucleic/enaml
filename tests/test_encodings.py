@@ -54,13 +54,10 @@ def test_bytes_literal():
 
     enamldef MyWindow(Window): win:
         attr test = b'I also do bytes with\\nescapes: \\785 and \\x12'
-        attr test2 = b'And handle unicode escapes \\u0320 gracefully'
     """)
     myWindow = compile_source(source, 'MyWindow')()
     bytes_literal = b'I also do bytes with\nescapes: \785 and \x12'
     assert bytes_literal == myWindow.test
-    bytes_literal = b'And handle unicode escapes \u0320 gracefully'
-    assert bytes_literal == myWindow.test2
 
 
 def test_raw_bytes_literal1():

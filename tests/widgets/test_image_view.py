@@ -22,10 +22,11 @@ def image_path(name):
     dirname = os.path.dirname(r"%s")
     return os.path.join(dirname, 'images', name)
 
-IMAGES = {
-    'None': None,
-    'Image A': Image(data=open(image_path('img1.png'), 'rb').read()),
-}
+with open(image_path('img1.png'), 'rb') as f:
+    IMAGES = {
+        'None': None,
+        'Image A': Image(data=f.read()),
+    }
 
 enamldef Main(Window):
 
