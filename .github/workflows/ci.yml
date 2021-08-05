@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10.0-beta.4']
+        python-version: ['3.7', '3.8', '3.9', '3.10.0-rc.1']
         qt-binding: [pyqt5, pyside2]
       fail-fast: false
     steps:
@@ -50,7 +50,7 @@ jobs:
           pip install https://github.com/nucleic/atom/tarball/main
           pip install https://github.com/nucleic/kiwi/tarball/main
       - name: Install Qt bindings
-        if: matrix.python-version != '3.10.0-beta.4'
+        if: matrix.python-version != '3.10.0-rc.1'
         run: |
           pip install numpy qtpy '${{matrix.qt-binding}}'
       - name: Install extra dependencies
@@ -70,7 +70,7 @@ jobs:
         run: |
           pip install pytest pytest-cov
       - name: Install pytest-qt
-        if: matrix.python-version != '3.10.0-beta.4'
+        if: matrix.python-version != '3.10.0-rc.1'
         run: |
           pip install  pytest-qt
       - name: Run tests (Windows, Mac)
@@ -89,7 +89,7 @@ jobs:
 
       # Windows does not have C coverage so the upload is a bit different
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         if: (github.event_name != 'schedule' && matrix.os == 'windows-latest')
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -98,7 +98,7 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: true
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
