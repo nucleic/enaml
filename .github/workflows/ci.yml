@@ -86,7 +86,10 @@ jobs:
           exec /usr/bin/startfluxbox &
           sleep 1
           python -X dev -m pytest tests --cov enaml --cov-report xml
-
+      - name: Generate C++ coverage reports
+        if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
+        run: |
+          bash -c "find . -type f -name '*.gcno' -exec gcov -pb --all-blocks {} +" || true
       # Windows does not have C coverage so the upload is a bit different
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
