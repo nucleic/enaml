@@ -413,3 +413,22 @@ def translate_dock_item_style(name, style):
         return
     body = '{\n%s\n}' % _translate_style_body(style)
     return '%s %s' % (selector, body)
+
+
+#------------------------------------------------------------------------------
+# Notebook Styling
+#------------------------------------------------------------------------------
+_NOTEBOOK_PSEUDO_ELEMENTS = {
+    'tab': lambda name, pc: _basic_pc('QTabBar::tab', pc),
+    'tear': lambda name, pc: _basic_pc('QTabBar::tear', pc),
+    'scroller': lambda name, pc: _basic_pc('QTabBar::scroller', pc),
+    'tool-button': lambda name, pc: _basic_pc('QTabBar QToolButton', pc),
+}
+
+
+def translate_notebook_style(name, style):
+    selector = _dock_style_selector(name, style, _NOTEBOOK_PSEUDO_ELEMENTS)
+    if not selector:
+        return
+    body = '{\n%s\n}' % _translate_style_body(style)
+    return '%s %s' % (selector, body)
