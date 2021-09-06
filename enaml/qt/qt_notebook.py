@@ -422,14 +422,16 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
     def refresh_style_sheet(self):
         """ A reimplemented styling method.
 
-        The dock area uses custom stylesheet processing.
+        The notebook has an embedded tab bar and tabs that needs stylesheet
+        processing.
 
         """
         super().refresh_style_sheet()
         self.refresh_tab_bar_style_sheet()
 
     def refresh_tab_bar_style_sheet(self):
-        """ Refresh for pseudo element styles
+        """ Refresh the notebook pseudo element styles.
+
         """
         parts = []
         name = self.widget.objectName()
