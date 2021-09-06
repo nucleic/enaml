@@ -1,0 +1,80 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2021, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example demonstrates styling of notebook tabs.
+
+The Notebook widget has 'tab', 'tear', 'scroller', and 'tool-button',
+psudeo elements for styling tabs and the buttons.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import (
+    Window, Notebook, Page, Container, PushButton, Field, Html
+)
+from enaml.styling import StyleSheet, Style, Setter
+
+
+enamldef MyStyles(StyleSheet):
+    Style:
+        element = 'Page'
+        Setter:
+            field = 'background'
+            value = 'white'
+    Style:
+        element = 'Notebook'
+        pseudo_element = 'tab'
+        Setter:
+            field = 'background'
+            value = 'white'
+        Setter:
+            field = 'color'
+            value = 'black'
+        Setter:
+            field = 'padding'
+            value = '5px'
+    Style:
+        element = 'Notebook'
+        pseudo_element = 'tab'
+        pseudo_class = 'selected'
+        Setter:
+            field = 'border-bottom'
+            value = '2px solid blue'
+    Style:
+        element = 'Notebook'
+        pseudo_element = 'pane'
+        Setter:
+            field = 'background'
+            value = 'white'
+
+
+enamldef Main(Window):
+    MyStyles:
+        pass
+    Container:
+        Notebook: nbook:
+            tab_style = 'preferences'
+            Page:
+                title = 'Foo Page'
+                closable = False
+                tool_tip = 'Foo Page here'
+            Page: bar:
+                title = 'Bar Page'
+                name = 'bar_page'
+                Container:
+                    Field:
+                        pass
+                    Field:
+                        pass
+                    Field:
+                        pass
+            Page: baz:
+                title = 'Baz Page'
+                name = 'baz_page'
+                Container:
+                    padding = 0
+                    Html:
+                        source = '<h1><center>Hello World!</center></h1>'
