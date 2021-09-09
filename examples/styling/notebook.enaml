@@ -8,23 +8,25 @@
 """ An example demonstrates styling of notebook tabs.
 
 The Notebook widget has 'tab', 'tear', 'scroller', and 'tool-button',
-psudeo elements for styling tabs and the buttons.
+pseudo elements for styling tabs and the buttons.
 
 << autodoc-me >>
 """
 from enaml.widgets.api import (
-    Window, Notebook, Page, Container, PushButton, Field, Html
+    Window, Notebook, Page, Container, PushButton, Field, Html, ObjectCombo
 )
 from enaml.styling import StyleSheet, Style, Setter
 
 
 enamldef MyStyles(StyleSheet):
     Style:
+        style_class = "custom"
         element = 'Page'
         Setter:
             field = 'background'
             value = 'white'
     Style:
+        style_class = "custom"
         element = 'Notebook'
         pseudo_element = 'tab'
         Setter:
@@ -37,6 +39,7 @@ enamldef MyStyles(StyleSheet):
             field = 'padding'
             value = '5px'
     Style:
+        style_class = "custom"
         element = 'Notebook'
         pseudo_element = 'tab'
         pseudo_class = 'selected'
@@ -44,6 +47,7 @@ enamldef MyStyles(StyleSheet):
             field = 'border-bottom'
             value = '2px solid blue'
     Style:
+        style_class = "custom"
         element = 'Notebook'
         pseudo_element = 'pane'
         Setter:
@@ -52,11 +56,15 @@ enamldef MyStyles(StyleSheet):
 
 
 enamldef Main(Window):
+    title = "Notebook styles"
     MyStyles:
         pass
     Container:
+        ObjectCombo: st:
+            items = ["Default", "Custom"]
         Notebook: nbook:
             tab_style = 'preferences'
+            style_class << "custom" if st.selected == "Custom" else ""
             Page:
                 title = 'Foo Page'
                 closable = False
