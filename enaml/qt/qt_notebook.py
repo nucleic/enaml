@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2021, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,6 +10,7 @@ from weakref import WeakKeyDictionary
 
 from atom.api import Int, IntEnum, Typed
 
+from enaml.styling import StyleCache
 from enaml.widgets.notebook import ProxyNotebook
 
 from .QtCore import Qt, QEvent, QSize, Signal
@@ -20,6 +21,7 @@ from .QtWidgets import (
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_page import QtPage
+from .styleutil import translate_notebook_style
 
 
 TAB_POSITIONS = {
@@ -413,6 +415,35 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         self.init_selected_tab()
         widget.layoutRequested.connect(self.on_layout_requested)
         widget.currentChanged.connect(self.on_current_changed)
+
+    #--------------------------------------------------------------------------
+    # Overrides
+    #--------------------------------------------------------------------------
+    def refresh_style_sheet(self):
+        """ A reimplemented styling method.
+
+        The notebook has an embedded tab bar and tabs that needs stylesheet
+        processing.
+
+        """
+        super().refresh_style_sheet()
+        self.refresh_tab_bar_style_sheet()
+
+    def refresh_tab_bar_style_sheet(self):
+        """ Refresh the notebook pseudo element styles.
+
+        """
+        parts = []
+        name = self.widget.objectName()
+        for style in StyleCache.styles(self.declaration):
+            t = translate_notebook_style(name, style)
+            if t:
+                parts.append(t)
+        if len(parts) > 0:
+            stylesheet = u'\n\n'.join(parts)
+        else:
+            stylesheet = u''
+        self.widget.tabBar().setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------
     # Utility Methods

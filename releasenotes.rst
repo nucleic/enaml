@@ -7,6 +7,7 @@ Dates are written as DD/MM/YYYY
 -------------------
 - fix operator bindings in template instances PR #445
 - fix FlowLayout error with FlowItems that have non-zero stretch or ortho_stretch PR #448
+- add support for styling notebook tabs PR #452
 
 0.13.0 - 19/04/2021
 -------------------
