@@ -72,11 +72,11 @@ class QtDropEvent(DropEvent):
 
         Returns
         -------
-        result : DropAction.Flags
+        result : DropAction
             The combination of possible drop actions.
 
         """
-        return DropAction.Flags(int(self._q_event.possibleActions()))
+        return DropAction(int(self._q_event.possibleActions()))
 
     def proposed_action(self):
         """ Get the action proposed to be taken by the drop target.

@@ -166,7 +166,7 @@ class AbstractEnamlImporter(object, metaclass=ABCMeta):
 
         Returns
         -------
-        result : Instance(AbstractEnamlImporter) or None
+        result : AbstractEnamlImporter or None
             If the Enaml module is located an instance of the importer
             that will perform the rest of the operations is returned.
             Otherwise, returns None.
@@ -220,7 +220,7 @@ class EnamlImporter(AbstractEnamlImporter):
 
         Returns
         -------
-        results : Instance(AbstractEnamlImporter) or None
+        results : AbstractEnamlImporter or None
             If the Enaml module is located an instance of the importer
             that will perform the rest of the operations is returned.
             Otherwise, returns None.
@@ -431,7 +431,7 @@ class EnamlZipImporter(EnamlImporter):
 
         Returns
         -------
-        results : Instance(AbstractEnamlImporter) or None
+        results : AbstractEnamlImporter or None
             If the Enaml module is located an instance of the importer
             that will perform the rest of the operations is returned.
             Otherwise, returns None.

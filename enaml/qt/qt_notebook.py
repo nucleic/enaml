@@ -6,9 +6,10 @@
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 import sys
+from enum import IntEnum
 from weakref import WeakKeyDictionary
 
-from atom.api import Int, IntEnum, Typed
+from atom.api import Int, Typed
 
 from enaml.styling import StyleCache
 from enaml.widgets.notebook import ProxyNotebook

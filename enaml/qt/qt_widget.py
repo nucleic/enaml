@@ -34,7 +34,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     #: A private copy of the declaration features. This ensures that
     #: feature cleanup will proceed correctly in the event that user
     #: code modifies the declaration features value at runtime.
-    _features = Coerced(Feature.Flags)
+    _features = Coerced(Feature, (0,))
 
     #: Internal storage for the shared widget action.
     _widget_action = Typed(QWidgetAction)

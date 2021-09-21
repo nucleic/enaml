@@ -1,11 +1,13 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2021, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Int, IntEnum, Typed
+from enum import IntEnum
+
+from atom.api import Int, Typed
 
 from enaml.widgets.stack import ProxyStack
 

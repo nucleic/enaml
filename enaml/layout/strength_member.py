@@ -18,7 +18,7 @@ class StrengthMember(Value):
     __slots__ = ()
 
     def __init__(self, default=None, factory=None):
-        super(StrengthMember, self).__init__(default, factory)
+        super(StrengthMember, self).__init__(default, factory=factory)
         self.set_validate_mode(Validate.MemberMethod_ObjectOldNew, 'validate')
 
     def validate(self, owner, old, new):

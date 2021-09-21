@@ -1,11 +1,11 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2021, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import IntEnum
+from enum import IntEnum
 
 from enaml.qt.QtCore import (
     Qt, QSize, QPoint, QRect, QMargins, QEvent, QObject, QPropertyAnimation,

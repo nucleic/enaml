@@ -1,12 +1,14 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2021, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from enum import IntFlag
+
 from atom.api import (
-    Bool, IntEnum, Str, Coerced, Typed, ForwardTyped, observe
+    Bool, Str, Coerced, Typed, ForwardTyped, observe
 )
 
 from enaml.colors import ColorMember
@@ -77,7 +79,7 @@ class ProxyWidget(ProxyToolkitObject):
         raise NotImplementedError
 
 
-class Feature(IntEnum):
+class Feature(IntFlag):
     """ An IntEnum defining the advanced widget features.
 
     """
@@ -130,7 +132,7 @@ class Widget(ToolkitObject, Stylable):
     #: Set the extra features to enable for this widget. This value must
     #: be provided when the widget is instantiated. Runtime changes to
     #: this value are ignored.
-    features = d_(Coerced(Feature.Flags))
+    features = d_(Coerced(Feature, (0,)))
 
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)
