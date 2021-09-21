@@ -90,16 +90,6 @@ jobs:
         if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         run: |
           bash -c "find . -type f -name '*.gcno' -exec gcov -pb --all-blocks {} +" || true
-      # Windows does not have C coverage so the upload is a bit different
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        if: (github.event_name != 'schedule' && matrix.os == 'windows-latest')
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
