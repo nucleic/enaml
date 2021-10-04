@@ -41,7 +41,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        python: [36, 37, 38, 39]
+        python: [37, 38, 39, 310]
     steps:
       - name: Checkout
         uses: actions/checkout@v2

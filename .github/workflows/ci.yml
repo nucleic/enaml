@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10.0-rc.1']
+        python-version: ['3.7', '3.8', '3.9', '3.10.0-rc.2']
         qt-binding: [pyqt5, pyside2]
       fail-fast: false
     steps:
@@ -70,7 +70,7 @@ jobs:
         run: |
           pip install pytest pytest-cov
       - name: Install pytest-qt
-        if: matrix.python-version != '3.10.0-rc.1'
+        if: matrix.python-version != '3.10.0-rc.2'
         run: |
           pip install  pytest-qt
       - name: Run tests (Windows, Mac)
