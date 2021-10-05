@@ -23,7 +23,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.10.0-rc.2']
-        qt-binding: [pyside2]
+        qt-binding: [pyqt5]
       fail-fast: false
     steps:
       - name: Install linux only test dependency
@@ -51,7 +51,8 @@ jobs:
           pip install https://github.com/nucleic/kiwi/tarball/main
       - name: Install Qt bindings
         run: |
-          pip install numpy qtpy '${{matrix.qt-binding}}'
+          pip install numpy qtpy
+          pip install --index-url https://riverbankcomputing.com/pypi/simple/ --pre --upgrade '${{matrix.qt-binding}}'
       - name: Install extra dependencies
         if: matrix.python-version == '3.9'
         run: |
