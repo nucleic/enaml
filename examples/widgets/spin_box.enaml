@@ -25,5 +25,5 @@ enamldef Main(Window):
             maximum = 100
             minimum = 0
         Field: fld:
-            text << u'Age: {}'.format(sbox.value)
+            text << 'Age: {}'.format(sbox.value)
             read_only = True

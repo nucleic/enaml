@@ -26,17 +26,17 @@ with enaml.imports():
     from .workbench_window import WorkbenchWindow
 
 
-ACTIONS_POINT = u'enaml.workbench.ui.actions'
+ACTIONS_POINT = 'enaml.workbench.ui.actions'
 
-APPLICATION_FACTORY_POINT = u'enaml.workbench.ui.application_factory'
+APPLICATION_FACTORY_POINT = 'enaml.workbench.ui.application_factory'
 
-BRANDING_POINT = u'enaml.workbench.ui.branding'
+BRANDING_POINT = 'enaml.workbench.ui.branding'
 
-WINDOW_FACTORY_POINT = u'enaml.workbench.ui.window_factory'
+WINDOW_FACTORY_POINT = 'enaml.workbench.ui.window_factory'
 
-WORKSPACES_POINT = u'enaml.workbench.ui.workspaces'
+WORKSPACES_POINT = 'enaml.workbench.ui.workspaces'
 
-AUTOSTART_POINT = u'enaml.workbench.ui.autostart'
+AUTOSTART_POINT = 'enaml.workbench.ui.autostart'
 
 
 class UIPlugin(Plugin):

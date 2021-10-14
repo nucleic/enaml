@@ -61,7 +61,7 @@ def _comma_split(text):
         return cache[text]
     if len(cache) >= _MAX_CACHE:
         cache.clear()
-    result = tuple(s.strip() for s in text.split(u',') if s)
+    result = tuple(s.strip() for s in text.split(',') if s)
     cache[text] = result
     return result
 

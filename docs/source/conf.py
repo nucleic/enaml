@@ -67,8 +67,8 @@ source_suffix = '.rst'
 main_doc = 'index'
 
 # General information about the project.
-project = u'Enaml'
-copyright = u'2013-2020, Nucleic Development Team'
+project = 'Enaml'
+copyright = '2013-2021, Nucleic Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -248,8 +248,8 @@ htmlhelp_basename = 'enamldoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'enaml.tex', u'Enaml Documentation',
-   u'Nucleic Development Team', 'manual'),
+  ('index', 'enaml.tex', 'Enaml Documentation',
+   'Nucleic Development Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -281,18 +281,18 @@ latex_domain_indices = True
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'enaml', u'Enaml Documentation',
-     [u'Nucleic Development Team'], 1)
+    ('index', 'enaml', 'Enaml Documentation',
+     'Nucleic Development Team'], 1)
 ]
 
 
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'Enaml'
-epub_author = u'Chris Colbert'
-epub_publisher = u'Nucleic Development Team'
-epub_copyright = u'2013, Nucleic Development Team'
+epub_title = 'Enaml'
+epub_author = 'Chris Colbert'
+epub_publisher = 'Nucleic Development Team'
+epub_copyright = '2013-2021, Nucleic Development Team'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

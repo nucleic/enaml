@@ -141,9 +141,9 @@ class QtDockItem(QtWidget, ProxyDockItem):
             if t:
                 parts.append(t)
         if len(parts) > 0:
-            stylesheet = u'\n\n'.join(parts)
+            stylesheet = '\n\n'.join(parts)
         else:
-            stylesheet = u''
+            stylesheet = ''
         self.widget.setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------

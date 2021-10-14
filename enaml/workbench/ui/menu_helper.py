@@ -94,11 +94,11 @@ class PathNode(Atom):
         """ Get the sanitized path for the node.
 
         """
-        path = self.item.path.rstrip(u'/')
+        path = self.item.path.rstrip('/')
         if not path:
-            return u'/'
-        if path[0] != u'/':
-            return u'/' + path
+            return '/'
+        if path[0] != '/':
+            return '/' + path
         return path
 
     @property
@@ -106,15 +106,15 @@ class PathNode(Atom):
         """ Get the sanitized path of the parent node.
 
         """
-        path = self.path.rsplit(u'/', 1)[0]
-        return path or u'/'
+        path = self.path.rsplit('/', 1)[0]
+        return path or '/'
 
     @property
     def id(self):
         """ Get the id portion of the path.
 
         """
-        return self.path.rsplit(u'/', 1)[1]
+        return self.path.rsplit('/', 1)[1]
 
     def assemble(self):
         """ Assemble the menu or action object for the node.
@@ -169,9 +169,9 @@ class MenuNode(PathNode):
                 raise ValueError(msg % (self.path, group.id))
             group_map[group.id] = group
 
-        if u'' not in group_map:
+        if '' not in group_map:
             group = ItemGroup()
-            group_map[u''] = group
+            group_map[''] = group
             item_groups.append(group)
 
         return group_map, item_groups
@@ -257,7 +257,7 @@ class RootMenuNode(MenuNode):
 
         """
         group = ItemGroup()
-        return {u'': group}, [group]
+        return {'': group}, [group]
 
     def assemble(self):
         """ Assemble and return the list of root menu bar menus.
@@ -300,7 +300,7 @@ def create_menus(workbench, menu_items, action_items):
     # assemble the menu nodes into a tree structure in two passes
     # in order to maintain the relative item definition order
     root = RootMenuNode()
-    node_map = {u'/': root}
+    node_map = {'/': root}
     for node in menu_nodes:
         path = node.path
         if path in node_map:

@@ -737,7 +737,7 @@ class QDockItem(QFrame):
             self._alert_data = None
             app = QApplication.instance()
             app.focusChanged.disconnect(self._onAppFocusChanged)
-            self.alerted.emit(u'')
+            self.alerted.emit('')
 
     #--------------------------------------------------------------------------
     # Private API
@@ -760,7 +760,7 @@ class QDockItem(QFrame):
                 data.remaining -= 1
                 if data.remaining > 0:
                     data.timer.start(data.off)
-                    self.alerted.emit(u'')
+                    self.alerted.emit('')
                 elif data.persist:
                     data.timer.stop()
                     self.alerted.emit(data.level)
@@ -778,9 +778,9 @@ class QDockItem(QFrame):
         level = level or None
         title_bar = self.titleBarWidget()
         label = title_bar.label()
-        self.setProperty(u'alert', level)
-        title_bar.setProperty(u'alert', level)
-        label.setProperty(u'alert', level)
+        self.setProperty('alert', level)
+        title_bar.setProperty('alert', level)
+        label.setProperty('alert', level)
         repolish(label)
         repolish(title_bar)
         repolish(self)

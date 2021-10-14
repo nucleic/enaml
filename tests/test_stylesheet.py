@@ -23,8 +23,8 @@ def test_setter_data():
 
     """)
     setter = compile_source(source, 'MySetter')()
-    assert setter.field == u'background'
-    assert setter.value == u'blue'
+    assert setter.field == 'background'
+    assert setter.value == 'blue'
 
 
 def test_style_data():
@@ -40,11 +40,11 @@ def test_style_data():
 
     """)
     style = compile_source(source, 'MyStyle')()
-    assert style.element == u'PushButton'
-    assert style.style_class == u'button'
-    assert style.object_name == u'pb1'
-    assert style.pseudo_class == u'pressed'
-    assert style.pseudo_element == u'menu-indicator'
+    assert style.element == 'PushButton'
+    assert style.style_class == 'button'
+    assert style.object_name == 'pb1'
+    assert style.pseudo_class == 'pressed'
+    assert style.pseudo_element == 'menu-indicator'
 
 
 def test_style_setters():

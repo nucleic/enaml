@@ -15,7 +15,7 @@ from .command import Command
 from .execution_event import ExecutionEvent
 
 
-COMMANDS_POINT = u'enaml.workbench.core.commands'
+COMMANDS_POINT = 'enaml.workbench.core.commands'
 
 
 class CorePlugin(Plugin):

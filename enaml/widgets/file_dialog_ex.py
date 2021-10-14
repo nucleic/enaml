@@ -101,7 +101,7 @@ class FileDialogEx(ToolkitDialog):
         if dialog.exec_native():
             if dialog.selected_paths:
                 return dialog.selected_paths[0]
-        return u''
+        return ''
 
     @staticmethod
     def get_open_file_name(parent=None, **kwargs):
@@ -128,7 +128,7 @@ class FileDialogEx(ToolkitDialog):
         if dialog.exec_native():
             if dialog.selected_paths:
                 return dialog.selected_paths[0]
-        return u''
+        return ''
 
     @staticmethod
     def get_open_file_names(parent=None, **kwargs):
@@ -181,7 +181,7 @@ class FileDialogEx(ToolkitDialog):
         if dialog.exec_native():
             if dialog.selected_paths:
                 return dialog.selected_paths[0]
-        return u''
+        return ''
 
     def exec_native(self):
         """ Open the dialog using a native OS dialog if available.
@@ -223,4 +223,4 @@ class FileDialogEx(ToolkitDialog):
         """
         super(FileDialogEx, self)._prepare()
         self.selected_paths = []
-        self.selected_name_filter = u''
+        self.selected_name_filter = ''

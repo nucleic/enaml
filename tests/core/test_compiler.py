@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2020, Nucleic Development Team.
+# Copyright (c) 2020-2021, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -58,3 +58,6 @@ def test_validate_declarative_2():
 
     ftb = "\n".join(tb.format_tb(exc.tb))
     assert " validate_declarative" not in ftb
+
+
+# XXX add test regarding handling of with statement

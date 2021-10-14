@@ -16,7 +16,7 @@ def get_style_sheet(name):
     """ This is a deprecated function.
 
     """
-    return _style_sheets.get(name, u'')
+    return _style_sheets.get(name, '')
 
 
 def register_style_sheet(name, sheet):

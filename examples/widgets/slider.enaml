@@ -22,7 +22,7 @@ enamldef Main(Window):
         Label:
             text = 'Log Value'
         Field:
-            text << u'{}'.format(math.log(slider.value))
+            text << '{}'.format(math.log(slider.value))
             read_only = True
         Slider: slider:
             tick_interval = 50

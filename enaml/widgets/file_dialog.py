@@ -117,7 +117,7 @@ class FileDialog(ToolkitObject):
         self.proxy.exec_()
         if self.result == 'accepted':
             return self.path
-        return u''
+        return ''
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -142,7 +142,7 @@ class FileDialog(ToolkitObject):
         self.result = result
         if result == 'accepted':
             self.paths = paths
-            self.path = paths[0] if paths else u''
+            self.path = paths[0] if paths else ''
             self.selected_filter = selected_filter
             self.accepted(self.path)
         else:

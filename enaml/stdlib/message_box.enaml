@@ -254,7 +254,7 @@ template _BodyCommand(HasDetails: True):
 template _MessageBoxBody(HasImage, HasContent, HasDetails):
     TaskDialogInstructionArea:
         Label:
-            text = nonlocals(1).text or u''
+            text = nonlocals(1).text or ''
             style_class = 'task-dialog-instructions'
     _BodyImage(HasImage): pass
     _BodyContent(HasContent): pass

@@ -14,7 +14,7 @@ from .window_model import WindowModel
 
 
 def make_title(primary, workspace):
-    return u' - '.join(filter(None, (primary, workspace)))
+    return ' - '.join(filter(None, (primary, workspace)))
 
 
 enamldef WorkbenchWindow(MainWindow):

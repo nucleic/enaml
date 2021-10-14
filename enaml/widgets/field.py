@@ -165,4 +165,4 @@ class Field(Control):
         """
         if self.proxy_is_active:
             return self.proxy.field_text()
-        return u''
+        return ''

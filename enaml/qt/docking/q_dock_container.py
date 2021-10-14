@@ -288,7 +288,7 @@ class QDockContainer(QDockFrame):
         item = self.dockItem()
         if item is not None:
             return item.title()
-        return u''
+        return ''
 
     def icon(self):
         """ Get the icon for the container.
