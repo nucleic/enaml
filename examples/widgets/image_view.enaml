@@ -41,4 +41,5 @@ enamldef Main(Window):
             items = sorted(IMAGES.keys())
             index = 0
         ImageView: img:
+            hug_width = "strong"
             image << IMAGES[cbox.selected_item]
