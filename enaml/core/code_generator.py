@@ -1,16 +1,42 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2020, Nucleic Development Team.
+# Copyright (c) 2013-2021, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+import ast
 from contextlib import contextmanager
 
 import bytecode as bc
 from atom.api import Atom, Bool, Int, List, Str
 
-from ..compat import POS_ONLY_ARGS, PY38, PY39
+from ..compat import POS_ONLY_ARGS, PY38, PY39, PY310
+
+
+class _ReturnNoneIdentifier(ast.NodeVisitor):
+    """Visit top level nodes looking for return None."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        # Lines on which an explicit return None or return exist
+        self.lines = set()
+
+    def visit_Return(self, node: ast.Return) -> None:
+        if not node.value or (
+            isinstance(node.value, ast.Constant) and node.value.value is None
+        ):
+            self.lines.add(node.lineno)
+
+    # Do not inspect nodes in which a return None won't be relevant.
+    def visit_AsyncFunctionDef(self, node):
+        pass
+
+    def visit_FunctionDef(self, node):
+        pass
+
+    def visit_ClassDef(self, node):
+        pass
 
 
 class CodeGenerator(Atom):
@@ -433,12 +459,29 @@ class CodeGenerator(Atom):
         """ Insert the compiled code for a Python Module ast or string.
 
         """
+        if PY310:
+            _inspector = _ReturnNoneIdentifier()
+            _inspector.visit(pydata)
         code = compile(pydata, self.filename, mode='exec')
         bc_code = bc.Bytecode.from_code(code)
-        # Skip the LOAD_CONST RETURN_VALUE pair if it exists (on Python 3.10+
-        # if the module ends on a raise, that pair which is unreachable is ommitted)
-        if trim and bc_code[-1].name == "RETURN_VALUE":
+        # On python 3.10 with a with or try statement the implicit return None
+        # can be duplicated. We remove return None from all basic blocks when
+        # it was not present in the AST
+        if PY310:
+            cfg = bc.ControlFlowGraph.from_bytecode(bc_code)
+            for block in cfg:
+                if (
+                    block[-1].name == "RETURN_VALUE"
+                    and block[-2].name == "LOAD_CONST"
+                    and block[-2].arg is None
+                    and block[-1].lineno not in _inspector.lines
+                ):
+                    del block[-2:]
+            bc_code = cfg.to_bytecode()
+        # Skip the LOAD_CONST RETURN_VALUE pair if it exists
+        elif trim and bc_code[-1].name == "RETURN_VALUE":
             bc_code = bc_code[:-2]
+
         self.code_ops.extend(bc_code)
 
     def insert_python_expr(self, pydata, trim=True):

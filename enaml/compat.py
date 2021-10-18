@@ -16,6 +16,8 @@ PY38 = POS_ONLY_ARGS = sys.version_info >= (3, 8)
 
 PY39 = sys.version_info >= (3, 9)
 
+PY310 = sys.version_info >= (3, 10)
+
 
 STRING_ESCAPE_SEQUENCE_RE = re.compile(r'''
     ( \\U........      # 8-digit hex escapes
