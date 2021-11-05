@@ -25,6 +25,9 @@ jobs:
         python-version: ['3.7', '3.8', '3.9', '3.10.0']
         qt-binding: [pyqt5, pyside2]
       fail-fast: false
+      exclude:
+        - python-version: '3.10.0'
+          qt-binding: pyside2
     steps:
       - name: Install linux only test dependency
         if: matrix.os == 'ubuntu-latest'
