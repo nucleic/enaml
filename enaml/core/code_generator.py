@@ -469,7 +469,9 @@ class CodeGenerator(Atom):
         # it was not present in the AST
         if PY310:
             cfg = bc.ControlFlowGraph.from_bytecode(bc_code)
-            for block in cfg:
+            new_end = None
+            last_block = cfg[-1]
+            for block in list(cfg):
                 if (
                     block[-1].name == "RETURN_VALUE"
                     and block[-2].name == "LOAD_CONST"
@@ -477,6 +479,16 @@ class CodeGenerator(Atom):
                     and block[-1].lineno not in _inspector.lines
                 ):
                     del block[-2:]
+                    # If we have multiple block jump to the end of the last block
+                    # to execute the code that may be appended to this block
+                    if block is not last_block:
+                        # We use a NOP to be sure to always have a valid jump target
+                        new_end = new_end or cfg.add_block([bc.Instr("NOP")])
+                        block.append(bc.Instr("JUMP_FORWARD", new_end))
+
+            if new_end is not None:
+                last_block.next_block = new_end
+
             bc_code = cfg.to_bytecode()
         # Skip the LOAD_CONST RETURN_VALUE pair if it exists
         elif trim and bc_code[-1].name == "RETURN_VALUE":
