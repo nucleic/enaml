@@ -1,11 +1,11 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2021, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-import sys
+import ast
 
 from . import compiler_common as cmn
 from .enaml_ast import Module
@@ -183,7 +183,7 @@ class EnamlCompiler(cmn.CompilerBase):
         # Generate the startup code for the module.
         cg.set_lineno(1)
         for start in STARTUP:
-            cg.insert_python_block(start)
+            cg.insert_python_block(ast.parse(start))
 
         # Create the template map.
         cg.build_map()
@@ -198,7 +198,7 @@ class EnamlCompiler(cmn.CompilerBase):
 
         # Generate the cleanup code for the module.
         for end in CLEANUP:
-            cg.insert_python_block(end)
+            cg.insert_python_block(ast.parse(end))
 
         # Finalize the ops and return the code object.
         cg.load_const(None)
