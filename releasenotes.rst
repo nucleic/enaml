@@ -11,7 +11,7 @@ Dates are written as DD/MM/YYYY
 - add support for styling notebook tabs PR #452
 - drop official support for Python 3.6 and add minimal support for Python 3.10
   As with earlier Python version, support for 3.10 is currently limited to running on
-  Python 3.10 excluding any features that were added on Python 3.10
+  Python 3.10 excluding any features that were added in Python 3.10
 
 0.13.0 - 19/04/2021
 -------------------
