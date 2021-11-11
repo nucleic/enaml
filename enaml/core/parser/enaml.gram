@@ -232,7 +232,18 @@ decl_funcdef:
 # --- Template -------------------------------------------------------------------------
 
 template[enaml_ast.Template]:
-    | a=[pragmas] "template" b=NAME '(' c=template_params ')' &&':' d=template_body {}
+    | a=[pragmas] "template" b=NAME '(' c=template_params ')' &&':' d=template_body {
+        self.validate_template(
+            enaml_ast.Template(
+                name=b,
+                parameters=c,
+                docstring=d[0],
+                body=d[1],
+                pragmas=a,
+                LOCATIONS
+            )
+        )
+    }
 
 template_body[Tuple[str, list]]
     | NEWLINE INDENT a=template_item+ DEDENT { "", a }
@@ -247,7 +258,12 @@ template_simple_item:
     | storage_expr
     | 'pass' NEWLINE
 template_params:
-    | a=','.template_param* b=[',' '*' c=NAME { c }] {}
+    | a=','.template_param* b=[',' '*' c=NAME { c }] {
+        enaml_ast.TemplateParameters(
+            **self.validate_template_paramlist(a, b)
+            LOCATIONS,
+        )
+    }
 template_param:
     | NAME ':' test { }
     | NAME '=' test { }
