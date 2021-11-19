@@ -249,6 +249,7 @@ template_body[Tuple[str, list]]
     | NEWLINE INDENT a=template_item+ DEDENT { "", a }
     | NEWLINE INDENT d=STRING NEWLINE a=template_item+ DEDENT { d, a }
     | a=template_simple_item { "", [a] }
+    | invalid_block
 template_item:
     | template_simple_item
     | child_def
@@ -256,7 +257,7 @@ template_item:
 template_simple_item:
     | alias_expr
     | storage_expr
-    | 'pass' NEWLINE
+    | 'pass' NEWLINE { None }
 template_params:
     | a=','.template_param* b=[',' '*' c=NAME { c }] {
         enaml_ast.TemplateParameters(
@@ -265,32 +266,83 @@ template_params:
         )
     }
 template_param:
-    | NAME ':' test { }
-    | NAME '=' test { }
-    | NAME { }
+    | a=NAME ':' b=test {
+        enaml_ast.PositionalParameter(
+            name=a,
+            specialization=enaml_ast.PythonExpression(
+                ast=ast.Expression(body=b),
+                LOCATIONS,
+            )
+            LOCATIONS,
+        )
+      }
+    | a=NAME '=' b=test {
+        enaml_ast.KeywordParameter(
+            name=a,
+            default=enaml_ast.PythonExpression(
+                ast=ast.Expression(body=b),
+                LOCATIONS,
+            ),
+            LOCATIONS,
+        )
+      }
+    | a=NAME { enaml_ast.PositionalParameter(name=a, LOCATIONS) }
 
 # --- Template instantiation -----------------------------------------------------------
 
 template_inst:
-    | a=[pragmas] b=NAME '(' c=template_args ')' d=[':' z=template_ids { z }] ':' template_inst_body {
-
+    | a=[pragmas] b=NAME '(' c=template_args ')' d=[':' z=template_ids { z }] ':' e=template_inst_body {
+        self.validate_template_inst(
+            enaml_ast.TemplateInst(
+                name=b,
+                arguments=c,
+                identifiers=d,
+                pragmas=a,
+                body=[tib for tib in e if tib],
+                LOCATIONS,
+            )
+        )
      }
 template_args:
     | a=','.template_argument* b=[',' '*' z=NAME { z }] {
-
+        enaml_ast.TemplateArguments(
+            args=a,
+            stararg=enaml_ast.PythonExpression(
+                ast=ast.Expression(body=b),
+                LOCATIONS,
+            ),
+            LOCATIONS,
+        )
      }
 template_argument:
-    | a=test { }
-    | a=test b=for_if_clauses
+    | a=test {
+        enaml_ast.PythonExpression(
+            ast=ast.Expression(body=a, LOCATIONS),
+            LOCATIONS,
+        )
+      }
+    | a=test b=for_if_clauses {
+        enaml_ast.PythonExpression(
+            ast.GeneratorExp(elt=a, generators=b, LOCATIONS),
+            LOCATIONS,
+      }
 template_ids:
-    | a=','.NAME* b=[',' '*' z=NAME { z }] { }
+    | a=','.NAME* b=[',' '*' z=NAME { z }] {
+        enaml_ast.TemplateIdentifiers(names=a, starname=b, LOCATIONS)
+      }
 template_inst_body:
-    | NEWLINE INDENT template_inst_item+ DEDENT
-    | template_inst_item
+    | NEWLINE INDENT a=template_inst_item+ DEDENT { a }
+    | a=template_inst_item { a }
     | invalid_block
 template_inst_item:
-    | a=dec_primary operator_expr
-    | 'pass' NEWLINE
+    | a=dec_primary b=operator_expr {
+        enaml_ast.TemplateInstBinding(
+            name=a,  # XXX change API to directly use the proper python AST
+            exp=b,
+            LOCATIONS,
+        )
+      }
+    | 'pass' NEWLINE { None }
 
 # --- Inherited Python grammar ---------------------------------------------------------
 
