@@ -173,7 +173,7 @@ setup(
       ],
     python_requires='>=3.7',
     requires=['atom', 'qtpy', 'ply', 'kiwisolver'],
-    install_requires=['atom>0.6.0',  # XXX update te for 0.14.0 final
+    install_requires=['atom>=0.7.0',
                       'kiwisolver>=1.2.0',
                       'ply>=3.4',
                       "bytecode>=0.11.0"

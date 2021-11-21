@@ -3,7 +3,7 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.14.0 - unreleased
+0.14.0 - 21/11/2021
 -------------------
 - use enum.IntEnum/IntFlag instead of atom.IntEnum PR #453
 - fix operator bindings in template instances PR #445
