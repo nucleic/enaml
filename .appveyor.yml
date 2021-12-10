@@ -83,9 +83,9 @@ install:
 
   # At the time of writing, the setup.py says Enaml depends on a dev version
   # of Atom which is not on PyPI. Install straight from GitHub.
-  - pip install https://github.com/nucleic/cppy/tarball/main
-  - pip install https://github.com/nucleic/atom/tarball/main
-  - pip install https://github.com/nucleic/kiwi/tarball/main
+  - pip install git+https://github.com/nucleic/cppy@main
+  - pip install git+https://github.com/nucleic/atom@main
+  - pip install git+https://github.com/nucleic/kiwi@main
 
   - if %PYQT_VERSION%==5 pip install pyqt5
   - ps: if ($env:QT_API -eq "pyside2") {pip install pyside2}
