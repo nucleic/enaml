@@ -55,10 +55,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install ply
-          pip install https://github.com/MatthieuDartiailh/bytecode/tarball/main
-          pip install https://github.com/nucleic/cppy/tarball/main
-          pip install https://github.com/nucleic/atom/tarball/main
-          pip install https://github.com/nucleic/kiwi/tarball/main
+          pip install git+https://github.com/MatthieuDartiailh/bytecode@main
+          pip install git+https://github.com/nucleic/cppy@main
+          pip install git+https://github.com/nucleic/atom@main
+          pip install git+https://github.com/nucleic/kiwi@main
       - name: Install Qt bindings
         run: |
           pip install numpy qtpy '${{matrix.qt-binding}}'
