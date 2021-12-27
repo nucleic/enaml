@@ -1,3 +1,4 @@
+wheel
 git+https://github.com/nucleic/cppy@main
 git+https://github.com/nucleic/atom@main
 git+https://github.com/nucleic/kiwi@main
