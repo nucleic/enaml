@@ -87,6 +87,9 @@ versions >=3.6, it can be installed via pip::
     Currently, you can use either [qt5-pyqt] to use PyQt5 or [qt5-pyside] to
     use Pyside2.
 
+.. _enaml-web: https://github.com/codelv/enaml-web
+.. _enaml-native: https://github.com/codelv/enaml-native
+
 Compiling it yourself: The Hard Way
 -----------------------------------
 
