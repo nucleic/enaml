@@ -7,8 +7,8 @@ Installation
 Installing Enaml is a straight-forward process. There are three approaches to
 choose from.
 
-Anaconda: The Easiest Way
--------------------------
+Anaconda
+--------
 
 If you use the `Anaconda`_ Python distribution platform (or `Miniconda`_,
 its lighter-weight companion), the latest release of Enaml can be installed
@@ -19,8 +19,8 @@ using conda from the conda-forge channel::
 .. _Anaconda: https://store.continuum.io/cshop/anaconda
 .. _Miniconda: https://conda.io/miniconda.html
 
-Wheels: The Pretty Easy Way
----------------------------
+Wheels
+------
 
 If you don't use Anaconda, you can install Enaml and its dependencies,
 pre-compiled, through PIP, for most common platforms.
@@ -35,8 +35,13 @@ Python
 ~~~~~~
 
 Enaml is a Python framework and requires a supported Python runtime. Enaml
-currently supports **Python 3.6**, **Python 3.7**, **Python 3.8** and
-**Python 3.9**.
+currently supports **Python 3.7**, **Python 3.8**, **Python 3.9** and
+**Python 3.10**.
+
+.. note::
+
+    Currently Enaml does support the match syntax introduced in Python 3.10 in
+    .enaml files
 
 The most recent Python releases are available on the `Python Downloads`_ pages.
 Installers are available for Windows and OSX. Linux users should install Python
@@ -58,11 +63,13 @@ Toolkit Rendering Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Enaml's declarative widgets provide a layer of abstraction on top of the
-widgets of a toolkit rendering library. You will need to install this
-dependency separately.
+widgets of a toolkit rendering library. Enaml ships with a backend based on Qt5
+and third-party projects such as `enaml-web`_ and `enaml-native`_ provides
+alternative backends.
 
-The recommended library is `PyQt5`_,  a robust set of Python bindings to the
-Qt 5 toolkit.  (It includes the necessary parts of Qt 5.)
+Enaml uses the `QtPy`_ library as compatibility layer to support transparently both
+PyQt and PySide. PyQt has been supported for a longer time and has been more
+heavily tested.
 
 On 32 and 64-bit Windows, 64-bit OS X and 64-bit Linux, with Python
 versions >=3.6, it can be installed via pip::
@@ -77,25 +84,8 @@ versions >=3.6, it can be installed via pip::
 
     $ pip install enaml[qt5-pyqt]
 
-    Currently, you can use either [qt5-pyqt] or [qt5-pyside] to use either PyQt5
-    or Pyside2.
-
-Alternatives
-++++++++++++
-
-Enaml uses the `QtPy`_ library as compatibility layer to support some other
-QT-based libraries.
-
-* `PySide2`_ (a.k.a. Qt for Python) is a set of Python bindings to the Qt 5 toolkit.
-  As of 0.12.0 PySide2 is fully supported. However it has not been as heavily
-  tested as the PyQt5 backend in real world applications.
-
-  To activate PySide2 support, install `PySide2`_ separately. If multiple backends
-  are installed, set the environment variable ``QT_API=pyside2`` before starting
-  the Enaml application.
-
-* While Enaml is architected to be toolkit agnostic, only Qt-based toolkit libraries are
-  supported. There are third-party projects that provide support for other back-ends.
+    Currently, you can use either [qt5-pyqt] to use PyQt5 or [qt5-pyside] to
+    use Pyside2.
 
 Compiling it yourself: The Hard Way
 -----------------------------------
@@ -108,7 +98,7 @@ the `Git`_ command line tools installed and available on the system path.
 .. _Git: http://git-scm.com
 
 `Setuptools`_ and `Pip`_
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Setuptools is a Python package which makes installing other Python packages a
 breeze. Pip is the default package manager for Python. The installation
@@ -130,7 +120,7 @@ instructions for adding the package to your system.
 
 The Enaml framework extends the grammar Python language with new declarative
 syntax constructs. To accomplish this, Enaml has a fully compliant Python
-3.6/3.7/3.8 lexer and parser with added support for the new syntax. These
+3.7/3.8/3.9 lexer and parser with added support for the new syntax. These
 components are built using the PLY parsing tools, which contain Python
 implementations of lex and yacc.
 
