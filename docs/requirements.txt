@@ -1,3 +1,6 @@
+sphinx>=4
+sphinx-rtd-theme>=1
 git+https://github.com/nucleic/cppy@main
 git+https://github.com/nucleic/atom@main
 git+https://github.com/nucleic/kiwi@main
+tools/pygments

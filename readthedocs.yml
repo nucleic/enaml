@@ -5,8 +5,11 @@ version: 2
 formats:
   - epub
 
+build:
+  tools:
+    python: "3.9"
+
 python:
-  version: 3.8
   install:
      - requirements: docs/rtd_requirements.txt
      - requirements: docs/requirements.txt
