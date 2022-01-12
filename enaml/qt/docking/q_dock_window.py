@@ -95,8 +95,14 @@ class QDockWindowButtons(QFrame):
         link_button.setCheckedBitmap(LINKED_BUTTON.toBitmap())
         link_button.setIconSize(QSize(20, 15))
         link_button.setVisible(self._buttons & self.LinkButton)
-        link_button.setToolTip('Link Window')
-        link_button.setCheckedToolTip('Unlink Window')
+        link_button.setToolTip(
+            'Link Window\n\n'
+            'Floating windows snapped together move together when they are linked.'
+        )
+        link_button.setCheckedToolTip(
+            'Unlink Window\n\n'
+            'Floating windows snapped together move together when they are linked.'
+        )
 
         layout = QHBoxLayout()
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
