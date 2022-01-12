@@ -23,6 +23,7 @@ else:
 from enaml.qt.qt_menu import QCustomMenu
 
 from .event_types import QDockItemEvent, DockTabSelected
+from .q_dock_area import QDockArea
 from .q_bitmap_button import QBitmapButton
 from .q_dock_title_bar import QDockTitleBar
 from .q_dock_placeholder import QDockPlaceholder
@@ -417,16 +418,20 @@ class QDockTabWidget(QTabWidget):
     # Private API
     #--------------------------------------------------------------------------
     def parentDockArea(self):
-        """ Return the parent dock area if any.
+        """ Get the parent dock area of the container.
+
+        Returns
+        -------
+        result : QDockArea or None
+            The nearest ancestor which is an instance of QDockArea, or
+            None if no such ancestor exists.
 
         """
-        container = self.widget(0)
-        if container is None:
-            return
-        manager = container.manager()
-        if manager is None:
-            return
-        return manager.dock_area()
+        parent = self.parent()
+        while parent is not None:
+            if isinstance(parent, QDockArea):
+                return parent
+            parent = parent.parent()
 
     def _onTabCloseRequested(self, index):
         """ Handle the close request for the given tab index.
