@@ -198,6 +198,9 @@ class QDockWindow(QDockFrame):
         #: Whether or not the window is being dragged by the user.
         dragging = Bool(False)
 
+        #: Whether a dock item is in the process of being pinned.
+        in_pin_event = Bool(False)
+
         #: Whether the window is inside it's close event.
         in_close_event = Bool(False)
 
@@ -365,7 +368,11 @@ class QDockWindow(QDockFrame):
         will close the window when the dock area is empty.
 
         """
-        if event.type() == DockAreaContentsChanged and area.isEmpty():
+        if (
+            event.type() == DockAreaContentsChanged
+            and not self.frame_state.in_pin_event
+            and area.isEmpty()
+        ):
             # Hide the window so that it doesn't steal events from
             # the floating window when this window is closed.
             self.hide()
