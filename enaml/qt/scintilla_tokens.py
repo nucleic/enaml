@@ -465,6 +465,7 @@ TOKENS = {
         "decorator": "Decorator",
         "default": "Default",
         "double_quoted_string": "DoubleQuotedString",
+        "double_quoted_fstring": "DoubleQuotedFString",
         "function_method_name": "FunctionMethodName",
         "highlighted_identifier": "HighlightedIdentifier",
         "identifier": "Identifier",
@@ -472,8 +473,11 @@ TOKENS = {
         "number": "Number",
         "operator": "Operator",
         "single_quoted_string": "SingleQuotedString",
+        "single_quoted_fstring": "SingleQuotedFString",
         "triple_double_quoted_string": "TripleDoubleQuotedString",
+        "triple_double_quoted_fstring": "TripleDoubleQuotedFString",
         "triple_single_quoted_string": "TripleSingleQuotedString",
+        "triple_single_quoted_fstring": "TripleSingleQuotedFString",
         "unclosed_string": "UnclosedString"
     },
     "ruby": {
