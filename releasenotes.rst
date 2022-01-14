@@ -3,6 +3,10 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+0.15.0 - Unreleased
+-------------------
+- Add python fstring scintilla tokens PR #470
+
 0.14.0 - 21/11/2021
 -------------------
 - use enum.IntEnum/IntFlag instead of atom.IntEnum PR #453
