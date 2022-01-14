@@ -298,35 +298,35 @@ class DockOverlay(Atom):
             if bar_rect.isValid():
                 rect = bar_rect
             else:
-                rect.setHeight(border_size / 2)
+                rect.setHeight(border_size // 2)
         elif guide == Guide.BorderExEast:
             bar_rect = widget.dockBarGeometry(QDockBar.East)
             if bar_rect.isValid():
                 rect = bar_rect
             else:
-                rect.setLeft(rect.right() + 1 - border_size / 2)
+                rect.setLeft(rect.right() + 1 - border_size // 2)
         elif guide == Guide.BorderExSouth:
             bar_rect = widget.dockBarGeometry(QDockBar.South)
             if bar_rect.isValid():
                 rect = bar_rect
             else:
-                rect.setTop(rect.bottom() + 1 - border_size / 2)
+                rect.setTop(rect.bottom() + 1 - border_size // 2)
         elif guide == Guide.BorderExWest:
             bar_rect = widget.dockBarGeometry(QDockBar.West)
             if bar_rect.isValid():
                 rect = bar_rect
             else:
-                rect.setWidth(border_size / 2)
+                rect.setWidth(border_size // 2)
 
         # compass hits
         elif guide == Guide.CompassNorth:
-            rect.setHeight(rect.height() / 3)
+            rect.setHeight(rect.height() // 3)
         elif guide == Guide.CompassEast:
-            rect.setLeft(2 * rect.width() / 3)
+            rect.setLeft(2 * rect.width() // 3)
         elif guide == Guide.CompassSouth:
-            rect.setTop(2 * rect.height() / 3)
+            rect.setTop(2 * rect.height() // 3)
         elif guide == Guide.CompassWest:
-            rect.setWidth(rect.width() / 3)
+            rect.setWidth(rect.width() // 3)
         elif guide == Guide.CompassCenter:
             pass  # nothing to do
         elif guide == Guide.CompassExNorth:
@@ -435,7 +435,7 @@ class DockOverlay(Atom):
             self._last_guide = guide
             self._target_band_geo = self._band_geometry(widget, guide)
             self._band_timer.start(self.band_delay)
-        rose.setCenterPoint(QPoint(geo.width() / 2, geo.height() / 2))
+        rose.setCenterPoint(QPoint(geo.width() // 2, geo.height() // 2))
         rose.mouseOver(pos)
         rose.show()
 
@@ -482,7 +482,7 @@ class DockOverlay(Atom):
 
         # Get the local area coordinates for the center of the widget.
         center = widget.mapTo(pane, QPoint(0, 0))
-        center += QPoint(widget.width() / 2, widget.height() / 2)
+        center += QPoint(widget.width() // 2, widget.height() // 2)
 
         # Update the state of the rose. If it is to be hidden, it is
         # done so immediately. If the target mode is different from

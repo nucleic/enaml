@@ -558,8 +558,8 @@ class BorderGuide(GuideHandler):
         guides = self._guides
         w = rect.width()
         h = rect.height()
-        cx = rect.left() + w / 2
-        cy = rect.top() + h / 2
+        cx = rect.left() + w // 2
+        cy = rect.top() + h // 2
         Guide = QGuideRose.Guide
         guides[Guide.BorderNorth].rect = QRect(cx - 15, 27, 31, 19)
         guides[Guide.BorderExNorth].rect = QRect(cx - 15, 15, 31, 10)
