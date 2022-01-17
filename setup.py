@@ -172,7 +172,7 @@ setup(
           'Programming Language :: Python :: Implementation :: CPython',
       ],
     python_requires='>=3.7',
-    requires=['atom', 'qtpy', 'ply', 'kiwisolver'],
+    requires=['atom', 'ply', 'kiwisolver'],
     install_requires=['atom>=0.7.0',
                       'kiwisolver>=1.2.0',
                       'ply>=3.4',
@@ -181,7 +181,9 @@ setup(
     setup_requires=['cppy>=1.1.0'],
     extras_require={
         "qt5-pyqt": ["qtpy", "pyqt5"],
-        "qt5-pyside": ["qtpy", "pyside2"]
+        "qt5-pyside": ["qtpy", "pyside2"],
+        "qt6-pyqt": ["qtpy>=2.0", "pyqt6"],
+        "qt6-pyside": ["qtpy>=2.0", "pyside6"]
     },
     packages=find_packages(),
     package_data={
