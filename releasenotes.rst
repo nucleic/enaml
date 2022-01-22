@@ -5,8 +5,9 @@ Dates are written as DD/MM/YYYY
 
 0.15.0 - Unreleased
 -------------------
-- Add python fstring scintilla tokens PR #470
-- Address PyQt deprecation of accepting float values for pixel dimensions PR #471
+- fixes several bugs in corner cases of the Qt dock area PR #469
+- add python fstring scintilla tokens PR #470
+- address PyQt deprecation of accepting float values for pixel dimensions PR #471
 
 0.14.0 - 21/11/2021
 -------------------
