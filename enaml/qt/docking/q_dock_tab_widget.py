@@ -262,6 +262,9 @@ class QDockTabBar(QTabBar):
         self.setCloseButtonVisible(index, container.closable())
         self._tab_data.insert(index, _TabData(container))
 
+        # Update the visibility of the close button on the overall tab.
+        self.parent().setGlobalCloseButtonVisible()
+
     def tabRemoved(self, index):
         """ Handle a tab removal from the tab bar.
 
@@ -273,6 +276,9 @@ class QDockTabBar(QTabBar):
         container = data.container
         if container is not None:
             container.alerted.disconnect(self._onAlerted)
+
+        # Update the visibility of the close button on the overall tab.
+        self.parent().setGlobalCloseButtonVisible()
 
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the tab bar.
@@ -572,3 +578,14 @@ class QDockTabWidget(QTabWidget):
 
         """
         self.tabBar().setCloseButtonVisible(index, visible)
+
+    def setGlobalCloseButtonVisible(self):
+        """Set the visibility of the global tab close button."""
+
+        corner_widget = self.cornerWidget()
+        buttons = (QDockTitleBar.MaximizeButton | QDockTitleBar.TabsButton)
+        # Update visibility of the close button, we hide the button if no tab is
+        # closable.
+        if any(self.widget(i).closable() for i in range(self.count())):
+            buttons |= QDockTitleBar.CloseButton
+        corner_widget.setButtons(buttons)
