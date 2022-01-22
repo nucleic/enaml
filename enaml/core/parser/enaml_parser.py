@@ -39,12 +39,12 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . create_enaml_module ( a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return self . create_enaml_module ( itertools . chain . from_iterable ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         return None
 
     @memoize
-    def enaml_item(self) -> Optional[ast . AST]:
+    def enaml_item(self) -> Optional[List [ast . AST]]:
         # enaml_item: statement | enamldef | template
         mark = self._mark()
         if (
@@ -53,14 +53,14 @@ class EnamlParser(Parser):
             return statement
         self._reset(mark)
         if (
-            (enamldef := self.enamldef())
+            (a := self.enamldef())
         ):
-            return enamldef
+            return [a]
         self._reset(mark)
         if (
-            (template := self.template())
+            (a := self.template())
         ):
-            return template
+            return [a]
         self._reset(mark)
         return None
 
@@ -91,7 +91,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . validate_enamldef ( enaml_ast . EnamlDef ( typename = a , base = b , identifier = c , docstring = d [0] , body = d [1] , pragmas = p , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . validate_enamldef ( enaml_ast . EnamlDef ( typename = a . string , base = b . string , identifier = c . string if c else '' , docstring = d [0] , body = d [1] , pragmas = p , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
         self._reset(mark)
         return None
 
@@ -112,7 +112,7 @@ class EnamlParser(Parser):
             and
             (_dedent := self.expect('DEDENT'))
         ):
-            return a , [x for x in b if x]
+            return a , [x for x in b if not isintance ( x , ast . Pass )]
         self._reset(mark)
         if (
             (_newline := self.expect('NEWLINE'))
@@ -123,7 +123,7 @@ class EnamlParser(Parser):
             and
             (_dedent := self.expect('DEDENT'))
         ):
-            return "" , [x for x in b if x]
+            return "" , [x for x in b if not isinstance ( x , ast . Pass )]
         self._reset(mark)
         if (
             (a := self.enamldef_simple_item())
@@ -187,7 +187,7 @@ class EnamlParser(Parser):
             and
             (_newline := self.expect('NEWLINE'))
         ):
-            return None
+            return ast . Pass ( )
         self._reset(mark)
         return None
 
@@ -219,7 +219,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . Pragma ( command = a , arguments = b or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . Pragma ( command = a . string , arguments = b or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         return None
 
@@ -230,7 +230,7 @@ class EnamlParser(Parser):
         if (
             (a := self.name())
         ):
-            return enaml_ast . PragmaArg ( kind = "token" , value = a )
+            return enaml_ast . PragmaArg ( kind = "token" , value = a . string )
         self._reset(mark)
         if (
             (a := self.number())
@@ -282,7 +282,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . AliasExpr ( name = a , target = b [0] if b else "" , chain = b [1 :] if b else [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . AliasExpr ( name = a . string , target = b [0] . string if b else a . string , chain = tuple ( p . string for p in b [1 :] ) if b else ( ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         return None
 
@@ -305,7 +305,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . ConstExpr ( name = a , typename = b , expr = d . value , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . ConstExpr ( name = a . string , typename = b , expr = d . value , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         return None
 
@@ -326,7 +326,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . StorageExpr ( name = b , kind = a , typename = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . StorageExpr ( name = b . string , kind = a . string , typename = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         if (
             (a := self._tmp_12())
@@ -339,7 +339,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . StorageExpr ( name = b , kind = a , typename = c , expr = e , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . StorageExpr ( name = b . string , kind = a . string , typename = c , expr = e , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         return None
 
@@ -360,7 +360,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . ChildDef ( typename = a , identifier = b . string if b else "" , body = [x for x in c if x] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . ChildDef ( typename = a . string , identifier = b . string if b else "" , body = [x for x in c if not isinstance ( x , ast . Pass )] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         return None
 
@@ -391,14 +391,14 @@ class EnamlParser(Parser):
         self._reset(mark)
         return None
 
-    @memoize_left_rec
+    @memoize
     def child_def_item(self) -> Optional[Any]:
-        # child_def_item: child_def_item | decl_funcdef | child_def | template_inst
+        # child_def_item: child_def_simple_item | decl_funcdef | child_def | template_inst
         mark = self._mark()
         if (
-            (child_def_item := self.child_def_item())
+            (child_def_simple_item := self.child_def_simple_item())
         ):
-            return child_def_item
+            return child_def_simple_item
         self._reset(mark)
         if (
             (decl_funcdef := self.decl_funcdef())
@@ -446,7 +446,7 @@ class EnamlParser(Parser):
             and
             (_newline := self.expect('NEWLINE'))
         ):
-            return None
+            return ast . Pass ( )
         self._reset(mark)
         return None
 
@@ -463,7 +463,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . Binding ( name = a . value , expr = operator_expr , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . Binding ( name = a . string , expr = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         return None
 
@@ -480,7 +480,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . ExBinding ( chain = tuple ( a ) , expr = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . ExBinding ( chain = tuple ( p . string for p in a ) , expr = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         return None
 
@@ -499,7 +499,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . OperatorExpr ( operator = a , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . OperatorExpr ( operator = a . string , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         if (
             (a := self._tmp_19())
@@ -510,7 +510,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . OperatorExpr ( operator = a , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if isintance ( b , self . INVERTABLE ) else self . raise_syntax_error_known_location ( "can't assign to expression of this form" , b )
+            return enaml_ast . OperatorExpr ( operator = a . string , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if isintance ( b , self . INVERTABLE ) else self . raise_syntax_error_known_location ( "can't assign to expression of this form" , b )
         self._reset(mark)
         if (
             (a := self.expect(':'))
@@ -545,13 +545,35 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . PythonExpression ( expr = ast . Expression ( body = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . PythonExpression ( ast = ast . Expression ( body = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         return None
 
     @memoize
     def decl_funcdef(self) -> Optional[Any]:
-        # decl_funcdef: "func" NAME parameters ['->' expression] &&':' block | NAME '=' '>' parameters ['->' expression] &&':' block
+        # decl_funcdef: 'async' sync_decl_fundef | sync_decl_fundef
+        mark = self._mark()
+        tok = self._tokenizer.peek()
+        start_lineno, start_col_offset = tok.start
+        if (
+            (literal := self.expect('async'))
+            and
+            (a := self.sync_decl_fundef())
+        ):
+            tok = self._tokenizer.get_last_non_whitespace_token()
+            end_lineno, end_col_offset = tok.end
+            return enaml_ast . AsyncFunctionDef ( funcdef = ast . AsyncFunctionDef ( name = a . funcdef . name , args = a . funcdef . args , returns = a . funcdef . returns , body = a . funcdef . body , decorator_list = a . funcdef . decorator_list , ) , is_override = a . is_override , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+        self._reset(mark)
+        if (
+            (sync_decl_fundef := self.sync_decl_fundef())
+        ):
+            return sync_decl_fundef
+        self._reset(mark)
+        return None
+
+    @memoize
+    def sync_decl_fundef(self) -> Optional[Any]:
+        # sync_decl_fundef: "func" NAME parameters ['->' expression] &&':' block | NAME '=' '>' parameters ['->' expression] &&':' block
         mark = self._mark()
         tok = self._tokenizer.peek()
         start_lineno, start_col_offset = tok.start
@@ -570,7 +592,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . FuncDef ( funcdef = ast . FunctionDef ( name = a , args = b , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , is_override = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . FuncDef ( funcdef = ast . FunctionDef ( name = a . string , args = b , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , is_override = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         if (
             (a := self.name())
@@ -589,7 +611,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . FuncDef ( funcdef = ast . FunctionDef ( name = a , args = b , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , is_override = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . FuncDef ( funcdef = ast . FunctionDef ( name = a . string , args = b , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , is_override = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if x . end_col_offset == y . col_offset else self . raise_syntax_error_known_range ( "invalid syntax. Did you mean '=>' ?" , x , y )
         self._reset(mark)
         return None
 
@@ -618,7 +640,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . validate_template ( enaml_ast . Template ( name = b , parameters = c , docstring = d [0] , body = d [1] , pragmas = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . validate_template ( enaml_ast . Template ( name = b . string , parameters = c , docstring = d [0] , body = d [1] , pragmas = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
         self._reset(mark)
         return None
 
@@ -635,7 +657,7 @@ class EnamlParser(Parser):
             and
             (_dedent := self.expect('DEDENT'))
         ):
-            return "" , a
+            return "" , [i for i in a if not isinstance ( i , ast . Pass )]
         self._reset(mark)
         if (
             (_newline := self.expect('NEWLINE'))
@@ -704,7 +726,7 @@ class EnamlParser(Parser):
             and
             (_newline := self.expect('NEWLINE'))
         ):
-            return None
+            return ast . Pass ( )
         self._reset(mark)
         return None
 
@@ -721,7 +743,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . TemplateParameters ( ** self . validate_template_paramlist ( a , b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return enaml_ast . TemplateParameters ( ** self . validate_template_paramlist ( a , b . string ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
         self._reset(mark)
         if (
             (literal := self.expect('*'))
@@ -730,7 +752,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . TemplateParameters ( ** self . validate_template_paramlist ( [] , b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return enaml_ast . TemplateParameters ( ** self . validate_template_paramlist ( [] , b . string ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
         self._reset(mark)
         return None
 
@@ -749,7 +771,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . PositionalParameter ( name = a , specialization = enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return enaml_ast . PositionalParameter ( name = a . string , specialization = enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
         self._reset(mark)
         if (
             (a := self.name())
@@ -760,7 +782,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . KeywordParameter ( name = a , default = enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return enaml_ast . KeywordParameter ( name = a . string , default = enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
         self._reset(mark)
         if (
             (a := self.name())
@@ -773,7 +795,7 @@ class EnamlParser(Parser):
 
     @memoize
     def template_inst(self) -> Optional[Any]:
-        # template_inst: pragmas? NAME '(' template_args ')' [':' template_ids] ':' template_inst_body
+        # template_inst: pragmas? NAME '(' template_args? ')' [':' template_ids] ':' template_inst_body
         mark = self._mark()
         tok = self._tokenizer.peek()
         start_lineno, start_col_offset = tok.start
@@ -784,7 +806,7 @@ class EnamlParser(Parser):
             and
             (literal := self.expect('('))
             and
-            (c := self.template_args())
+            (c := self.template_args(),)
             and
             (literal_1 := self.expect(')'))
             and
@@ -796,13 +818,13 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . validate_template_inst ( enaml_ast . TemplateInst ( name = b , arguments = c , identifiers = d , pragmas = a , body = [tib for tib in e if tib] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) )
+            return self . validate_template_inst ( enaml_ast . TemplateInst ( name = b . string , arguments = c or [] , identifiers = d , pragmas = a , body = [tib for tib in e if tib] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) )
         self._reset(mark)
         return None
 
     @memoize
     def template_args(self) -> Optional[Any]:
-        # template_args: ','.template_argument+ [',' '*' NAME] | '*' NAME
+        # template_args: ','.template_argument+ [',' '*' expression] | '*' expression
         mark = self._mark()
         tok = self._tokenizer.peek()
         start_lineno, start_col_offset = tok.start
@@ -818,7 +840,7 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('*'))
             and
-            (b := self.name())
+            (b := self.expression())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
@@ -863,7 +885,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . TemplateIdentifiers ( names = a , starname = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . TemplateIdentifiers ( names = [p . string for p in a] , starname = b . string , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         if (
             (literal := self.expect('*'))
@@ -872,7 +894,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . TemplateIdentifiers ( names = [] , starname = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . TemplateIdentifiers ( names = [] , starname = b . string , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
         self._reset(mark)
         return None
 
@@ -889,7 +911,7 @@ class EnamlParser(Parser):
             and
             (_dedent := self.expect('DEDENT'))
         ):
-            return a
+            return [i for i in a if not isinstance ( i , ast . Pass )]
         self._reset(mark)
         if (
             (a := self.template_inst_item())
@@ -923,7 +945,7 @@ class EnamlParser(Parser):
             and
             (_newline := self.expect('NEWLINE'))
         ):
-            return None
+            return ast . Pass ( )
         self._reset(mark)
         return None
 
@@ -7166,14 +7188,14 @@ class EnamlParser(Parser):
 
     @memoize
     def _tmp_30(self) -> Optional[Any]:
-        # _tmp_30: ',' '*' NAME
+        # _tmp_30: ',' '*' expression
         mark = self._mark()
         if (
             (literal := self.expect(','))
             and
             (literal_1 := self.expect('*'))
             and
-            (z := self.name())
+            (z := self.expression())
         ):
             return z
         self._reset(mark)
@@ -10255,8 +10277,8 @@ class EnamlParser(Parser):
         self._reset(mark)
         return None
 
-    KEYWORDS = ('as', 'lambda', 'continue', 'def', 'and', 'finally', 'global', 'async', 'try', 'for', 'if', 'or', 'return', 'del', 'elif', 'else', 'assert', 'except', 'import', 'yield', 'break', 'await', 'True', 'from', 'pass', 'in', 'while', 'with', 'not', 'raise', 'False', 'None', 'nonlocal', 'is', 'class')
-    SOFT_KEYWORDS = ('enamldef', 'template', 'const', 'func', 'attr', 'pragma', 'alias', 'case', '_', 'event', 'match')
+    KEYWORDS = ('class', 'yield', 'if', 'try', 'break', 'else', 'return', 'lambda', 'nonlocal', 'None', 'except', 'finally', 'is', 'True', 'False', 'import', 'async', 'for', 'global', 'await', 'def', 'pass', 'with', 'not', 'and', 'elif', 'continue', 'from', 'while', 'or', 'assert', 'raise', 'as', 'del', 'in')
+    SOFT_KEYWORDS = ('alias', 'pragma', 'event', 'enamldef', 'func', '_', 'match', 'attr', 'template', 'case', 'const')
 
 
 if __name__ == '__main__':

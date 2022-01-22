@@ -7,12 +7,12 @@
 # --------------------------------------------------------------------------------------
 import ast
 import warnings
-from typing import Dict, List, Type, Union
+from typing import Dict, Iterable, List, Type, Union
 
 from .. import enaml_ast
 from .base_python_parser import BasePythonParser, Del, Load, Store
 
-
+# XXX doc
 class BaseEnamlParser(BasePythonParser):
     """"""
 
@@ -63,7 +63,7 @@ class BaseEnamlParser(BasePythonParser):
 
     def create_enaml_module(
         self,
-        nodes: List[ast.AST],
+        nodes: Iterable[ast.AST],
         lineno: int,
         col_offset: int,
         end_lineno: int,
@@ -113,13 +113,13 @@ class BaseEnamlParser(BasePythonParser):
         TemplateInst = enaml_ast.TemplateInst
         stack = list(reversed(node.body))
         while stack:
-            node = stack.pop()
-            if isinstance(node, ChildDef):
-                if node.identifier:
-                    check_id(node.identifier, node)
-                stack.extend(reversed(node.body))
-            elif isinstance(node, TemplateInst):
-                idents = node.identifiers
+            n = stack.pop()
+            if isinstance(n, ChildDef):
+                if n.identifier:
+                    check_id(n.identifier, n)
+                stack.extend(reversed(n.body))
+            elif isinstance(n, TemplateInst):
+                idents = n.identifiers
                 if idents is not None:
                     for name in idents.names:
                         check_id(name, idents)
