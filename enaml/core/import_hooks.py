@@ -19,7 +19,7 @@ from importlib.machinery import ModuleSpec
 from importlib.util import module_from_spec, MAGIC_NUMBER
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
-from .parser import parse
+from .parser import parse_file
 from ..compat import read_source, detect_encoding, update_code_co_filename
 
 
@@ -362,7 +362,7 @@ class EnamlImporter(AbstractEnamlImporter):
         """
         file_info = self.file_info
         src_mod_time = self.get_source_modified_time()
-        ast = parse(self.read_source(), file_info.src_path)
+        ast = parse_file(file_info.src_path)
         code = EnamlCompiler.compile(ast, file_info.src_path)
         self._write_cache(code, src_mod_time, file_info)
         return (code, file_info.src_path)

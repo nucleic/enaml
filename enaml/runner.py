@@ -17,9 +17,8 @@ import sys
 import types
 
 from enaml import imports
-from enaml.core.parser import parse
+from enaml.core.parser import parse_file
 from enaml.core.enaml_compiler import EnamlCompiler
-from enaml.compat import read_source
 
 
 def main():
@@ -36,27 +35,25 @@ def main():
         print('No .enaml file specified')
         sys.exit()
     else:
-        enaml_file = args[0]
+        enaml_file_path = args[0]
         script_argv = args[1:]
 
-    enaml_code = read_source(enaml_file)
-
     # Parse and compile the Enaml source into a code object
-    ast = parse(enaml_code, filename=enaml_file)
-    code = EnamlCompiler.compile(ast, enaml_file)
+    ast = parse_file(enaml_file_path)
+    code = EnamlCompiler.compile(ast, enaml_file_path)
 
     # Create a proper module in which to execute the compiled code so
     # that exceptions get reported with better meaning
     module = types.ModuleType('__main__')
-    module.__file__ = os.path.abspath(enaml_file)
+    module.__file__ = os.path.abspath(enaml_file_path)
     sys.modules['__main__'] = module
     ns = module.__dict__
 
     # Put the directory of the Enaml file first in the path so relative
     # imports can work.
-    sys.path.insert(0, os.path.abspath(os.path.dirname(enaml_file)))
+    sys.path.insert(0, os.path.abspath(os.path.dirname(enaml_file_path)))
     # Bung in the command line arguments.
-    sys.argv = [enaml_file] + script_argv
+    sys.argv = [enaml_file_path] + script_argv
     with imports():
         exec(code, ns)
 
