@@ -1,16 +1,16 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2021, Nucleic Development Team.
+# --------------------------------------------------------------------------------------
+# Copyright (c) 2021-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------
 import ast
 import warnings
 from typing import Dict, List, Type, Union
 
 from .. import enaml_ast
-from .base_python_parser import BasePythonParser
+from .base_python_parser import BasePythonParser, Del, Load, Store
 
 
 class BaseEnamlParser(BasePythonParser):
@@ -21,27 +21,27 @@ class BaseEnamlParser(BasePythonParser):
 
     # The disallowed ast types on the rhs of a :: operator
     NOTIFICATION_DISALLOWED = {
-        ast.FunctionDef: 'function definition',
-        ast.ClassDef: 'class definition',
-        ast.Yield: 'yield statement',
-        ast.Return: 'return statement',
-        ast.GeneratorExp: 'generator expressions',
+        ast.FunctionDef: "function definition",
+        ast.ClassDef: "class definition",
+        ast.Yield: "yield statement",
+        ast.Return: "return statement",
+        ast.GeneratorExp: "generator expressions",
     }
 
     # The disallowed ast types on the rhs of a << operator
     SUBSCRIPTION_DISALLOWED = {
-        ast.FunctionDef: 'function definition',
-        ast.ClassDef: 'class definition',
-        ast.Yield: 'yield statement',
-        ast.GeneratorExp: 'generator expressions',
+        ast.FunctionDef: "function definition",
+        ast.ClassDef: "class definition",
+        ast.Yield: "yield statement",
+        ast.GeneratorExp: "generator expressions",
     }
 
     # The disallowed ast types in the body of a declarative function
     DECL_FUNCDEF_DISALLOWED = {
-        ast.FunctionDef: 'function definition',
-        ast.ClassDef: 'class definition',
-        ast.Yield: 'yield statement',
-        ast.GeneratorExp: 'generator expressions',
+        ast.FunctionDef: "function definition",
+        ast.ClassDef: "class definition",
+        ast.Yield: "yield statement",
+        ast.GeneratorExp: "generator expressions",
     }
 
     def create_python_module(self, stmts: List[ast.AST]) -> enaml_ast.PythonModule:
@@ -67,7 +67,7 @@ class BaseEnamlParser(BasePythonParser):
         lineno: int,
         col_offset: int,
         end_lineno: int,
-        end_col_offset: int
+        end_col_offset: int,
     ) -> enaml_ast.Module:
         """Create an enaml Module from a list of ast nodes."""
         body = []
@@ -87,12 +87,12 @@ class BaseEnamlParser(BasePythonParser):
             lineno=lineno,
             col_offset=col_offset,
             end_lineno=end_lineno,
-            end_col_offset=end_col_offset
+            end_col_offset=end_col_offset,
         )
 
     # rework to take a list of ast node and return it and filter out None values
     def validate_enamldef(self, node: enaml_ast.EnamlDef) -> enaml_ast.EnamlDef:
-        """ Validate the correctness of names in an enamldef definition.
+        """Validate the correctness of names in an enamldef definition.
 
         This function ensures that identifiers do not shadow one another.
 
@@ -129,11 +129,8 @@ class BaseEnamlParser(BasePythonParser):
         return node
 
     def create_python_func_for_operator(
-            self,
-            body: List[ast.AST],
-            forbidden_nodes: Dict[Type[ast.AST], str],
-            msg: str
-        ) -> enaml_ast.PythonModule:
+        self, body: List[ast.AST], forbidden_nodes: Dict[Type[ast.AST], str], msg: str
+    ) -> enaml_ast.PythonModule:
         for node in body:
             for item in ast.walk(node):
                 if type(item) in forbidden_nodes:
@@ -141,7 +138,7 @@ class BaseEnamlParser(BasePythonParser):
                     self.raise_syntax_error_known_location(msg, item)
 
         func_node = ast.FunctionDef()
-        func_node.name = 'f'
+        func_node.name = "f"
         func_node.args = self.make_arguments(None, [], None, None, None)
         func_node.decorator_list = []
         func_node.returns = None
@@ -165,7 +162,7 @@ class BaseEnamlParser(BasePythonParser):
                     self.raise_syntax_error_known_location(msg, item)
 
     def validate_template(self, node: enaml_ast.Template) -> enaml_ast.Template:
-        """ Validate the correctness of names in a template definitions.
+        """Validate the correctness of names in a template definitions.
 
         This function ensures that parameters, const expressions, and
         identifiers do not shadow one another.
@@ -232,26 +229,31 @@ class BaseEnamlParser(BasePythonParser):
                     if idents.starname:
                         check_id(idents.starname, idents)
 
-    # XXX WIP
-    def validate_template_paramlist(self, paramlist, starparam, lexer):
+    def validate_template_paramlist(
+        self,
+        paramlist: List[
+            Union[enaml_ast.PositionalParameter, enaml_ast.KeywordParameter]
+        ],
+        starparam: ast.Name,
+    ):
         keywords = []
         positional = []
         seen_params = set([starparam])
         for param in paramlist:
             if param.name in seen_params:
-                msg = "duplicate argument '%s' in template definition"
-                syntax_error(msg % param.name, FakeToken(lexer, param.lineno))
+                msg = f"duplicate argument '{param.name}' in template definition"
+                self.raise_syntax_error_known_location(msg, param)
             seen_params.add(param.name)
             if isinstance(param, enaml_ast.KeywordParameter):
                 keywords.append(param)
             elif keywords:
                 msg = "non-default argument follows default argument"
-                syntax_error(msg, FakeToken(lexer, param.lineno))
+                self.raise_syntax_error_known_location(msg, param)
             else:
                 positional.append(param)
         return positional, keywords
 
-    def validate_template_inst(self, node, lexer):
+    def validate_template_inst(self, node: enaml_ast.TemplateInst):
         """Validate a template instantiation.
 
         This function ensures that the bindings on the instantiation refer
@@ -263,6 +265,5 @@ class BaseEnamlParser(BasePythonParser):
             names.update(node.identifiers.names)
         for binding in node.body:
             if binding.name not in names:
-                msg = "'%s' is not a valid template id reference"
-                syntax_error(msg % binding.name,
-                             FakeToken(lexer, binding.lineno))
+                msg = f"'{binding.name}' is not a valid template id reference"
+                self.raise_syntax_error_known_location(msg, binding)

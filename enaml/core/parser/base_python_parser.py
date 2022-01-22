@@ -1,10 +1,13 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2021, Nucleic Development Team.
+# --------------------------------------------------------------------------------------
+# Copyright (c) 2021-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------
+# NOTE This is a vendored version of the pegen base python parser included in
+# the header of python grammar DO NOT EDIT
+
 import ast
 import sys
 import tokenize

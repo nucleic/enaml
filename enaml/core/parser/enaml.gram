@@ -1,26 +1,41 @@
+#---------------------------------------------------------------------------------------
+# Copyright (c) 2021-2022, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file LICENSE, distributed with this software.
+#---------------------------------------------------------------------------------------
 
 @class EnamlParser
 
-@subheader'''
+@header'''
+#---------------------------------------------------------------------------------------
+# Copyright (c) 2021-2022, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file LICENSE, distributed with this software.
+#---------------------------------------------------------------------------------------
+# NOTE This file was generated using enaml/core/parser/generate_enaml_parser.py
+# DO NOT EDIT DIRECTLY
+import ast
 import itertools
-import sys
-import token
-from typing import Any, List, Tuple, TypeVar, Union, NoReturn
+from typing import Any, List, NoReturn, Optional, Tuple, TypeVar, Union
 
 from enaml.core import enaml_ast
-from .base_enaml_parser import BaseEnamlParser
+from pegen.parser import Parser, logger, memoize, memoize_left_rec
+
+from .base_enaml_parser import BaseEnamlParser as Parser
 
 # Singleton ast nodes, created once for efficiency
 Load = ast.Load()
 Store = ast.Store()
 Del = ast.Del()
 
-class Parser(BaseEnamlParser):
-    pass
 
 '''
 
-file[enaml_ast.Module]: a=enaml_item* NEWLINE? ENDMARKER {
+start[enaml_ast.Module]: a=enaml_item* NEWLINE? ENDMARKER {
     self.create_enaml_module(a, LOCATIONS)
 }
 
@@ -48,11 +63,11 @@ enamldef[enaml_ast.EnamlDef]:
 enamldef_body[Tuple[str, list]]:
     # Filter out None values
     | NEWLINE INDENT a=STRING NEWLINE b=enamldef_item+ DEDENT {
-        return a, [x for x in b if x]
+        a, [x for x in b if x]
      }
     # Filter out None values
-    | NEWLINE INDENT b=enamldef_item+ DEDENT { return "", [x for x in b if x]}
-    | a=enamldef_simple_item { return "", [a]}
+    | NEWLINE INDENT b=enamldef_item+ DEDENT { "", [x for x in b if x]}
+    | a=enamldef_simple_item { "", [a]}
     | invalid_block
 enamldef_item:
     | enamldef_simple_item
@@ -68,6 +83,8 @@ enamldef_simple_item:
 
 # --- Pragmas --------------------------------------------------------------------------
 
+pragmas[List[enaml_ast.Pragma]]:
+    | pragma+
 pragma[enaml_ast.Pragma]:
     | "pragma" a=NAME ['(' b=','.pragma_arg+ ')' { b }] NEWLINE {
         enaml_ast.Pragma(command=a, arguments=b or [], LOCATIONS)
@@ -100,7 +117,7 @@ const_expr[enaml_ast.ConstExpr]:
             name=a, typename=b, expr=d.value, LOCATIONS
         )
      }
-storage_expr[Union[enaml_ast.AttrExpr]]:
+storage_expr[enaml_ast.StorageExpr]:
     | a=("attr" | "event") b=NAME c=[':' d=dec_primary { d }] NEWLINE {
         enaml_ast.StorageExpr(
             name=b, kind=a, typename=c, LOCATIONS
@@ -125,7 +142,7 @@ child_def[enaml_ast.ChildDef]:
      }
 
 child_def_body[list]:
-    | NEWLINE INDENT &=child_def_item+ DEDENT { a }
+    | NEWLINE INDENT a=child_def_item+ DEDENT { a }
     | a=child_def_simple_item { [a] }
     | invalid_block
 
@@ -157,11 +174,11 @@ ex_binding[enaml_ast.ExBinding]:
 
 operator_expr:
     | a=('=' | '<<') b=py_expr NEWLINE {
-        enaml_ast.OperatorExpr(operator=a, value=py_expr, LOCATIONS)
+        enaml_ast.OperatorExpr(operator=a, value=b, LOCATIONS)
      }
     | a=('>>' | ':=') b=py_expr NEWLINE {
         enaml_ast.OperatorExpr(
-            operator=a, value=py_expr, LOCATIONS
+            operator=a, value=b, LOCATIONS
         )
         if isintance(b, self.INVERTABLE) else
         self.raise_syntax_error_known_location(
@@ -245,7 +262,7 @@ template[enaml_ast.Template]:
         )
     }
 
-template_body[Tuple[str, list]]
+template_body[Tuple[str, list]]:
     | NEWLINE INDENT a=template_item+ DEDENT { "", a }
     | NEWLINE INDENT d=STRING NEWLINE a=template_item+ DEDENT { d, a }
     | a=template_simple_item { "", [a] }
@@ -259,24 +276,30 @@ template_simple_item:
     | storage_expr
     | 'pass' NEWLINE { None }
 template_params:
-    | a=','.template_param* b=[',' '*' c=NAME { c }] {
+    | a=','.template_param+ b=[',' '*' c=NAME { c }] {
         enaml_ast.TemplateParameters(
-            **self.validate_template_paramlist(a, b)
+            **self.validate_template_paramlist(a, b),
             LOCATIONS,
         )
-    }
+     }
+    | '*' b=NAME {
+        enaml_ast.TemplateParameters(
+            **self.validate_template_paramlist([], b),
+            LOCATIONS,
+        )
+     }
 template_param:
-    | a=NAME ':' b=test {
+    | a=NAME ':' b=expression {
         enaml_ast.PositionalParameter(
             name=a,
             specialization=enaml_ast.PythonExpression(
                 ast=ast.Expression(body=b),
                 LOCATIONS,
-            )
+            ),
             LOCATIONS,
         )
       }
-    | a=NAME '=' b=test {
+    | a=NAME '=' b=expression {
         enaml_ast.KeywordParameter(
             name=a,
             default=enaml_ast.PythonExpression(
@@ -304,7 +327,7 @@ template_inst:
         )
      }
 template_args:
-    | a=','.template_argument* b=[',' '*' z=NAME { z }] {
+    | a=','.template_argument+ b=[',' '*' z=NAME { z }] {
         enaml_ast.TemplateArguments(
             args=a,
             stararg=enaml_ast.PythonExpression(
@@ -314,21 +337,35 @@ template_args:
             LOCATIONS,
         )
      }
+    | '*' b=NAME {
+        enaml_ast.TemplateArguments(
+            args=[],
+            stararg=enaml_ast.PythonExpression(
+                ast=ast.Expression(body=b),
+                LOCATIONS,
+            ),
+            LOCATIONS,
+        )
+     }
 template_argument:
-    | a=test {
+    | a=expression {
         enaml_ast.PythonExpression(
             ast=ast.Expression(body=a, LOCATIONS),
             LOCATIONS,
         )
       }
-    | a=test b=for_if_clauses {
+    | a=expression b=for_if_clauses {
         enaml_ast.PythonExpression(
             ast.GeneratorExp(elt=a, generators=b, LOCATIONS),
             LOCATIONS,
+        )
       }
 template_ids:
-    | a=','.NAME* b=[',' '*' z=NAME { z }] {
+    | a=','.NAME+ b=[',' '*' z=NAME { z }] {
         enaml_ast.TemplateIdentifiers(names=a, starname=b, LOCATIONS)
+      }
+    | '*' b=NAME {
+        enaml_ast.TemplateIdentifiers(names=[], starname=b, LOCATIONS)
       }
 template_inst_body:
     | NEWLINE INDENT a=template_inst_item+ DEDENT { a }
@@ -345,6 +382,8 @@ template_inst_item:
     | 'pass' NEWLINE { None }
 
 # --- Inherited Python grammar ---------------------------------------------------------
+# NOTE This is a vendored version of the pegen Python grammar DO NOT EDIT
+
 
 # type_expressions allow */** but ignore them
 type_expressions[list]:
