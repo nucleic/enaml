@@ -153,6 +153,7 @@ enamldef MyDockArea(DockArea):
     DockItem:
         name = 'logger'
         title = 'Logger'
+        closable = False
         Container:
             MultilineField:
                 attr collector = LineCollector()
