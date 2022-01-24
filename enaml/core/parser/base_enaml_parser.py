@@ -151,7 +151,11 @@ class BaseEnamlParser(BasePythonParser):
         return self.create_python_module([func_node])
 
     def validate_decl_func_body(self, body: List[ast.AST]) -> List[ast.AST]:
-        """"""
+        """Validate the body of declarative function.
+
+        Any definition that may capture the surrounding scope is forbidden.
+
+        """
         for node in body:
             for item in ast.walk(node):
                 if type(item) in self.DECL_FUNCDEF_DISALLOWED:
@@ -160,6 +164,8 @@ class BaseEnamlParser(BasePythonParser):
                         "not allowed in a declarative function block."
                     )
                     self.raise_syntax_error_known_location(msg, item)
+
+        return body
 
     def validate_template(self, node: enaml_ast.Template) -> enaml_ast.Template:
         """Validate the correctness of names in a template definitions.
@@ -216,26 +222,28 @@ class BaseEnamlParser(BasePythonParser):
         TemplateInst = enaml_ast.TemplateInst
         stack = list(reversed(node.body))
         while stack:
-            node = stack.pop()
-            if isinstance(node, ChildDef):
-                if node.identifier:
-                    check_id(node.identifier, node)
-                stack.extend(reversed(node.body))
-            elif isinstance(node, TemplateInst):
-                idents = node.identifiers
+            n = stack.pop()
+            if isinstance(n, ChildDef):
+                if n.identifier:
+                    check_id(n.identifier, n)
+                stack.extend(reversed(n.body))
+            elif isinstance(n, TemplateInst):
+                idents = n.identifiers
                 if idents is not None:
                     for name in idents.names:
                         check_id(name, idents)
                     if idents.starname:
                         check_id(idents.starname, idents)
 
+        return node
+
     def validate_template_paramlist(
         self,
         paramlist: List[
             Union[enaml_ast.PositionalParameter, enaml_ast.KeywordParameter]
         ],
-        starparam: ast.Name,
-    ):
+        starparam: str,
+    ) -> dict[str, list]:
         keywords = []
         positional = []
         seen_params = set([starparam])
@@ -251,9 +259,11 @@ class BaseEnamlParser(BasePythonParser):
                 self.raise_syntax_error_known_location(msg, param)
             else:
                 positional.append(param)
-        return positional, keywords
+        return {"positional": positional, "keywords": keywords, "starparam": starparam}
 
-    def validate_template_inst(self, node: enaml_ast.TemplateInst):
+    def validate_template_inst(
+        self, node: enaml_ast.TemplateInst
+    ) -> enaml_ast.TemplateInst:
         """Validate a template instantiation.
 
         This function ensures that the bindings on the instantiation refer
@@ -267,3 +277,5 @@ class BaseEnamlParser(BasePythonParser):
             if binding.name not in names:
                 msg = f"'{binding.name}' is not a valid template id reference"
                 self.raise_syntax_error_known_location(msg, binding)
+
+        return node

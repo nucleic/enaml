@@ -54,17 +54,15 @@ enamldef[enaml_ast.EnamlDef]:
                 base=b.string,
                 identifier=c.string if c else '',
                 docstring=d[0],
-                body=d[1],
+                body=[x for x in d[1] if not isinstance(x, ast.Pass)],
                 pragmas=p,
                 LOCATIONS
             )
         )
      }
 enamldef_body[Tuple[str, list]]:
-    | NEWLINE INDENT a=STRING NEWLINE b=enamldef_item+ DEDENT {
-        a, [x for x in b if not isintance(x, ast.Pass)]
-     }
-    | NEWLINE INDENT b=enamldef_item+ DEDENT { "", [x for x in b if not isinstance(x, ast.Pass)]}
+    | NEWLINE INDENT a=STRING NEWLINE b=enamldef_item+ DEDENT { a }
+    | NEWLINE INDENT b=enamldef_item+ DEDENT { "", b}
     | a=enamldef_simple_item { "", [a]}
     | invalid_block
 enamldef_item:
@@ -76,7 +74,7 @@ enamldef_simple_item:
     | binding
     | ex_binding
     | storage_alias_const_expr
-    | 'pass' NEWLINE { ast.Pass() }
+    | 'pass' NEWLINE { ast.Pass(LOCATIONS) }
 
 
 # --- Pragmas --------------------------------------------------------------------------
@@ -130,10 +128,20 @@ storage_expr[enaml_ast.StorageExpr]:
 # --- ChildDef -------------------------------------------------------------------------
 
 child_def[enaml_ast.ChildDef]:
-    | a=NAME b=[':' z=NAME { z }] ':' c=child_def_body {
+    # Using an optional for the identifier prevent matching Field: text = "foo"
+    # Which is a valid simple item
+    | a=NAME ':' c=child_def_body {
         enaml_ast.ChildDef(
             typename=a.string,
-            identifier=b.string if b else "",
+            identifier="",
+            body=[x for x in c if not isinstance(x, ast.Pass)],
+            LOCATIONS
+        )
+     }
+    | a=NAME ':' b=NAME ':' c=child_def_body {
+        enaml_ast.ChildDef(
+            typename=a.string,
+            identifier=b.string,
             body=[x for x in c if not isinstance(x, ast.Pass)],
             LOCATIONS
         )
@@ -155,7 +163,7 @@ child_def_simple_item:
     | ex_binding
     | alias_expr
     | storage_expr
-    | 'pass' NEWLINE { ast.Pass() }
+    | 'pass' NEWLINE { ast.Pass(LOCATIONS) }
 
 # --- Binding --------------------------------------------------------------------------
 
@@ -178,7 +186,7 @@ operator_expr:
         enaml_ast.OperatorExpr(
             operator=a.string, value=b, LOCATIONS
         )
-        if isintance(b, self.INVERTABLE) else
+        if isinstance(b.ast.body, self.INVERTABLE) else
         self.raise_syntax_error_known_location(
             "can't assign to expression of this form", b
         )
@@ -193,7 +201,7 @@ operator_expr:
                 ),
                 LOCATIONS
             )
-        if a.end_col_offset == b.col_offset else
+        if a.end == b.start else
         self.raise_syntax_error_known_range("invalid syntax. Did you mean '::' ?", a, b)
      }
     | '<<' block {
@@ -216,13 +224,14 @@ py_expr[enaml_ast.PythonExpression]:
 
 decl_funcdef:
     | 'async' a=sync_decl_fundef {
-        enaml_ast.AsyncFunctionDef(
+        enaml_ast.AsyncFuncDef(
             funcdef=ast.AsyncFunctionDef(
                 name=a.funcdef.name,
                 args=a.funcdef.args,
                 returns=a.funcdef.returns,
                 body=a.funcdef.body,
                 decorator_list=a.funcdef.decorator_list,
+                LOCATIONS,
             ),
             is_override=a.is_override,
             LOCATIONS
@@ -231,11 +240,11 @@ decl_funcdef:
     | sync_decl_fundef
 
 sync_decl_fundef:
-    | "func" a=NAME b=parameters r=['->' z=expression { z }] &&':' c=block {
+    | "func" a=NAME '(' b=[params] ')' r=['->' z=expression { z }] &&':' c=block {
         enaml_ast.FuncDef(
             funcdef=ast.FunctionDef(
                 name=a.string,
-                args=b,
+                args=b or self.make_arguments(None, [], None, [], None),
                 returns=r,
                 body=self.validate_decl_func_body(c),
                 decorator_list=[],
@@ -245,11 +254,11 @@ sync_decl_fundef:
             LOCATIONS
         )
      }
-    | a=NAME x='=' y='>' b=parameters r=['->' z=expression { z }] &&':' c=block {
+    | a=NAME x='=' y='>' '(' b=[params] ')' r=['->' z=expression { z }] &&':' c=block {
         enaml_ast.FuncDef(
             funcdef=ast.FunctionDef(
                 name=a.string,
-                args=b,
+                args=b or self.make_arguments(None, [], None, [], None),
                 returns=r,
                 body=self.validate_decl_func_body(c),
                 decorator_list=[],
@@ -258,30 +267,33 @@ sync_decl_fundef:
             is_override=True,
             LOCATIONS
         )
-        if x.end_col_offset == y.col_offset else
+        if x.end == y.start else
         self.raise_syntax_error_known_range("invalid syntax. Did you mean '=>' ?", x, y)
      }
 
 # --- Template -------------------------------------------------------------------------
 
 template[enaml_ast.Template]:
-    | a=[pragmas] "template" b=NAME '(' c=template_params ')' &&':' d=template_body {
+    | a=[pragmas] "template" b=NAME '(' c=[template_params] ')' &&':' d=template_body {
         self.validate_template(
             enaml_ast.Template(
                 name=b.string,
-                parameters=c,
+                parameters=(
+                    c or
+                    enaml_ast.TemplateParameters(
+                        positional=[], keywords=[], starparam=""
+                    )
+                ),
                 docstring=d[0],
-                body=d[1],
-                pragmas=a,
+                body=[i for i in d[1] if not isinstance(i, ast.Pass)],
+                pragmas=a or [],
                 LOCATIONS
             )
         )
     }
 
 template_body[Tuple[str, list]]:
-    | NEWLINE INDENT a=template_item+ DEDENT {
-        "", [i for i in a if not isinstance(i, ast.Pass)]
-     }
+    | NEWLINE INDENT a=template_item+ DEDENT { "", a }
     | NEWLINE INDENT d=STRING NEWLINE a=template_item+ DEDENT { d, a }
     | a=template_simple_item { "", [a] }
     | invalid_block
@@ -290,20 +302,17 @@ template_item:
     | child_def
     | template_inst
 template_simple_item:
-    | alias_expr
-    | storage_expr
-    | 'pass' NEWLINE { ast.Pass()}
+    | const_expr
+    | 'pass' NEWLINE { ast.Pass(LOCATIONS)}
 template_params:
     | a=','.template_param+ b=[',' '*' c=NAME { c }] {
         enaml_ast.TemplateParameters(
-            **self.validate_template_paramlist(a, b.string),
-            LOCATIONS,
+            **self.validate_template_paramlist(a, b.string if b else "")
         )
      }
     | '*' b=NAME {
         enaml_ast.TemplateParameters(
-            **self.validate_template_paramlist([], b.string),
-            LOCATIONS,
+            **self.validate_template_paramlist([], b.string)
         )
      }
 template_param:
@@ -327,7 +336,7 @@ template_param:
             LOCATIONS,
         )
       }
-    | a=NAME { enaml_ast.PositionalParameter(name=a, LOCATIONS) }
+    | a=NAME { enaml_ast.PositionalParameter(name=a.string, LOCATIONS) }
 
 # --- Template instantiation -----------------------------------------------------------
 
@@ -336,10 +345,16 @@ template_inst:
         self.validate_template_inst(
             enaml_ast.TemplateInst(
                 name=b.string,
-                arguments=c or [],
+                arguments=(
+                    c or
+                    enaml_ast.TemplateArguments(
+                        args=[],
+                        stararg=None
+                    )
+                ),
                 identifiers=d,
-                pragmas=a,
-                body=[tib for tib in e if tib],
+                pragmas=a or [],
+                body=[i for i in e if not isinstance(i, ast.Pass)],
                 LOCATIONS,
             )
         )
@@ -348,11 +363,14 @@ template_args:
     | a=','.template_argument+ b=[',' '*' z=expression { z }] {
         enaml_ast.TemplateArguments(
             args=a,
-            stararg=enaml_ast.PythonExpression(
-                ast=ast.Expression(body=b),
-                LOCATIONS,
+            stararg=(
+                enaml_ast.PythonExpression(
+                    ast=ast.Expression(body=b),
+                    LOCATIONS,
+                )
+                if b else
+                None
             ),
-            LOCATIONS,
         )
      }
     | '*' b=expression {
@@ -362,7 +380,6 @@ template_args:
                 ast=ast.Expression(body=b),
                 LOCATIONS,
             ),
-            LOCATIONS,
         )
      }
 template_argument:
@@ -382,7 +399,7 @@ template_ids:
     | a=','.NAME+ b=[',' '*' z=NAME { z }] {
         enaml_ast.TemplateIdentifiers(
             names=[p.string for p in a],
-            starname=b.string,
+            starname=b.string if b else "",
             LOCATIONS
         )
       }
@@ -390,20 +407,19 @@ template_ids:
         enaml_ast.TemplateIdentifiers(names=[], starname=b.string, LOCATIONS)
       }
 template_inst_body:
-    | NEWLINE INDENT a=template_inst_item+ DEDENT {
-        [i for i in a if not isinstance(i, ast.Pass)]
-     }
-    | a=template_inst_item { a }
+    | NEWLINE INDENT a=template_inst_item+ DEDENT { a }
+    | a=template_inst_item { [a] }
     | invalid_block
 template_inst_item:
-    | a=dec_primary b=operator_expr {
+    | a=NAME b=['.' z='.'.NAME+ { z }] c=operator_expr {
         enaml_ast.TemplateInstBinding(
-            name=a,  # XXX change API to directly use the proper python AST
-            exp=b,
+            name=a.string,
+            chain=tuple(p.string for p in b) if b else (),
+            expr=c,
             LOCATIONS,
         )
       }
-    | 'pass' NEWLINE { ast.Pass() }
+    | 'pass' NEWLINE { ast.Pass(LOCATIONS) }
 
 # --- Inherited Python grammar ---------------------------------------------------------
 # NOTE This is a vendored version of the pegen Python grammar DO NOT EDIT

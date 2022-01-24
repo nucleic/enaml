@@ -30,7 +30,9 @@ def _parse(
         if token_stream_factory
         else tokenize.generate_tokens(stream.readline)
     )
-    tokenizer = Tokenizer(tok_stream, verbose=verbose, path=path)
+    tokenizer = Tokenizer(
+        tok_stream, verbose=verbose, path=path if os.path.isfile(path) else None
+    )
     parser = EnamlParser(
         tokenizer,
         verbose=verbose,
@@ -38,6 +40,7 @@ def _parse(
         py_version=py_version,
     )
     return parser.parse("start")
+
 
 # XXX document
 # filename is named so for back ward compat
