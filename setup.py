@@ -74,40 +74,8 @@ if sys.platform == 'win32':
     )
 
 
-class BuildPy(build_py):
-    """ Calls the parser to construct a lex and parse table specific
-        to the system before installation.
-
-    """
-
-    def run(self):
-        try:
-            from enaml.core.parser import write_tables
-            write_tables()
-        except ImportError:
-            pass
-        super().run()
-
-
-class Develop(develop):
-    """ Calls the parser to construct a lex and parse table specific
-        to the system before installation.
-
-    """
-
-    def run(self):
-        try:
-            from enaml.core.parser import write_tables
-            write_tables()
-        except ImportError:
-            pass
-        develop.run(self)
-
-
 setup(
     use_scm_version=True,
     ext_modules=ext_modules,
-    cmdclass={'build_ext': CppyBuildExt,
-              'build_py': BuildPy,
-              'develop': Develop},
+    cmdclass={'build_ext': CppyBuildExt},
 )
