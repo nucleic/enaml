@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from weakref import ref
 
-from enaml.qt import QT_API, PYQT5_API, PYSIDE2_API
+from enaml.qt.compat import global_pos_from_event
 from enaml.qt.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent, QRect
 from enaml.qt.QtGui import (
     QMouseEvent, QResizeEvent, QCursor, QPainter, QPixmap
@@ -15,10 +15,7 @@ from enaml.qt.QtGui import (
 from enaml.qt.QtWidgets import (
     QApplication, QTabBar, QTabWidget, QSplitter, QStyle, QStylePainter
 )
-if QT_API in PYQT5_API or QT_API in PYSIDE2_API:
-    from enaml.qt.QtWidgets import QStyleOptionTab
-else:
-    from enaml.qt.QtWidgets import QStyleOptionTabV3 as QStyleOptionTab
+from enaml.qt.QtWidgets import QStyleOptionTab
 
 from enaml.qt.qt_menu import QCustomMenu
 
@@ -305,7 +302,7 @@ class QDockTabBar(QTabBar):
                 if button.geometry().contains(event.pos()):
                     return
                 item = self.parent().widget(index).dockItem()
-                item.titleBarRightClicked.emit(event.globalPos())
+                item.titleBarRightClicked.emit(global_pos_from_event(event))
                 # Emitting the clicked signal may have caused a popup
                 # menu to open, which will have grabbed the mouse. When
                 # this happens, the hover leave event is not sent and
@@ -341,7 +338,7 @@ class QDockTabBar(QTabBar):
             evt = QMouseEvent(QEvent.MouseButtonRelease, pos, btn, btn, mod)
             QApplication.sendEvent(self, evt)
             container = self.parent().widget(self.currentIndex())
-            container.untab(event.globalPos())
+            container.untab(global_pos_from_event(event))
             self._has_mouse = False
 
     def mouseReleaseEvent(self, event):

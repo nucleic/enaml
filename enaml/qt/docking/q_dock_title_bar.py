@@ -1,10 +1,11 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2018, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.qt.compat import global_pos_from_event
 from enaml.qt.QtCore import Qt, QSize, QPoint, QMargins, Signal
 from enaml.qt.QtWidgets import (
     QWidget, QFrame, QLineEdit, QHBoxLayout, QSizePolicy
@@ -417,7 +418,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
                 event.accept()
                 return
             if self._clickableGeometry().contains(pos):
-                self.leftDoubleClicked.emit(event.globalPos())
+                self.leftDoubleClicked.emit(global_pos_from_event(event))
                 event.accept()
                 return
 
@@ -428,7 +429,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         event.ignore()
         if event.button() == Qt.RightButton:
             if self._clickableGeometry().contains(event.pos()):
-                self.rightClicked.emit(event.globalPos())
+                self.rightClicked.emit(global_pos_from_event(event))
                 event.accept()
                 return
 

@@ -1,47 +1,48 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.qt.compat import coerce_to_qevent_type
 from enaml.qt.QtCore import QEvent
 
 
 #: An event type which indicates the contents of a dock area changed.
-DockAreaContentsChanged = QEvent.Type(QEvent.registerEventType())
+DockAreaContentsChanged = coerce_to_qevent_type(QEvent.registerEventType())
 
 
 #: An event type which indicates the dock item was docked.
-DockItemDocked = QEvent.Type(QEvent.registerEventType())
+DockItemDocked = coerce_to_qevent_type(QEvent.registerEventType())
 
 
 #: An event type which indicates the dock item was undock.
-DockItemUndocked = QEvent.Type(QEvent.registerEventType())
+DockItemUndocked = coerce_to_qevent_type(QEvent.registerEventType())
 
 
 #: An event type which indicates the dock item was extended.
-DockItemExtended = QEvent.Type(QEvent.registerEventType())
+DockItemExtended = coerce_to_qevent_type(QEvent.registerEventType())
 
 
 #: An event type which indicates the dock item was retracted.
-DockItemRetracted = QEvent.Type(QEvent.registerEventType())
+DockItemRetracted = coerce_to_qevent_type(QEvent.registerEventType())
 
 
 #: An event type which indicates the dock item was shown.
-DockItemShown = QEvent.Type(QEvent.registerEventType())
+DockItemShown = coerce_to_qevent_type(QEvent.registerEventType())
 
 
 #: An event type which indicates the dock item was hidden.
-DockItemHidden = QEvent.Type(QEvent.registerEventType())
+DockItemHidden = coerce_to_qevent_type(QEvent.registerEventType())
 
 
 #: An event type which indicates the dock item was closed.
-DockItemClosed = QEvent.Type(QEvent.registerEventType())
+DockItemClosed = coerce_to_qevent_type(QEvent.registerEventType())
 
 
 #: An event type which indicates a dock tab was selected.
-DockTabSelected = QEvent.Type(QEvent.registerEventType())
+DockTabSelected = coerce_to_qevent_type(QEvent.registerEventType())
 
 
 class QDockItemEvent(QEvent):
@@ -53,7 +54,7 @@ class QDockItemEvent(QEvent):
 
         Parameters
         ----------
-        type : QEvent.Type
+        type : coerce_to_qevent_type
             The event type for the event.
 
         name : unicode

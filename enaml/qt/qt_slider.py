@@ -18,8 +18,10 @@ from .qt_control import QtControl
 #: A map from Enaml constants to QSlider TickPosition values.
 TICK_POSITION = {
     'no_ticks': QSlider.NoTicks,
-    'left': QSlider.TicksLeft,
-    'right': QSlider.TicksRight,
+    # Left and right are aliases in Qt6 to above and below and may not be exposed
+    # https://doc.qt.io/qt-6/qslider.html#TickPosition-enum
+    'left': getattr(QSlider, "TicksLeft", QSlider.TicksAbove),
+    'right':  getattr(QSlider, "TicksRight", QSlider.TicksBelow),
     'top': QSlider.TicksAbove,
     'bottom': QSlider.TicksBelow,
     'both': QSlider.TicksBothSides

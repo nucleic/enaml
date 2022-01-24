@@ -19,8 +19,10 @@ from .qt_control import QtControl
 #: A map from Enaml constants to QSlider TickPosition values.
 TICK_POSITION = {
     'no_ticks': QSlider.NoTicks,
-    'left': QSlider.TicksLeft,
-    'right': QSlider.TicksRight,
+    # Left and right are aliases in Qt6 to above and below and may not be exposed
+    # https://doc.qt.io/qt-6/qslider.html#TickPosition-enum
+    'left': getattr(QSlider, "TicksLeft", QSlider.TicksAbove),
+    'right':  getattr(QSlider, "TicksRight", QSlider.TicksBelow),
     'top': QSlider.TicksAbove,
     'bottom': QSlider.TicksBelow,
     'both': QSlider.TicksBothSides
@@ -106,6 +108,7 @@ class QDualSlider(QSlider):
             self._low = high
         self.update()
 
+    # XXX currently broken on PyQt6
     def paintEvent(self, event):
         """ Override the paint event to draw both slider handles.
 
@@ -119,9 +122,10 @@ class QDualSlider(QSlider):
         # Draw the low handle along with the groove and ticks.
         opt = QStyleOptionSlider()
         self.initStyleOption(opt)
-        opt.subControls = QStyle.SC_SliderGroove | QStyle.SC_SliderHandle
-        if self.tickPosition() != self.NoTicks:
-            opt.subControls |= QStyle.SC_SliderTickmarks
+        # XXX missing variants in PyQt6 for the time being.
+        # opt.subControls = QStyle.SC_SliderGroove | QStyle.SC_SliderHandle
+        # if self.tickPosition() != self.NoTicks:
+        #     opt.subControls |= QStyle.SC_SliderTickmarks
         if (self._pressed_control and
             self._active_thumb == self.LowThumb or
             self._active_thumb == self.BothThumbs):
@@ -136,7 +140,7 @@ class QDualSlider(QSlider):
         # Draw high handle. The groove and ticks do not need repainting.
         opt = QStyleOptionSlider()
         self.initStyleOption(opt)
-        opt.subControls = QStyle.SC_SliderHandle
+        # opt.subControls = QStyle.SC_SliderHandle
         if (self._pressed_control and
             self._active_thumb == self.HighThumb or
             self._active_thumb == self.BothThumbs):

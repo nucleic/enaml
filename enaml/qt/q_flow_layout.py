@@ -65,9 +65,9 @@ class FlowLayoutData(object):
     ortho_stretch = 0
 
     #: The alignment of the layout item in the direction orthogonal to
-    #: the layout flow. This must be one of the enums Qt.AlignLeading,
-    #: Qt.AlignTrailing, or Qt.AlignCenter.
-    alignment = Qt.AlignLeading
+    #: the layout flow. This must be one of the enums Qt.AlignLeading (Left),
+    #: Qt.AlignTrailing (Right), or Qt.AlignCenter.
+    alignment = Qt.AlignLeft
 
     #: The preferred size for the layout item. This size will be used
     #: as the size of the layout item to the extent possible. If this

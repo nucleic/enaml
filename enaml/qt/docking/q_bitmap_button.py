@@ -1,10 +1,11 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.qt.compat import global_pos_from_event
 from enaml.qt.QtCore import QPoint, QRect, QEvent
 from enaml.qt.QtGui import QPainter, QColor
 from enaml.qt.QtWidgets import (
@@ -217,7 +218,7 @@ class QCheckedBitmapButton(QBitmapButton):
         if event.type() == QEvent.ToolTip:
             tool_tip = self._effectiveToolTip()
             if tool_tip:
-                QToolTip.showText(event.globalPos(), tool_tip, self)
+                QToolTip.showText(global_pos_from_event(event), tool_tip, self)
             return True
         return super(QCheckedBitmapButton, self).event(event)
 

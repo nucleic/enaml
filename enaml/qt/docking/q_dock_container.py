@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Typed, Bool
 
+from enaml.qt.compat import global_pos_from_event
 from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
 from enaml.qt.QtGui import QIcon, QCursor
 from enaml.qt.QtWidgets import QApplication, QLayout
@@ -736,7 +737,7 @@ class QDockContainer(QDockFrame):
         # If dragging and floating, move the container's position and
         # notify the manager of that the container was mouse moved. If
         # the container is maximized, it is first restored before.
-        global_pos = event.globalPos()
+        global_pos = global_pos_from_event(event)
         if state.dragging:
             if self.isWindow():
                 target_pos = global_pos - state.press_pos
