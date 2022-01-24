@@ -59,7 +59,7 @@ jobs:
         env:
           CPPFLAGS: --coverage
         run: |
-          pip install -e .[qt${{ matrix.qt_version }}-${{ matrix.qt-binding }}]
+          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
       - name: Install extra dependencies
         if: matrix.python-version == '3.9'
         run: |
