@@ -61,7 +61,7 @@ enamldef[enaml_ast.EnamlDef]:
         )
      }
 enamldef_body[Tuple[str, list]]:
-    | NEWLINE INDENT a=STRING NEWLINE b=enamldef_item+ DEDENT { a }
+    | NEWLINE INDENT a=STRING NEWLINE b=enamldef_item+ DEDENT { a.string, b }
     | NEWLINE INDENT b=enamldef_item+ DEDENT { "", b}
     | a=enamldef_simple_item { "", [a]}
     | invalid_block
@@ -195,7 +195,7 @@ operator_expr:
         enaml_ast.OperatorExpr(
                 operator='::',
                 value=self.create_python_func_for_operator(
-                    block,
+                    c,
                     self.NOTIFICATION_DISALLOWED,
                     '%s not allowed in a notification block'
                 ),
@@ -204,11 +204,11 @@ operator_expr:
         if a.end == b.start else
         self.raise_syntax_error_known_range("invalid syntax. Did you mean '::' ?", a, b)
      }
-    | '<<' block {
+    | '<<' a=block {
         enaml_ast.OperatorExpr(
             operator='<<',
             value=self.create_python_func_for_operator(
-                block,
+                a,
                 self.SUBSCRIPTION_DISALLOWED,
                 '%s not allowed in a subscription block'
             ),
@@ -294,7 +294,7 @@ template[enaml_ast.Template]:
 
 template_body[Tuple[str, list]]:
     | NEWLINE INDENT a=template_item+ DEDENT { "", a }
-    | NEWLINE INDENT d=STRING NEWLINE a=template_item+ DEDENT { d, a }
+    | NEWLINE INDENT d=STRING NEWLINE a=template_item+ DEDENT { d.string, a }
     | a=template_simple_item { "", [a] }
     | invalid_block
 template_item:

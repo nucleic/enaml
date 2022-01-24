@@ -108,7 +108,7 @@ class EnamlParser(Parser):
             and (b := self._loop1_4())
             and (_dedent := self.expect("DEDENT"))
         ):
-            return a
+            return a.string, b
         self._reset(mark)
         if (
             (_newline := self.expect("NEWLINE"))
@@ -536,7 +536,7 @@ class EnamlParser(Parser):
                 enaml_ast.OperatorExpr(
                     operator="::",
                     value=self.create_python_func_for_operator(
-                        block,
+                        c,
                         self.NOTIFICATION_DISALLOWED,
                         "%s not allowed in a notification block",
                     ),
@@ -551,13 +551,13 @@ class EnamlParser(Parser):
                 )
             )
         self._reset(mark)
-        if (literal := self.expect("<<")) and (block := self.block()):
+        if (literal := self.expect("<<")) and (a := self.block()):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
             return enaml_ast.OperatorExpr(
                 operator="<<",
                 value=self.create_python_func_for_operator(
-                    block,
+                    a,
                     self.SUBSCRIPTION_DISALLOWED,
                     "%s not allowed in a subscription block",
                 ),
@@ -763,7 +763,7 @@ class EnamlParser(Parser):
             and (a := self._loop1_22())
             and (_dedent := self.expect("DEDENT"))
         ):
-            return d, a
+            return d.string, a
         self._reset(mark)
         if a := self.template_simple_item():
             return "", [a]
@@ -9676,54 +9676,54 @@ class EnamlParser(Parser):
         return None
 
     KEYWORDS = (
-        "lambda",
-        "if",
-        "pass",
-        "not",
-        "break",
-        "None",
-        "with",
-        "or",
-        "finally",
-        "def",
         "yield",
-        "return",
-        "and",
         "for",
+        "with",
+        "raise",
+        "elif",
         "continue",
-        "else",
-        "as",
-        "while",
         "import",
         "True",
-        "raise",
-        "nonlocal",
-        "await",
-        "assert",
-        "async",
-        "except",
-        "is",
-        "del",
-        "elif",
+        "break",
+        "return",
         "in",
-        "try",
-        "False",
-        "global",
         "class",
+        "and",
+        "while",
+        "as",
+        "lambda",
+        "except",
+        "not",
+        "global",
         "from",
+        "nonlocal",
+        "if",
+        "assert",
+        "try",
+        "None",
+        "async",
+        "await",
+        "finally",
+        "else",
+        "def",
+        "or",
+        "del",
+        "False",
+        "pass",
+        "is",
     )
     SOFT_KEYWORDS = (
-        "func",
-        "event",
         "template",
-        "const",
-        "alias",
-        "_",
-        "match",
-        "enamldef",
-        "case",
-        "attr",
         "pragma",
+        "match",
+        "func",
+        "attr",
+        "_",
+        "alias",
+        "enamldef",
+        "event",
+        "const",
+        "case",
     )
 
 
