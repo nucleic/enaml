@@ -352,8 +352,14 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         link_button.setCheckedBitmap(LINKED_BUTTON.toBitmap())
         link_button.setIconSize(btn_size)
         link_button.setVisible(self._buttons & self.LinkButton)
-        link_button.setToolTip('Link Window')
-        link_button.setCheckedToolTip('Unlink Window')
+        link_button.setToolTip(
+            'Link Window\n\n'
+            'Floating windows snapped together move together when they are linked.'
+        )
+        link_button.setCheckedToolTip(
+            'Unlink Window\n\n'
+            'Floating windows snapped together move together when they are linked.'
+        )
 
         pin_button = self._pin_button = QCheckedBitmapButton(self)
         pin_button.setObjectName('docktitlebar-pin-button')

@@ -95,8 +95,14 @@ class QDockWindowButtons(QFrame):
         link_button.setCheckedBitmap(LINKED_BUTTON.toBitmap())
         link_button.setIconSize(QSize(20, 15))
         link_button.setVisible(self._buttons & self.LinkButton)
-        link_button.setToolTip('Link Window')
-        link_button.setCheckedToolTip('Unlink Window')
+        link_button.setToolTip(
+            'Link Window\n\n'
+            'Floating windows snapped together move together when they are linked.'
+        )
+        link_button.setCheckedToolTip(
+            'Unlink Window\n\n'
+            'Floating windows snapped together move together when they are linked.'
+        )
 
         layout = QHBoxLayout()
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
@@ -191,6 +197,9 @@ class QDockWindow(QDockFrame):
 
         #: Whether or not the window is being dragged by the user.
         dragging = Bool(False)
+
+        #: Whether a dock item is in the process of being pinned.
+        in_pin_event = Bool(False)
 
         #: Whether the window is inside it's close event.
         in_close_event = Bool(False)
@@ -359,7 +368,11 @@ class QDockWindow(QDockFrame):
         will close the window when the dock area is empty.
 
         """
-        if event.type() == DockAreaContentsChanged and area.isEmpty():
+        if (
+            event.type() == DockAreaContentsChanged
+            and not self.frame_state.in_pin_event
+            and area.isEmpty()
+        ):
             # Hide the window so that it doesn't steal events from
             # the floating window when this window is closed.
             self.hide()

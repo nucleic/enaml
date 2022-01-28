@@ -339,6 +339,11 @@ class DockManager(Atom):
                 size = container.sizeHint()
                 geometries[container] = QRect(window.pos(), size)
             for container in containers:
+                # Return a maximized container to normal.
+                # This ensures the container is properly removed from all the
+                # layouts it is attached to and it ca be freed once closed.
+                if container.frame_state.item_is_maximized:
+                    container.showNormal()
                 if not container.close():
                     container.unplug()
                     container.float()

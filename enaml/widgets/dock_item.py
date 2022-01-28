@@ -154,6 +154,9 @@ class DockItem(Widget):
     def _item_closed(self):
         """ Called by the proxy when the toolkit item is closed.
 
+        This is performed as a deferred call so that the window may fully
+        close before the declaration is potentially destroyed.
+
         """
         self.closed()
-        deferred_call(self.destroy)
+        self.destroy()

@@ -19,11 +19,11 @@ class QDockPlaceholder(QWidget):
         self.widget = widget
         if isinstance(parent, QSplitter):
             index = parent.indexOf(widget)
-            layout = parent
+            parent.replaceWidget(index, self)
         else:
             index = 0
             layout = parent.layout()
-        layout.replaceWidget(index, self)
+            layout.replaceWidget(widget, self)
         widget.hide()
 
     def restore(self):
@@ -36,11 +36,11 @@ class QDockPlaceholder(QWidget):
         widget = self.widget
         if isinstance(parent, QSplitter):
             index = parent.indexOf(self)
-            layout = parent
+            parent.replaceWidget(index, widget)
         else:
             index = 0
             layout = parent.layout()
-        layout.replaceWidget(index, widget)
+            layout.replaceWidget(self, widget)
         widget.show()
 
     def getPlaceholder(self):

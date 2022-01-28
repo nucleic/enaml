@@ -10,6 +10,7 @@ from atom.api import Typed, Bool
 from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
 from enaml.qt.QtGui import QIcon, QCursor
 from enaml.qt.QtWidgets import QApplication, QLayout
+from enaml.qt.docking.q_dock_window import QDockWindow
 
 from .event_types import QDockItemEvent, DockItemUndocked
 from .q_dock_area import QDockArea
@@ -595,8 +596,14 @@ class QDockContainer(QDockFrame):
             if pinned:
                 if not self.frame_state.in_dock_bar:
                     position = _closestDockBar(self)
+                    parent_is_floating = isinstance(area.parent(), QDockWindow)
+                    # Do not close a floating window when pinning the last item.
+                    if parent_is_floating:
+                        area.parent().frame_state.in_pin_event = True
                     self.unplug()
                     area.addToDockBar(self, position)
+                    if parent_is_floating:
+                        area.parent().frame_state.in_pin_event = False
             else:
                 position = area.dockBarPosition(self)
                 if position is not None:

@@ -16,6 +16,7 @@ from .QtGui import QIcon
 
 from .docking.q_dock_item import QDockItem
 
+from .q_deferred_caller import deferredCall
 from .q_resource_helpers import get_cached_qicon
 from .qt_widget import QtWidget
 from .styleutil import translate_dock_item_style
@@ -175,7 +176,7 @@ class QtDockItem(QtWidget, ProxyDockItem):
         """
         d = self.declaration
         if d is not None:
-            d._item_closed()
+            deferredCall(d._item_closed)
 
     #--------------------------------------------------------------------------
     # Child Events

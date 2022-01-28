@@ -23,6 +23,7 @@ else:
 from enaml.qt.qt_menu import QCustomMenu
 
 from .event_types import QDockItemEvent, DockTabSelected
+from .q_dock_area import QDockArea
 from .q_bitmap_button import QBitmapButton
 from .q_dock_title_bar import QDockTitleBar
 from .q_dock_placeholder import QDockPlaceholder
@@ -261,6 +262,9 @@ class QDockTabBar(QTabBar):
         self.setCloseButtonVisible(index, container.closable())
         self._tab_data.insert(index, _TabData(container))
 
+        # Update the visibility of the close button on the overall tab.
+        self.parent().setGlobalCloseButtonVisible()
+
     def tabRemoved(self, index):
         """ Handle a tab removal from the tab bar.
 
@@ -272,6 +276,9 @@ class QDockTabBar(QTabBar):
         container = data.container
         if container is not None:
             container.alerted.disconnect(self._onAlerted)
+
+        # Update the visibility of the close button on the overall tab.
+        self.parent().setGlobalCloseButtonVisible()
 
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the tab bar.
@@ -417,16 +424,20 @@ class QDockTabWidget(QTabWidget):
     # Private API
     #--------------------------------------------------------------------------
     def parentDockArea(self):
-        """ Return the parent dock area if any.
+        """ Get the parent dock area of the container.
+
+        Returns
+        -------
+        result : QDockArea or None
+            The nearest ancestor which is an instance of QDockArea, or
+            None if no such ancestor exists.
 
         """
-        container = self.widget(0)
-        if container is None:
-            return
-        manager = container.manager()
-        if manager is None:
-            return
-        return manager.dock_area()
+        parent = self.parent()
+        while parent is not None:
+            if isinstance(parent, QDockArea):
+                return parent
+            parent = parent.parent()
 
     def _onTabCloseRequested(self, index):
         """ Handle the close request for the given tab index.
@@ -567,3 +578,14 @@ class QDockTabWidget(QTabWidget):
 
         """
         self.tabBar().setCloseButtonVisible(index, visible)
+
+    def setGlobalCloseButtonVisible(self):
+        """Set the visibility of the global tab close button."""
+
+        corner_widget = self.cornerWidget()
+        buttons = (QDockTitleBar.MaximizeButton | QDockTitleBar.TabsButton)
+        # Update visibility of the close button, we hide the button if no tab is
+        # closable.
+        if any(self.widget(i).closable() for i in range(self.count())):
+            buttons |= QDockTitleBar.CloseButton
+        corner_widget.setButtons(buttons)
