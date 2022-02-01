@@ -282,7 +282,7 @@ latex_domain_indices = True
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'enaml', 'Enaml Documentation',
-     'Nucleic Development Team'], 1)
+     'Nucleic Development Team', 1)
 ]
 
 
