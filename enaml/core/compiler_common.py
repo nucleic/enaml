@@ -371,9 +371,8 @@ def safe_eval_ast(cg, node, name, lineno, local_names):
 
     This method will eval the python code represented by the ast
     in the local namespace. If the code would have the side effect
-    of storing a value in the namespace, such as a list comp under
-    Python 2, then the expression will be evaluated in it's own
-    namespace.
+    of storing a value in the namespace, then the expression will be evaluated
+    in it's own namespace.
 
     Parameters
     ----------
