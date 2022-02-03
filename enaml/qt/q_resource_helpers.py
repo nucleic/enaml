@@ -7,8 +7,6 @@
 #------------------------------------------------------------------------------
 from enaml.fontext import FontStyle, FontCaps, FontStretch
 
-from qtpy import API, PYQT6_API
-
 from .QtCore import Qt, QSize
 from .QtGui import QColor, QFont, QImage, QIcon, QPixmap
 
@@ -28,22 +26,16 @@ FONT_CAPS = {
 }
 
 
-def stretch_as_int(variant):
-    if API in PYQT6_API:
-        return variant.value
-    return variant
-
-
 FONT_STRETCH = {
-    FontStretch.UltraCondensed: stretch_as_int(QFont.UltraCondensed),
-    FontStretch.ExtraCondensed: stretch_as_int(QFont.ExtraCondensed),
-    FontStretch.Condensed: stretch_as_int(QFont.Condensed),
-    FontStretch.SemiCondensed: stretch_as_int(QFont.SemiCondensed),
-    FontStretch.Unstretched: stretch_as_int(QFont.Unstretched),
-    FontStretch.SemiExpanded: stretch_as_int(QFont.SemiExpanded),
-    FontStretch.Expanded: stretch_as_int(QFont.Expanded),
-    FontStretch.ExtraExpanded: stretch_as_int(QFont.ExtraExpanded),
-    FontStretch.UltraExpanded: stretch_as_int(QFont.UltraExpanded)}
+    FontStretch.UltraCondensed: QFont.UltraCondensed,
+    FontStretch.ExtraCondensed: QFont.ExtraCondensed,
+    FontStretch.Condensed: QFont.Condensed,
+    FontStretch.SemiCondensed: QFont.SemiCondensed,
+    FontStretch.Unstretched: QFont.Unstretched,
+    FontStretch.SemiExpanded: QFont.SemiExpanded,
+    FontStretch.Expanded: QFont.Expanded,
+    FontStretch.ExtraExpanded: QFont.ExtraExpanded,
+    FontStretch.UltraExpanded: QFont.UltraExpanded}
 
 
 ASPECT_RATIO_MODE = {
@@ -228,7 +220,7 @@ def QFont_from_Font(font):
     qfont = QFont(font.family, font.pointsize, font.weight)
     qfont.setStyle(FONT_STYLES[font.style])
     qfont.setCapitalization(FONT_CAPS[font.caps])
-    qfont.setStretch(int(FONT_STRETCH[font.stretch]))  #XXX int ?
+    qfont.setStretch(FONT_STRETCH[font.stretch])
     return qfont
 
 
