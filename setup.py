@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2021, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -165,13 +165,12 @@ setup(
           'License :: OSI Approved :: BSD License',
           'Programming Language :: Python',
           'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.7',
           'Programming Language :: Python :: 3.8',
           'Programming Language :: Python :: 3.9',
           'Programming Language :: Python :: 3.10',
           'Programming Language :: Python :: Implementation :: CPython',
       ],
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     requires=['atom', 'ply', 'kiwisolver'],
     install_requires=['atom>=0.7.0',
                       'kiwisolver>=1.2.0',
