@@ -20,7 +20,7 @@ widgets.
 
 << autodoc-me >>
 """
-from enaml.widgets.api import Window, GroupBox, Field, Container, Feature
+from enaml.widgets.api import Window, GroupBox, Field, FocusTracker, Container, Feature
 
 
 enamldef LinkField(Field):
@@ -38,6 +38,10 @@ enamldef Main(Window):
 
         previous_focus_child => (current):  # triggered on Shift+Tab
             return getattr(current, 'prev_field', None)
+
+        FocusTracker:
+            focused_widget::
+                print(change["value"])
 
         GroupBox:
             title = 'First Group'
