@@ -479,6 +479,10 @@ class CodeGenerator(Atom):
                     and block[-1].lineno not in _inspector.lines
                 ):
                     del block[-2:]
+                    # If as a result of the trimming the block is empty, we add
+                    # a NOP to make sure it is valid still
+                    if not any(isinstance(i, bc.Instr) for i in block):
+                        block.append(bc.Instr("NOP"))
                     # If we have multiple block jump to the end of the last block
                     # to execute the code that may be appended to this block
                     if block is not last_block:

@@ -26,14 +26,14 @@ environment:
         # 32-bit versions, PyQt and PySide2, latest
 
         - NAME: "32-bit, Latest "
-          PYTHON: "C:\\Python37"
-          PYTHON_VERSION: "3.7.3"
+          PYTHON: "C:\\Python38"
+          PYTHON_VERSION: "3.9"
           PYTHON_ARCH: "32"
           PYQT_VERSION: "5"
 
         - NAME: "PySide2"
-          PYTHON: "C:\\Python37-x64"
-          PYTHON_VERSION: "3.7.3"
+          PYTHON: "C:\\Python38"
+          PYTHON_VERSION: "3.9"
           PYTHON_ARCH: "32"
           PYQT_VERSION: "None"
           QT_API: "pyside2"

@@ -3,8 +3,9 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.15.0 - Unreleased
+0.14.1 - Unreleased
 -------------------
+- fixes a bug in code generation for Pythoon 3.10 PR #476
 - fixes several bugs in corner cases of the Qt dock area PR #469
 - add python fstring scintilla tokens PR #470
 - address PyQt deprecation of accepting float values for pixel dimensions PR #471
