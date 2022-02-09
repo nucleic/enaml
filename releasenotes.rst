@@ -3,7 +3,7 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.14.1 - Unreleased
+0.14.1 - 09/02/2022
 -------------------
 - fixes a bug in code generation for Pythoon 3.10 PR #476
 - fixes several bugs in corner cases of the Qt dock area PR #469

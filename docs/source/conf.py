@@ -292,7 +292,7 @@ man_pages = [
 epub_title = 'Enaml'
 epub_author = 'Chris Colbert'
 epub_publisher = 'Nucleic Development Team'
-epub_copyright = '2013-2021, Nucleic Development Team'
+epub_copyright = '2013-2022, Nucleic Development Team'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
