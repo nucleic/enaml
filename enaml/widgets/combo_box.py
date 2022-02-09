@@ -70,7 +70,7 @@ class ComboBox(Control):
         items = self.items
         idx = self.index
         if idx < 0 or idx >= len(items):
-            return u''
+            return ''
         return items[idx]
 
     #--------------------------------------------------------------------------

@@ -127,7 +127,6 @@ enamldef Item(FlowItem):
                 items = ['leading', 'center', 'trailing']
                 index = 0
             Html:
-                resist_height = 'weak'
                 source = '<center>Hello World</center>'
 
 

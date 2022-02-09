@@ -139,8 +139,8 @@ class QCheckedBitmapButton(QBitmapButton):
     """ A bitmap button subclass which supports a checked bitmap.
 
     """
-    _tool_tip = u''
-    _checked_tool_tip = u''
+    _tool_tip = ''
+    _checked_tool_tip = ''
     _checked_bitmap = None
 
     def __init__(self, parent=None):

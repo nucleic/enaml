@@ -47,8 +47,8 @@ class LineCollector(Atom):
 
     """
     #: The header to use as the first lines of the text.
-    HEADER = u'#   Item     Event Type            \n'\
-             u'-----------------------------------'
+    HEADER = '#   Item     Event Type            \n'\
+             '-----------------------------------'
 
     #: The output text of the collector; updated when data changes.
     text = Str(HEADER)
@@ -71,9 +71,9 @@ class LineCollector(Atom):
         lines = [self.HEADER]
         for item in parts:
             num, name, enum = item
-            line = u'{0!s: <4}{1: <9}{2: <19}'.format(num, name, enum.name)
+            line = '{0!s: <4}{1: <9}{2: <19}'.format(num, name, enum.name)
             lines.append(line)
-        self.text = u'\n'.join(lines)
+        self.text = '\n'.join(lines)
 
 
 enamldef MyDockArea(DockArea):
@@ -128,7 +128,7 @@ enamldef MyDockArea(DockArea):
         name = 'item_6'
         title = 'Item 6'
         Container:
-            Html: source = u'<h1><center>Guten Tag!</center></h1>'
+            Html: source = '<h1><center>Guten Tag!</center></h1>'
     DockItem:
         name = 'item_7'
         title = 'Item 7'

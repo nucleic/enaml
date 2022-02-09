@@ -759,7 +759,7 @@ def test_instantiation_18():
     """)
     main = compile_source(source, 'Main')()
     field = main.children[0].children[0]
-    assert field.text == u'foo'
+    assert field.text == 'foo'
 
 
 #------------------------------------------------------------------------------

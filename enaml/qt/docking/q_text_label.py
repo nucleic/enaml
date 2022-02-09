@@ -26,7 +26,7 @@ class QTextLabel(QFrame):
         super(QTextLabel, self).__init__(parent)
         self._min_text_size = QSize()
         self._text_size = QSize()
-        self._text = u''
+        self._text = ''
 
     #--------------------------------------------------------------------------
     # Private API

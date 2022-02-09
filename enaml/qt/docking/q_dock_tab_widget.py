@@ -183,7 +183,7 @@ class QDockTabBar(QTabBar):
 
         """
         # Force an internal update of the stylesheet rules
-        self.setProperty(u'alert', level)
+        self.setProperty('alert', level)
         repolish(self)
 
         # Setup the style option for the control
@@ -208,7 +208,7 @@ class QDockTabBar(QTabBar):
         painter.drawControl(QStyle.CE_TabBarTab, opt)
 
         # Reset the internal stylesheet style
-        self.setProperty(u'alert', None)
+        self.setProperty('alert', None)
         repolish(self)
 
         # Update the internal tab data

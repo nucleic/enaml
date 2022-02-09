@@ -178,16 +178,16 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         # workaround win-7 sizing bug
-        parts = [u'QDockTabWidget::pane {}']
+        parts = ['QDockTabWidget::pane {}']
         name = self.widget.objectName()
         for style in StyleCache.styles(self.declaration):
             t = translate_dock_area_style(name, style)
             if t:
                 parts.append(t)
         if len(parts) > 1:
-            stylesheet = u'\n\n'.join(parts)
+            stylesheet = '\n\n'.join(parts)
         else:
-            stylesheet = u''
+            stylesheet = ''
         self.widget.setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------

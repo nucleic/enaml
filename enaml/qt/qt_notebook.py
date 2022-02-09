@@ -441,9 +441,9 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
             if t:
                 parts.append(t)
         if len(parts) > 0:
-            stylesheet = u'\n\n'.join(parts)
+            stylesheet = '\n\n'.join(parts)
         else:
-            stylesheet = u''
+            stylesheet = ''
         self.widget.tabBar().setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------
@@ -487,7 +487,7 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
             self.set_selected_tab(d.selected_tab)
         else:
             current = self.widget.currentWidget()
-            name = current.objectName() if current is not None else u''
+            name = current.objectName() if current is not None else ''
             self._guard |= CHANGE_GUARD
             try:
                 d.selected_tab = name
@@ -532,7 +532,7 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
             self._guard |= CHANGE_GUARD
             try:
                 page = self.widget.currentWidget()
-                name = page.objectName() if page is not None else u''
+                name = page.objectName() if page is not None else ''
                 self.declaration.selected_tab = name
             finally:
                 self._guard &= ~CHANGE_GUARD

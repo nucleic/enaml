@@ -37,8 +37,8 @@ class QPage(QFrame):
 
         """
         super(QPage, self).__init__(*args, **kwargs)
-        self._title = u''
-        self._tool_tip = u''
+        self._title = ''
+        self._tool_tip = ''
         self._icon = QIcon()
         self._closable = True
         self._is_enabled = True

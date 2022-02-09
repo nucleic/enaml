@@ -45,7 +45,7 @@ class QtToolkitDialog(QtToolkitObject, ProxyToolkitDialog):
         window title. The base implementation returns an empty string.
 
         """
-        return u''
+        return ''
 
     #--------------------------------------------------------------------------
     # Signal Handlers

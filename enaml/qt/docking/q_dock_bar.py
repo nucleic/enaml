@@ -207,7 +207,7 @@ class QDockBarButton(QPushButton):
         """ A slot which can be connected to an 'alerted' signal.
 
         """
-        self.setProperty(u'alert', level or None)
+        self.setProperty('alert', level or None)
         repolish(self)
 
     #--------------------------------------------------------------------------

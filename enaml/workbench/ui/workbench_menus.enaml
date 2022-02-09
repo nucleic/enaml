@@ -28,7 +28,7 @@ def action_text(text, shortcut):
     """ Concatenate action text and a keyboard shortcut.
 
     """
-    return u'\t'.join(filter(None, (text, shortcut)))
+    return '\t'.join(filter(None, (text, shortcut)))
 
 
 enamldef WorkbenchAction(Action):

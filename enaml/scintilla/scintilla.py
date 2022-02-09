@@ -254,7 +254,7 @@ class Scintilla(Control):
         """
         if self.proxy_is_active:
             return self.proxy.get_text()
-        return u''
+        return ''
 
     def set_text(self, text):
         """ Set the text in the current document.

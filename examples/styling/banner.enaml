@@ -22,8 +22,12 @@ enamldef BannerSheet(StyleSheet):
         style_class = 'banner'
         Setter:
             field = 'background'
-            value = ('lineargradient(x1: 0, y1:0, x2:0, y2:1, '
-                        'stop: 0 #222222, stop: 0.5 #1A1A1A, stop: 1 #111111)')
+            value = (
+                'lineargradient(x1: 0, y1:0, x2:0, y2:1, stop: 0 #1356A9, '
+                'stop: 0.3 #8AAFDC, stop: 0.58 #E0E4E0, stop: 0.68 #F8D8B1, '
+                'stop: 0.848 #D39B8A, stop: 0.8499 #9C7F73, stop: 0.85 #D79F88, '
+                'stop: 0.851 #E2BF9B, stop: 1 #817F73)'
+            )
         Setter:
             field = 'color'
             value = '#FFFFEF'

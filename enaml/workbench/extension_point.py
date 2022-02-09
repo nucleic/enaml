@@ -41,6 +41,6 @@ class ExtensionPoint(Declarative):
 
         """
         this_id = self.id
-        if u'.' in this_id:
+        if '.' in this_id:
             return this_id
-        return u'%s.%s' % (self.plugin_id, this_id)
+        return '%s.%s' % (self.plugin_id, this_id)

@@ -98,7 +98,7 @@ class QtColorDialog(QtToolkitDialog, ProxyColorDialog):
         """ Get the default window title for the color dialog.
 
         """
-        return u'Select Color'
+        return 'Select Color'
 
     #--------------------------------------------------------------------------
     # Signal Handlers

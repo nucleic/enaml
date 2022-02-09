@@ -47,9 +47,9 @@ class Extension(Declarative):
 
         """
         this_id = self.id
-        if u'.' in this_id:
+        if '.' in this_id:
             return this_id
-        return u'%s.%s' % (self.plugin_id, this_id)
+        return '%s.%s' % (self.plugin_id, this_id)
 
     def get_child(self, kind, reverse=False):
         """ Find a child by the given type.

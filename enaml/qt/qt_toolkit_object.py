@@ -52,7 +52,7 @@ class QtToolkitObject(ProxyToolkitObject):
             # engine applies the cascade itself). Names provided by the
             # widget author are assumed to be unique.
             d = self.declaration
-            name = d.name or u'obj-%d' % id(d)
+            name = d.name or 'obj-%d' % id(d)
             widget.setObjectName(name)
 
     def init_layout(self):
