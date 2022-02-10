@@ -1,0 +1,64 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file LICENSE, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `AutocompleteField` widget.
+
+The `AutocompleteField` allows you to specify a list of autocompletions for the widget.
+
+This example shows how to use the many properties of the `AutocompleteField` widget.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import Window, AutocompleteField, CheckBox, Container, ObjectCombo, Label
+from enaml.layout.api import vbox, hbox, spacer, align
+
+
+enamldef Main(Window):
+    title = 'The Autocomplete Field widget'
+
+    Container:
+
+        constraints = [
+            vbox(
+                hbox(label_align, combo_align, spacer),
+                hbox(label_filter_mode, combo_filter_mode, spacer),
+                hbox(label_completion_mode, combo_completion_mode, spacer),
+                hbox(cb_case_sensitive, spacer),
+                hbox(field),
+            ),
+            align('v_center', label_align, combo_align),
+            field.width == 300,
+        ]
+
+        Label: label_align:
+            text = 'text_align:'
+
+        ObjectCombo: combo_align:
+            items = ['left', 'right', 'center']
+
+        CheckBox: cb_case_sensitive:
+            text = 'case_sensitive:'
+            checked := field.case_sensitive
+
+        Label: label_filter_mode:
+            text = 'filter_mode:'
+
+        ObjectCombo: combo_filter_mode:
+            items = ['starts_with', 'contains', 'ends_with']
+            selected := field.filter_mode
+
+        Label: label_completion_mode:
+            text = 'completion_mode:'
+
+        ObjectCombo: combo_completion_mode:
+            items = ['popup', 'inline', 'unfiltered_popup']
+            selected := field.completion_mode
+
+        AutocompleteField: field:
+            items = ['apple', 'banana', 'orange', 'grape', 'Avocado',
+                     'Breadfruit', 'Grapefruit']
+            text_align << combo_align.selected

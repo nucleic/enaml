@@ -15,6 +15,11 @@ def action_group_factory():
     return QtActionGroup
 
 
+def autocomplete_field_factory():
+    from .qt_autocomplete_field import QtAutocompleteField
+    return QtAutocompleteField
+
+
 def button_group_factory():
     from .qt_button_group import QtButtonGroup
     return QtButtonGroup
@@ -308,6 +313,7 @@ def window_factory():
 QT_FACTORIES = {
     'Action': action_factory,
     'ActionGroup': action_group_factory,
+    'AutocompleteField': autocomplete_field_factory,
     'ButtonGroup': button_group_factory,
     'Calendar': calendar_factory,
     'CheckBox': check_box_factory,
