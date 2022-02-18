@@ -67,15 +67,12 @@ from enaml.widgets.api import (Form, Label, MPLCanvas, ObjectCombo, VGroup,
 
 
 def make_figure():
-    figure, axes = plt.subplots()
+    # Constrained layout uses the kiwisolver engine and will ensure that the
+    # axes are formatted properly regardless of the size of the figure.
+    figure, axes = plt.subplots(constrained_layout=True)
     x = np.arange(1000) / 1000
     y = np.sin(2 * np.pi * 5 * x)
     axes.plot(x, y)
-
-    # Call the `tight_layout` method anytime the user resizes the main window.
-    # This ensures that the axes titles and axes ticks are adjusted so they
-    # remain visible even at small sizes..
-    figure.canvas.mpl_connect('resize_event', lambda e: figure.tight_layout())
     return figure
 
 
