@@ -19,6 +19,43 @@ MPLCanvas. By setting resist_width, resist_height, hug_height, and hug_width to
 This serves to demonstrate how the resist, hug and limit constraints interact
 to control the size of a widget.
 
+resist:
+    If "strong", the widget will not shrink smaller than the preferred size
+    (i.e., the constraint `width >= width_hint` or `height >= height_hint` is
+    set on the object).
+
+hug:
+    If "strong", the widget will not change from the preferred size (i.e., the
+    constraint `width == width_hint` or `height == height_hint` is set on the
+    object).
+
+limit:
+    If "strong", the widget will not expand larger than the preferred size
+    (i.e., the constraint `width <= width_hint` and `height <= height_hint` is
+    set on the object).
+
+To allow a MPLCanvas to shrink smaller than the default size but not expand
+larger:
+
+    resist = ignore or weak
+    hug = ignore or weak
+    limit = strong
+
+To allow a MPLCanvas to expand larger than the default size but not shrink
+smaller:
+
+    resist = strong
+    hug = ignore or weak
+    limit = ignore or weak
+
+
+To disallow a MPLCanvas to change in size:
+
+    resist = strong, ignore or weak
+    hug = strong
+    limit = strong, ignore or weak
+
+
 << autodoc-me >>
 """
 
