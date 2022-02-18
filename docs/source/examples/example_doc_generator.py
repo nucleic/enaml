@@ -168,7 +168,8 @@ def generate_example_doc(docs_path, script_path):
             # The import leaves behind a cache. Clean it up.
             enaml_cache_dir = os.path.join(
                 os.path.dirname(script_path), '__enamlcache__')
-            shutil.rmtree(enaml_cache_dir)
+            if os.path.exists(enaml_cache_dir):
+                shutil.rmtree(enaml_cache_dir)
 
     # Restore Python path.
     sys.path = old_python_path
