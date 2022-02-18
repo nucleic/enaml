@@ -5,9 +5,9 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Coerced, ForwardTyped, Typed, observe, set_default
+from atom.api import Bool, Coerced, ForwardTyped, Typed, set_default
 
-from enaml.core.declarative import d_, d_func
+from enaml.core.declarative import d_, d_func, observe
 from enaml.layout.constrainable import ContentsConstrainableMixin
 from enaml.layout.geometry import Box
 from enaml.layout.layout_helpers import vbox

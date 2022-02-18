@@ -5,7 +5,11 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, AtomMeta, DefaultValue, Member, Typed
+from atom.api import Atom, AtomMeta, ChangeType, DefaultValue, Member, Typed
+
+
+#: The Declarative engine ignores the create event type
+D_CHANGE_TYPES = ChangeType.ANY & ~ChangeType.CREATE
 
 
 class DeclarativeDefaultHandler(Atom):
@@ -88,7 +92,7 @@ def patch_d_member(member):
         new_mode = DefaultValue.CallObject_ObjectName
         member.set_default_value_mode(new_mode, handler)
     if metadata['d_readable']:
-        member.add_static_observer(declarative_change_handler)
+        member.add_static_observer(declarative_change_handler, D_CHANGE_TYPES)
 
 
 class DeclarativeMeta(AtomMeta):

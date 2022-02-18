@@ -5,9 +5,9 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import List, ForwardTyped, Typed, observe
+from atom.api import List, ForwardTyped, Typed
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 from enaml.layout.constrainable import ConstrainableMixin, PolicyEnum
 
 from .widget import Widget, ProxyWidget

@@ -5,12 +5,27 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Event, Typed, Str
+from atom.api import Event, Typed, Str, observe as default_observe
 from atom.datastructures.api import sortedmap
 
-from .declarative_meta import DeclarativeMeta
+from .declarative_meta import DeclarativeMeta, D_CHANGE_TYPES
 from .expression_engine import ExpressionEngine
 from .object import Object, flag_generator, flag_property
+
+
+def observe(*names, change_types=D_CHANGE_TYPES):
+    """ An observe decorator which ignores the created event by default.
+
+    Parameters
+    ----------
+    *names
+        The str names of the attributes to observe on the object.
+        These must be of the form 'foo' or 'foo.bar'.
+    change_types
+        The flag specifying the type of changes to observe.
+
+    """
+    return default_observe(*names, change_types=change_types)
 
 
 def d_(member, readable=True, writable=True, final=True):

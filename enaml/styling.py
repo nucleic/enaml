@@ -10,10 +10,10 @@
 """
 from collections import defaultdict
 
-from atom.api import Atom, Str, Typed, observe
+from atom.api import Atom, Str, Typed
 
 from enaml.application import Application, deferred_call
-from enaml.core.declarative import Declarative, d_
+from enaml.core.declarative import Declarative, d_, observe
 
 
 class Setter(Declarative):

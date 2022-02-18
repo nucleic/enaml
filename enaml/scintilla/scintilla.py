@@ -9,10 +9,10 @@ import uuid
 
 from atom.api import (
     Atom, Int, Constant, Enum, Event, Typed, List, ForwardTyped, Tuple,
-    Str, observe, set_default
+    Str, set_default
 )
 from enaml.image import Image
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 from enaml.widgets.control import Control, ProxyControl
 
 

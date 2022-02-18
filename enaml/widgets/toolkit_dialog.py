@@ -5,12 +5,10 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import (
-    Bool, Str, Typed, ForwardTyped, Event, Callable, observe
-)
+from atom.api import Bool, Str, Typed, ForwardTyped, Event, Callable
 
 from enaml.application import deferred_call
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
 

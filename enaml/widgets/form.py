@@ -5,12 +5,12 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Int, observe
+from atom.api import Int
 
 from enaml.layout.constrainable import ConstraintMember
 from enaml.layout.layout_helpers import align, vertical, horizontal, spacer
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 
 from .container import Container
 

@@ -5,9 +5,9 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Str, Typed, ForwardTyped, observe, set_default
+from atom.api import Str, Typed, ForwardTyped, set_default
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 
 from .bounded_time import BoundedTime, ProxyBoundedTime
 

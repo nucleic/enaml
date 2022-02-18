@@ -5,9 +5,9 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed, ForwardTyped, Str, Bool, Event, observe
+from atom.api import Typed, ForwardTyped, Str, Bool, Event
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 from enaml.icon import Icon
 
 from .toolkit_object import ToolkitObject, ProxyToolkitObject

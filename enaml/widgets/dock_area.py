@@ -8,11 +8,10 @@
 from contextlib import contextmanager
 
 from atom.api import (
-    Bool, Coerced, Enum, Typed, ForwardTyped, Str, Event, observe,
-    set_default
+    Bool, Coerced, Enum, Typed, ForwardTyped, Str, Event, set_default
 )
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 from enaml.layout.dock_layout import DockLayout, DockLayoutOp
 from enaml.styling import StyleSheet
 
