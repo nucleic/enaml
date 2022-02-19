@@ -7,9 +7,8 @@
 #------------------------------------------------------------------------------
 from atom.api import Atom, AtomMeta, ChangeType, DefaultValue, Member, Typed
 
-
-#: The Declarative engine ignores the create event type
-D_CHANGE_TYPES = ChangeType.ANY & ~ChangeType.CREATE
+# The declarative engine only updates for these types of changes
+D_CHANGE_TYPES = ChangeType.UPDATE | ChangeType.PROPERTY | ChangeType.EVENT
 
 
 class DeclarativeDefaultHandler(Atom):
@@ -64,12 +63,11 @@ def declarative_change_handler(change):
 
     """
     # TODO think about whether this is the right place to filter on change_t
-    change_t = change['type']
-    if change_t == 'update' or change_t == 'event' or change_t == 'property':
-        owner = change['object']
-        engine = owner._d_engine
-        if engine is not None:
-            engine.write(owner, change['name'], change)
+    # NOTE: Filtering on change['type'] is done by atom
+    owner = change['object']
+    engine = owner._d_engine
+    if engine is not None:
+        engine.write(owner, change['name'], change)
 
 
 def patch_d_member(member):

@@ -5,15 +5,18 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Event, Typed, Str, observe as default_observe
+from atom.api import ChangeType, Event, Typed, Str, observe as default_observe
 from atom.datastructures.api import sortedmap
 
-from .declarative_meta import DeclarativeMeta, D_CHANGE_TYPES
+from .declarative_meta import DeclarativeMeta
 from .expression_engine import ExpressionEngine
 from .object import Object, flag_generator, flag_property
 
+#: Declarative observe ignores create events
+OBSERVE_CHANGE_TYPES = ChangeType.ANY & ~ChangeType.CREATE
 
-def observe(*names, change_types=D_CHANGE_TYPES):
+
+def observe(*names, change_types=OBSERVE_CHANGE_TYPES):
     """ An observe decorator which ignores the created event by default.
 
     Parameters
