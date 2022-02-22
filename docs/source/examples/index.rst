@@ -90,6 +90,7 @@ Advanced
     ex_fluid
     ex_manual_hbox
     ex_manual_vbox
+    ex_mpl_canvas_size
     ex_nested_boxes
     ex_nested_containers
     ex_override_layout_constraints
