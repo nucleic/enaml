@@ -55,7 +55,7 @@ def _computePressPos(container, coeff):
     test_x = int(coeff * container.width())
     new_x = max(margins.left() + 5, min(test_x, max_x))
     title_bar = container.dockItem().titleBarWidget()
-    title_height = title_bar.height() / 2
+    title_height = title_bar.height() // 2
     mid_title = title_bar.mapTo(container, QPoint(0, title_height))
     return QPoint(new_x, mid_title.y())
 
@@ -561,7 +561,7 @@ class QDockContainer(QDockFrame):
         self.float()
         self.raiseFrame()
         title_bar = self.dockItem().titleBarWidget()
-        title_pos = QPoint(title_bar.width() / 2, title_bar.height() / 2)
+        title_pos = QPoint(title_bar.width() // 2, title_bar.height() // 2)
         margins = self.layout().contentsMargins()
         offset = QPoint(margins.left(), margins.top())
         state.press_pos = title_bar.mapTo(self, title_pos) + offset
