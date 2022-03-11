@@ -26,13 +26,13 @@ environment:
         # 32-bit versions, PyQt and PySide2, latest
 
         - NAME: "32-bit, Latest "
-          PYTHON: "C:\\Python38"
+          PYTHON: "C:\\Python39"
           PYTHON_VERSION: "3.9"
           PYTHON_ARCH: "32"
           PYQT_VERSION: "5"
 
         - NAME: "PySide2"
-          PYTHON: "C:\\Python38"
+          PYTHON: "C:\\Python39"
           PYTHON_VERSION: "3.9"
           PYTHON_ARCH: "32"
           PYQT_VERSION: "None"
@@ -78,12 +78,8 @@ install:
   - "python -c \"import struct; print('Architecture is win'+str(struct.calcsize('P') * 8))\""
   - pip --version
 
-  # Install bytecode
-  - pip install bytecode
-
   # At the time of writing, the setup.py says Enaml depends on a dev version
   # of Atom which is not on PyPI. Install straight from GitHub.
-  - pip install git+https://github.com/nucleic/cppy@main
   - pip install git+https://github.com/nucleic/atom@main
   - pip install git+https://github.com/nucleic/kiwi@main
 
