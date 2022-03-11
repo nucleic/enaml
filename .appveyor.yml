@@ -102,4 +102,4 @@ test_script:
 
   # Run the project tests
   - cd %APPVEYOR_BUILD_DIR%
-  - pytest tests --cov enaml --cov-report xml
+  - pytest tests -rs --cov enaml --cov-report xml
