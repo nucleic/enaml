@@ -96,7 +96,8 @@ build_script:
 
   - cd %APPVEYOR_BUILD_DIR%
   - if "%QT_API%"=="pyqt" pip install -e .[qt5-pyqt]
-  - if "%QT_API%"=="pyside2" pip install -e .[qt5-pyside2]
+  - if "%QT_API%"=="pyside2" pip install -e .[qt5-pyside]
+  - pip list
 
 test_script:
 
