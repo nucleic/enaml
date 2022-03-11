@@ -32,14 +32,14 @@ environment:
           PYTHON: "C:\\Python39"
           PYTHON_VERSION: "3.9"
           PYTHON_ARCH: "32"
-          QT_API: "pyqt"
+          QT_BINDING: "pyqt"
           QT_VERSION: "5"
 
         - NAME: "PySide2"
           PYTHON: "C:\\Python39"
           PYTHON_VERSION: "3.9"
           PYTHON_ARCH: "32"
-          QT_API: "pyside2"
+          QT_BINDING: "pyside2"
           QT_VERSION: "5"
 
 
@@ -95,8 +95,8 @@ install:
 build_script:
 
   - cd %APPVEYOR_BUILD_DIR%
-  - if "%QT_API%"=="pyqt" pip install -e .[qt5-pyqt]
-  - if "%QT_API%"=="pyside2" pip install -e .[qt5-pyside]
+  - if "%QT_BINDING%"=="pyqt" pip install -e .[qt5-pyqt]
+  - if "%QT_BINDING%"=="pyside2" pip install -e .[qt5-pyside]
   - pip list
 
 test_script:
