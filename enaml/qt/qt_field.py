@@ -88,7 +88,7 @@ class QtField(QtControl, ProxyField):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    def _validate_and_apply(self):
+    def _verify_and_apply(self):
         """ Validate and apply the text in the control.
 
         """
@@ -153,7 +153,7 @@ class QtField(QtControl, ProxyField):
         """
         self._guard |= TEXT_GUARD
         try:
-            self._validate_and_apply()
+            self._verify_and_apply()
         finally:
             self._guard &= ~TEXT_GUARD
 
