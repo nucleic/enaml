@@ -11,6 +11,9 @@ branches:
   only:
     - main
 
+image:
+  - Visual Studio 2022
+
 environment:
     matrix:
 
@@ -26,17 +29,18 @@ environment:
         # 32-bit versions, PyQt and PySide2, latest
 
         - NAME: "32-bit, Latest "
-          PYTHON: "C:\\Python38"
+          PYTHON: "C:\\Python39"
           PYTHON_VERSION: "3.9"
           PYTHON_ARCH: "32"
-          PYQT_VERSION: "5"
+          QT_BINDING: "pyqt"
+          QT_VERSION: "5"
 
         - NAME: "PySide2"
-          PYTHON: "C:\\Python38"
+          PYTHON: "C:\\Python39"
           PYTHON_VERSION: "3.9"
           PYTHON_ARCH: "32"
-          PYQT_VERSION: "None"
-          QT_API: "pyside2"
+          QT_BINDING: "pyside2"
+          QT_VERSION: "5"
 
 
 install:
@@ -78,17 +82,11 @@ install:
   - "python -c \"import struct; print('Architecture is win'+str(struct.calcsize('P') * 8))\""
   - pip --version
 
-  # Install bytecode
-  - pip install bytecode
-
   # At the time of writing, the setup.py says Enaml depends on a dev version
   # of Atom which is not on PyPI. Install straight from GitHub.
-  - pip install git+https://github.com/nucleic/cppy@main
   - pip install git+https://github.com/nucleic/atom@main
   - pip install git+https://github.com/nucleic/kiwi@main
 
-  - if %PYQT_VERSION%==5 pip install pyqt5
-  - ps: if ($env:QT_API -eq "pyside2") {pip install pyside2}
   - if "%QSCINTILLA%"=="Yes" pip install QScintilla
 
   # We should be able to install the test dependencies via setup.py, but in the meantime, do it manually:
@@ -97,10 +95,12 @@ install:
 build_script:
 
   - cd %APPVEYOR_BUILD_DIR%
-  - pip install -e .
+  - if "%QT_BINDING%"=="pyqt" pip install -e .[qt5-pyqt]
+  - if "%QT_BINDING%"=="pyside2" pip install -e .[qt5-pyside]
+  - pip list
 
 test_script:
 
   # Run the project tests
   - cd %APPVEYOR_BUILD_DIR%
-  - pytest tests --cov enaml --cov-report xml
+  - pytest tests -rs --cov enaml --cov-report xml

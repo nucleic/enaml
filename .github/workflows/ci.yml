@@ -22,17 +22,17 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10.0']
+        python-version: ['3.8', '3.9', '3.10']
         qt-binding: [pyqt5, pyside2]
         exclude:
           - os: ubuntu-latest
-            python-version: '3.10.0'
+            python-version: '3.10'
             qt-binding: pyside2
           - os: windows-latest
-            python-version: '3.10.0'
+            python-version: '3.10'
             qt-binding: pyside2
           - os: macos-latest
-            python-version: '3.10.0'
+            python-version: '3.10'
             qt-binding: pyside2
       fail-fast: false
     steps:
@@ -56,7 +56,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install ply
           pip install git+https://github.com/MatthieuDartiailh/bytecode@main
-          pip install git+https://github.com/nucleic/cppy@main
           pip install git+https://github.com/nucleic/atom@main
           pip install git+https://github.com/nucleic/kiwi@main
       - name: Install Qt bindings
