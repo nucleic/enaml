@@ -11,6 +11,9 @@ branches:
   only:
     - main
 
+image:
+  - Visual Studio 2022
+
 environment:
     matrix:
 
