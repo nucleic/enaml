@@ -8,7 +8,9 @@
 from atom.api import Atom, AtomMeta, ChangeType, DefaultValue, Member, Typed
 
 # The declarative engine only updates for these types of changes
-D_CHANGE_TYPES = ChangeType.UPDATE | ChangeType.PROPERTY | ChangeType.EVENT
+D_CHANGE_TYPES = (
+    ChangeType.UPDATE | ChangeType.PROPERTY | ChangeType.EVENT | ChangeType.DELETE
+)
 
 
 class DeclarativeDefaultHandler(Atom):
