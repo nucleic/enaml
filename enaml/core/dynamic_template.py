@@ -5,12 +5,12 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Dict, List, Str, Tuple, Typed, observe
+from atom.api import Dict, List, Str, Tuple, Typed
 
 from enaml.application import ScheduledTask, schedule
 from enaml.objectdict import ObjectDict
 
-from .declarative import Declarative, d_
+from .declarative import Declarative, d_, observe
 from .template import Template
 
 

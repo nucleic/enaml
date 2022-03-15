@@ -6,12 +6,11 @@
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, Coerced, Enum, Float, Event, Int, Typed, ForwardTyped, observe,
-    set_default
+    Bool, Coerced, Enum, Float, Event, Int, Typed, ForwardTyped, set_default
 )
 
 from enaml.application import deferred_call
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 from enaml.layout.geometry import Pos, PosF
 
 from .container import Container

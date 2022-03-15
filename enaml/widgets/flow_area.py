@@ -5,11 +5,9 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import (
-    Enum, Range, Coerced, Typed, ForwardTyped, observe, set_default
-)
+from atom.api import Enum, Range, Coerced, Typed, ForwardTyped, set_default
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 from enaml.layout.geometry import Box
 
 from .frame import Frame, ProxyFrame, Border

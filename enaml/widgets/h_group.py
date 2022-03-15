@@ -5,9 +5,9 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Int, Typed, observe
+from atom.api import Bool, Int, Typed
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 from enaml.layout.layout_helpers import align, hbox
 from enaml.layout.spacers import Spacer
 

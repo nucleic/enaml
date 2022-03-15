@@ -6,11 +6,10 @@
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Atom, Str, Enum, Bool, Event, Coerced, Typed, ForwardTyped, observe,
-    set_default
+    Atom, Str, Enum, Bool, Event, Coerced, Typed, ForwardTyped, set_default
 )
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 from enaml.icon import Icon
 from enaml.layout.geometry import Pos, Rect, Size
 

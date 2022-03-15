@@ -6,10 +6,10 @@
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Enum, Bool, Typed, ForwardTyped, Str, observe, set_default
+    Enum, Bool, Typed, ForwardTyped, Str, set_default
 )
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .page import Page

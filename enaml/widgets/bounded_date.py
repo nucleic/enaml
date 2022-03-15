@@ -7,9 +7,9 @@
 #------------------------------------------------------------------------------
 from datetime import date as pydate
 
-from atom.api import Typed, ForwardTyped, observe
+from atom.api import Typed, ForwardTyped
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 
 from .control import Control, ProxyControl
 

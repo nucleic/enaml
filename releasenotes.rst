@@ -9,6 +9,9 @@ Dates are written as DD/MM/YYYY
 - fixes several bugs in corner cases of the Qt dock area PR #469
 - add python fstring scintilla tokens PR #470
 - address PyQt deprecation of accepting float values for pixel dimensions PR #471 and #481
+- add new declarative @observe which ignores 'create' and 'container' events by default PR #479
+- use atom builtin filtering mechanism to avoid refreshing the declarative engine on 
+  'create' and 'container' event PR # 479
 
 0.14.0 - 21/11/2021
 -------------------

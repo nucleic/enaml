@@ -5,11 +5,9 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import (
-    Typed, ForwardTyped, Str, Enum, Event, observe, set_default
-)
+from atom.api import Typed, ForwardTyped, Str, Enum, Event, set_default
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 
 from .control import Control, ProxyControl
 

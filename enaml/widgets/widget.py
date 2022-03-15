@@ -7,12 +7,10 @@
 #------------------------------------------------------------------------------
 from enum import IntFlag
 
-from atom.api import (
-    Bool, Str, Coerced, Typed, ForwardTyped, observe
-)
+from atom.api import Bool, Str, Coerced, Typed, ForwardTyped
 
 from enaml.colors import ColorMember
-from enaml.core.declarative import d_, d_func
+from enaml.core.declarative import d_, d_func, observe
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
 from enaml.styling import Stylable
