@@ -8,7 +8,6 @@
 from enaml.qt.QtCore import QSize
 from enaml.qt.QtGui import QIcon, QPainter
 from enaml.qt.QtWidgets import QFrame
-from enaml.qt import IS_QT6
 
 
 class QIconWidget(QFrame):

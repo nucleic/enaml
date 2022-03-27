@@ -12,5 +12,4 @@ from qtpy import (
     PYQT6_API,
     PYSIDE6_API,
     QT_VERSION,
-    QT6 as IS_QT6
 )
