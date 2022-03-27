@@ -8,6 +8,7 @@
 from enaml.qt.QtCore import QSize
 from enaml.qt.QtGui import QIcon, QPainter
 from enaml.qt.QtWidgets import QFrame
+from enaml.qt import IS_QT6
 
 
 class QIconWidget(QFrame):
@@ -93,6 +94,8 @@ class QIconWidget(QFrame):
         size = self._icon_size
         if not size.isValid():
             size = QSize(16, 16)
+        if IS_QT6:
+            return size
         left, top, right, bottom = self.getContentsMargins()
         return size + QSize(left + right, top + bottom)
 

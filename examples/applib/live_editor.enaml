@@ -58,7 +58,9 @@ enamldef Main(Window):
 
     func handle_uncaught_exception(exc, value, tb):
         """Send uncaught exception to the model to avoid crashing the editor."""
-        editor_model.traceback = "".join(traceback.format_exception(exc, value, tb))
+        msg = "".join(traceback.format_exception(exc, value, tb))
+        print(msg) # Print to console in case there was a startup error
+        editor_model.traceback = msg
 
     initialized::
         sys.excepthook = handle_uncaught_exception
