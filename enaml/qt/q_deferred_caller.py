@@ -70,4 +70,4 @@ def timedCall(ms, callback, *args, **kwargs):
     if QThread.currentThread() != QApplication.instance().thread():
         deferredCall(timedCall, ms, callback, *args, **kwargs)
     else:
-        QTimer.singleShot(ms, lambda: callback(*args, **kwargs))
+        QTimer.singleShot(int(ms), lambda: callback(*args, **kwargs))
