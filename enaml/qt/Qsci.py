@@ -5,15 +5,12 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from . import QT_API, PYSIDE2_API, PYQT5_API, PYQT6_API
-
-if QT_API in PYSIDE2_API:
-    msg = 'the Qt Scintilla widget is only available when using PyQt'
-    raise ImportError(msg)
+from . import QT_API, PYQT5_API, PYQT6_API
 
 if QT_API in PYQT6_API:
     from PyQt6.Qsci import *
 elif QT_API in PYQT5_API:
     from PyQt5.Qsci import *
 else:
-    from QScintilla import *
+    msg = 'the Qt Scintilla widget is only available when using PyQt5 or PyQt6'
+    raise ImportError(msg)
