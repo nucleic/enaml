@@ -64,10 +64,14 @@ jobs:
         if: matrix.python-version == '3.9'
         run: |
           pip install matplotlib ipython qtconsole
-      - name: Install QScintilla
-        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt'
+      - name: Install QScintilla (Qt5)
+        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt' && matrix.qt-version== 5
         run: |
-          pip install Cython QScintilla
+          pip install QScintilla
+      - name: Install QScintilla (Qt6)
+        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt' && matrix.qt-version== 6
+        run: |
+          pip install PyQt6-QScintilla
       - name: Install pytest
         run: |
           pip install pytest pytest-cov pytest-qt
