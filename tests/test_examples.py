@@ -37,10 +37,7 @@ else:
 
 
 try:
-    try:
-        from PyQt4 import Qsci
-    except Exception:
-        from PyQt5 import Qsci
+    from enaml.qt import Qsci
 except ImportError:
     SCINTILLA_AVAILABLE = False
 else:
@@ -106,6 +103,7 @@ def handle_window_closing(qtbot, window):
         assert not Window.windows
 
     qtbot.wait_until(check_window_closed)
+
 
 @pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 @pytest.mark.parametrize("path, handler",
