@@ -9,25 +9,13 @@ from atom.api import Typed
 
 from enaml.widgets.mpl_canvas import ProxyMPLCanvas
 
-from .QtCore import Qt, __version__ as QT_VERSION
+from .QtCore import Qt
 from .QtWidgets import QFrame, QVBoxLayout
 
 from .qt_control import QtControl
 
-if QT_VERSION[0] == '4':
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
-    try:
-        from matplotlib.backends.backend_qt4agg import (
-            NavigationToolbar2QTAgg as NavigationToolbar2QT)
-    except ImportError:
-        from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
-elif QT_VERSION[0] == '5':
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
-else:
-
-    raise RuntimeError("No known Matplotlib backend for qt version {} "
-                       "(as reported by qtpy.QT_VERSION)".format(QT_VERSION))
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 
 
 class QtMPLCanvas(QtControl, ProxyMPLCanvas):

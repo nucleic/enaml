@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2021, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -165,14 +165,13 @@ setup(
           'License :: OSI Approved :: BSD License',
           'Programming Language :: Python',
           'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.7',
           'Programming Language :: Python :: 3.8',
           'Programming Language :: Python :: 3.9',
           'Programming Language :: Python :: 3.10',
           'Programming Language :: Python :: Implementation :: CPython',
       ],
-    python_requires='>=3.7',
-    requires=['atom', 'qtpy', 'ply', 'kiwisolver'],
+    python_requires='>=3.8',
+    requires=['atom', 'ply', 'kiwisolver'],
     install_requires=['atom>=0.7.0',
                       'kiwisolver>=1.2.0',
                       'ply>=3.4',
@@ -181,7 +180,9 @@ setup(
     setup_requires=['cppy>=1.1.0'],
     extras_require={
         "qt5-pyqt": ["qtpy", "pyqt5"],
-        "qt5-pyside": ["qtpy", "pyside2"]
+        "qt5-pyside": ["qtpy", "pyside2"],
+        "qt6-pyqt": ["qtpy>=2.0.1", "pyqt6>=6.2"],
+        "qt6-pyside": ["qtpy>=2.0.1", "pyside6>=6.2.3"]
     },
     packages=find_packages(),
     package_data={

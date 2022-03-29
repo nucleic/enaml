@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Bool, Typed
 
+from enaml.qt.compat import global_pos_from_event
 from enaml.qt.QtCore import (
     Qt, QMetaObject, QMargins, QPoint, QRect, QSize, Signal
 )
@@ -461,7 +462,7 @@ class QDockWindow(QDockFrame):
         """
         state = self.frame_state
         if state.press_pos is not None:
-            global_pos = event.globalPos()
+            global_pos = global_pos_from_event(event)
             if self.isMaximized():
                 coeff = state.press_pos.x() / float(self.width())
                 self.showNormal()
@@ -489,7 +490,7 @@ class QDockWindow(QDockFrame):
         if event.button() == Qt.LeftButton:
             state = self.frame_state
             if state.press_pos is not None:
-                self.manager().drag_release_frame(self, event.globalPos())
+                self.manager().drag_release_frame(self, global_pos_from_event(event))
                 state.dragging = False
                 state.press_pos = None
                 return True

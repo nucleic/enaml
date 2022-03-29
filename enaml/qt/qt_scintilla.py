@@ -1,15 +1,10 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from . import QT_API, PYSIDE2_API, PYQT5_API
-if QT_API in PYSIDE2_API:
-    msg = 'the Qt Scintilla widget is only available when using PyQt'
-    raise ImportError(msg)
-
 import logging
 import sys
 import weakref
@@ -20,11 +15,7 @@ from enaml.colors import parse_color
 from enaml.fonts import parse_font
 from enaml.scintilla.scintilla import ProxyScintilla
 
-if QT_API in PYQT5_API:
-    from PyQt5 import Qsci
-else:
-    import QScintilla as Qsci
-
+from . import QT_API, PYQT6_API, Qsci
 from .QtGui import QColor, QFont
 
 from .q_resource_helpers import (QColor_from_Color, QFont_from_Font,
@@ -48,6 +39,17 @@ elif sys.platform == 'darwin':
     DEFAULT_EOL = 'cr'
 else:
     DEFAULT_EOL = 'lf'
+
+if QT_API in PYQT6_API:
+    AutoCompletionUseSingle = QsciScintilla.AutoCompletionUseSingle
+    AutoCompletionSource = QsciScintilla.AutoCompletionSource
+    IndicatorStyle = QsciScintilla.IndicatorStyle
+    NumberMargin = QsciScintilla.MarginType.NumberMargin
+else:
+    AutoCompletionUseSingle = QsciScintilla
+    AutoCompletionSource = QsciScintilla
+    IndicatorStyle = QsciScintilla
+    NumberMargin = QsciScintilla.NumberMargin
 
 
 EOL_MODE = {
@@ -79,38 +81,38 @@ WHITE_SPACE = {
 }
 
 AUTOCOMPLETION_USE_SINGLE = {
-    'never': QsciScintilla.AcusNever,
-    'explicit': QsciScintilla.AcusExplicit,
-    'always': QsciScintilla.AcusAlways,
+    'never': AutoCompletionUseSingle.AcusNever,
+    'explicit': AutoCompletionUseSingle.AcusExplicit,
+    'always': AutoCompletionUseSingle.AcusAlways,
 }
 
 AUTOCOMPLETION_SOURCE = {
-    'none': QsciScintilla.AcsNone,
-    'all': QsciScintilla.AcsAll,
-    'document': QsciScintilla.AcsDocument,
-    'apis': QsciScintilla.AcsAPIs,
+    'none': AutoCompletionSource.AcsNone,
+    'all': AutoCompletionSource.AcsAll,
+    'document': AutoCompletionSource.AcsDocument,
+    'apis': AutoCompletionSource.AcsAPIs,
 }
 
 INDICATOR_STYLE = {
-    'plain': QsciScintilla.PlainIndicator,
-    'squiggle': QsciScintilla.SquiggleIndicator,
-    'tt': QsciScintilla.TTIndicator,
-    'diagonal': QsciScintilla.DiagonalIndicator,
-    'strike': QsciScintilla.StrikeIndicator,
-    'hidden': QsciScintilla.HiddenIndicator,
-    'box': QsciScintilla.BoxIndicator,
-    'round_box': QsciScintilla.RoundBoxIndicator,
-    'straight_box': QsciScintilla.StraightBoxIndicator,
-    'full_box': QsciScintilla.FullBoxIndicator,
-    'dashes': QsciScintilla.DashesIndicator,
-    'dots': QsciScintilla.DotsIndicator,
-    'squiggle_low': QsciScintilla.SquiggleLowIndicator,
-    'dot_box': QsciScintilla.DotBoxIndicator,
-    'thick_composition': QsciScintilla.ThickCompositionIndicator,
-    'thin_composition': QsciScintilla.ThinCompositionIndicator,
-    'text_color': QsciScintilla.TextColorIndicator,
-    'triangle': QsciScintilla.TriangleIndicator,
-    'triangle_character': QsciScintilla.TriangleCharacterIndicator,
+    'plain': IndicatorStyle.PlainIndicator,
+    'squiggle': IndicatorStyle.SquiggleIndicator,
+    'tt': IndicatorStyle.TTIndicator,
+    'diagonal': IndicatorStyle.DiagonalIndicator,
+    'strike': IndicatorStyle.StrikeIndicator,
+    'hidden': IndicatorStyle.HiddenIndicator,
+    'box': IndicatorStyle.BoxIndicator,
+    'round_box': IndicatorStyle.RoundBoxIndicator,
+    'straight_box': IndicatorStyle.StraightBoxIndicator,
+    'full_box': IndicatorStyle.FullBoxIndicator,
+    'dashes': IndicatorStyle.DashesIndicator,
+    'dots': IndicatorStyle.DotsIndicator,
+    'squiggle_low': IndicatorStyle.SquiggleLowIndicator,
+    'dot_box': IndicatorStyle.DotBoxIndicator,
+    'thick_composition': IndicatorStyle.ThickCompositionIndicator,
+    'thin_composition': IndicatorStyle.ThinCompositionIndicator,
+    'text_color': IndicatorStyle.TextColorIndicator,
+    'triangle': IndicatorStyle.TriangleIndicator,
+    'triangle_character': IndicatorStyle.TriangleCharacterIndicator,
 }
 
 NUMBER_MARGIN = 0
@@ -517,7 +519,7 @@ class QtScintilla(QtControl, ProxyScintilla):
 
         """
         w = self.widget
-        w.setMarginType(NUMBER_MARGIN, QsciScintilla.NumberMargin)
+        w.setMarginType(NUMBER_MARGIN, NumberMargin)
         self.widget.setMarginWidth(
             NUMBER_MARGIN, "0"+str(max(10, w.lines())) if show else "")
 

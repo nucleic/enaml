@@ -23,17 +23,14 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.8', '3.9', '3.10']
-        qt-binding: [pyqt5, pyside2]
+        qt-version: [5, 6]
+        qt-binding: [pyqt, pyside]
         exclude:
-          - os: ubuntu-latest
-            python-version: '3.10'
-            qt-binding: pyside2
-          - os: windows-latest
-            python-version: '3.10'
-            qt-binding: pyside2
-          - os: macos-latest
-            python-version: '3.10'
-            qt-binding: pyside2
+          - python-version: '3.10'
+            qt-version: 5
+            qt-binding: pyside
+          - python-version: '3.8'
+            qt-version: 6
       fail-fast: false
     steps:
       - name: Install linux only test dependency
@@ -54,32 +51,33 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ply
+          pip install numpy
           pip install git+https://github.com/MatthieuDartiailh/bytecode@main
           pip install git+https://github.com/nucleic/atom@main
           pip install git+https://github.com/nucleic/kiwi@main
-      - name: Install Qt bindings
-        run: |
-          pip install numpy qtpy '${{matrix.qt-binding}}'
-      - name: Install extra dependencies
-        if: matrix.python-version == '3.9'
-        run: |
-          pip install matplotlib ipython qtconsole
-      - name: Install QScintilla
-        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt5'
-        run: |
-          pip install Cython QScintilla
       - name: Install project
         env:
           CPPFLAGS: --coverage
         run: |
-          python setup.py develop
+          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
+      - name: Install extra dependencies
+        if: matrix.python-version == '3.9'
+        run: |
+          pip install matplotlib ipython qtconsole
+      - name: Install QScintilla (Qt5)
+        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt' && matrix.qt-version== 5
+        run: |
+          pip install QScintilla
+      - name: Install QScintilla (Qt6)
+        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt' && matrix.qt-version== 6
+        run: |
+          pip install PyQt6-QScintilla
       - name: Install pytest
         run: |
           pip install pytest pytest-cov pytest-qt
       - name: Run tests (Windows, Mac)
         if: matrix.os != 'ubuntu-latest'
-        run: python -X dev -m pytest tests --cov enaml --cov-report xml
+        run: python -X dev -m pytest tests --cov enaml --cov-report xml -rs
       - name: Run tests (Linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash -l {0}
@@ -89,7 +87,7 @@ jobs:
           sleep 3
           exec /usr/bin/startfluxbox &
           sleep 1
-          python -X dev -m pytest tests --cov enaml --cov-report xml
+          python -X dev -m pytest tests --cov enaml --cov-report xml -rs
       - name: Generate C++ coverage reports
         if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         run: |

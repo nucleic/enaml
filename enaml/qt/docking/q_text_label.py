@@ -94,8 +94,11 @@ class QTextLabel(QFrame):
             metrics = self.fontMetrics()
             base = metrics.boundingRect(self._text).size()
             self._text_size = base
-        left, top, right, bottom = self.getContentsMargins()
-        return base + QSize(left + right, top + bottom)
+        margin = self.contentsMargins()
+        return (
+            base
+            + QSize(margin.left() + margin.right(), margin.top() + margin.bottom())
+        )
 
     def minimumSizeHint(self):
         """ Get the minimum size hint for the text label.
@@ -107,8 +110,11 @@ class QTextLabel(QFrame):
             text = self._computeElidedText(self._text)
             base = metrics.boundingRect(text).size()
             self._min_text_size = base
-        left, top, right, bottom = self.getContentsMargins()
-        return base + QSize(left + right, top + bottom)
+        margin = self.contentsMargins()
+        return (
+            base
+            + QSize(margin.left() + margin.right(), margin.top() + margin.bottom())
+        )
 
     def paintEvent(self, event):
         """ Handle the paint event for the title bar.

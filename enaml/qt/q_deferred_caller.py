@@ -1,10 +1,11 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from .compat import coerce_to_qevent_type
 from .QtCore import QObject, QTimer, QEvent, QThread
 from .QtWidgets import QApplication
 
@@ -14,7 +15,7 @@ class DeferredCallEvent(QEvent):
 
     """
     # Explicitly coerce to QEvent.Type for PySide compatibility.
-    Type = QEvent.Type(QEvent.registerEventType())
+    Type = coerce_to_qevent_type(QEvent.registerEventType())
 
     def __init__(self, callback, args, kwargs):
         super(DeferredCallEvent, self).__init__(self.Type)
