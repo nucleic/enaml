@@ -77,7 +77,7 @@ jobs:
           pip install pytest pytest-cov pytest-qt
       - name: Run tests (Windows, Mac)
         if: matrix.os != 'ubuntu-latest'
-        run: python -X dev -m pytest tests --cov enaml --cov-report xml
+        run: python -X dev -m pytest tests --cov enaml --cov-report xml -rs
       - name: Run tests (Linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash -l {0}
@@ -87,7 +87,7 @@ jobs:
           sleep 3
           exec /usr/bin/startfluxbox &
           sleep 1
-          python -X dev -m pytest tests --cov enaml --cov-report xml
+          python -X dev -m pytest tests --cov enaml --cov-report xml -rs
       - name: Generate C++ coverage reports
         if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         run: |
