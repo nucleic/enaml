@@ -183,7 +183,7 @@ Alternatively, cloning and building the latest (unstable dev) version of Atom fr
 
     $ git clone https://github.com/nucleic/atom.git
     $ cd atom
-    $ python setup.py install
+    $ pip install .
 
 .. _Atom: https://github.com/nucleic/atom
 .. _Observer Pattern: http://en.wikipedia.org/wiki/Observer_pattern
