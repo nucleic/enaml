@@ -18,10 +18,9 @@ maintainers = [
   {name = "Matthieu C. Dartiailh", email = "m.dartiailh@gmail.com"}
 ]
 dependencies = ["pygments"]
-dynamic=["version"]
 
-[project.entry_points]
-"[pygments.lexers]" = {enaml = "pygments_enaml.lexer:EnamlLexer"}
+[project.entry-points]
+"pygments.lexers" = {enaml = "pygments_enaml.lexer:EnamlLexer"}
 
 [build-system]
 requires = ["setuptools>=61.2", "wheel"]
