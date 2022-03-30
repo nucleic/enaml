@@ -35,8 +35,7 @@ Python
 ~~~~~~
 
 Enaml is a Python framework and requires a supported Python runtime. Enaml
-currently supports **Python 3.7**, **Python 3.8**, **Python 3.9** and
-**Python 3.10**.
+currently supports **Python 3.8**, **Python 3.9** and **Python 3.10**.
 
 .. note::
 
@@ -63,29 +62,24 @@ Toolkit Rendering Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Enaml's declarative widgets provide a layer of abstraction on top of the
-widgets of a toolkit rendering library. Enaml ships with a backend based on Qt5
+widgets of a toolkit rendering library. Enaml ships with a backend based on Qt5/6
 and third-party projects such as `enaml-web`_ and `enaml-native`_ provides
 alternative backends.
 
 Enaml uses the `QtPy`_ library as compatibility layer to support transparently both
-PyQt and PySide. PyQt has been supported for a longer time and has been more
-heavily tested.
+Qt 5 and Qt 6 through either PyQt or PySide. PyQt5 has been supported for a longer
+time and has been more heavily tested.
 
-On 32 and 64-bit Windows, 64-bit OS X and 64-bit Linux, with Python
-versions >=3.6, it can be installed via pip::
-
-    $ pip install qtpy pyqt5
-
-.. note::
-    There is no pyqt5 wheel available for 32-bit Linux.
-
-.. note::
-    On Enaml >= 0.13 you can specify a rendering library using extra_requires, ie::
+Starting with Enaml 0.13.0, you can specify a rendering library using extra_requires,
+ie::
 
     $ pip install enaml[qt5-pyqt]
 
-    Currently, you can use either [qt5-pyqt] to use PyQt5 or [qt5-pyside] to
-    use Pyside2.
+    Currently, you can use either [qt5-pyqt] to use PyQt5, [qt5-pyside] to
+    use Pyside2, or [qt6-pyqt] and [qt6-pyside] if you want to use Qt6.
+
+.. note::
+    There is no pyqt5 wheel available for 32-bit Linux.
 
 .. _enaml-web: https://github.com/codelv/enaml-web
 .. _enaml-native: https://github.com/codelv/enaml-native
@@ -100,22 +94,14 @@ the `Git`_ command line tools installed and available on the system path.
 
 .. _Git: http://git-scm.com
 
-`Setuptools`_ and `Pip`_
-~~~~~~~~~~~~~~~~~~~~~~~~
+`Pip`_
+~~~~~~
 
-Setuptools is a Python package which makes installing other Python packages a
-breeze. Pip is the default package manager for Python. The installation
-instructions below assume that Setuptools and Pip have been installed in the
-target Python environment. Follow the relevant `Setuptools Install`_
-instructions for adding the package to your system.
+Pip is the default package manager for Python. The installation instructions
+below assume that Pip has been installed in the target Python environment
+(see `Pip install`_).
 
-.. note::
-    Recent versions of Python (Python 2 >=2.7.9 or Python 3 >=3.4) installed
-    from the official binaries install come with those tools installed.
-
-.. _Setuptools: http://pythonhosted.org/setuptools
 .. _Pip: https://pip.pypa.io/en/stable/
-.. _Setuptools Install: https://pypi.python.org/pypi/setuptools/1.1.6
 .. _Pip Install: https://pip.pypa.io/en/stable/installing/
 
 `Ply`_
@@ -133,19 +119,6 @@ Ply can be installed with the ``pip install`` command of `Pip`_::
 
 .. _Ply: http://www.dabeaz.com/ply
 
-`Cppy`_
-~~~~~~~
-
-Enaml also uses Cppy, a small C++ header library, to build some pre-compiled
-`Python extensions`_.
-
-Cppy can be installed with the ``pip install`` command of `Pip`_::
-
-    $ pip install cppy
-
-.. _Cppy: https://github.com/nucleic/cppy
-.. _Python extensions: https://docs.python.org/3/extending/extending.html
-
 `QtPy`_
 ~~~~~~~
 
@@ -156,12 +129,13 @@ QtPy can be installed with the ``pip install`` command of `Pip`_::
 
     $ pip install QtPy
 
-.. _PyQt: http://www.riverbankcomputing.com/software/pyqt/intro
+And you also need a toolkit rendering library either `PyQt5`_, `PyQt6`_, `Pyside2`_,
+or `PySide6`_ which all be installed through pip.
+
 .. _PyQt5: https://pypi.org/project/PyQt5/
+.. _PyQt6: https://pypi.org/project/PyQt6/
 .. _QtPy: https://pypi.python.org/pypi/QtPy/
 .. _Qt: http://qt-project.org
-.. _PyQt Downloads: http://www.riverbankcomputing.com/software/pyqt/download
-.. _Homebrew: http://brew.sh
 .. _PySide: http://qt-project.org/wiki/PySide
 .. _Pyside2: http://wiki.qt.io/Qt_for_Python
 
@@ -222,7 +196,7 @@ can be installed with just a few commands::
 
     $ git clone https://github.com/nucleic/enaml.git
     $ cd enaml
-    $ python setup.py install
+    $ pip install .
 
 .. _Enaml: https://github.com/nucleic/enaml
 
