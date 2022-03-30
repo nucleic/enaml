@@ -1,0 +1,28 @@
+# --------------------------------------------------------------------------------------
+# Copyright (c) 2013-2022, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file LICENSE, distributed with this software.
+# --------------------------------------------------------------------------------------
+
+[project]
+name = "pygments-enaml"
+version = "0.1.0"
+description = "Pygments plugin to support syntax highlighting for enml files"
+requires-python = ">=3.8"
+authors = [
+  {name = "The Nucleic Development Team", email = "sccolbert@gmail.com"}
+]
+maintainers = [
+  {name = "Matthieu C. Dartiailh", email = "m.dartiailh@gmail.com"}
+]
+dependencies = ["pygments"]
+dynamic=["version"]
+
+[project.entry_points]
+"[pygments.lexers]" = {enaml = "pygments_enaml.lexer:EnamlLexer"}
+
+[build-system]
+requires = ["setuptools>=61.2", "wheel"]
+build-backend = "setuptools.build_meta"
