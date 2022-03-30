@@ -14,7 +14,7 @@ from .QtCore import QObject
 
 # PySide requires weakrefs for using bound methods as slots.
 # PyQt doesn't, but executes unsafe code if not using weakrefs.
-class QtToolkitObject(ProxyToolkitObject, enable_weakref=True):
+class QtToolkitObject(ProxyToolkitObject, enable_weakrefs=True):
     """ A Qt implementation of an Enaml ProxyToolkitObject.
 
     """

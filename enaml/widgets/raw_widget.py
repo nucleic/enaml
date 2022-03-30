@@ -35,7 +35,7 @@ class RawWidget(Control):
     bound methods as slots. PyQt doesn't, but executes unsafe code if not using
     weakrefs. So you should add the following line to your class.
     __slots__ = ('__weakref__',) or pass the keyword argument
-    enable_weakref=True to the metaclass::
+    enable_weakrefs=True to the metaclass::
 
         class MyWidget(RawWidget, enable_weakref=True):
             pass

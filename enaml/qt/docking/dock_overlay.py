@@ -49,7 +49,7 @@ class QDockRubberBand(QWidget):
 
 # PySide requires weakrefs for using bound methods as slots.
 # PyQt doesn't, but executes unsafe code if not using weakrefs.
-class DockOverlay(Atom, enable_weakref=True):
+class DockOverlay(Atom, enable_weakrefs=True):
     """ An object which manages the overlays for dock widgets.
 
     This manager handles the state transitions for the overlays. The
