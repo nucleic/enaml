@@ -3,7 +3,7 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.15.0 - unreleased
+0.15.0 - 31/03/2022
 -------------------
 - make install PEP 517 compliant and use a PEP 621 compliant pyproject.toml PR #485
 - add support for PyQt6 and Pyside6 PR #475
