@@ -47,7 +47,9 @@ class QDockRubberBand(QWidget):
         self.style().drawPrimitive(QStyle.PE_Widget, opt, painter, self)
 
 
-class DockOverlay(Atom):
+# PySide requires weakrefs for using bound methods as slots.
+# PyQt doesn't, but executes unsafe code if not using weakrefs.
+class DockOverlay(Atom, enable_weakrefs=True):
     """ An object which manages the overlays for dock widgets.
 
     This manager handles the state transitions for the overlays. The
@@ -55,10 +57,6 @@ class DockOverlay(Atom):
     a more fluid user interaction experience.
 
     """
-    # PySide requires weakrefs for using bound methods as slots.
-    # PyQt doesn't, but executes unsafe code if not using weakrefs.
-    __slots__ = '__weakref__'
-
     #: The size of the rubber band when docking on the border, in px.
     border_size = Int(60)
 

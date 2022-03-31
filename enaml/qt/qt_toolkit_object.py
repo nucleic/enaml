@@ -12,14 +12,12 @@ from enaml.widgets.toolkit_object import ProxyToolkitObject
 from .QtCore import QObject
 
 
-class QtToolkitObject(ProxyToolkitObject):
+# PySide requires weakrefs for using bound methods as slots.
+# PyQt doesn't, but executes unsafe code if not using weakrefs.
+class QtToolkitObject(ProxyToolkitObject, enable_weakrefs=True):
     """ A Qt implementation of an Enaml ProxyToolkitObject.
 
     """
-    # PySide requires weakrefs for using bound methods as slots.
-    # PyQt doesn't, but executes unsafe code if not using weakrefs.
-    __slots__ = '__weakref__'
-
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QObject)
 

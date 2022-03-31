@@ -5,6 +5,7 @@ Dates are written as DD/MM/YYYY
 
 0.15.0 - unreleased
 -------------------
+- make install PEP 517 compliant and use a PEP 621 compliant pyproject.toml PR #485
 - add support for PyQt6 and Pyside6 PR #475
 - fix last occurrences of passing float instead of int to PyQt PR #481
 - add new declarative @observe which ignores 'create' and 'container' events by default PR #479
