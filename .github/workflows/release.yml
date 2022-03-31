@@ -14,6 +14,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Get history and tags for SCM versioning to work
+        run: |
+          git fetch --prune --unshallow
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -21,8 +25,8 @@ jobs:
       - name: Build sdist
         run: |
           pip install --upgrade pip
-          pip install wheel
-          python setup.py sdist
+          pip install wheel build
+          python -m build . -s
       - name: Test sdist
         run: |
           pip install pytest
@@ -45,6 +49,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Get history and tags for SCM versioning to work
+        run: |
+          git fetch --prune --unshallow
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
