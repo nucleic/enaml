@@ -132,12 +132,11 @@ QtPy can be installed with the ``pip install`` command of `Pip`_::
 And you also need a toolkit rendering library either `PyQt5`_, `PyQt6`_, `Pyside2`_,
 or `PySide6`_ which all be installed through pip.
 
+.. _QtPy: https://pypi.python.org/pypi/QtPy/
 .. _PyQt5: https://pypi.org/project/PyQt5/
 .. _PyQt6: https://pypi.org/project/PyQt6/
-.. _QtPy: https://pypi.python.org/pypi/QtPy/
-.. _Qt: http://qt-project.org
-.. _PySide: http://qt-project.org/wiki/PySide
 .. _Pyside2: http://wiki.qt.io/Qt_for_Python
+.. _PySide6: https://doc.qt.io/qtforpython/contents.html
 
 `Kiwisolver`_
 ~~~~~~~~~~~~~
