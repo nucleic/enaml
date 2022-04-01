@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017 Nucleic Development Team.
+# Copyright (c) 2013-2022 Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,6 +9,8 @@ from atom.api import Atom, Bool, Int, Typed
 
 from enaml.qt.QtCore import Qt, QEvent, QRect, QSize, QPoint, QMargins, Signal
 from enaml.qt.QtWidgets import QApplication, QFrame
+
+from . import hover_event_pos
 
 
 class QDockFrame(QFrame):
@@ -267,7 +269,7 @@ class QDockFrame(QFrame):
             return
         if state.resize_border != self.NoBorder:
             return
-        self._refreshCursor(event.pos())
+        self._refreshCursor(hover_event_pos(event))
         event.accept()
 
     def titleBarMousePressEvent(self, event):
