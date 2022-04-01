@@ -57,16 +57,17 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 include-package-data = false
-    [tools.setuptools.package-data]
-    "enaml.applib" = ['*.enaml']
-    "enaml.stdlib" = ['*.enaml']
-    "enaml.workbench.core" = ['*.enaml']
-    "enaml.workbench.ui" = ['*.enaml']
-    "enaml.qt.docking" = [
-        'dock_images/*.png',
-        'dock_images/*.py',
-        'enaml_dock_resources.qrc'
-    ]
+
+[tool.setuptools.package-data]
+"enaml.applib" = ['*.enaml']
+"enaml.stdlib" = ['*.enaml']
+"enaml.workbench.core" = ['*.enaml']
+"enaml.workbench.ui" = ['*.enaml']
+"enaml.qt.docking" = [
+    'dock_images/*.png',
+    'dock_images/*.py',
+    'enaml_dock_resources.qrc'
+]
 
 [tool.setuptools_scm]
 write_to = "enaml/version.py"
