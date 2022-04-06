@@ -8,7 +8,9 @@
 from .. import QT_VERSION
 
 
-def hover_event_pos(event):
-    if QT_VERSION[0] == "6":
+if QT_VERSION[0] == "6":
+    def hover_event_pos(event):
         return event.position().toPoint()
-    return event.pos()
+else:
+    def hover_event_pos(event):
+        return event.pos()
