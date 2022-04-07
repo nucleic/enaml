@@ -21,6 +21,7 @@ Widgets Examples
 .. toctree::
     :maxdepth: 1
 
+    ex_autocomplete_field
     ex_buttons
     ex_context_menu
     ex_dates
