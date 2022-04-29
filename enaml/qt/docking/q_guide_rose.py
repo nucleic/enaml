@@ -5,16 +5,14 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from importlib.resources import path
 import sys
 
 from atom.api import Atom, Float, Int, Str, Typed, Value, set_default
 
-from enaml.qt.QtCore import Qt, QRect, QPoint
-from enaml.qt.QtGui import QImage, QPainter
+from enaml.qt.QtCore import Qt, QDir, QRect, QPoint
+from enaml.qt.QtGui import QPainter, QPixmap
 from enaml.qt.QtWidgets import QFrame
-
-# Make sure the resources get registered.
-from . import dock_resources
 
 
 class QGuideRose(QFrame):
@@ -328,8 +326,8 @@ class GuideImage(Atom):
     #: The default alpha value for no guide transparency.
     OPAQUE = 1.0
 
-    #: The QImage to use when painting the guide.
-    image = Typed(QImage, factory=lambda: QImage())
+    #: The QPixmap to use when painting the guide.
+    image = Typed(QPixmap, factory=lambda: QPixmap())
 
     #: The QRect specifying where to draw the image.
     rect = Typed(QRect, factory=lambda: QRect())
@@ -337,12 +335,12 @@ class GuideImage(Atom):
     #: The opacity to use when drawing the image.
     opacity = Float(TRANSPARENT)
 
-    #: A cache of QImage instances for the loaded guide images.
+    #: A cache of QPixmap instances for the loaded guide images.
     _images = {}
 
     @classmethod
     def load_image(cls, name):
-        """ Load the guide image for the given name into a QImage.
+        """ Load the guide image for the given name into a QPixmap.
 
         This function is hard-coded to return the named .png image from
         the ./dockguides directory located alongside this file. It is not
@@ -351,8 +349,9 @@ class GuideImage(Atom):
         """
         image = cls._images.get(name)
         if image is None:
-            image = QImage(':dock_images/%s.png' % name)
-            cls._images[name] = image
+            with path('enaml.qt.docking.dock_images', '%s.png' % name) as file:
+                image = QPixmap(str(file))
+                cls._images[name] = image
         return image
 
     def __init__(self, name):
@@ -409,7 +408,7 @@ class GuideImage(Atom):
             return
         painter.save()
         painter.setOpacity(self.opacity)
-        painter.drawImage(self.rect, image)
+        painter.drawPixmap(self.rect, image)
         painter.restore()
 
 
