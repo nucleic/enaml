@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -18,11 +18,7 @@ import pytest
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.import_hooks import MAGIC_NUMBER, make_file_info, EnamlImporter
-from utils import wait_for_window_displayed, is_qt_available
-
-
-pytestmark = pytest.mark.skipif(not is_qt_available(),
-                                reason='Requires a Qt binding')
+from utils import wait_for_window_displayed
 
 
 def generate_cache(path):

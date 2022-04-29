@@ -1,20 +1,18 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2019, Nucleic Development Team.
+# Copyright (c) 2019-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 import pytest
-import random
 from textwrap import dedent
-from utils import compile_source, is_qt_available, wait_for_window_displayed
+from utils import compile_source, wait_for_window_displayed
 
 from enaml.core.api import Looper
 from enaml.widgets.api import Label
 
 
-@pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 def test_looper_refresh(enaml_qtbot, enaml_sleep):
     """ Test that the loop index is valid when items are reordered.
 
@@ -56,7 +54,6 @@ def test_looper_refresh(enaml_qtbot, enaml_sleep):
                 if isinstance(c, Label)] == expected
 
 
-@pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 def test_looper_refresh_iterator(enaml_qtbot, enaml_sleep):
     """ Test that a looper properly refreshes when given an iterator.
 
@@ -106,12 +103,10 @@ def test_looper_refresh_iterator(enaml_qtbot, enaml_sleep):
             if isinstance(c, Label)] == expected
 
 
-def test_looper_iterable(enaml_qtbot, enaml_sleep):
+def test_looper_iterable():
     """ Test that a looper validates the iterator properly.
 
     """
-    from enaml.core.api import Looper
-
     looper = Looper()
     looper.iterable = {1, 2, 3}
     looper.iterable = {'a': 1, 'b': 2}

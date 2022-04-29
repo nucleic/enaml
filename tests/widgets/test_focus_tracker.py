@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2020, Nucleic Development Team.
+# Copyright (c) 2020-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,7 +13,7 @@ import sys
 
 import pytest
 
-from utils import is_qt_available, compile_source, wait_for_window_displayed
+from utils import compile_source, wait_for_window_displayed
 
 
 SOURCE ="""
@@ -48,7 +48,6 @@ enamldef Main(Window):
     "CI" in os.environ and sys.platform.startswith("linux"),
     reason='Skip on linux CI where setting up a windows manager is a nightmare'
 )
-@pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 def test_focus_tracking(enaml_qtbot, enaml_sleep):
     """Test moving the focus forward in the presence of a custom focus traversal.
 

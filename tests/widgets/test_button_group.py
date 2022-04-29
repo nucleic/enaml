@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2019, Nucleic Development Team.
+# Copyright (c) 2019-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@
 """
 import pytest
 
-from utils import is_qt_available, compile_source, wait_for_window_displayed
+from utils import compile_source, wait_for_window_displayed
 
 
 SOURCE ="""
@@ -72,7 +72,6 @@ def test_tracking_group_members():
     assert win.group2.group_members == set((win.rad2, win.rad4))
 
 
-@pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 def test_group_exclusivity(enaml_qtbot, enaml_sleep):
     """Test that we properly enforce exclusivity within a group.
 
