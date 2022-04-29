@@ -77,9 +77,9 @@ jobs:
         if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt' && matrix.qt-version== 6
         run: |
           pip install PyQt6-QScintilla
-      - name: Install pytest
+      - name: Install test requirements
         run: |
-          pip install pytest pytest-cov pytest-qt
+          pip install -r test_requirements
       - name: Run tests (Windows, Mac)
         if: matrix.os != 'ubuntu-latest'
         run: python -X dev -m pytest tests --cov enaml --cov-report xml -rs
