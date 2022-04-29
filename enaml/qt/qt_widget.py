@@ -344,19 +344,16 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             qimg = get_cached_qimage(drag_data.image)
             qdrag.setPixmap(QPixmap.fromImage(qimg))
         else:
-            if __version_info__ < (5, ):
-                qdrag.setPixmap(QPixmap.grabWidget(widget))
-            else:
-                qdrag.setPixmap(widget.grab())
+            qdrag.setPixmap(widget.grab())
         if drag_data.hotspot:
             qdrag.setHotSpot(QPoint(*drag_data.hotspot))
         else:
             cursor_position = widget.mapFromGlobal(QCursor.pos())
             qdrag.setHotSpot(cursor_position)
         default = Qt.DropAction(drag_data.default_drop_action)
-        supported = Qt.DropActions(drag_data.supported_actions)
+        supported = Qt.DropAction(drag_data.supported_actions)
         qresult = qdrag.exec_(supported, default)
-        self.declaration.drag_end(drag_data, DropAction(int(qresult)))
+        self.declaration.drag_end(drag_data, DropAction(qresult.value))
 
     def dragEnterEvent(self, event):
         """ Handle the drag enter event for the widget.
