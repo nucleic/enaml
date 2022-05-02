@@ -79,7 +79,7 @@ jobs:
           pip install PyQt6-QScintilla
       - name: Install test requirements
         run: |
-          pip install -r test_requirements
+          pip install -r test_requirements.txt
       - name: Run tests (Windows, Mac)
         if: matrix.os != 'ubuntu-latest'
         run: python -X dev -m pytest tests --cov enaml --cov-report xml -rs
