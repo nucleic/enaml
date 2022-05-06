@@ -1,9 +1,7 @@
 import os
 import sys
 import pytest
-from utils import enaml_run
 
-from enaml.application import Application, deferred_call
 from enaml.runner import main
 
 
