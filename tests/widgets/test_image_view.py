@@ -5,11 +5,7 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-"""Test the button group widget.
-
-"""
-import pytest
-
+"""Test the image view widget."""
 from utils import compile_source, wait_for_window_displayed
 
 

@@ -34,7 +34,8 @@ def test_push_button(enaml_qtbot, enaml_sleep):
     win.show()
     wait_for_window_displayed(enaml_qtbot, win)
 
-    # Start drag
-    enaml_qtbot.move_to_and_click(enaml_qtbot.get_global_pos(win.button), "left")
+    from enaml.qt import QtCore
+    # Click the button
+    enaml_qtbot.mouseClick(win.button.proxy.widget, QtCore.Qt.LeftButton)
 
     enaml_qtbot.wait_until(lambda: win.clicked)

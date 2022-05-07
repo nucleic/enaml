@@ -8,8 +8,6 @@
 """Test the button group widget.
 
 """
-import pytest
-
 from utils import compile_source, wait_for_window_displayed
 
 
