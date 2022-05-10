@@ -42,7 +42,8 @@ jobs:
         # QT_DEBUG_PLUGINS=1)
         run: |
           sudo apt-get update --fix-missing
-          sudo apt-get install libfontconfig1-dev libfreetype6-dev libx11-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync0-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-xinerama0-dev libxcb-xkb-dev libxkbcommon-x11-dev libxcb-xtest0-dev  libegl1-mesa xvfb fluxbox --fix-missing
+          sudo apt-get install -y libfontconfig1-dev libfreetype6-dev libx11-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync0-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-xinerama0-dev libxcb-xkb-dev libxkbcommon-x11-dev libxcb-xtest0-dev  libegl1-mesa xvfb --fix-missing
+          sudo apt-get install -y herbstluftwm scrot
       - name: Checkout branch
         uses: actions/checkout@v2
       - name: Get history and tags for SCM versioning to work
@@ -90,7 +91,7 @@ jobs:
           export DISPLAY=:99.0
           /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset
           sleep 3
-          exec /usr/bin/startfluxbox &
+          herbstluftwm &
           sleep 1
           python -X dev -m pytest tests --cov enaml --cov-report xml -rs
       - name: Generate C++ coverage reports
