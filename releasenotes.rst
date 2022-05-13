@@ -3,6 +3,11 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+Development
+-----------
+- Add AutocompleteField, which supports basic autocomplete matching against a
+  list of choices.
+
 0.15.0 - 31/03/2022
 -------------------
 - make install PEP 517 compliant and use a PEP 621 compliant pyproject.toml PR #485

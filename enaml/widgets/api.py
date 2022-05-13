@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from .action import Action
 from .action_group import ActionGroup
+from .autocomplete_field import AutocompleteField
 from .button_group import ButtonGroup
 from .calendar import Calendar
 from .check_box import CheckBox

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,6 +13,11 @@ def action_factory():
 def action_group_factory():
     from .qt_action_group import QtActionGroup
     return QtActionGroup
+
+
+def autocomplete_field_factory():
+    from .qt_autocomplete_field import QtAutocompleteField
+    return QtAutocompleteField
 
 
 def button_group_factory():
@@ -308,6 +313,7 @@ def window_factory():
 QT_FACTORIES = {
     'Action': action_factory,
     'ActionGroup': action_group_factory,
+    'AutocompleteField': autocomplete_field_factory,
     'ButtonGroup': button_group_factory,
     'Calendar': calendar_factory,
     'CheckBox': check_box_factory,
