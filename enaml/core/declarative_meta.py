@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import Atom, AtomMeta, ChangeType, DefaultValue, Member, Typed
+from traceback import StackSummary
+
 
 # The declarative engine only updates for these types of changes
 D_CHANGE_TYPES = (
@@ -69,7 +71,54 @@ def declarative_change_handler(change):
     owner = change['object']
     engine = owner._d_engine
     if engine is not None:
-        engine.write(owner, change['name'], change)
+        try:
+            engine.write(owner, change['name'], change)
+        except DeclarativeError:
+            raise
+        except Exception as e:
+            raise DeclarativeError(owner, e) from e
+
+
+def declarative_stack_summary(node) -> StackSummary:
+    """ Create a stack summary for the given Declarative node.
+
+    Parameters
+    ----------
+    node : Declarative
+        The node to create a summary for.
+
+    Returns
+    -------
+    summary: StackSummary
+        The stack summary.
+
+    """
+    declarative_stack = []
+    while node is not None:
+        compiler_node = node._d_node
+        source = compiler_node.source_location
+        if source is not None:
+            filename, lineno = source
+        else:
+            filename = ""
+            lineno = -1
+        declarative_stack.append((
+            filename,
+            lineno,
+            node.__class__.__name__,
+            "",  # TODO: get source
+        ))
+        node = node.parent
+    return StackSummary.from_list(declarative_stack)
+
+
+class DeclarativeError(Exception):
+    def __init__(self, node, exc: Exception):
+        name = node.__class__.__name__
+        self.summary = summary = declarative_stack_summary(node)
+        self.error = exc
+        stack = ''.join(reversed(summary.format()))
+        super().__init__("\n{}".format(stack))
 
 
 def patch_d_member(member):

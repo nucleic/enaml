@@ -87,6 +87,9 @@ class CompilerNode(Atom):
     """ A base class for defining compiler nodes.
 
     """
+    #: Location
+    source_location = Tuple()
+
     #: The scope key for the for the local scope of the node.
     scope_key = Typed(object)
 
@@ -116,6 +119,7 @@ class CompilerNode(Atom):
         """
         node = type(self)()
         node.scope_key = self.scope_key
+        node.source_location = self.source_location
         node.children = [child.copy() for child in self.children]
         return node
 
@@ -187,6 +191,7 @@ class DeclarativeNode(CompilerNode):
             self.super_node(instance)
         f_locals = peek_scope()
         scope_key = self.scope_key
+        instance._d_node = self
         if self.identifier:
             f_locals[self.identifier] = instance
         if self.store_locals:

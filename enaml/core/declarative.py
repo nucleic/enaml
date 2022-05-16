@@ -8,8 +8,10 @@
 from atom.api import ChangeType, Event, Typed, Str, observe as default_observe
 from atom.datastructures.api import sortedmap
 
-from .declarative_meta import DeclarativeMeta
+from .compiler_nodes import DeclarativeNode
+from .declarative_meta import DeclarativeMeta, DeclarativeError
 from .expression_engine import ExpressionEngine
+
 from .object import Object, flag_generator, flag_property
 
 #: Declarative observe ignores create events
@@ -117,6 +119,11 @@ class Declarative(Object, metaclass=DeclarativeMeta):
     #: be manipulated by user code.
     _d_engine = Typed(ExpressionEngine)
 
+    #: Reference to the compilers declarative node which generates this
+    #: declarative.  This value is used for error reporting and should
+    #: not be manipulated by user code.
+    _d_node = Typed(DeclarativeNode)
+
     def initialize(self):
         """ Initialize this object all of its children recursively.
 
@@ -132,7 +139,12 @@ class Declarative(Object, metaclass=DeclarativeMeta):
         # other children during initialization.
         for child in self.children[:]:
             if isinstance(child, Declarative):
-                child.initialize()
+                try:
+                    child.initialize()
+                except DeclarativeError:
+                    raise
+                except Exception as e:
+                    raise DeclarativeError(child, e) from e
         self.is_initialized = True
         self.initialized()
 
@@ -143,6 +155,7 @@ class Declarative(Object, metaclass=DeclarativeMeta):
         self.is_initialized = False
         del self._d_storage
         del self._d_engine
+        del self._d_node
         super(Declarative, self).destroy()
 
     def child_added(self, child):
@@ -155,4 +168,9 @@ class Declarative(Object, metaclass=DeclarativeMeta):
         super(Declarative, self).child_added(child)
         if isinstance(child, Declarative):
             if self.is_initialized and not child.is_initialized:
-                child.initialize()
+                try:
+                    child.initialize()
+                except DeclarativeError:
+                    raise
+                except Exception as e:
+                    raise DeclarativeError(child, e) from e

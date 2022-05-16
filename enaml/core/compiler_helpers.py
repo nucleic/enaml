@@ -166,7 +166,7 @@ def add_storage(node, name, store_type, kind):
     setattr(klass, name, new)
 
 
-def declarative_node(klass, identifier, scope_key, store_locals):
+def declarative_node(klass, identifier, scope_key, store_locals, filename, lineno):
     """ Create and return a DeclarativeNode for the given klass.
 
     Parameters
@@ -184,6 +184,12 @@ def declarative_node(klass, identifier, scope_key, store_locals):
         Whether instances of the class should store the local scope in
         their storage map.
 
+    filename: str
+        The name of the file where the node is defined.
+
+    lineno: int
+        The line number within the file where the node is defined.
+
     Returns
     -------
     result : DeclarativeNode
@@ -193,6 +199,7 @@ def declarative_node(klass, identifier, scope_key, store_locals):
     node = DeclarativeNode()
     node.klass = klass
     node.identifier = identifier
+    node.source_location = (filename, lineno)
     node.scope_key = scope_key
     node.store_locals = store_locals
     node.child_intercept = klass.__intercepts_child_nodes__
@@ -205,7 +212,7 @@ def declarative_node(klass, identifier, scope_key, store_locals):
     return node
 
 
-def enamldef_node(klass, identifier, scope_key, store_locals):
+def enamldef_node(klass, identifier, scope_key, store_locals, filename, lineno):
     """ Create and return an EnamlDefNode for the given class.
 
     Parameters
@@ -223,6 +230,12 @@ def enamldef_node(klass, identifier, scope_key, store_locals):
         Whether instances of the class should store the local scope in
         their storage map.
 
+    filename: str
+        The name of the file where the node is defined.
+
+    lineno: int
+        The line number within the file where the node is defined.
+
     Returns
     -------
     result : EnamlDefNode
@@ -231,6 +244,7 @@ def enamldef_node(klass, identifier, scope_key, store_locals):
     """
     node = EnamlDefNode()
     node.klass = klass
+    node.source_location = (filename, lineno)
     node.identifier = identifier
     node.scope_key = scope_key
     node.store_locals = store_locals

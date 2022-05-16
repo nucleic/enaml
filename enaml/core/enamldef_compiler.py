@@ -123,7 +123,9 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
         cg.load_const(node.identifier)
         cg.load_fast(cmn.SCOPE_KEY)
         cg.load_const(should_store)                 # helper -> class -> identifier -> bool
-        cg.call_function(4)                         # node
+        cg.load_const(node.filename)
+        cg.load_const(node.lineno)
+        cg.call_function(6)                         # node
 
         # Store the node into the node list
         cmn.store_node(cg, index)

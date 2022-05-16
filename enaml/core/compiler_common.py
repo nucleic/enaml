@@ -548,7 +548,9 @@ def gen_child_def_node(cg, node, local_names):
     cg.load_const(node.identifier)
     cg.load_fast(SCOPE_KEY)
     cg.load_const(store_locals)                 # helper -> class -> identifier -> key -> bool
-    cg.call_function(4)                         # node
+    cg.load_const(node.filename)
+    cg.load_const(node.lineno)
+    cg.call_function(6)                         # node
 
 
 def gen_template_inst_node(cg, node, local_names):
@@ -893,6 +895,14 @@ class CompilerBase(ASTVisitor):
 
     #: The code generator to use for this compiler.
     code_generator = Typed(CodeGenerator)
+
+    def visit(self, node, *args, **kwargs):
+        """ Update the source file of the node.
+
+        """
+        if not node.filename:
+            node.filename = self.filename
+        return super().visit(node, *args, **kwargs)
 
     def _default_code_generator(self):
         """ Create the default code generator instance.
