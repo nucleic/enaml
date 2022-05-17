@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Atom, List, Typed
 from atom.datastructures.api import sortedmap
+from .declarative_meta import DeclarativeError
 
 
 class ReadHandler(Atom):
@@ -79,6 +80,9 @@ class HandlerPair(Atom):
     #: The write handler for the pair. This may be None if the given
     #: operator does not support write semantics.
     writer = Typed(WriteHandler)
+
+    #: The location in source code. A tuple of (filename, lineno).
+    source_location = Typed(tuple)
 
 
 class HandlerSet(Atom):
@@ -208,6 +212,14 @@ class ExpressionEngine(Atom):
                     guards.add(key)
                     try:
                         pair.writer(owner, name, change)
+                    except DeclarativeError:
+                        raise
+                    except Exception as e:
+                        expression = None
+                        if pair.source_location:
+                            filename, lineno = pair.source_location
+                            expression = (filename, lineno, name)
+                        raise DeclarativeError(owner, e, expression) from e
                     finally:
                         guards.remove(key)
 
@@ -239,6 +251,15 @@ class ExpressionEngine(Atom):
                     guards.add(key)
                     try:
                         setattr(owner, name, pair.reader(owner, name))
+                    except DeclarativeError:
+                        raise
+                    except Exception as e:
+                        expression = None
+                        if pair.source_location:
+                            filename, lineno = pair.source_location
+                            expression = (filename, lineno, name)
+                        raise DeclarativeError(owner, e, expression) from e
+                        raise DeclarativeError(owner, e) from e
                     finally:
                         guards.remove(key)
 

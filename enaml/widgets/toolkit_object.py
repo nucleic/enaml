@@ -8,7 +8,7 @@
 from atom.api import Atom, Event, Typed, ForwardTyped
 
 from enaml.application import Application
-from enaml.core.declarative import Declarative, d_
+from enaml.core.declarative import Declarative, DeclarativeError, d_
 from enaml.core.object import flag_generator, flag_property
 
 
@@ -181,9 +181,15 @@ class ToolkitObject(Declarative):
         """
         super(ToolkitObject, self).child_added(child)
         if isinstance(child, ToolkitObject) and self.proxy_is_active:
-            if not child.proxy_is_active:
-                child.activate_proxy()
-            self.proxy.child_added(child.proxy)
+            try:
+                self.proxy.child_removed(child.proxy)
+                if not child.proxy_is_active:
+                    child.activate_proxy()
+                self.proxy.child_added(child.proxy)
+            except DeclarativeError:
+                pass
+            except Exception as e:
+                raise DeclarativeError(child, e) from e
 
     def child_removed(self, child):
         """ A reimplemented child removed event handler.
@@ -196,7 +202,12 @@ class ToolkitObject(Declarative):
         """
         super(ToolkitObject, self).child_removed(child)
         if isinstance(child, ToolkitObject) and self.proxy_is_active:
-            self.proxy.child_removed(child.proxy)
+            try:
+                self.proxy.child_removed(child.proxy)
+            except DeclarativeError:
+                pass
+            except Exception as e:
+                raise DeclarativeError(child, e) from e
 
     def activate_proxy(self):
         """ Activate the proxy object tree.
@@ -210,7 +221,12 @@ class ToolkitObject(Declarative):
         self.activate_top_down()
         for child in self.children:
             if isinstance(child, ToolkitObject):
-                child.activate_proxy()
+                try:
+                    child.activate_proxy()
+                except DeclarativeError:
+                    pass
+                except Exception as e:
+                    raise DeclarativeError(child, e) from e
         self.activate_bottom_up()
         self.proxy_is_active = True
         self.activated()

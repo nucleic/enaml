@@ -166,7 +166,7 @@ def add_storage(node, name, store_type, kind):
     setattr(klass, name, new)
 
 
-def declarative_node(klass, identifier, scope_key, store_locals, filename, lineno):
+def declarative_node(klass, identifier, scope_key, store_locals, source_location=None):
     """ Create and return a DeclarativeNode for the given klass.
 
     Parameters
@@ -184,11 +184,8 @@ def declarative_node(klass, identifier, scope_key, store_locals, filename, linen
         Whether instances of the class should store the local scope in
         their storage map.
 
-    filename: str
-        The name of the file where the node is defined.
-
-    lineno: int
-        The line number within the file where the node is defined.
+    source_location: tuple
+        A tuple of the filename and lineno where the node is defined.
 
     Returns
     -------
@@ -199,7 +196,7 @@ def declarative_node(klass, identifier, scope_key, store_locals, filename, linen
     node = DeclarativeNode()
     node.klass = klass
     node.identifier = identifier
-    node.source_location = (filename, lineno)
+    node.source_location = source_location
     node.scope_key = scope_key
     node.store_locals = store_locals
     node.child_intercept = klass.__intercepts_child_nodes__
@@ -212,7 +209,7 @@ def declarative_node(klass, identifier, scope_key, store_locals, filename, linen
     return node
 
 
-def enamldef_node(klass, identifier, scope_key, store_locals, filename, lineno):
+def enamldef_node(klass, identifier, scope_key, store_locals, source_location=None):
     """ Create and return an EnamlDefNode for the given class.
 
     Parameters
@@ -230,11 +227,8 @@ def enamldef_node(klass, identifier, scope_key, store_locals, filename, lineno):
         Whether instances of the class should store the local scope in
         their storage map.
 
-    filename: str
-        The name of the file where the node is defined.
-
-    lineno: int
-        The line number within the file where the node is defined.
+    source_location: tuple
+        A tuple of the filename and lineno where the node is defined.
 
     Returns
     -------
@@ -244,7 +238,7 @@ def enamldef_node(klass, identifier, scope_key, store_locals, filename, lineno):
     """
     node = EnamlDefNode()
     node.klass = klass
-    node.source_location = (filename, lineno)
+    node.source_location = source_location
     node.identifier = identifier
     node.scope_key = scope_key
     node.store_locals = store_locals
@@ -562,7 +556,7 @@ def bind_member(node, name, pair):
     node.engine.add_pair(name, pair)
 
 
-def run_operator(scope_node, node, name, op, code, f_globals):
+def run_operator(scope_node, node, name, op, code, f_globals, source_location=None):
     """ Run the operator for a given node.
 
     Parameters
@@ -586,12 +580,16 @@ def run_operator(scope_node, node, name, op, code, f_globals):
     f_globals : dict
         The globals dictionary to pass to the operator.
 
+    source_location: tuple
+        A tuple of the filename and lineno where the expression is defined.
+
     """
     operators = __get_operators()
     if op not in operators:
         raise TypeError("failed to load operator '%s'" % op)
     scope_key = scope_node.scope_key
     pair = operators[op](code, scope_key, f_globals)
+    pair.source_location = source_location
     if isinstance(name, tuple):
         # The template inst binding with a single name will take this
         # path by using a length-1 name tuple. See bug #78.

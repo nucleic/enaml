@@ -9,7 +9,7 @@ import linecache
 
 from atom.api import Atom, AtomMeta, ChangeType, DefaultValue, Member, Typed
 from traceback import StackSummary
-
+from typing import Optional
 
 # The declarative engine only updates for these types of changes
 D_CHANGE_TYPES = (
@@ -73,29 +73,31 @@ def declarative_change_handler(change):
     owner = change['object']
     engine = owner._d_engine
     if engine is not None:
-        try:
-            engine.write(owner, change['name'], change)
-        except DeclarativeError:
-            raise
-        except Exception as e:
-            raise DeclarativeError(owner, e) from e
+        engine.write(owner, change['name'], change)
 
 
-def declarative_stack_summary(node) -> StackSummary:
+def declarative_stack_summary(node, expression: Optional[tuple] = None) -> StackSummary:
     """ Create a stack summary for the given Declarative node.
 
     Parameters
     ----------
     node : Declarative
         The node to create a summary for.
+    expression : Optional[tuple]
+        If provided, the location of the expression which failed.
 
     Returns
     -------
-    summary: StackSummary
+    summary : StackSummary
         The stack summary.
 
     """
     declarative_stack = []
+    if expression is not None:
+        filename, lineno, name = expression
+        line = linecache.getline(filename, lineno)
+        declarative_stack.append((filename, lineno, name, line))
+
     while node is not None:
         compiler_node = node._d_node
         source = compiler_node.source_location
@@ -117,9 +119,9 @@ def declarative_stack_summary(node) -> StackSummary:
 
 
 class DeclarativeError(Exception):
-    def __init__(self, node, exc: Exception):
+    def __init__(self, node, exc: Exception, expression: Optional[tuple] = None):
         name = node.__class__.__name__
-        self.summary = summary = declarative_stack_summary(node)
+        self.summary = summary = declarative_stack_summary(node, expression)
         self.error = exc
         stack = ''.join(reversed(summary.format()))
         super().__init__("\n{}".format(stack))

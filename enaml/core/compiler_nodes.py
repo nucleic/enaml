@@ -87,8 +87,8 @@ class CompilerNode(Atom):
     """ A base class for defining compiler nodes.
 
     """
-    #: Location
-    source_location = Tuple()
+    #: The location in source code. A tuple of (filename, lineno).
+    source_location = Typed(tuple)
 
     #: The scope key for the for the local scope of the node.
     scope_key = Typed(object)

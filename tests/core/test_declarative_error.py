@@ -81,3 +81,30 @@ def test_error_during_event(enaml_qtbot):
     assert 'line 13, in MyWindow' in excinfo.exconly()
     assert 'line 17, in MyWidget' in excinfo.exconly()
     assert 'line 6, in PushButton' in excinfo.exconly()
+    assert 'line 7, in clicked' in excinfo.exconly()
+
+
+def test_error_during_manual_set(enaml_qtbot):
+    source = dedent("""\
+    from enaml.core.api import Looper
+    from enaml.widgets.api import Window, Container, Label
+
+    enamldef MyWindow(Window): main:
+        alias items: looper.iterable
+        Container:
+            Looper: looper:
+                iterable = []
+                Label:
+                    text = loop.item
+
+    """)
+    tester = compile_source(source, 'MyWindow')()
+    tester.show()
+    wait_for_window_displayed(enaml_qtbot, tester)
+    with pytest.raises(DeclarativeError) as excinfo:
+        tester.items = [False]  # not a stringiterable
+    print(excinfo.exconly())
+    assert 'line 4, in MyWindow' in excinfo.exconly()
+    assert 'line 6, in Container' in excinfo.exconly()
+    # Unfortunately Looper is not there...
+    assert 'line 9, in Label' in excinfo.exconly()

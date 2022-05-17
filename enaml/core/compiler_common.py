@@ -548,9 +548,8 @@ def gen_child_def_node(cg, node, local_names):
     cg.load_const(node.identifier)
     cg.load_fast(SCOPE_KEY)
     cg.load_const(store_locals)                 # helper -> class -> identifier -> key -> bool
-    cg.load_const(node.filename)
-    cg.load_const(node.lineno)
-    cg.call_function(6)                         # node
+    cg.load_const((node.filename, node.lineno))
+    cg.call_function(5)                         # node
 
 
 def gen_template_inst_node(cg, node, local_names):
@@ -737,7 +736,8 @@ def gen_operator_binding(cg, node, index, name):
         cg.load_const(node.operator)
         cg.load_const(code)
         cg.load_fast(F_GLOBALS)
-        cg.call_function(6)
+        cg.load_const((cg.filename, node.lineno))
+        cg.call_function(7)
         cg.pop_top()
 
 
