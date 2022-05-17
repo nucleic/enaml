@@ -13,10 +13,7 @@ import pytest
 
 from enaml.core.declarative_meta import DeclarativeError
 
-from utils import (
-    compile_source, wait_for_window_displayed, is_qt_available,
-    raises_error_signal
-)
+from utils import compile_source, wait_for_window_displayed, is_qt_available
 
 
 pytestmark = pytest.mark.skipif(not is_qt_available(),
@@ -44,7 +41,6 @@ def test_error_during_init(enaml_qtbot):
     assert 'line 6, in Conditional' in excinfo.exconly()
 
 
-@pytest.mark.qt_no_exception_capture
 def test_error_during_event(enaml_qtbot):
     from enaml.qt.QtCore import Qt, QObject, Signal
     source = dedent("""\
@@ -72,11 +68,8 @@ def test_error_during_event(enaml_qtbot):
     tester.show()
     wait_for_window_displayed(enaml_qtbot, tester)
 
-    with raises_error_signal(DeclarativeError, enaml_qtbot) as excinfo:
-        enaml_qtbot.mouseClick(
-            tester.widget.button.proxy.widget,
-            Qt.LeftButton
-        )
+    with pytest.raises(DeclarativeError) as excinfo:
+        tester.widget.button.clicked(True)
 
     assert 'line 13, in MyWindow' in excinfo.exconly()
     assert 'line 17, in MyWidget' in excinfo.exconly()
