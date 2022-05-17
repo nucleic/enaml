@@ -182,7 +182,6 @@ class ToolkitObject(Declarative):
         super(ToolkitObject, self).child_added(child)
         if isinstance(child, ToolkitObject) and self.proxy_is_active:
             try:
-                self.proxy.child_removed(child.proxy)
                 if not child.proxy_is_active:
                     child.activate_proxy()
                 self.proxy.child_added(child.proxy)

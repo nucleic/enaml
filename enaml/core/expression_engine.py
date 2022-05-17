@@ -259,7 +259,6 @@ class ExpressionEngine(Atom):
                             filename, lineno = pair.source_location
                             expression = (filename, lineno, name)
                         raise DeclarativeError(owner, e, expression) from e
-                        raise DeclarativeError(owner, e) from e
                     finally:
                         guards.remove(key)
 
