@@ -5,6 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+import linecache
+
 from atom.api import Atom, AtomMeta, ChangeType, DefaultValue, Member, Typed
 from traceback import StackSummary
 
@@ -99,14 +101,16 @@ def declarative_stack_summary(node) -> StackSummary:
         source = compiler_node.source_location
         if source is not None:
             filename, lineno = source
+            line = linecache.getline(filename, lineno)
         else:
             filename = ""
             lineno = -1
+            line = ""
         declarative_stack.append((
             filename,
             lineno,
             node.__class__.__name__,
-            "",  # TODO: get source
+            line,
         ))
         node = node.parent
     return StackSummary.from_list(declarative_stack)
