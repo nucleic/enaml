@@ -95,8 +95,7 @@ def test_error_during_manual_set(enaml_qtbot):
     tester.show()
     wait_for_window_displayed(enaml_qtbot, tester)
     with pytest.raises(DeclarativeError) as excinfo:
-        tester.items = [False]  # not a stringiterable
-    print(excinfo.exconly())
+        tester.items = [False]  # not a string iterable
     assert 'line 4, in MyWindow' in excinfo.exconly()
     assert 'line 6, in Container' in excinfo.exconly()
     # Unfortunately Looper is not there...

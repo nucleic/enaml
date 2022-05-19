@@ -547,8 +547,8 @@ def gen_child_def_node(cg, node, local_names):
     cg.rot_two()
     cg.load_const(node.identifier)
     cg.load_fast(SCOPE_KEY)
-    cg.load_const(store_locals)                 # helper -> class -> identifier -> key -> bool
-    cg.load_const((cg.filename, node.lineno))
+    cg.load_const(store_locals)
+    cg.load_const((cg.filename, node.lineno))   # helper -> class -> identifier -> key -> bool -> location
     cg.call_function(5)                         # node
 
 
