@@ -17,9 +17,6 @@ class ASTNode(Atom):
     #: The line number in the .enaml file which generated the node.
     lineno = Int(-1)
 
-    #: The filename where the node is defined.
-    filename = Str()
-
 
 class PragmaArg(Atom):
     """ An atom class which represents a pragma argument.
