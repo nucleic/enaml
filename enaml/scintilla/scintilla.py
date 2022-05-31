@@ -186,8 +186,10 @@ class Scintilla(Control):
     #: An event emitted when the text is changed.
     text_changed = d_(Event(), writable=False)
 
-    #: Text Editors expand freely in height and width by default.
+    #: Text Editors expand freely in width by default.
     hug_width = set_default('ignore')
+
+    #: Text Editors expand freely in height by default.
     hug_height = set_default('ignore')
 
     #: Markers to display.
