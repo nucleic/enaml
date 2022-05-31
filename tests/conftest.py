@@ -10,7 +10,6 @@
 """
 import os
 from traceback import format_exc
-from typing import Literal, Union
 
 from enaml.application import Application
 from enaml.widgets.api import Window
@@ -38,13 +37,6 @@ try:
 
 except Exception:
     QT_AVAILABLE = False
-
-try:
-    import pyautogui
-
-    AUTO_AVAILABLE = True
-except ImportError:
-    AUTO_AVAILABLE = False
 
 
 import pytest
@@ -99,13 +91,10 @@ def qt_app():
 
 @pytest.fixture
 def enaml_qtbot(qt_app, qtbot):
-    if not AUTO_AVAILABLE:
-        pytest.skip("Requires pyautogui")
 
     qtbot.enaml_app = qt_app
     pixel_ratio = QtGui.QGuiApplication.primaryScreen().devicePixelRatio()
 
-    # Patch the bot with extra method using pyautogui to workaround QTest limitations
     def get_global_pos(widget: Widget) -> QtCore.QPoint:
         assert widget.proxy
         qw = widget.proxy.widget
@@ -115,52 +104,10 @@ def enaml_qtbot(qt_app, qtbot):
 
     qtbot.get_global_pos = get_global_pos
 
-    def move_to(
-        destination: QtCore.QPoint,
-        button: Union[None, Literal["left"], Literal["middle"], Literal["right"]],
-        duration: float = 0.0,
-    ):
-        """Move in between two points with optionally a button pressed."""
-        if button is not None:
-            pyautogui.dragTo(
-                destination.x(),
-                destination.y(),
-                duration=duration,
-                button="left",
-                mouseDownUp=False,
-            )
-        else:
-            pyautogui.moveTo(destination.x(), destination.y(), duration=duration)
+    def post_event(widget, event):
+        qt_app._qapp.postEvent(widget, event)
 
-    qtbot.move_to = move_to
-
-    def move_to_and_press(
-        origin: QtCore.QPoint,
-        button: Union[Literal["left"], Literal["middle"], Literal["right"]],
-    ) -> None:
-        pyautogui.moveTo(origin.x(), origin.y())
-        pyautogui.mouseDown(button=button)
-        qtbot.wait(1)
-
-    qtbot.move_to_and_press = move_to_and_press
-
-    def release_mouse(
-        button: Union[Literal["left"], Literal["middle"], Literal["right"]]
-    ) -> None:
-        pyautogui.mouseUp(button=button)
-        qtbot.wait(1)
-
-    qtbot.release_mouse = release_mouse
-
-    def move_to_and_click(
-        origin: QtCore.QPoint,
-        button: Union[Literal["left"], Literal["middle"], Literal["right"]],
-    ) -> None:
-        pyautogui.moveTo(origin.x(), origin.y())
-        pyautogui.click(button=button)
-        qtbot.wait(1)
-
-    qtbot.move_to_and_click = move_to_and_click
+    qtbot.post_event = post_event
 
     with close_all_windows(qtbot), close_all_popups(qtbot):
         yield qtbot

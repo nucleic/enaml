@@ -7,14 +7,30 @@
 # ------------------------------------------------------------------------------
 """Test the drag drop feature.
 
-Qt block the event loop while dragging making it impossible to assert transient
-states during the drag. (at least on Windows)
+Due to the the limitations of QTest (cannot keep a button pressed during move),
+we split the tests between:
+- starting a drag using QTest.MoveTo and testing both success drop and failed drop
+  through monkeypatching of the exec_ method on QDrag. This allows to avoid issues
+  with a possible blocking behavior.
+- handling drag enter, leave and drop event through direct call to the relevant
+  widget method.
+
+This is not perfect but should catch most regressions.
 
 """
-import threading
+import pytest
+
+from enaml.qt.QtCore import QEvent, QPoint, QPointF, Qt
+from enaml.qt.QtGui import (
+    QDrag,
+    QDragEnterEvent,
+    QDragMoveEvent,
+    QDragLeaveEvent,
+    QDropEvent,
+    QMouseEvent,
+)
 
 from utils import compile_source, wait_for_window_displayed
-
 
 SOURCE = """
 from enaml.drag_drop import DragData, DropAction
@@ -32,35 +48,42 @@ def create_drag_data(dtype, data):
 enamldef DragLabel(Label):
     attr dtype: str
     attr data: bytes
-    attr dragging: bool = False
+    attr dragged: bool = False
+    attr drag_ended: bool = False
     attr success = False
     style_class << 'success' if success else 'fail'
     features = Feature.DragEnabled
     drag_start => ():
         print("start")
-        self.dragging = True
+        self.dragged = True
         return create_drag_data(dtype, data)
     drag_end => (drag_data, result):
         print("end", result)
-        self.dragging = False
+        self.drag_ended = True
         self.success = result == DropAction.Copy
 
 
 enamldef DropField(MultilineField):
     attr dtype: str
-    attr awaiting_drop: bool = False
+    attr awaiting_drop = None
+    attr drag_moved = False
     features = Feature.DropEnabled
     drag_enter => (event):
         print("enter")
         if event.mime_data().has_format(dtype):
             self.awaiting_drop = True
             event.accept_proposed_action()
+        else:
+            self.awaiting_drop = False
+    drag_move => (event):
+        self.drag_moved = True
+        print("move")
     drag_leave => ():
         print("leave")
-        self.awaiting_drop = False
+        self.awaiting_drop = None
     drop => (event):
         print("dropped")
-        self.awaiting_drop = False
+        self.awaiting_drop = None
         self.text = event.mime_data().data(dtype).decode('utf-8')
         event.accept()
 
@@ -92,80 +115,119 @@ enamldef Main(Window):
 """
 
 
-def test_valid_drop(enaml_qtbot, enaml_sleep, capsys):
+@pytest.mark.parametrize(
+    "action", [Qt.DropAction.CopyAction, Qt.DropAction.IgnoreAction]
+)
+def test_drag_with_valid_drop(enaml_qtbot, monkeypatch, action):
     """Test performing a drag and drop operation."""
     win = compile_source(SOURCE, "Main")()
     win.show()
     wait_for_window_displayed(enaml_qtbot, win)
 
-    # Perform the drag (Qt block the event till the drag end which is why
-    # we use a thread.)
-    def perform_drag():
+    monkeypatch.setattr(QDrag, "exec_", lambda *args: action)
 
-        enaml_qtbot.move_to_and_press(enaml_qtbot.get_global_pos(win.s1), "left")
+    enaml_qtbot.mousePress(win.s1.proxy.widget, Qt.MouseButton.LeftButton)
 
-        # Enter drop target
-        enaml_qtbot.move_to(
-            enaml_qtbot.get_global_pos(win.dt), button="left",
-        )
+    # This erroneously release the button causing both the drag to start and end
+    # The monkeypatch avoid blocking and dealing with always fail drop since we
+    # release before entering the target.
+    enaml_qtbot.post_event(
+        win.s1.proxy.widget,
+        QMouseEvent(
+            QEvent.MouseMove,
+            QPointF(-1, -1),
+            Qt.LeftButton,
+            Qt.LeftButton,
+            Qt.NoModifier,
+        ),
+    )
 
-        # Drop
-        enaml_qtbot.release_mouse("left")
+    enaml_qtbot.wait_until(lambda: win.s1.dragged)
+    enaml_qtbot.wait_until(lambda: win.s1.drag_ended)
 
-    t = threading.Thread(target=perform_drag)
-    t.start()
-    enaml_qtbot.wait_until(lambda: not t.is_alive())
-
-    enaml_qtbot.wait_until(lambda: win.dt.text == "1")
-    steps = iter(["start", "enter", "dropped", "end", "__xxx__"])
-    step = next(steps)
-    for line in capsys.readouterr().out.split("\n"):
-        if step in line:
-            step = next(steps)
-    assert step == "__xxx__"
-    assert win.dt.text == "1"
-    assert not win.dt.awaiting_drop
-    assert win.s1.success
-    assert not win.s1.dragging
+    assert win.s1.success == (action == Qt.DropAction.CopyAction)
 
 
-def test_drag_leave(enaml_qtbot, enaml_sleep, capsys):
-    """Test leaving a drop target after entering it."""
+@pytest.mark.parametrize("origin, expected_success", [("s1", True), ("s2", False)])
+def test_drag_enter(enaml_qtbot, origin, expected_success):
+    """Test handling drag enter.
+
+    We cannot rely on event posting since we do not want to call QDrag.exec which
+    can block.
+
+    """
     win = compile_source(SOURCE, "Main")()
     win.show()
     wait_for_window_displayed(enaml_qtbot, win)
-    win.s1.success = True
 
-    # Perform the drag (Qt block the event till the drag end which is why
-    # we use a thread.)
-    def perform_drag():
+    drag_data = getattr(win, origin).drag_start()
 
-        enaml_qtbot.move_to_and_press(enaml_qtbot.get_global_pos(win.s1), "left")
+    enter_event = QDragEnterEvent(
+        QPoint(0, 0),
+        Qt.DropAction(drag_data.supported_actions),
+        drag_data.mime_data.q_data(),
+        Qt.LeftButton,
+        Qt.NoModifier,
+    )
 
-        # Enter drop target
-        enaml_qtbot.move_to(
-            enaml_qtbot.get_global_pos(win.dt), button="left",
-        )
+    win.dt.proxy.widget.dragEnterEvent(enter_event)
+    if expected_success:
+        assert enter_event.isAccepted()
+        assert win.dt.awaiting_drop is True
+    else:
+        assert not enter_event.isAccepted()
+        assert win.dt.awaiting_drop is False
 
-        # Leave drop target
-        enaml_qtbot.move_to(
-            enaml_qtbot.get_global_pos(win.s2), button="left",
-        )
 
-        # Abort drag
-        enaml_qtbot.release_mouse("left")
+def test_drag_move_and_leave(enaml_qtbot):
+    """Test handling drag move and leave."""
+    win = compile_source(SOURCE, "Main")()
+    win.show()
+    wait_for_window_displayed(enaml_qtbot, win)
 
-    t = threading.Thread(target=perform_drag)
-    t.start()
-    enaml_qtbot.wait_until(lambda: not t.is_alive())
+    drag_data = win.s1.drag_start()
 
-    enaml_qtbot.wait_until(lambda: not win.s1.success)
-    # For some reason I cannot get the enter and leave events in auto testing
-    steps = iter(["start", "end", "__xxx__"])
-    step = next(steps)
-    out = capsys.readouterr().out.split("\n")
-    for line in out:
-        if step in line:
-            step = next(steps)
-    assert step == "__xxx__"
-    assert win.dt.text == ""
+    enter_event = QDragEnterEvent(
+        QPoint(0, 0),
+        Qt.DropAction(drag_data.supported_actions),
+        drag_data.mime_data.q_data(),
+        Qt.LeftButton,
+        Qt.NoModifier,
+    )
+    win.dt.proxy.widget.dragEnterEvent(enter_event)
+    assert win.dt.awaiting_drop is True
+
+    move_event = QDragMoveEvent(
+        QPoint(0, 0),
+        Qt.DropAction(drag_data.supported_actions),
+        drag_data.mime_data.q_data(),
+        Qt.LeftButton,
+        Qt.NoModifier,
+    )
+    win.dt.proxy.widget.dragMoveEvent(move_event)
+    assert win.dt.drag_moved
+
+    leave_event = QDragLeaveEvent()
+    win.dt.proxy.widget.dragLeaveEvent(leave_event)
+    assert win.dt.awaiting_drop is None
+
+
+def test_drop(enaml_qtbot):
+    """Test handling drag move and leave."""
+    win = compile_source(SOURCE, "Main")()
+    win.show()
+    wait_for_window_displayed(enaml_qtbot, win)
+
+    drag_data = win.s1.drag_start()
+
+    drop_event = QDropEvent(
+        QPointF(0, 0),
+        Qt.DropAction(drag_data.supported_actions),
+        drag_data.mime_data.q_data(),
+        Qt.LeftButton,
+        Qt.NoModifier,
+        QEvent.Type.Drop
+    )
+    win.dt.proxy.widget.dropEvent(drop_event)
+    assert drop_event.isAccepted()
+    assert win.dt.text == "1"
