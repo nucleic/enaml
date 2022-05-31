@@ -354,8 +354,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         supported = Qt.DropAction(drag_data.supported_actions)
         qresult = qdrag.exec_(supported, default)
         self.declaration.drag_end(
-            drag_data,
-            DropAction(qresult.value if not isinstance(qresult, int) else qresult)
+            drag_data, DropAction(getattr(qresult, "value", qresult))
         )
 
     def dragEnterEvent(self, event):
