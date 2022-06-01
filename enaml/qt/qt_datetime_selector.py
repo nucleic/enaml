@@ -1,10 +1,12 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+import datetime
+
 from atom.api import Typed
 
 from enaml.widgets.datetime_selector import ProxyDatetimeSelector
@@ -52,7 +54,12 @@ class QtDatetimeSelector(QtBoundedDatetime, ProxyDatetimeSelector):
             The current control datetime as a datetime object.
 
         """
-        return self.widget.dateTime().toPython()
+        date_time = self.widget.dateTime()
+        d = date_time.date()
+        t = date_time.time()
+        return datetime.datetime(
+            d.year(), d.month(), d.day(), t.hour(), t.minute(), t.second()
+        )
 
     def set_minimum(self, datetime):
         """ Set the widget's minimum datetime.

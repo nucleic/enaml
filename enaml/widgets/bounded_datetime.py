@@ -15,7 +15,7 @@ from .control import Control, ProxyControl
 
 
 class ProxyBoundedDatetime(ProxyControl):
-    """ The abstract defintion of a proxy BoundedDate object.
+    """ The abstract definition of a proxy BoundedDate object.
 
     """
     #: A reference to the BoundedDatetime declaration.
