@@ -124,7 +124,8 @@ class DeclarativeError(Exception):
         self.summary = summary = declarative_stack_summary(node, expression)
         self.error = exc
         stack = ''.join(reversed(summary.format()))
-        super().__init__("\n{}".format(stack))
+        msg = "\n{}{}: {}".format(stack, exc.__class__.__name__, exc)
+        super().__init__(msg)
 
 
 def patch_d_member(member):
