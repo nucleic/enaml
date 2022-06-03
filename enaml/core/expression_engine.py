@@ -180,7 +180,16 @@ class ExpressionEngine(Atom):
         if handler is not None:
             pair = handler.read_pair
             if pair is not None:
-                return pair.reader(owner, name)
+                try:
+                    return pair.reader(owner, name)
+                except DeclarativeError:
+                    raise
+                except Exception as e:
+                    expression = None
+                    if pair.source_location:
+                        filename, lineno = pair.source_location
+                        expression = (filename, lineno, name)
+                    raise DeclarativeError(owner, e, expression) from e
         return NotImplemented
 
     def write(self, owner, name, change):
