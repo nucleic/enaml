@@ -186,7 +186,7 @@ class ToolkitObject(Declarative):
                     child.activate_proxy()
                 self.proxy.child_added(child.proxy)
             except DeclarativeError:
-                pass
+                raise
             except Exception as e:
                 raise DeclarativeError(child, e) from e
 
@@ -204,7 +204,7 @@ class ToolkitObject(Declarative):
             try:
                 self.proxy.child_removed(child.proxy)
             except DeclarativeError:
-                pass
+                raise
             except Exception as e:
                 raise DeclarativeError(child, e) from e
 
@@ -223,7 +223,7 @@ class ToolkitObject(Declarative):
                 try:
                     child.activate_proxy()
                 except DeclarativeError:
-                    pass
+                    raise
                 except Exception as e:
                     raise DeclarativeError(child, e) from e
         self.activate_bottom_up()
