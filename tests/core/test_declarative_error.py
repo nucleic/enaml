@@ -41,7 +41,25 @@ def test_error_during_init(enaml_qtbot):
     assert 'line 6, in Conditional' in excinfo.exconly()
 
 
-def test_error_during_event(enaml_qtbot):
+def test_error_during_read_expr(qt_app, qtbot):
+    source = dedent("""\
+    from enaml.widgets.api import Window, Container, Label
+
+    enamldef MyWindow(Window):
+        Container:
+            Label:
+                text = undefined_variable
+    """)
+    tester = compile_source(source, 'MyWindow')()
+    with pytest.raises(DeclarativeError) as excinfo:
+        tester.show()
+    assert 'line 3, in MyWindow' in excinfo.exconly()
+    assert 'line 4, in Container' in excinfo.exconly()
+    assert 'line 5, in Label' in excinfo.exconly()
+    assert 'line 6, in text' in excinfo.exconly()
+
+
+def test_error_during_event(qt_app, qtbot):
     from enaml.qt.QtCore import Qt, QObject, Signal
     source = dedent("""\
     from enaml.core.api import Conditional
@@ -52,7 +70,7 @@ def test_error_during_event(enaml_qtbot):
         PushButton: button:
             clicked :: cond.condition = "invalid"
         Conditional: cond:
-            condition = False
+            condition = True
             Label:
                 text = "Shown"
 
@@ -66,7 +84,7 @@ def test_error_during_event(enaml_qtbot):
     tester = compile_source(source, 'MyWindow')()
 
     tester.show()
-    wait_for_window_displayed(enaml_qtbot, tester)
+    wait_for_window_displayed(qtbot, tester)
 
     with pytest.raises(DeclarativeError) as excinfo:
         tester.widget.button.clicked(True)
@@ -77,7 +95,7 @@ def test_error_during_event(enaml_qtbot):
     assert 'line 7, in clicked' in excinfo.exconly()
 
 
-def test_error_during_manual_set(enaml_qtbot):
+def test_error_during_manual_set(qt_app, qtbot):
     source = dedent("""\
     from enaml.core.api import Looper
     from enaml.widgets.api import Window, Container, Label
@@ -93,7 +111,7 @@ def test_error_during_manual_set(enaml_qtbot):
     """)
     tester = compile_source(source, 'MyWindow')()
     tester.show()
-    wait_for_window_displayed(enaml_qtbot, tester)
+    wait_for_window_displayed(qtbot, tester)
     with pytest.raises(DeclarativeError) as excinfo:
         tester.items = [False]  # not a string iterable
     assert 'line 4, in MyWindow' in excinfo.exconly()
