@@ -12,12 +12,19 @@ from textwrap import dedent
 import pytest
 
 from enaml.core.declarative_meta import DeclarativeError
+from enaml.widgets.api import Window
 
 from utils import compile_source, wait_for_window_displayed, is_qt_available
 
 
 pytestmark = pytest.mark.skipif(not is_qt_available(),
                                 reason='Requires a Qt binding')
+
+
+def destroy_windows():
+    # Cleanup windows that do not call destroy due to an "unclean" shutdown
+    for w in list(Window.windows):
+        w.destroy()
 
 
 def test_error_during_init(enaml_qtbot):
@@ -53,6 +60,7 @@ def test_error_during_read_expr(qt_app, qtbot):
     tester = compile_source(source, 'MyWindow')()
     with pytest.raises(DeclarativeError) as excinfo:
         tester.show()
+
     assert 'line 3, in MyWindow' in excinfo.exconly()
     assert 'line 4, in Container' in excinfo.exconly()
     assert 'line 5, in Label' in excinfo.exconly()
@@ -86,8 +94,11 @@ def test_error_during_event(qt_app, qtbot):
     tester.show()
     wait_for_window_displayed(qtbot, tester)
 
-    with pytest.raises(DeclarativeError) as excinfo:
-        tester.widget.button.clicked(True)
+    try:
+        with pytest.raises(DeclarativeError) as excinfo:
+            tester.widget.button.clicked(True)
+    finally:
+        destroy_windows()
 
     assert 'line 13, in MyWindow' in excinfo.exconly()
     assert 'line 17, in MyWidget' in excinfo.exconly()
@@ -112,8 +123,11 @@ def test_error_during_manual_set(qt_app, qtbot):
     tester = compile_source(source, 'MyWindow')()
     tester.show()
     wait_for_window_displayed(qtbot, tester)
-    with pytest.raises(DeclarativeError) as excinfo:
-        tester.items = [False]  # not a string iterable
+    try:
+        with pytest.raises(DeclarativeError) as excinfo:
+            tester.items = [False]  # not a string iterable
+    finally:
+        destroy_windows()
     assert 'line 4, in MyWindow' in excinfo.exconly()
     assert 'line 6, in Container' in excinfo.exconly()
     # Unfortunately Looper is not there...
