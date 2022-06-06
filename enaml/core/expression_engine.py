@@ -5,6 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from traceback import FrameSummary
+
 from atom.api import Atom, List, Typed
 from atom.datastructures.api import sortedmap
 from .declarative_meta import DeclarativeError
@@ -188,7 +190,9 @@ class ExpressionEngine(Atom):
                     expression = None
                     if pair.source_location:
                         filename, lineno = pair.source_location
-                        expression = (filename, lineno, name)
+                        expression = FrameSummary(
+                            filename, lineno, name, lookup_line=False
+                        )
                     raise DeclarativeError(owner, e, expression) from e
         return NotImplemented
 
@@ -227,7 +231,9 @@ class ExpressionEngine(Atom):
                         expression = None
                         if pair.source_location:
                             filename, lineno = pair.source_location
-                            expression = (filename, lineno, name)
+                            expression = FrameSummary(
+                                filename, lineno, name, lookup_line=False
+                            )
                         raise DeclarativeError(owner, e, expression) from e
                     finally:
                         guards.remove(key)
@@ -266,7 +272,9 @@ class ExpressionEngine(Atom):
                         expression = None
                         if pair.source_location:
                             filename, lineno = pair.source_location
-                            expression = (filename, lineno, name)
+                            expression = FrameSummary(
+                                filename, lineno, name, lookup_line=False
+                            )
                         raise DeclarativeError(owner, e, expression) from e
                     finally:
                         guards.remove(key)

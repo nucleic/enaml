@@ -5,10 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-import linecache
-
 from atom.api import Atom, AtomMeta, ChangeType, DefaultValue, Member, Typed
-from traceback import StackSummary
+from traceback import StackSummary, FrameSummary
 from typing import Optional
 
 # The declarative engine only updates for these types of changes
@@ -76,15 +74,43 @@ def declarative_change_handler(change):
         engine.write(owner, change['name'], change)
 
 
-def declarative_stack_summary(node, expression: Optional[tuple] = None) -> StackSummary:
+def declarative_frame_summary(node) -> FrameSummary:
+    """ Create the FrameSummary for a given declarative node.
+
+    Parameters
+    ----------
+    node : DeclarativeNode
+        The declrative node to create a frame summary for.
+
+    Returns
+    -------
+    summary : FrameSummary
+        The frame summary.
+
+    """
+    compiler_node = node._d_node
+    source = compiler_node.source_location
+    name = node.__class__.__name__
+    if source is not None:
+        filename, lineno = source
+    else:
+        filename = ""
+        lineno = -1
+    return FrameSummary(filename, lineno, name, lookup_line=False)
+
+
+def declarative_stack_summary(
+    node,
+    expression: Optional[FrameSummary] = None,
+) -> StackSummary:
     """ Create a stack summary for the given Declarative node.
 
     Parameters
     ----------
     node : Declarative
         The node to create a summary for.
-    expression : Optional[tuple]
-        If provided, the location of the expression which failed.
+    expression : Optional[FrameSummary]
+        The frame summary for the expression in which was executing, if any.
 
     Returns
     -------
@@ -94,32 +120,35 @@ def declarative_stack_summary(node, expression: Optional[tuple] = None) -> Stack
     """
     declarative_stack = []
     if expression is not None:
-        filename, lineno, name = expression
-        line = linecache.getline(filename, lineno)
-        declarative_stack.append((filename, lineno, name, line))
+        declarative_stack.append(expression)
 
     while node is not None:
-        compiler_node = node._d_node
-        source = compiler_node.source_location
-        if source is not None:
-            filename, lineno = source
-            line = linecache.getline(filename, lineno)
-        else:
-            filename = ""
-            lineno = -1
-            line = ""
-        declarative_stack.append((
-            filename,
-            lineno,
-            node.__class__.__name__,
-            line,
-        ))
-        node = node.parent
+        parent = node.parent
+
+        frame_summary = declarative_frame_summary(node)
+        declarative_stack.append(frame_summary)
+
+        if parent is not None:
+            compiler_node = node._d_node
+            parent_node = parent._d_node
+
+            if compiler_node not in parent_node.children:
+                # Attempt to find the pattern node which intercepted the child
+                for child in parent.children:
+                    if compiler_node in child._d_node.children:
+                        parent = child
+                        break
+
+        node = parent
     return StackSummary.from_list(declarative_stack)
 
 
 class DeclarativeError(Exception):
-    def __init__(self, node, exc: Exception, expression: Optional[tuple] = None):
+    def __init__(self, node, exc: Exception, expression: Optional[FrameSummary] = None):
+        """ An error that occurred within a declarative block. Used to provide
+        more details on the declarative stack.
+
+        """
         name = node.__class__.__name__
         self.summary = summary = declarative_stack_summary(node, expression)
         self.error = exc

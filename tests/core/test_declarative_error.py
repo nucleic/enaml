@@ -130,5 +130,5 @@ def test_error_during_manual_set(qt_app, qtbot):
         destroy_windows()
     assert 'line 4, in MyWindow' in excinfo.exconly()
     assert 'line 6, in Container' in excinfo.exconly()
-    # Unfortunately Looper is not there...
+    assert 'line 7, in Looper' in excinfo.exconly()
     assert 'line 9, in Label' in excinfo.exconly()
