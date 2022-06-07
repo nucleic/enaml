@@ -74,7 +74,7 @@ def declarative_change_handler(change):
         engine.write(owner, change['name'], change)
 
 
-def declarative_frame_summary(node) -> FrameSummary:
+def declarative_frame_summary(compiler_node, name) -> FrameSummary:
     """ Create the FrameSummary for a given declarative node.
 
     Parameters
@@ -88,9 +88,7 @@ def declarative_frame_summary(node) -> FrameSummary:
         The frame summary.
 
     """
-    compiler_node = node._d_node
     source = compiler_node.source_location
-    name = node.__class__.__name__
     if source is not None:
         filename, lineno = source
     else:
@@ -124,20 +122,35 @@ def declarative_stack_summary(
 
     while node is not None:
         parent = node.parent
-
-        frame_summary = declarative_frame_summary(node)
+        compiler_node = node._d_node
+        name = node.__class__.__name__
+        frame_summary = declarative_frame_summary(compiler_node, name)
         declarative_stack.append(frame_summary)
 
         if parent is not None:
-            compiler_node = node._d_node
             parent_node = parent._d_node
 
             if compiler_node not in parent_node.children:
                 # Attempt to find the pattern node which intercepted the child
+                found = False
                 for child in parent.children:
-                    if compiler_node in child._d_node.children:
+                    child_node = child._d_node
+                    if compiler_node in child_node.children:
                         parent = child
+                        found = True
                         break
+                if not found:
+                    # Try to find a template node
+                    for child_node in parent_node.children:
+                        template_node = getattr(child_node, 'template', None)
+                        if template_node is None:
+                            continue
+                        if compiler_node in template_node.children:
+                            # TODO: Get the actual template name
+                            template_frame = declarative_frame_summary(child_node, "template")
+                            declarative_stack.append(template_frame)
+                            break
+
 
         node = parent
     return StackSummary.from_list(declarative_stack)

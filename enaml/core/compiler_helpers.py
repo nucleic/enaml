@@ -272,7 +272,7 @@ def template_node(scope_key):
     return node
 
 
-def template_inst_node(templ, names, starname, scope_key, copy):
+def template_inst_node(templ, names, starname, scope_key, copy, source_location=None):
     """ Create and return a new template inst node.
 
     Parameters
@@ -296,6 +296,9 @@ def template_inst_node(templ, names, starname, scope_key, copy):
         copy will be required when the template instance has bindings
         so that the closure keys remain isolated to this instance.
 
+    source_location: tuple
+        A tuple of the filename and lineno where the node is defined.
+
     Returns
     -------
     result : TemplateInstNode
@@ -307,6 +310,7 @@ def template_inst_node(templ, names, starname, scope_key, copy):
     node.names = names
     node.starname = starname
     node.scope_key = scope_key
+    node.source_location = source_location
     return node
 
 

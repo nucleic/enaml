@@ -32,36 +32,67 @@ def test_error_during_init(enaml_qtbot):
     from enaml.core.api import Conditional
     from enaml.widgets.api import Window, Container, Label
 
-    enamldef MyWindow(Window): main:
+    enamldef Main(Window): main:
         Container:
             Conditional:
                 condition = None
                 Label:
-                    text = "True"
+                    text = "Text"
 
     """)
-    tester = compile_source(source, 'MyWindow')()
+    tester = compile_source(source, 'Main')()
     with pytest.raises(DeclarativeError) as excinfo:
         tester.show()
-    assert 'line 4, in MyWindow' in excinfo.exconly()
+    assert 'line 4, in Main' in excinfo.exconly()
     assert 'line 5, in Container' in excinfo.exconly()
     assert 'line 6, in Conditional' in excinfo.exconly()
+
+
+def test_error_template_init(enaml_qtbot):
+    source = dedent("""\
+    from enaml.widgets.api import Window, Container, Html
+
+    template Panel(Content):
+        Container:
+            Content:
+                pass
+
+    enamldef HtmlContent(Html):
+        source = False
+
+    enamldef Main(Window): main:
+        Panel(HtmlContent):
+            pass
+    """)
+    tester = compile_source(source, 'Main')()
+
+    try:
+        with pytest.raises(DeclarativeError) as excinfo:
+            tester.show()
+    finally:
+        destroy_windows()
+
+    assert 'line 11, in Main' in excinfo.exconly()
+    # TODO: How can it determine the template name?
+    assert 'line 12, in template' in excinfo.exconly()
+    assert 'line 4, in Container' in excinfo.exconly()
+    assert 'line 5, in HtmlContent' in excinfo.exconly()
 
 
 def test_error_during_read_expr(qt_app, qtbot):
     source = dedent("""\
     from enaml.widgets.api import Window, Container, Label
 
-    enamldef MyWindow(Window):
+    enamldef Main(Window):
         Container:
             Label:
                 text = undefined_variable
     """)
-    tester = compile_source(source, 'MyWindow')()
+    tester = compile_source(source, 'Main')()
     with pytest.raises(DeclarativeError) as excinfo:
         tester.show()
 
-    assert 'line 3, in MyWindow' in excinfo.exconly()
+    assert 'line 3, in Main' in excinfo.exconly()
     assert 'line 4, in Container' in excinfo.exconly()
     assert 'line 5, in Label' in excinfo.exconly()
     assert 'line 6, in text' in excinfo.exconly()
@@ -82,14 +113,14 @@ def test_error_during_event(qt_app, qtbot):
             Label:
                 text = "Shown"
 
-    enamldef MyWindow(Window): main:
+    enamldef Main(Window): main:
         alias widget
         Label:
             text = "Title"
         MyWidget: widget:
             pass
     """)
-    tester = compile_source(source, 'MyWindow')()
+    tester = compile_source(source, 'Main')()
 
     tester.show()
     wait_for_window_displayed(qtbot, tester)
@@ -100,7 +131,7 @@ def test_error_during_event(qt_app, qtbot):
     finally:
         destroy_windows()
 
-    assert 'line 13, in MyWindow' in excinfo.exconly()
+    assert 'line 13, in Main' in excinfo.exconly()
     assert 'line 17, in MyWidget' in excinfo.exconly()
     assert 'line 6, in PushButton' in excinfo.exconly()
     assert 'line 7, in clicked' in excinfo.exconly()
@@ -111,7 +142,7 @@ def test_error_during_manual_set(qt_app, qtbot):
     from enaml.core.api import Looper
     from enaml.widgets.api import Window, Container, Label
 
-    enamldef MyWindow(Window): main:
+    enamldef Main(Window): main:
         alias items: looper.iterable
         Container:
             Looper: looper:
@@ -120,7 +151,7 @@ def test_error_during_manual_set(qt_app, qtbot):
                     text = loop.item
 
     """)
-    tester = compile_source(source, 'MyWindow')()
+    tester = compile_source(source, 'Main')()
     tester.show()
     wait_for_window_displayed(qtbot, tester)
     try:
@@ -128,7 +159,7 @@ def test_error_during_manual_set(qt_app, qtbot):
             tester.items = [False]  # not a string iterable
     finally:
         destroy_windows()
-    assert 'line 4, in MyWindow' in excinfo.exconly()
+    assert 'line 4, in Main' in excinfo.exconly()
     assert 'line 6, in Container' in excinfo.exconly()
     assert 'line 7, in Looper' in excinfo.exconly()
     assert 'line 9, in Label' in excinfo.exconly()

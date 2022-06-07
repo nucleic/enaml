@@ -618,7 +618,8 @@ def gen_template_inst_node(cg, node, local_names):
     cg.load_const(starname)
     cg.load_fast(SCOPE_KEY)
     cg.load_const(bool(node.body))
-    cg.call_function(5)
+    cg.load_const((cg.filename, node.lineno))
+    cg.call_function(6)
 
 
 def sanitize_operator_code(filename, mode, ast):
