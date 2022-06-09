@@ -51,7 +51,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--enaml-sleep",
         action="store",
-        type=float,
+        type=int,
         help="Time to sleep after handling a ui event",
     )
 
