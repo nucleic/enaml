@@ -726,6 +726,7 @@ class QPopupView(QWidget):
         if state.close_on_click:
             path = state.path
             pos = event.pos()
+            posf = QPointF(pos)
             rect = self.rect()
             win_type = self.windowType()
             if win_type == Qt.Popup:
@@ -733,11 +734,11 @@ class QPopupView(QWidget):
                     super(QPopupView, self).mousePressEvent(event)
                 else:
                     path = state.path
-                    if not path.isEmpty() and not path.contains(pos):
+                    if not path.isEmpty() and not path.contains(posf):
                         event.accept()
                         self.close()
             elif win_type == Qt.ToolTip or win_type == Qt.Window:
-                if path.isEmpty() or path.contains(pos):
+                if path.isEmpty() or path.contains(posf):
                     event.accept()
                     self.close()
 

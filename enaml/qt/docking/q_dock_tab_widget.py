@@ -8,7 +8,7 @@
 from weakref import ref
 
 from enaml.qt.compat import global_pos_from_event
-from enaml.qt.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent, QRect
+from enaml.qt.QtCore import Qt, QPoint, QPointF, QSize, QMetaObject, QEvent, QRect
 from enaml.qt.QtGui import (
     QMouseEvent, QResizeEvent, QCursor, QPainter, QPixmap
 )
@@ -335,7 +335,8 @@ class QDockTabBar(QTabBar):
             # The button must be Qt.LeftButton, not event.button().
             btn = Qt.LeftButton
             mod = event.modifiers()
-            evt = QMouseEvent(QEvent.MouseButtonRelease, pos, btn, btn, mod)
+            evt = QMouseEvent(QEvent.MouseButtonRelease, QPointF(pos), btn,
+                              btn, mod)
             QApplication.sendEvent(self, evt)
             container = self.parent().widget(self.currentIndex())
             container.untab(global_pos_from_event(event))

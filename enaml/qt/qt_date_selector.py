@@ -5,6 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+import datetime
+
 from atom.api import Typed
 
 from enaml.widgets.date_selector import ProxyDateSelector
@@ -52,7 +54,8 @@ class QtDateSelector(QtBoundedDate, ProxyDateSelector):
             The current control date as a date object.
 
         """
-        return self.widget.date().toPython()
+        date = self.widget.date()
+        return datetime.date(date.year(), date.month(), date.day())
 
     def set_minimum(self, date):
         """ Set the widget's minimum date.

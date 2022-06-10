@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -22,6 +22,8 @@ from .xbms import (
     CLOSE_BUTTON, MAXIMIZE_BUTTON, RESTORE_BUTTON, LINKED_BUTTON,
     UNLINKED_BUTTON
 )
+
+from . import hover_event_pos
 
 
 class QDockWindowButtons(QFrame):
@@ -430,7 +432,8 @@ class QDockWindow(QDockFrame):
         over the dock window buttons.
 
         """
-        if self._title_buttons.geometry().contains(event.pos()):
+        pos = hover_event_pos(event)
+        if self._title_buttons.geometry().contains(pos):
             self.unsetCursor()
         else:
             super(QDockWindow, self).hoverMoveEvent(event)

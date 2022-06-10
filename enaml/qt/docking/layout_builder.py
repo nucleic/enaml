@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -43,9 +43,11 @@ def ensure_on_screen(rect):
         The potentially adjusted QRect which fits on the screen.
 
     """
-    d = QApplication.desktop()
     pos = rect.topLeft()
-    drect = d.screenGeometry(pos)
+    screen = QApplication.screenAt(pos)
+    if screen is None:
+        screen = QApplication.primaryScreen()
+    drect = screen.availableGeometry()
     if not drect.contains(pos):
         x = pos.x()
         if x < drect.x() or x > drect.right():
