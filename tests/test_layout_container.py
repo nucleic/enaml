@@ -1,15 +1,12 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-import pytest
-from utils import compile_source, wait_for_window_displayed,is_qt_available
+from utils import compile_source, wait_for_window_displayed
 
-pytestmark = pytest.mark.skipif(not is_qt_available(),
-                                reason='Requires a Qt binding')
 
 MANUAL_REPARENTING = \
 """from enaml.core.api import Conditional

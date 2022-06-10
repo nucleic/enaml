@@ -1,18 +1,16 @@
-# -*- coding: utf-8 -*-
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2018, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 import os
-import sys
 import shutil
 import pytest
 import importlib
 from enaml.compile_all import compileall
-from utils import cd, enaml_run
+from utils import cd
 
 
 def clean_cache(path):
@@ -35,10 +33,7 @@ def clean_source(path):
     """
     with cd(path):
         for f in os.listdir('.'):
-            if os.path.splitext(f)[-1] in (
-                        '.py',
-                        '.enaml',
-                    ):
+            if os.path.splitext(f)[-1] in ('.py',  '.enaml'):
                 os.remove(f)
 
 
@@ -72,8 +67,8 @@ def test_tutorials(enaml_run, tmpdir, tutorial):
             shutil.copy(os.path.join('__pycache__', f), cf)
 
         # Verify it's clean
-        assert not os.path.exists(tutorial+".py")
-        assert not os.path.exists(tutorial+"_view.enaml")
+        assert not os.path.exists(tutorial + ".py")
+        assert not os.path.exists(tutorial + "_view.enaml")
 
         # Now run from cache
         mod = importlib.import_module(tutorial)

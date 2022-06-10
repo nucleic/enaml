@@ -1,16 +1,12 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2019, Nucleic Development Team.
+# Copyright (c) 2019-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-"""Test the button group widget.
-
-"""
-import pytest
-
-from utils import is_qt_available, compile_source, wait_for_window_displayed
+"""Test the image view widget."""
+from utils import compile_source, wait_for_window_displayed
 
 
 SOURCE ="""
@@ -40,7 +36,6 @@ enamldef Main(Window):
 """ % __file__
 
 
-@pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 def test_displaying_no_image(enaml_qtbot, enaml_sleep):
     """Test that we can set the image attribute to None.
 
@@ -58,7 +53,6 @@ def test_displaying_no_image(enaml_qtbot, enaml_sleep):
 # cannot access the size of the painted area to ensure that scaling was done
 # properly
 
-# @pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 # @pytest.mark.parametrize('factor', [0.5, 2])
 # def test_refuse_to_scale(enaml_qtbot, enaml_sleep, factor):
 #     """Test that we do not scale the image if scale_to_fit is False.
@@ -79,7 +73,6 @@ def test_displaying_no_image(enaml_qtbot, enaml_sleep):
 #     assert new_img_size.height() == img_size.height()
 
 
-# @pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 # @pytest.mark.parametrize('preserve_aspect_ratio', [False, True])
 # def test_downscale(enaml_qtbot, enaml_sleep, preserve_aspect_ratio):
 #     """Test that scale_to_fit will allow to downscale the image.
@@ -108,7 +101,6 @@ def test_displaying_no_image(enaml_qtbot, enaml_sleep):
 #             img_size.width()/img_size.height()
 
 
-# @pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 # @pytest.mark.parametrize('preserve_aspect_ratio', [False, True])
 # @pytest.mark.parametrize('allow_upscaling', [False, True])
 # def test_upscale(enaml_qtbot, enaml_sleep, preserve_aspect_ratio,

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2019, Nucleic Development Team.
+# Copyright (c) 2019-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,7 +9,7 @@ from textwrap import dedent
 
 import pytest
 
-from utils import compile_source, is_qt_available, wait_for_window_displayed
+from utils import compile_source, wait_for_window_displayed
 
 
 #------------------------------------------------------------------------------
@@ -125,7 +125,6 @@ def test_bad_attr_syntax_3():
 #------------------------------------------------------------------------------
 # Typechecks
 #------------------------------------------------------------------------------
-@pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 def test_attr_type_1(enaml_qtbot, enaml_sleep):
     import datetime
     source = dedent("""\

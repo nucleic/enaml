@@ -34,7 +34,7 @@ class DateSelector(BoundedDate):
     than what is provided by Calendar.
 
     """
-    #: A python date format string to format the date for display. If
+    #: A python date format string to format the date for display.
     #: If none is supplied (or is invalid) the system locale setting
     #: is used. This may not be supported by all backends.
     date_format = d_(Str())

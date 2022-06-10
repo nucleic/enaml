@@ -1,19 +1,15 @@
-# -*- coding: utf-8 -*-
 #------------------------------------------------------------------------------
-# Copyright (c) 2018, Nucleic Development Team.
+# Copyright (c) 2018-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 import os
-import sys
-import pytest
 import importlib
-from utils import is_qt_available, cd, enaml_run
+from utils import cd
 
 
-@pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 def test_workbench(enaml_run, qtbot):
     from enaml.qt.QtCore import Qt
 

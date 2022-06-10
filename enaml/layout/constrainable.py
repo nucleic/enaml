@@ -88,32 +88,38 @@ class ConstrainableMixin(Atom):
     v_center = Constant()
 
     #: How strongly a widget hugs it's width hint. This is equivalent
-    #: to the constraint:
+    #: to the constraint::
+    #:
     #:      (width == hint) | hug_width
     hug_width = PolicyEnum('strong')
 
     #: How strongly a widget hugs it's height hint. This is equivalent
-    #: to the constraint:
+    #: to the constraint::
+    #:
     #:      (height == hint) | hug_height
     hug_height = PolicyEnum('strong')
 
     #: How strongly a widget resists clipping its width hint. This is
     #: equivalent to the constraint:
+    #:
     #:      (width >= hint) | resist_width
     resist_width = PolicyEnum('strong')
 
     #: How strongly a widget resists clipping its height hint. This is
-    #: iequivalent to the constraint:
+    #: equivalent to the constraint::
+    #:
     #:      (height >= hint) | resist_height
     resist_height = PolicyEnum('strong')
 
     #: How strongly a widget resists expanding its width hint. This is
-    #: equivalent to the constraint:
+    #: equivalent to the constraint::
+    #:
     #:      (width <= hint) | limit_width
     limit_width = PolicyEnum('ignore')
 
     #: How strongly a widget resists expanding its height hint. This is
-    #: equivalent to the constraint:
+    #: equivalent to the constraint::
+    #:
     #:      (height <= hint) | limit_height
     limit_height = PolicyEnum('ignore')
 
