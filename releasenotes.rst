@@ -7,8 +7,8 @@ Dates are written as DD/MM/YYYY
 -------------------
 - bump qtpy minimal required version for Qt6 PR #490
 - fix drag and drop support under Qt6 PR #491
-- fix date and time conversion under Qt6 PR #491
-- fix handling of mouse press event by popup views PR #491
+- fix date and time conversion under Qt6 PR #486
+- fix handling of mouse press event by popup views PR #486
 
 0.15.0 - 31/03/2022
 -------------------
