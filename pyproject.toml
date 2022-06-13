@@ -45,7 +45,7 @@ scintilla-qt6-pyqt = ["PyQt6-QScintilla"]
 matplotlib-qt = ["matplotlib"]
 ipython-qt = ["qtconsole"]
 webview-qt5-pyqt = ["PyQtWebEngine"]
-webview-qt6-pyqt = ["PyQt6.QtWebEngineWidgets"]
+webview-qt6-pyqt = ["PyQt6-WebEngine"]
 vtk-qt = ["vtk"]
 
 [project.urls]
