@@ -78,6 +78,19 @@ ie::
     Currently, you can use either [qt5-pyqt] to use PyQt5, [qt5-pyside] to
     use Pyside2, or [qt6-pyqt] and [qt6-pyside] if you want to use Qt6.
 
+Starting with Enaml 0.15.1, you can also specify additional extras needed for specific
+widgets:
+
+- Scintila widget: [scintilla-qt5-pyqt] or [scintilla-qt6-pyqt]
+- Matplotlib canvas: [matplotlib-qt]
+- IPython console: [ipython-qt]
+- WebView (extra are needed only for PyQt): [webview-qt5-pyqt] or [webview-qt6-pyqt]
+- VTK canvas: [vtk-qt]
+
+.. note::
+    One can specify multiple extras separated by ``,``::
+        $ pip install enaml[qt5-pyqt,ipython-qt]
+
 .. note::
     There is no pyqt5 wheel available for 32-bit Linux.
 
