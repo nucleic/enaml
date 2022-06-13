@@ -45,38 +45,6 @@ def test_error_during_init(enaml_qtbot):
     assert 'line 6, in Conditional' in excinfo.exconly()
 
 
-def test_error_template_init(enaml_qtbot):
-    source = dedent("""\
-    from enaml.widgets.api import Window, Container, Html
-
-    template Panel(Content):
-        Container:
-            Content:
-                pass
-
-    enamldef HtmlContent(Html):
-        source = False
-
-    enamldef Main(Window): main:
-        Panel(HtmlContent):
-            pass
-    """)
-    tester = compile_source(source, 'Main')()
-
-    try:
-        with pytest.raises(DeclarativeError) as excinfo:
-            tester.show()
-    finally:
-        destroy_windows()
-
-    assert 'line 11, in Main' in excinfo.exconly()
-    # TODO: How can it determine the template name?
-    assert 'line 12, in Panel' in excinfo.exconly()
-    assert 'line 3, in Panel' in excinfo.exconly()
-    assert 'line 4, in Container' in excinfo.exconly()
-    assert 'line 5, in HtmlContent' in excinfo.exconly()
-
-
 def test_error_during_read_expr(qt_app, qtbot):
     source = dedent("""\
     from enaml.widgets.api import Window, Container, Label
@@ -161,3 +129,78 @@ def test_error_during_manual_set(qt_app, qtbot):
     assert 'line 6, in Container' in excinfo.exconly()
     assert 'line 7, in Looper' in excinfo.exconly()
     assert 'line 9, in Label' in excinfo.exconly()
+
+
+def test_error_template_init(enaml_qtbot):
+    source = dedent("""\
+    from enaml.widgets.api import Window, Container, Html
+
+    template Panel(Content):
+        Container:
+            Content:
+                pass
+
+    enamldef HtmlContent(Form):
+        Html:
+            source = False
+
+    enamldef Main(Window): main:
+        Panel(HtmlContent):
+            pass
+    """)
+    tester = compile_source(source, 'Main')()
+
+    try:
+        with pytest.raises(DeclarativeError) as excinfo:
+            tester.show()
+    finally:
+        destroy_windows()
+
+    assert 'line 11, in Main' in excinfo.exconly()
+    assert 'line 12, in Panel' in excinfo.exconly()
+    assert 'line 3, in Panel' in excinfo.exconly()
+    assert 'line 4, in Container' in excinfo.exconly()
+    assert 'line 5, in HtmlContent' in excinfo.exconly()
+
+
+def test_error_during_template_expr(qt_app, qtbot):
+    source = dedent("""\
+    from enaml.widgets.api import Window, Container, Form, CheckBox, PushButton
+
+    template FormTemplate(Content):
+        Container:
+            alias submit
+            Content: form:
+                pass
+            PushButton: submit:
+                text = "Submit"
+                clicked :: form.submit()
+
+    enamldef MyForm(Form):
+        func submit():
+            checkbox.checked = None
+        CheckBox: checkbox:
+            text = "Tool"
+            checked = True
+
+    enamldef Main(Window): main:
+        alias form
+        FormTemplate(MyForm): form:
+            pass
+    """)
+    tester = compile_source(source, 'Main')()
+    tester.show()
+    wait_for_window_displayed(qtbot, tester)
+    try:
+        with pytest.raises(DeclarativeError) as excinfo:
+            tester.form.submit.clicked(True)
+    finally:
+        destroy_windows()
+
+    assert 'line 19, in Main' in excinfo.exconly()
+    assert 'line 21, in FormTemplate' in excinfo.exconly()
+    assert 'line 3, in FormTemplate' in excinfo.exconly()
+    assert 'line 4, in Container' in excinfo.exconly()
+    assert 'line 8, in PushButton' in excinfo.exconly()
+    assert 'line 10, in clicked' in excinfo.exconly()
+    assert 'line 14, in submit' in excinfo.exconly()
