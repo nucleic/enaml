@@ -3,13 +3,14 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.15.1 - unreleased
+0.15.1 - 13/06/2022
 -------------------
 - bump qtpy minimal required version for Qt6 PR #490
 - fix drag and drop support under Qt6 PR #491
 - fix date and time conversion under Qt6 PR #486
 - fix handling of mouse press event by popup views PR #486
 - fix flow widget size computation to only use integer (fixes Qt6) PR #492
+- add new extra requirements to ease use of widgets with extra dependencies PR #495
 
 0.15.0 - 31/03/2022
 -------------------
