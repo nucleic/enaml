@@ -30,9 +30,11 @@ try:
         QDropEvent,
         QMouseEvent,
     )
+
+    actions = [Qt.DropAction.CopyAction, Qt.DropAction.IgnoreAction]
 except ImportError:
     # The enaml_qtbot will cause the tests to be skipped
-    pass
+    actions = []
 
 from utils import compile_source, wait_for_window_displayed
 
@@ -119,9 +121,7 @@ enamldef Main(Window):
 """
 
 
-@pytest.mark.parametrize(
-    "action", [Qt.DropAction.CopyAction, Qt.DropAction.IgnoreAction]
-)
+@pytest.mark.parametrize("action", actions)
 def test_drag_with_valid_drop(enaml_qtbot, monkeypatch, action):
     """Test performing a drag and drop operation."""
     win = compile_source(SOURCE, "Main")()
@@ -230,7 +230,7 @@ def test_drop(enaml_qtbot):
         drag_data.mime_data.q_data(),
         Qt.LeftButton,
         Qt.NoModifier,
-        QEvent.Type.Drop
+        QEvent.Type.Drop,
     )
     win.dt.proxy.widget.dropEvent(drop_event)
     assert drop_event.isAccepted()
