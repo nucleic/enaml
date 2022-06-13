@@ -36,10 +36,17 @@ dependencies = [
 dynamic=["version"]
 
 [project.optional-dependencies]
-qt5-pyqt = ["qtpy", "pyqt5"]
+qt5-pyqt = ["qtpy", "PyQt5"]
 qt5-pyside = ["qtpy", "pyside2"]
-qt6-pyqt = ["qtpy>=2.1.0", "pyqt6>=6.2"]
+qt6-pyqt = ["qtpy>=2.1.0", "PyQt6>=6.2"]
 qt6-pyside = ["qtpy>=2.1.0", "pyside6>=6.2.3"]
+scintilla-qt5-pyqt = ["QScintilla"]
+scintilla-qt6-pyqt = ["PyQt6-QScintilla"]
+matplotlib-qt = ["matplotlib"]
+ipython-qt = ["qtconsole"]
+webview-qt5-pyqt = ["PyQtWebEngine"]
+webview-qt6-pyqt = ["PyQt6.QtWebEngineWidgets"]
+vtk-qt = ["vtk"]
 
 [project.urls]
 homepage = "https://github.com/nucleic/enaml"

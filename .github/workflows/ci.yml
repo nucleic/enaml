@@ -61,23 +61,20 @@ jobs:
           pip install git+https://github.com/MatthieuDartiailh/bytecode@main
           pip install git+https://github.com/nucleic/atom@main
           pip install git+https://github.com/nucleic/kiwi@main
-      - name: Install project
+      - name: Install project (no-extras)
+        if: matrix.python-version != '3.9'
         env:
           CPPFLAGS: --coverage
         run: |
           pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
-      - name: Install extra dependencies
-        if: matrix.python-version == '3.9'
+      - name: Install project (with-extras pyqt)
+        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt'
         run: |
-          pip install matplotlib ipython qtconsole
-      - name: Install QScintilla (Qt5)
-        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt' && matrix.qt-version== 5
+          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
+      - name: Install project (with-extras pyside)
+        if: matrix.python-version == '3.9' && matrix.qt-binding != 'pyqt'
         run: |
-          pip install QScintilla
-      - name: Install QScintilla (Qt6)
-        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt' && matrix.qt-version== 6
-        run: |
-          pip install PyQt6-QScintilla
+          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt]
       - name: Install test requirements
         run: |
           pip install -r test_requirements.txt
