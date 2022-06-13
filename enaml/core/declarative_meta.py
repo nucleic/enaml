@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -86,7 +86,6 @@ def patch_d_member(member):
     """
     metadata = member.metadata
     if metadata['d_writable']:
-        mode, ctxt = member.default_value_mode
         handler = DeclarativeDefaultHandler()
         handler.delegate = member.clone()
         new_mode = DefaultValue.CallObject_ObjectName
