@@ -14,11 +14,8 @@ import pytest
 from enaml.core.declarative_meta import DeclarativeError
 from enaml.widgets.api import Window
 
-from utils import compile_source, wait_for_window_displayed, is_qt_available
+from utils import compile_source, wait_for_window_displayed
 
-
-pytestmark = pytest.mark.skipif(not is_qt_available(),
-                                reason='Requires a Qt binding')
 
 
 def destroy_windows():
