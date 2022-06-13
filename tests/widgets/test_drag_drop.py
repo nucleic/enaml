@@ -20,15 +20,19 @@ This is not perfect but should catch most regressions.
 """
 import pytest
 
-from enaml.qt.QtCore import QEvent, QPoint, QPointF, Qt
-from enaml.qt.QtGui import (
-    QDrag,
-    QDragEnterEvent,
-    QDragMoveEvent,
-    QDragLeaveEvent,
-    QDropEvent,
-    QMouseEvent,
-)
+try:
+    from enaml.qt.QtCore import QEvent, QPoint, QPointF, Qt
+    from enaml.qt.QtGui import (
+        QDrag,
+        QDragEnterEvent,
+        QDragMoveEvent,
+        QDragLeaveEvent,
+        QDropEvent,
+        QMouseEvent,
+    )
+except ImportError:
+    # The enaml_qtbot will cause the tests to be skipped
+    pass
 
 from utils import compile_source, wait_for_window_displayed
 
