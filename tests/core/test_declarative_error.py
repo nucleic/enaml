@@ -74,7 +74,8 @@ def test_error_template_init(enaml_qtbot):
 
     assert 'line 11, in Main' in excinfo.exconly()
     # TODO: How can it determine the template name?
-    assert 'line 12, in template' in excinfo.exconly()
+    assert 'line 12, in Panel' in excinfo.exconly()
+    assert 'line 3, in Panel' in excinfo.exconly()
     assert 'line 4, in Container' in excinfo.exconly()
     assert 'line 5, in HtmlContent' in excinfo.exconly()
 

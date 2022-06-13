@@ -10,8 +10,6 @@ from contextlib import contextmanager
 from atom.api import Atom, Bool, Str, Tuple, Typed, ForwardTyped
 from atom.datastructures.api import sortedmap
 
-from .expression_engine import ExpressionEngine
-
 
 #: The private stack of active local scopes.
 __stack = []
@@ -19,6 +17,12 @@ __stack = []
 
 #: The private map of active local scopes.
 __map = {}
+
+
+def expression_engine():
+    # Deferred import
+    from .expression_engine import ExpressionEngine
+    return ExpressionEngine
 
 
 @contextmanager
@@ -145,7 +149,7 @@ class DeclarativeNode(CompilerNode):
     child_intercept = Bool(False)
 
     #: The expression engine to associate with the instance.
-    engine = Typed(ExpressionEngine)
+    engine = ForwardTyped(expression_engine)
 
     #: The set of scope keys for the closure scopes. This will be None
     #: if the node does not require any closure scopes.
@@ -296,6 +300,9 @@ class TemplateNode(CompilerNode):
     #: provided by the compiler, and should be considered read-only.
     scope = Typed(sortedmap, ())
 
+    #: The name of the template
+    name = Str()
+
     def __call__(self, parent):
         """ Instantiate the type hierarchy.
 
@@ -354,6 +361,7 @@ class TemplateNode(CompilerNode):
         """
         node = super(TemplateNode, self).copy()
         node.scope = self.scope
+        node.name = self.name
         node.update_id_nodes()
         return node
 

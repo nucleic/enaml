@@ -123,7 +123,9 @@ class FirstPassTemplateCompiler(block.FirstPassBlockCompiler):
         # Create the template compiler node and store in the node list.
         cmn.load_helper(cg, 'template_node')
         cg.load_fast(cmn.SCOPE_KEY)
-        cg.call_function(1)
+        cg.load_const(node.name)
+        cg.load_const((self.filename, node.lineno))
+        cg.call_function(3)
         cmn.store_node(cg, index)
 
         # Visit the body of the template.

@@ -6,8 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import Atom, AtomMeta, ChangeType, DefaultValue, Member, Typed
-from traceback import StackSummary, FrameSummary
-from typing import Optional
+from traceback import StackSummary, FrameSummary, format_exc
+from typing import Optional, TYPE_CHECKING
+
+from .compiler_nodes import CompilerNode, TemplateInstanceNode
+
+if TYPE_CHECKING:
+    from .declarative import Declarative
 
 # The declarative engine only updates for these types of changes
 D_CHANGE_TYPES = (
@@ -74,7 +79,7 @@ def declarative_change_handler(change):
         engine.write(owner, change['name'], change)
 
 
-def declarative_frame_summary(compiler_node, name) -> FrameSummary:
+def declarative_frame_summary(compiler_node: CompilerNode, name: str) -> FrameSummary:
     """ Create the FrameSummary for a given declarative node.
 
     Parameters
@@ -97,8 +102,56 @@ def declarative_frame_summary(compiler_node, name) -> FrameSummary:
     return FrameSummary(filename, lineno, name, lookup_line=False)
 
 
+def find_pattern_node(node: "Declarative") -> Optional["Declarative"]:
+    """ Find the pattern node which intercepted the given node, if any.
+
+    Parameters
+    ----------
+    node : Declarative
+        The declarative to lookup the pattern node for.
+
+    Returns
+    -------
+    pattern_node : Optional[Declarative]
+        The pattern node which inserted the provided node.
+
+    """
+    parent = node.parent
+    if parent is not None:
+        compiler_node = node._d_node
+        for child in parent.children:
+            if compiler_node in child._d_node.children:
+                return child
+    return None
+
+
+def find_template_node(node: "Declarative") -> tuple:
+    """ Find the template node which inserted the given node, if any.
+
+    Parameters
+    ----------
+    node : Declarative
+        The declarative to lookup the template for.
+
+    Returns
+    -------
+    result : Optional[tuple[TemplateInstanceNode, TemplateNode]]
+        The template instance node.
+
+    """
+    parent = node.parent
+    if parent is not None:
+        compiler_node = node._d_node
+        for child_node in parent._d_node.children:
+            if isinstance(child_node, TemplateInstanceNode):
+                template_node = child_node.template
+                if compiler_node in template_node.children:
+                    return (child_node, template_node)
+    return None
+
+
 def declarative_stack_summary(
-    node,
+    node: "Declarative",
     expression: Optional[FrameSummary] = None,
 ) -> StackSummary:
     """ Create a stack summary for the given Declarative node.
@@ -127,47 +180,62 @@ def declarative_stack_summary(
         frame_summary = declarative_frame_summary(compiler_node, name)
         declarative_stack.append(frame_summary)
 
-        if parent is not None:
-            parent_node = parent._d_node
+        if parent is not None and compiler_node not in parent._d_node.children:
+            # When the compiler node is not in the parent compiler nodes
+            # children, the child was either inserted by a pattern node which
+            # intercepted children or inserted by a template.
+            pattern_node = find_pattern_node(node)
+            if pattern_node is not None:
+                node = pattern_node
+                continue
 
-            if compiler_node not in parent_node.children:
-                # Attempt to find the pattern node which intercepted the child
-                found = False
-                for child in parent.children:
-                    child_node = child._d_node
-                    if compiler_node in child_node.children:
-                        parent = child
-                        found = True
-                        break
-                if not found:
-                    # Try to find a template node
-                    for child_node in parent_node.children:
-                        template_node = getattr(child_node, 'template', None)
-                        if template_node is None:
-                            continue
-                        if compiler_node in template_node.children:
-                            # TODO: Get the actual template name
-                            template_frame = declarative_frame_summary(child_node, "template")
-                            declarative_stack.append(template_frame)
-                            break
+            # Attempt to find the template which inserted the child
+            template_nodes = find_template_node(node)
+            if template_nodes is not None:
+                instance_node, template_node = template_nodes
+                template_frame = declarative_frame_summary(
+                    template_node, template_node.name
+                )
+                declarative_stack.append(template_frame)
+                instance_frame = declarative_frame_summary(
+                    instance_node, template_node.name
+                )
+                declarative_stack.append(instance_frame)
 
-
+        # Up to next level
         node = parent
+
+    declarative_stack.reverse()
     return StackSummary.from_list(declarative_stack)
 
 
 class DeclarativeError(Exception):
-    def __init__(self, node, exc: Exception, expression: Optional[FrameSummary] = None):
+    def __init__(
+        self,
+        node: "Declarative",
+        exc: Exception,
+        expression: Optional[FrameSummary] = None
+    ):
         """ An error that occurred within a declarative block. Used to provide
         more details on the declarative stack.
 
+        Parameters
+        ----------
+        node : Declarative
+            The node where the exception occurred.
+        exc : Exception
+            The exception that ocurred.
+        expression : Optional[FrameSummary]
+            The frame summary for the expression in which was executing.
+
+
         """
-        name = node.__class__.__name__
-        self.summary = summary = declarative_stack_summary(node, expression)
+        summary = self.summary = declarative_stack_summary(node, expression)
+        stack = "".join(summary.format())
         self.error = exc
-        stack = ''.join(reversed(summary.format()))
-        msg = "\n{}{}: {}".format(stack, exc.__class__.__name__, exc)
-        super().__init__(msg)
+        exc_type_name = exc.__class__.__name__
+        message = "\n{}{}: {}".format(stack, exc_type_name, exc)
+        super().__init__(message)
 
 
 def patch_d_member(member):

@@ -253,13 +253,16 @@ def enamldef_node(klass, identifier, scope_key, store_locals, source_location=No
     return node
 
 
-def template_node(scope_key):
+def template_node(scope_key, name: str = "template", source_location=None):
     """ Create and return a new template node.
 
     Parameters
     ----------
     scope_key : object
         The key for the local scope in the local storage maps.
+
+    source_location: tuple
+        A tuple of the filename and lineno where the node is defined.
 
     Returns
     -------
@@ -269,6 +272,8 @@ def template_node(scope_key):
     """
     node = TemplateNode()
     node.scope_key = scope_key
+    node.name = name
+    node.source_location = source_location
     return node
 
 
