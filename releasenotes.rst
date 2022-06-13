@@ -9,6 +9,7 @@ Dates are written as DD/MM/YYYY
 - fix drag and drop support under Qt6 PR #491
 - fix date and time conversion under Qt6 PR #486
 - fix handling of mouse press event by popup views PR #486
+- fix flow widget size computation to only use integer (fixes Qt6) PR #492
 
 0.15.0 - 31/03/2022
 -------------------

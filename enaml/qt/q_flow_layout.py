@@ -319,7 +319,7 @@ class _LayoutRow(object):
                 if align == QFlowLayout.AlignTrailing:
                     y += delta_h
                 elif align == QFlowLayout.AlignCenter:
-                    y += delta_h / 2
+                    y += delta_h // 2
             item.setGeometry(QRect(x, int(round(y)),
                                    int(round(w)), int(round(h))))
             return
@@ -361,7 +361,7 @@ class _LayoutRow(object):
             for ignored, item in diffs:
                 item_stretch = item.data.stretch
                 max_width = item.maximumSize().width()
-                d = item_stretch * delta / items_stretch
+                d = item_stretch * delta // items_stretch
                 items_stretch -= item_stretch
                 item_width = widths[item]
                 if item_width + d > max_width:
@@ -384,9 +384,9 @@ class _LayoutRow(object):
             if opts.direction == QFlowLayout.LeftToRight:
                 start_x += delta
         elif opts.alignment == QFlowLayout.AlignCenter:
-            start_x += delta / 2
+            start_x += delta // 2
         else:
-            d = delta / (len(items) + 1)
+            d = delta // (len(items) + 1)
             space += d
             start_x += d
 
@@ -407,7 +407,7 @@ class _LayoutRow(object):
                 if align == QFlowLayout.AlignTrailing:
                     this_y = y + delta
                 elif align == QFlowLayout.AlignCenter:
-                    this_y = y + delta / 2
+                    this_y = y + delta // 2
             item.setGeometry(QRect(int(round(curr_x)), int(round(this_y)),
                                    int(round(w)), int(round(h))))
             curr_x += (w + space)
@@ -419,41 +419,41 @@ class _LayoutColumn(object):
     This class accumulates information about a column of items as the
     items are added to the column. Instances of the this class are
     created by the QFlowLayout during a layout pass. For performance
-    reasons, there are several publically accesible attributes. See
+    reasons, there are several publically accessible attributes. See
     their documentation for restrictions on their use.
 
     """
     #: The width to use for laying out the column. This attribute is
     #: modified directly by the layout as it distributes the horizontal
     #: space amongst the columns.
-    layout_width = 0
+    layout_width: int = 0
 
     #: The minimum height required for the column. This is automatically
     #: updated as items are added to the column. It should be considered
     #: read-only to external users.
-    min_height = 0
+    min_height: int = 0
 
     #: The minimum width required for the column. This is automatically
     #: updated as items are added to the column. It should be considered
     #: read-only to external users.
-    min_width = 0
+    min_width: int = 0
 
     #: The desired height for the column. This is automatically updated
     #: as items are added to the column. It should be considered
     #: read-only to external users.
-    hint_height = 0
+    hint_height: int = 0
 
     #: The desired width for the column. This is automatically updated
     #: as items are added to the column. It should be considered
     #: read-only to external users.
-    hint_width = 0
+    hint_width: int = 0
 
     #: The vertical stretch factor for the column. This is automatically
     #: updated as items are added to the column. It should be considered
     #: read-only by external users.
-    stretch = 0
+    stretch: int = 0
 
-    def __init__(self, height, options):
+    def __init__(self, height: int, options):
         """ Initialize a layout column.
 
         Parameters
@@ -513,7 +513,7 @@ class _LayoutColumn(object):
         self._items.append(item)
         return True
 
-    def layout(self, x, y):
+    def layout(self, x: int, y: int) -> None:
         """ Layout the row using the given starting coordinates.
 
         Parameters
@@ -548,7 +548,7 @@ class _LayoutColumn(object):
                 if align == QFlowLayout.AlignTrailing:
                     x += delta_w
                 elif align == QFlowLayout.AlignCenter:
-                    x += delta_w / 2
+                    x += delta_w // 2
             item.setGeometry(QRect(x, y, w, h))
             return
 
@@ -577,7 +577,7 @@ class _LayoutColumn(object):
             for ignored, item in diffs:
                 item_stretch = item.data.stretch
                 max_height = item.maximumSize().height()
-                d = item_stretch * delta / items_stretch
+                d = item_stretch * delta // items_stretch
                 items_stretch -= item_stretch
                 item_height = heights[item]
                 if item_height + d > max_height:
@@ -600,9 +600,9 @@ class _LayoutColumn(object):
             if opts.direction == QFlowLayout.TopToBottom:
                 start_y += delta
         elif opts.alignment == QFlowLayout.AlignCenter:
-            start_y += delta / 2
+            start_y += delta // 2
         else:
-            d = delta / (len(items) + 1)
+            d = delta // (len(items) + 1)
             space += d
             start_y += d
 
@@ -623,7 +623,9 @@ class _LayoutColumn(object):
                 if align == QFlowLayout.AlignTrailing:
                     this_x = x + delta
                 elif align == QFlowLayout.AlignCenter:
-                    this_x = x + delta / 2
+                    this_x = x + delta // 2
+            if isinstance(w, float):
+                breakpoint()
             item.setGeometry(QRect(this_x, curr_y, w, h))
             curr_y += (h + space)
 
@@ -1004,7 +1006,7 @@ class QFlowLayout(QLayout):
         diff_space = max(total_diff, 1)  # Guard against divide by zero
         layout_height = 0
         for row in rows:
-            d = play_space * row.diff_height / diff_space
+            d = play_space * row.diff_height // diff_space
             row.layout_height = min(row.min_height + d, row.hint_height)
             layout_height += row.layout_height
         layout_height += space
@@ -1015,7 +1017,7 @@ class QFlowLayout(QLayout):
         if remaining > 0 and stretch > 0:
             for row in rows:
                 if row.stretch > 0:
-                    row.layout_height += remaining * row.stretch / stretch
+                    row.layout_height += remaining * row.stretch // stretch
 
         # Make a final pass to layout the rows, computing the overall
         # final layout height along the way.
@@ -1076,7 +1078,7 @@ class QFlowLayout(QLayout):
         diff_space = max(total_diff, 1)  # Guard against divide by zero
         layout_width = 0
         for col in cols:
-            d = play_space * col.diff_width / diff_space
+            d = play_space * col.diff_width // diff_space
             col.layout_width = min(col.min_width + d, col.hint_width)
             layout_width += col.layout_width
         layout_width += space
@@ -1087,7 +1089,7 @@ class QFlowLayout(QLayout):
         if remaining > 0 and stretch > 0:
             for col in cols:
                 if col.stretch > 0:
-                    col.layout_width += remaining * col.stretch / stretch
+                    col.layout_width += remaining * col.stretch // stretch
 
         # Make a final pass to layout the columns, computing the overall
         # final layout width along the way.
