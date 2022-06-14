@@ -125,8 +125,8 @@ def find_pattern_node(node: "Declarative") -> Optional["Declarative"]:
     return None
 
 
-def find_template_node(node: "Declarative") -> tuple:
-    """ Find the template node which inserted the given node, if any.
+def find_template_inst_node(node: "Declarative") -> tuple:
+    """ Find the template instance node which inserted the given node, if any.
 
     Parameters
     ----------
@@ -180,17 +180,17 @@ def declarative_stack_summary(
         frame_summary = declarative_frame_summary(compiler_node, name)
         declarative_stack.append(frame_summary)
 
+        # When the compiler node is not in the parent compiler nodes
+        # children, the child was either inserted by a pattern node which
+        # intercepted children or inserted by a template.
         if parent is not None and compiler_node not in parent._d_node.children:
-            # When the compiler node is not in the parent compiler nodes
-            # children, the child was either inserted by a pattern node which
-            # intercepted children or inserted by a template.
             pattern_node = find_pattern_node(node)
             if pattern_node is not None:
                 node = pattern_node
                 continue
 
-            # Attempt to find the template which inserted the child
-            template_nodes = find_template_node(node)
+            # Attempt to find the template instance node
+            template_nodes = find_template_inst_node(node)
             if template_nodes is not None:
                 instance_node, template_node = template_nodes
                 template_frame = declarative_frame_summary(
