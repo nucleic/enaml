@@ -169,7 +169,7 @@ def declarative_stack_summary(
         The stack summary.
 
     """
-    declarative_stack = []
+    declarative_stack = StackSummary()
     if expression is not None:
         declarative_stack.append(expression)
 
@@ -206,7 +206,7 @@ def declarative_stack_summary(
         node = parent
 
     declarative_stack.reverse()
-    return StackSummary.from_list(declarative_stack)
+    return declarative_stack
 
 
 class DeclarativeError(Exception):
@@ -230,12 +230,17 @@ class DeclarativeError(Exception):
 
 
         """
-        summary = self.summary = declarative_stack_summary(node, expression)
-        stack = "".join(summary.format())
+        self.summary = declarative_stack_summary(node, expression)
         self.error = exc
-        exc_type_name = exc.__class__.__name__
-        message = "\n{}{}: {}".format(stack, exc_type_name, exc)
-        super().__init__(message)
+        self._message = ""
+
+    def __str__(self):
+        if not self._message:
+            stack = "".join(self.summary.format())
+            exc = self.error
+            exc_type_name = exc.__class__.__name__
+            self._message = "\n{}{}: {}".format(stack, exc_type_name, exc)
+        return self._message
 
 
 def patch_d_member(member):
