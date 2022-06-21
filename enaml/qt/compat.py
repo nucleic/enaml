@@ -16,11 +16,3 @@ if QT_VERSION[0] == '6':
 else:
     def global_pos_from_event(event):
         return event.globalPos()
-
-
-if QT_API in PYQT6_API:
-    def coerce_to_qevent_type(event_value):
-        return event_value
-else:
-    def coerce_to_qevent_type(event_value):
-        return QEvent.Type(event_value)

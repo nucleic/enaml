@@ -5,7 +5,6 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
-from .compat import coerce_to_qevent_type
 from .QtCore import QObject, QTimer, QEvent, QThread
 from .QtWidgets import QApplication
 
@@ -15,7 +14,7 @@ class DeferredCallEvent(QEvent):
 
     """
     # Explicitly coerce to QEvent.Type for PySide compatibility.
-    Type = coerce_to_qevent_type(QEvent.registerEventType())
+    Type = QEvent.Type(QEvent.registerEventType())
 
     def __init__(self, callback, args, kwargs):
         super(DeferredCallEvent, self).__init__(self.Type)
