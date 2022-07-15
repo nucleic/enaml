@@ -13,7 +13,7 @@ from .control import Control, ProxyControl
 
 
 #: Delay the import of matplotlib until needed. This removes the hard
-#: dependecy on matplotlib for the rest of the Enaml code base.
+#: dependency on matplotlib for the rest of the Enaml code base.
 def Figure():
     from matplotlib.figure import Figure
     return Figure

@@ -132,7 +132,7 @@ class QtSplitItem(QtWidget, ProxySplitItem):
         self.widget = QSplitItem(self.parent_widget())
 
     def init_widget(self):
-        """ Initialize the underyling widget.
+        """ Initialize the underlying widget.
 
         """
         super(QtSplitItem, self).init_widget()
@@ -141,7 +141,7 @@ class QtSplitItem(QtWidget, ProxySplitItem):
         self.set_collapsible(d.collapsible)
 
     def init_layout(self):
-        """ Initialize the layout for the underyling widget.
+        """ Initialize the layout for the underlying widget.
 
         """
         super(QtSplitItem, self).init_layout()

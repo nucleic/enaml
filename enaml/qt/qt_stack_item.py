@@ -75,7 +75,7 @@ class QtStackItem(QtWidget, ProxyStackItem):
         self.widget = QStackItem(self.parent_widget())
 
     def init_layout(self):
-        """ Initialize the layout for the underyling widget.
+        """ Initialize the layout for the underlying widget.
 
         """
         super(QtStackItem, self).init_layout()

@@ -325,7 +325,7 @@ class Stylable(Declarative):
     def parent_changed(self, old, new):
         """ A reimplemented parent changed event handler.
 
-        This will notifiy the :class:`StyleCache` if the parent of
+        This will notify the :class:`StyleCache` if the parent of
         the item has changed.
 
         """

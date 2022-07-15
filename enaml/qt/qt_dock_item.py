@@ -103,7 +103,7 @@ class QtDockItem(QtWidget, ProxyDockItem):
         self.set_closable(d.closable)
 
     def init_layout(self):
-        """ Initialize the layout for the underyling widget.
+        """ Initialize the layout for the underlying widget.
 
         """
         super(QtDockItem, self).init_layout()

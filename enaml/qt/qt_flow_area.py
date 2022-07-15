@@ -169,7 +169,7 @@ class QtFlowArea(QtFrame, ProxyFlowArea):
         self.widget.layout().setAlignment(_ALIGN_MAP[align])
 
     def set_horizontal_spacing(self, spacing):
-        """ Set the horizontal spacing of the underyling control.
+        """ Set the horizontal spacing of the underlying control.
 
         """
         self.widget.layout().setHorizontalSpacing(spacing)

@@ -393,7 +393,7 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         self.widget = widget
 
     def init_widget(self):
-        """ Initialize the underyling widget.
+        """ Initialize the underlying widget.
 
         """
         super(QtNotebook, self).init_widget()

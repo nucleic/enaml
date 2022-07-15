@@ -229,7 +229,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
     # ProxyDockArea API
     #--------------------------------------------------------------------------
     def set_tab_position(self, position):
-        """ Set the default tab position on the underyling widget.
+        """ Set the default tab position on the underlying widget.
 
         """
         self.widget.setTabPosition(TAB_POSITIONS[position])
