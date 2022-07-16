@@ -236,7 +236,7 @@ class QtFlowItem(QtWidget, ProxyFlowItem):
         self.set_ortho_stretch(d.ortho_stretch)
 
     def init_layout(self):
-        """ Initialize the layout for the underyling widget.
+        """ Initialize the layout for the underlying widget.
 
         """
         super(QtFlowItem, self).init_layout()

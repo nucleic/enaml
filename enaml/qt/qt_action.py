@@ -107,7 +107,7 @@ class QtAction(QtToolkitObject, ProxyAction):
         self.widget.setToolTip(tool_tip)
 
     def set_status_tip(self, status_tip):
-        """ Set the status tip on the underyling control.
+        """ Set the status tip on the underlying control.
 
         """
         self.widget.setStatusTip(status_tip)

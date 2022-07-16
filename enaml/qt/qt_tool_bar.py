@@ -339,7 +339,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
                 self._guard &= ~FLOATED_GUARD
 
     def set_dock_area(self, dock_area):
-        """ Set the dock area on the underyling widget.
+        """ Set the dock area on the underlying widget.
 
         """
         self.widget.setToolBarArea(DOCK_AREAS[dock_area])

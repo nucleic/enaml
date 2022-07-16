@@ -212,7 +212,7 @@ The `Plugin` class can be imported from `enaml.workbench.api`.
 
 It will be uncommon for most end-user developers to ever need to create a
 custom plugin class. That job is reserved for core application developers
-which actually define how the application can be extened. That said, there
+which actually define how the application can be extended. That said, there
 are two methods on a plugin which will be of interest to developers:
 
 start

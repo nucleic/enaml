@@ -398,7 +398,7 @@ def adjust_arrow_rect(screen, rect, arrow_edge, target_pos, offset):
 
 
 class QPopupView(QWidget):
-    """ A custom QWidget which implements a framless popup widget.
+    """ A custom QWidget which implements a frameless popup widget.
 
     It is useful for showing transient configuration dialogs as well
     as temporary notification windows.

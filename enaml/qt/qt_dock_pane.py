@@ -294,7 +294,7 @@ class QtDockPane(QtWidget, ProxyDockPane):
         self.widget.setTitleBarVisible(visible)
 
     def set_title_bar_orientation(self, orientation):
-        """ Set the title bar orientation of the underyling widget.
+        """ Set the title bar orientation of the underlying widget.
 
         """
         widget = self.widget

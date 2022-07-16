@@ -12,7 +12,7 @@ from enaml.core.declarative import d_, observe
 from .control import Control, ProxyControl
 
 
-#: Delay the import of vtk until needed. This removes the hard dependecy
+#: Delay the import of vtk until needed. This removes the hard dependency
 #: on vtk for the rest of the Enaml code base.
 def vtkRenderer():
     from vtk import vtkRenderer

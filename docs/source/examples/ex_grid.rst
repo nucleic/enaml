@@ -16,7 +16,7 @@ spacers to arrange things nicely.
 
 The ``grid`` function allows items to span multiple cells by assigning the
 same item to multiple cells. No checks are performed to ensure an item
-spans a continugous cell block. Instead, items will span the smallest
+spans a contiguous cell block. Instead, items will span the smallest
 rectangular cell block which encloses all of its locations. Empty cells
 are defined by using ``None`` as the cell item.
 

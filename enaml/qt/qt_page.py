@@ -312,7 +312,7 @@ class QtPage(QtWidget, ProxyPage):
         self.widget.pageClosed.connect(self.on_page_closed)
 
     def init_layout(self):
-        """ Initialize the layout for the underyling widget.
+        """ Initialize the layout for the underlying widget.
 
         """
         super(QtPage, self).init_layout()
