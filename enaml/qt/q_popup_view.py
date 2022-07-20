@@ -10,7 +10,7 @@ from enum import IntEnum
 from atom.api import Atom, Bool, Typed, Float, Int
 
 from .QtCore import (
-    Qt, QPoint, QPointF, QSize, QRect,QMargins, QPropertyAnimation, QTimer,
+    Qt, QPoint, QPointF, QSize, QRect, QMargins, QPropertyAnimation, QTimer,
     QEvent, Signal
 )
 from .QtGui import (
@@ -19,6 +19,9 @@ from .QtGui import (
 from .QtWidgets import QApplication, QWidget, QLayout
 
 from .q_single_widget_layout import QSingleWidgetLayout
+
+
+IS_X11 = QApplication.platformName() == "xcb"
 
 
 class AnchorMode(IntEnum):
@@ -217,6 +220,7 @@ def edge_margins(arrow_size, arrow_edge):
         else:
             margins.setTop(arrow_size)
     return margins
+
 
 # XXX check on multiple screen setup
 def is_fully_on_screen(screen, rect):
@@ -863,7 +867,12 @@ class QPopupView(QWidget):
         offset = self._state.offset
         trial_pos = target_pos + offset - anchor_pos
         trial_geo = QRect(trial_pos, self.size())
-        geo = ensure_on_screen(self._get_screen(), trial_geo)
+        if IS_X11:
+            # X11 handles geometry as an absolute position in the desktop
+            # when there are multiple screens
+            geo = trial_geo
+        else:
+            geo = ensure_on_screen(self._get_screen(), trial_geo)
         self.setGeometry(geo)
 
     def _layoutArrowRect(self):
@@ -897,7 +906,7 @@ class QPopupView(QWidget):
         pos = target_pos + state.offset - QPoint(ax, ay)
         rect = QRect(pos, size)
         screen = self._get_screen()
-        if not is_fully_on_screen(screen, rect):
+        if not is_fully_on_screen(screen, rect) and not IS_X11:
             rect, new_edge, d_ax, d_ay = adjust_arrow_rect(
                 screen, rect, arrow_edge, target_pos, state.offset
             )
