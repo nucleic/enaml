@@ -3,7 +3,7 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.15.2 - 11/08/2022
+0.15.2 - unreleased
 -------------------
 - require qtpy>=2.1 far Qt backends version PR #501
 - qt: use QEvent.Type to coerce new registered event type with all bindings. PR #497
