@@ -214,7 +214,6 @@ class DockArea(ConstraintsWidget):
     # Private API
     #--------------------------------------------------------------------------
     def _refresh_internal_style(self):
-        breakpoint()
         old = self._internal_style
         if old is not None:
             old.destroy()
