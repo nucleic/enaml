@@ -110,13 +110,13 @@ class DockArea(ConstraintsWidget):
     #: The style sheet created from the 'style' attribute.
     _internal_style = Typed(StyleSheet)
 
-    def initialized(self):
+    def initialize(self):
         """ A reimplemented initializer method.
 
         This method ensures the internal style sheet is created.
 
         """
-        super(DockArea, self).initialized()
+        super(DockArea, self).initialize()
         self._refresh_internal_style()
 
     def dock_items(self):

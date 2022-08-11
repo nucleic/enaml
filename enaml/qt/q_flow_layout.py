@@ -624,8 +624,7 @@ class _LayoutColumn(object):
                     this_x = x + delta
                 elif align == QFlowLayout.AlignCenter:
                     this_x = x + delta // 2
-            if isinstance(w, float):
-                breakpoint()
+
             item.setGeometry(QRect(this_x, curr_y, w, h))
             curr_y += (h + space)
 
