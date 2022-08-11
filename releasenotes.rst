@@ -5,6 +5,8 @@ Dates are written as DD/MM/YYYY
 
 0.15.2 - unreleased
 -------------------
+- reimplement DockArea.initialize instead of shadowing the initialized member.
+  PR #502
 - require qtpy>=2.1 far Qt backends version PR #501
 - qt: use QEvent.Type to coerce new registered event type with all bindings. PR #497
   This requires PyQt 6.3.1 to work and allow to eliminate a deprecation warning.
