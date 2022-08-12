@@ -8,9 +8,13 @@
 
 
 def test_loading_dock_area_images(qt_app):
+    from enaml.qt.QtCore import QRect, QPoint
     from enaml.qt.docking.q_guide_rose import BorderGuide, CompassGuide, CompassExGuide
 
     # This forces to load all the images
-    BorderGuide._guides
-    CompassGuide._guides
-    CompassExGuide._guides
+    bg = BorderGuide()
+    bg.layout(QRect())
+    cg = CompassGuide()
+    cg.layout(QPoint())
+    ceg = CompassExGuide()
+    ceg.layout(QPoint())
