@@ -833,11 +833,21 @@ class QPopupView(QWidget):
         """ Access the screen on which this popup is displayed.
 
         """
-        window = self.windowHandle()
-        if window is None:
-            window = QApplication.primaryScreen()
+        screen = None
+        parent = self.parent()
+        if parent:
+            if parent.isWindow():
+                screen = parent.screen()
+            else:
+                screen = parent.window().screen()
+        else:
+            window = self.windowHandle()
+            if window:
+                screen = window.screen()
+        if screen is None:
+            screen = QApplication.primaryScreen()
 
-        return window.screen()
+        return screen
 
     def _refreshGeometry(self, force=False):
         """ Refresh the geometry for the popup using the current state.
