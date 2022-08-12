@@ -1,0 +1,20 @@
+[run]
+branch = True
+include =
+    */enaml/*
+omit =
+    */enaml/qt/docking/dock_images/*
+    */tests/*
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise NotImplementedError
+    pass
+
+    # Dont't complain about type checking
+    if TYPE_CHECKING:
