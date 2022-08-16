@@ -10,7 +10,7 @@ import sys
 
 from atom.api import Atom, Float, Int, Str, Typed, Value, set_default
 
-from enaml.qt.QtCore import Qt, QDir, QRect, QPoint
+from enaml.qt.QtCore import Qt, QRect, QPoint
 from enaml.qt.QtGui import QPainter, QPixmap
 from enaml.qt.QtWidgets import QFrame
 
