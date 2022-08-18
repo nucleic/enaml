@@ -41,7 +41,7 @@ What it can do for you
   + Quick and simple or complex and specialised.
   + See the structure of your GUI at a glance.
 
-- Let you rapidly protoype new GUIs interfaces.
+- Let you rapidly prototype new GUIs interfaces.
 
   + Intelligently layout your GUI, using symbolic constraints.
   + It automatically adapts for different platforms, different window sizes.
