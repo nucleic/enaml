@@ -3,7 +3,7 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.15.2 - unreleased
+0.15.2 - 19/08/2022
 -------------------
 - fix position of popup view when multiple displays are used PR #500
 - reimplement DockArea.initialize instead of shadowing the initialized member.
