@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2022, Nucleic Development Team.
+# Copyright (c) 2013, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from functools import update_wrapper
 
-from atom.api import Event, Instance, Member, add_member
+from atom.api import Event, Instance, Member
 from atom.datastructures.api import sortedmap
 
 from .alias import Alias
@@ -154,8 +154,16 @@ def add_storage(node, name, store_type, kind):
     else:
         raise RuntimeError("invalid kind '%s'" % kind)
 
+    if member is not None:
+        new.set_index(member.index)
+        new.copy_static_observers(member)
+    else:
+        new.set_index(len(members))
+
+    new.set_name(name)
     patch_d_member(new)
-    add_member(klass, name, new)
+    members[name] = new
+    setattr(klass, name, new)
 
 
 def declarative_node(klass, identifier, scope_key, store_locals):
