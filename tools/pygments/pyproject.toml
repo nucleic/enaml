@@ -9,7 +9,7 @@
 [project]
 name = "pygments-enaml"
 version = "0.1.1"
-description = "Pygments plugin to support syntax highlighting for enml files"
+description = "Pygments plugin to support syntax highlighting for enaml files"
 requires-python = ">=3.8"
 authors = [
   {name = "The Nucleic Development Team", email = "sccolbert@gmail.com"}
