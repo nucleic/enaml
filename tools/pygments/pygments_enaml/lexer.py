@@ -167,6 +167,7 @@ ENAML_TOKENS['root'] = [
     TEMPLATE_START,
     TEMPLATEINST_START,
     CHILDDEF_START,
+    (r'(func)((?:\s|\\\s)+)', bygroups(Keyword, Text), 'funcname'),
     (r'(alias|attr|const|event)\b', Keyword),
     (r':=', Operator),
 ] + ENAML_TOKENS['root']
