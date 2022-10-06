@@ -14,6 +14,8 @@ developer crash source document.
 import enaml
 from enaml.workbench.ui.api import UIWorkbench
 
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 def main():
     with enaml.imports():

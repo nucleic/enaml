@@ -8,6 +8,8 @@
 import enaml
 from enaml.qt.qt_application import QtApplication
 
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 def main():
     with enaml.imports():
