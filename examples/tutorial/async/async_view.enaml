@@ -1,0 +1,34 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2022, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file LICENSE, distributed with this software.
+#------------------------------------------------------------------------------
+import asyncio
+from enaml.widgets.api import Window, Container, Label, PushButton, ProgressBar
+from enaml.application import deferred_call
+
+
+enamldef Main(Window):
+    attr message = "Progres"
+
+    async func task():
+        status.text = "Started"
+        button.enabled = False
+        for i in range(101):
+            progress.value = i
+            status.text = f"{i}%"
+            await asyncio.sleep(0.1)
+        status.text = "Complete!"
+        button.enabled = True
+
+    Container:
+        ProgressBar: progress:
+            pass
+        Label: status:
+            text = "Not started"
+        PushButton: button:
+            text = "Start task"
+            clicked :: deferred_call(task())
+
