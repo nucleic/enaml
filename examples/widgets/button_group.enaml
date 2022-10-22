@@ -49,7 +49,7 @@ enamldef Main(Window):
                 RadioButton:
                     text = "Whenever I may roam"    
                 RadioButton:
-                    text = "Black"                
+                    text = "Pearl Black"                
             GroupBox:
                 title = "POP"
                 RadioButton:
