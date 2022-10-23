@@ -30,13 +30,13 @@ enamldef Main(Window):
                 text = "Group 1 Exclusive"
                 checked := btn_group1.exclusive  
                 
-                clicked :: print('Black toggled')
+                clicked :: print('Group 1  toggled')
                          
             CheckBox:
                 text = "Group 2 Exclusive"
                 checked := btn_group2.exclusive
                 
-                clicked :: print('Black toggled')        
+                clicked :: print('Group 2 toggled')        
         HGroup:
             Container:
                 ButtonGroup: btn_group1:
