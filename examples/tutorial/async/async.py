@@ -18,8 +18,11 @@ from enaml.qt.qt_application import QtApplication
 try:
     from asyncqtpy import QEventLoopPolicy
 except ImportError:
-    print("Please install asyncqtpy")
-    sys.exit(1)
+    try:
+        from qasync import DefaultQEventLoopPolicy as QEventLoopPolicy
+    except ImportError:
+        print("Please install 'asyncqtpy' or 'qasync'")
+        sys.exit(1)
 
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -36,7 +39,7 @@ class AsyncQtApplication(QtApplication):
             with loop:
                 loop.run_until_complete(self.main())
             super().stop()
-        except RuntimeError as e:
+        except RuntimeError:
             pass  # Loop stopped
         finally:
             self.running = False
