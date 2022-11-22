@@ -120,7 +120,7 @@ class QDualSlider(QSlider):
         opt = QStyleOptionSlider()
         self.initStyleOption(opt)
         opt.subControls = QStyle.SC_SliderGroove | QStyle.SC_SliderHandle
-        if self.tickPosition() != self.NoTicks:
+        if self.tickPosition() != QSlider.NoTicks:
             opt.subControls |= QStyle.SC_SliderTickmarks
         if (self._pressed_control and
             self._active_thumb == self.LowThumb or
