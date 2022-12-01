@@ -11,6 +11,7 @@ from enaml.qt.QtWidgets import (
     QWidget, QFrame, QLineEdit, QHBoxLayout, QSizePolicy
 )
 
+from ..compat import mouse_event_pos
 from .q_bitmap_button import QBitmapButton, QCheckedBitmapButton
 from .q_icon_widget import QIconWidget
 from .q_text_label import QTextLabel
@@ -411,7 +412,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         """
         event.ignore()
         if event.button() == Qt.LeftButton:
-            pos = event.pos()
+            pos = mouse_event_pos(event)
             is_editable = self._is_editable
             if self._adjustedLabelGeometry().contains(pos) and is_editable:
                 self._showTitleLineEdit()
@@ -428,7 +429,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         """
         event.ignore()
         if event.button() == Qt.RightButton:
-            if self._clickableGeometry().contains(event.pos()):
+            if self._clickableGeometry().contains(mouse_event_pos(event)):
                 self.rightClicked.emit(global_pos_from_event(event))
                 event.accept()
                 return

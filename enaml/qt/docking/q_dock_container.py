@@ -13,6 +13,7 @@ from enaml.qt.QtGui import QIcon, QCursor
 from enaml.qt.QtWidgets import QApplication, QLayout
 from enaml.qt.docking.q_dock_window import QDockWindow
 
+from ..compat import mouse_event_pos
 from .event_types import QDockItemEvent, DockItemUndocked
 from .q_dock_area import QDockArea
 from .q_dock_bar import QDockBar
@@ -657,7 +658,7 @@ class QDockContainer(QDockFrame):
 
         """
         bar = self.dockItem().titleBarWidget()
-        if bar.isVisible() and bar.geometry().contains(event.pos()):
+        if bar.isVisible() and bar.geometry().contains(mouse_event_pos(event)):
             self.frame_state.mouse_title = True
             return self.titleBarMousePressEvent(event)
         return False
@@ -716,7 +717,7 @@ class QDockContainer(QDockFrame):
         if event.button() == Qt.LeftButton:
             state = self.frame_state
             if state.press_pos is None:
-                state.press_pos = event.pos()
+                state.press_pos = mouse_event_pos(event)
                 state.start_pos = self.pos()
                 return True
         return False
@@ -745,7 +746,7 @@ class QDockContainer(QDockFrame):
             return True
 
         # Ensure the drag has crossed the app drag threshold.
-        dist = (event.pos() - state.press_pos).manhattanLength()
+        dist = (mouse_event_pos(event) - state.press_pos).manhattanLength()
         if dist <= QApplication.startDragDistance():
             return True
 

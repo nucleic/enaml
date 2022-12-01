@@ -9,6 +9,7 @@ from atom.api import Int, Typed
 
 from enaml.widgets.dual_slider import ProxyDualSlider
 
+from .compat import mouse_event_pos
 from .QtCore import Qt, Signal
 from .QtGui import QPainter
 from .QtWidgets import QSlider, QStyle, QStyleOptionSlider
@@ -73,7 +74,7 @@ class QDualSlider(QSlider):
         self._low = self.minimum()
         self._high = self.maximum()
         self._active_thumb = self.LowThumb
-        self._pressed_control = QStyle.SC_None
+        self._pressed_control = QStyle.SubControl.SC_None
         self._click_offset = 0
 
     def lowValue(self):
@@ -119,34 +120,43 @@ class QDualSlider(QSlider):
         # Draw the low handle along with the groove and ticks.
         opt = QStyleOptionSlider()
         self.initStyleOption(opt)
-        opt.subControls = QStyle.SC_SliderGroove | QStyle.SC_SliderHandle
+        opt.subControls = (
+            QStyle.SubControl.SC_SliderGroove | QStyle.SubControl.SC_SliderHandle
+        )
         if self.tickPosition() != QSlider.NoTicks:
-            opt.subControls |= QStyle.SC_SliderTickmarks
+            opt.subControls |= QStyle.SubControl.SC_SliderTickmarks
         if (self._pressed_control and
             self._active_thumb == self.LowThumb or
             self._active_thumb == self.BothThumbs):
             opt.activeSubControls = self._pressed_control
             opt.state |= QStyle.State_Sunken
         else:
-            opt.activeSubControls = QStyle.SC_None
+            opt.activeSubControls = QStyle.SubControl.SC_None
         opt.sliderPosition = low
         opt.sliderValue = low
-        style.drawComplexControl(QStyle.CC_Slider, opt, painter, self)
+        style.drawComplexControl(
+            QStyle.ComplexControl.CC_Slider,
+            opt,
+            painter,
+            self
+        )
 
         # Draw high handle. The groove and ticks do not need repainting.
         opt = QStyleOptionSlider()
         self.initStyleOption(opt)
-        opt.subControls = QStyle.SC_SliderHandle
+        opt.subControls = QStyle.SubControl.SC_SliderHandle
         if (self._pressed_control and
             self._active_thumb == self.HighThumb or
             self._active_thumb == self.BothThumbs):
             opt.activeSubControls = self._pressed_control
             opt.state |= QStyle.State_Sunken
         else:
-            opt.activeSubControls = QStyle.SC_None
+            opt.activeSubControls = QStyle.SubControl.SC_None
         opt.sliderPosition = high
         opt.sliderValue = high
-        style.drawComplexControl(QStyle.CC_Slider, opt, painter, self)
+        style.drawComplexControl(
+            QStyle.ComplexControl.CC_Slider, opt, painter, self
+        )
 
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the control.
@@ -164,7 +174,7 @@ class QDualSlider(QSlider):
 
         event.accept()
         style = self.style()
-        pos = event.pos()
+        pos = mouse_event_pos(event)
         opt = QStyleOptionSlider()
         self.initStyleOption(opt)
         low, high = self._low, self._high
@@ -172,7 +182,10 @@ class QDualSlider(QSlider):
         # hit-test the high handle
         opt.sliderPosition = high
         high_rect = style.subControlRect(
-            style.CC_Slider, opt, style.SC_SliderHandle, self
+            style.ComplexControl.CC_Slider,
+            opt,
+            style.SubControl.SC_SliderHandle,
+            self,
         )
         high_test = high_rect.contains(pos)
 
@@ -182,7 +195,10 @@ class QDualSlider(QSlider):
         else:
             opt.sliderPosition = low
             low_rect = style.subControlRect(
-                style.CC_Slider, opt, style.SC_SliderHandle, self
+                style.ComplexControl.CC_Slider,
+                opt,
+                style.SubControl.SC_SliderHandle,
+                self
             )
             low_test = low_rect.contains(pos)
 
@@ -190,7 +206,7 @@ class QDualSlider(QSlider):
         # The click offsets when clicking a thumbtrack are stored in
         # units of pixels. The offset for a click in the empty slider
         # area is stored in units of value.
-        self._pressed_control = style.SC_SliderHandle
+        self._pressed_control = style.SubControl.SC_SliderHandle
         if high_test:
             self._active_thumb = self.HighThumb
             self._click_offset = self._pick(pos - high_rect.topLeft())
@@ -211,14 +227,14 @@ class QDualSlider(QSlider):
         the slider(s) to the appropriate position and request an update.
 
         """
-        if self._pressed_control != QStyle.SC_SliderHandle:
+        if self._pressed_control != QStyle.SubControl.SC_SliderHandle:
             event.ignore()
             return
 
         event.accept()
         opt = QStyleOptionSlider()
         self.initStyleOption(opt)
-        point = self._pick(event.pos())
+        point = self._pick(mouse_event_pos(event))
         click_offset = self._click_offset
 
         thumb = self._active_thumb
@@ -284,10 +300,16 @@ class QDualSlider(QSlider):
         """
         style = self.style()
         groove_rect = style.subControlRect(
-            style.CC_Slider, opt, style.SC_SliderGroove, self
+            style.ComplexControl.CC_Slider,
+            opt,
+            style.SubControl.SC_SliderGroove,
+            self,
         )
         thumb_rect = style.subControlRect(
-            style.CC_Slider, opt, style.SC_SliderHandle, self
+            style.ComplexControl.CC_Slider,
+            opt,
+            style.SubControl.SC_SliderHandle,
+            self,
         )
         if self.orientation() == Qt.Horizontal:
             thumb_width = thumb_rect.width()

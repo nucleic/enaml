@@ -17,6 +17,7 @@ from enaml.qt.QtWidgets import (
     QLayout
 )
 
+from ..compat import mouse_event_pos
 from .event_types import (
     QDockItemEvent, DockItemExtended, DockItemRetracted,
     DockAreaContentsChanged
@@ -282,7 +283,7 @@ class QDockBarItemHandle(QFrame):
         """
         event.ignore()
         if event.button() == Qt.LeftButton:
-            self._press_pos = event.pos()
+            self._press_pos = mouse_event_pos(event)
             event.accept()
 
     def mouseReleaseEvent(self, event):
@@ -300,7 +301,7 @@ class QDockBarItemHandle(QFrame):
         """
         event.ignore()
         if not self._press_pos.isNull():
-            self.handleMoved.emit(event.pos() - self._press_pos)
+            self.handleMoved.emit(mouse_event_pos(event) - self._press_pos)
             event.accept()
 
 

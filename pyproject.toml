@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "ply",
-    "atom>=0.8.0",
+    "atom>=0.8.0",  # XXX bump for add_members
     "kiwisolver>=1.2.0",
     "bytecode>=0.13.0",
 ]

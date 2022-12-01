@@ -10,7 +10,7 @@ from atom.api import Atom, Bool, Int, Typed
 from enaml.qt.QtCore import Qt, QEvent, QRect, QSize, QPoint, QMargins, Signal
 from enaml.qt.QtWidgets import QApplication, QFrame
 
-from . import hover_event_pos
+from ..compat import mouse_event_pos
 
 
 class QDockFrame(QFrame):
@@ -202,7 +202,7 @@ class QDockFrame(QFrame):
         event.ignore()
         state = self.frame_state
         geo = self.titleBarGeometry()
-        if geo.isValid() and geo.contains(event.pos()):
+        if geo.isValid() and geo.contains(mouse_event_pos(event)):
             if self.titleBarMousePressEvent(event):
                 if self.isWindow():
                     self.activateWindow()
@@ -211,7 +211,7 @@ class QDockFrame(QFrame):
                 state.mouse_title = True
                 return
         if self.isWindow() and event.button() == Qt.LeftButton:
-            border, offset = self._resizeBorderTest(event.pos())
+            border, offset = self._resizeBorderTest(mouse_event_pos(event))
             if border != self.NoBorder:
                 state.resize_border = border
                 state.resize_offset = offset
@@ -231,7 +231,7 @@ class QDockFrame(QFrame):
         if self.isWindow() and state.resize_border != self.NoBorder:
             border = state.resize_border
             handler = getattr(self, self.ResizeHandlers[border])
-            handler(event.pos(), state.resize_offset)
+            handler(mouse_event_pos(event), state.resize_offset)
             event.accept()
 
     def mouseReleaseEvent(self, event):
@@ -240,7 +240,7 @@ class QDockFrame(QFrame):
         """
         event.ignore()
         state = self.frame_state
-        self._refreshCursor(event.pos())
+        self._refreshCursor(mouse_event_pos(event))
         if state.mouse_title:
             if self.titleBarMouseReleaseEvent(event):
                 event.accept()
@@ -269,7 +269,7 @@ class QDockFrame(QFrame):
             return
         if state.resize_border != self.NoBorder:
             return
-        self._refreshCursor(hover_event_pos(event))
+        self._refreshCursor(mouse_event_pos(event))
         event.accept()
 
     def titleBarMousePressEvent(self, event):
