@@ -336,11 +336,18 @@ class QDockTabBar(QTabBar):
             # The button must be Qt.LeftButton, not event.button().
             btn = Qt.LeftButton
             mod = event.modifiers()
-            evt = QMouseEvent(QEvent.MouseButtonRelease, QPointF(pos), btn,
-                              btn, mod)
+            gpos = global_pos_from_event(event)
+            evt = QMouseEvent(
+                QEvent.MouseButtonRelease,
+                QPointF(pos),
+                gpos,
+                btn,
+                btn,
+                mod
+            )
             QApplication.sendEvent(self, evt)
             container = self.parent().widget(self.currentIndex())
-            container.untab(global_pos_from_event(event))
+            container.untab(gpos())
             self._has_mouse = False
 
     def mouseReleaseEvent(self, event):

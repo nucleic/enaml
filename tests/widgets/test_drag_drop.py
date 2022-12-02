@@ -23,6 +23,7 @@ import pytest
 try:
     from enaml.qt.QtCore import QEvent, QPoint, QPointF, Qt
     from enaml.qt.QtGui import (
+        QCursor,
         QDrag,
         QDragEnterEvent,
         QDragMoveEvent,
@@ -140,6 +141,7 @@ def test_drag_with_valid_drop(enaml_qtbot, monkeypatch, action):
         QMouseEvent(
             QEvent.MouseMove,
             QPointF(-1, -1),
+            QCursor.pos(),
             Qt.LeftButton,
             Qt.LeftButton,
             Qt.NoModifier,
