@@ -92,7 +92,7 @@ jobs:
           sleep 3
           herbstluftwm &
           sleep 1
-          python -X dev -m pytest tests --cov enaml --cov-report xml -rs
+          python -X dev -m pytest tests --cov-report xml -rs
       - name: Generate C++ coverage reports
         if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         run: |
