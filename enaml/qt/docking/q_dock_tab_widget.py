@@ -340,7 +340,7 @@ class QDockTabBar(QTabBar):
             evt = QMouseEvent(
                 QEvent.MouseButtonRelease,
                 QPointF(pos),
-                gpos,
+                QPointF(gpos),
                 btn,
                 btn,
                 mod
