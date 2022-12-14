@@ -83,7 +83,7 @@ jobs:
           pip install -r test_requirements.txt
       - name: Run tests (Windows, Mac)
         if: matrix.os != 'ubuntu-latest'
-        run: python -X dev -m pytest tests --cov-report xml -rs
+        run: python -X dev -m pytest tests --cov --cov-report xml -rs
       - name: Run tests (Linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash -l {0}
@@ -108,3 +108,4 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true
+          gcov: true
