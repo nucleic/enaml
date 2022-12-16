@@ -57,19 +57,23 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: 'test_requirements.txt'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install numpy
           pip install git+https://github.com/MatthieuDartiailh/bytecode@main
+          pip install git+https://github.com/nucleic/cppy@main
           pip install git+https://github.com/nucleic/atom@main
           pip install git+https://github.com/nucleic/kiwi@main
       - name: Install project (no-extras)
         if: matrix.python-version != '3.9'
         env:
           CPPFLAGS: --coverage
+        # Build extensions manually to allow getting C coverage data
         run: |
-          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
+          python setup.py develop easy_install enaml[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
       - name: Install project (with-extras pyqt)
         if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt'
         run: |
@@ -102,10 +106,9 @@ jobs:
           bash -c "find . -type f -name '*.gcno' -exec gcov -pb --all-blocks {} +" || true
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
-        if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true
-          gcov: true
+          verbose: true
