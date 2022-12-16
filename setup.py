@@ -6,9 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 import sys
-import inspect
 from setuptools import Extension, setup
-from setuptools.command.install import install
+from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
 
 from cppy import CppyBuildExt
@@ -75,7 +74,7 @@ if sys.platform == 'win32':
     )
 
 
-class Install(install):
+class BuildPy(build_py):
     """ Calls the parser to construct a lex and parse table specific
         to the system before installation.
 
@@ -87,16 +86,7 @@ class Install(install):
             write_tables()
         except ImportError:
             pass
-        # Follow logic used in setuptools
-        # cf https://github.com/pypa/setuptools/blob/master/setuptools/command/install.py#L58
-        if self.old_and_unmanageable or self.single_version_externally_managed:
-            return install.run(self)
-
-        if not self._called_from_setup(inspect.currentframe()):
-            # Run in backward-compatibility mode to support bdist_* commands.
-            install.run(self)
-        else:
-            self.do_egg_install()
+        super().run()
 
 
 class Develop(develop):
@@ -118,6 +108,6 @@ setup(
     use_scm_version=True,
     ext_modules=ext_modules,
     cmdclass={'build_ext': CppyBuildExt,
-              'install': Install,
+              'build_py': BuildPy,
               'develop': Develop},
 )
