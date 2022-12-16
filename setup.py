@@ -115,6 +115,7 @@ class Develop(develop):
 
 
 setup(
+    use_scm_version=True,
     ext_modules=ext_modules,
     cmdclass={'build_ext': CppyBuildExt,
               'install': Install,
