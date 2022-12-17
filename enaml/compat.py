@@ -16,6 +16,8 @@ PY39 = sys.version_info >= (3, 9)
 
 PY310 = sys.version_info >= (3, 10)
 
+PY311 = sys.version_info >= (3, 11)
+
 # Functions used to update the co_filename slot of a code object
 # Available in Python 3.5+ (tested up to 3.8)
 from _imp import _fix_co_filename
