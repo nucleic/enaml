@@ -525,7 +525,8 @@ class CodeGenerator(Atom):
             last_block = cfg[-1]
             for block in list(cfg):
                 if (
-                    block[-1].name == "RETURN_VALUE"
+                    isinstance(block[-1], bc.Instr)
+                    and block[-1].name == "RETURN_VALUE"
                     and block[-2].name == "LOAD_CONST"
                     and block[-2].arg is None
                     and block[-1].lineno not in _inspector.lines
