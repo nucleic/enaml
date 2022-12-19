@@ -117,6 +117,7 @@ jobs:
         if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         run: |
           bash -c "find . -type f -name '*.gcno' -exec gcov -pb --all-blocks {} +" || true
+          ls
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
@@ -125,3 +126,4 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
+          files: ./coverage.xml
