@@ -126,4 +126,4 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
-          files: ./coverage.xml
+          files: ./coverage.xml,*.gcov
