@@ -30,6 +30,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+          cache: 'pip'
+          cache-dependency-path: 'docs/requirements.txt'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -44,4 +46,4 @@ jobs:
         run: |
           cd docs
           mkdir docs_output;
-          sphinx-build source docs_output -W -b html;
+          sphinx-build source docs_output -b html;
