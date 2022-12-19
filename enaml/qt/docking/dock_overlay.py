@@ -235,7 +235,7 @@ class DockOverlay(Atom, enable_weakrefs=True):
 
         """
         animator = self._vis_animator
-        if animator.state() == animator.Running:
+        if animator.state() == animator.State.Running:
             animator.stop()
         target = animator.targetObject()
         if target.isHidden() and opacity != 0.0:
@@ -255,7 +255,7 @@ class DockOverlay(Atom, enable_weakrefs=True):
 
         """
         animator = self._geo_animator
-        if animator.state() == animator.Running:
+        if animator.state() == animator.State.Running:
             animator.stop()
         target = animator.targetObject()
         animator.setStartValue(target.geometry())

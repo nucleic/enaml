@@ -9,6 +9,7 @@ from enum import IntEnum
 
 from atom.api import Atom, Bool, Typed, Float, Int
 
+from .compat import mouse_event_pos
 from .QtCore import (
     Qt, QPoint, QPointF, QSize, QRect, QMargins, QPropertyAnimation, QTimer,
     QEvent, Signal
@@ -729,7 +730,7 @@ class QPopupView(QWidget):
         state = self._state
         if state.close_on_click:
             path = state.path
-            pos = event.pos()
+            pos = mouse_event_pos(event)
             posf = QPointF(pos)
             rect = self.rect()
             win_type = self.windowType()

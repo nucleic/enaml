@@ -32,6 +32,9 @@ jobs:
             qt-binding: pyside
           - python-version: '3.8'
             qt-version: 6
+          - os: ubuntu-latest
+            qt-version: 6
+            qt-binding: pyside
       fail-fast: false
     steps:
       - name: Install linux only test dependency
@@ -54,33 +57,50 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: 'test_requirements.txt'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install setuptools-scm[toml]
           pip install numpy
           pip install git+https://github.com/MatthieuDartiailh/bytecode@main
+          pip install git+https://github.com/nucleic/cppy@main
           pip install git+https://github.com/nucleic/atom@main
           pip install git+https://github.com/nucleic/kiwi@main
       - name: Install project (no-extras)
-        if: matrix.python-version != '3.9'
+        if: matrix.python-version != '3.10'
         env:
           CPPFLAGS: --coverage
+        # Build extensions manually to allow getting C coverage data
         run: |
-          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
+          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
+          pip uninstall enaml --yes
+          python setup.py develop
       - name: Install project (with-extras pyqt)
-        if: matrix.python-version == '3.9' && matrix.qt-binding == 'pyqt'
+        if: matrix.python-version == '3.10' && matrix.qt-binding == 'pyqt'
+        env:
+          CPPFLAGS: --coverage
+        # Build extensions manually to allow getting C coverage data
         run: |
-          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
+          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
+          pip uninstall enaml --yes
+          python setup.py develop
       - name: Install project (with-extras pyside)
-        if: matrix.python-version == '3.9' && matrix.qt-binding != 'pyqt'
+        if: matrix.python-version == '3.10' && matrix.qt-binding != 'pyqt'
+        env:
+          CPPFLAGS: --coverage
+        # Build extensions manually to allow getting C coverage data
         run: |
-          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt]
+          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt]
+          pip uninstall enaml --yes
+          python setup.py develop
       - name: Install test requirements
         run: |
           pip install -r test_requirements.txt
       - name: Run tests (Windows, Mac)
         if: matrix.os != 'ubuntu-latest'
-        run: python -X dev -m pytest tests --cov enaml --cov-report xml -rs
+        run: python -X dev -m pytest tests --cov --cov-report xml -rs
       - name: Run tests (Linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash -l {0}
@@ -92,16 +112,18 @@ jobs:
           sleep 3
           herbstluftwm &
           sleep 1
-          python -X dev -m pytest tests --cov enaml --cov-report xml -rs
+          python -X dev -m pytest tests --cov --cov-report xml -rs
       - name: Generate C++ coverage reports
         if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         run: |
           bash -c "find . -type f -name '*.gcno' -exec gcov -pb --all-blocks {} +" || true
+          ls
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true
+          verbose: true
+          files: ./coverage.xml,*.gcov

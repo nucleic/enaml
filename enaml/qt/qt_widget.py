@@ -11,6 +11,7 @@ from enaml.drag_drop import DropAction
 from enaml.styling import StyleCache
 from enaml.widgets.widget import Feature, ProxyWidget
 
+from .compat import mouse_event_pos
 from .QtCore import Qt, QSize, QPoint,  __version_info__
 from .QtGui import QFont, QDrag, QPixmap, QCursor
 from .QtWidgets import QWidget, QWidgetAction, QApplication
@@ -282,7 +283,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         if event.button() == Qt.LeftButton:
-            self._drag_origin = event.pos()
+            self._drag_origin = mouse_event_pos(event)
         widget = self.widget
         type(widget).mousePressEvent(widget, event)
 
@@ -291,7 +292,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         if event.buttons() & Qt.LeftButton and self._drag_origin is not None:
-            dist = (event.pos() - self._drag_origin).manhattanLength()
+            dist = (mouse_event_pos(event) - self._drag_origin).manhattanLength()
             if dist >= QApplication.startDragDistance():
                 self.do_drag()
                 self._drag_origin = None

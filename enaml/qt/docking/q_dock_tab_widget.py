@@ -19,6 +19,7 @@ from enaml.qt.QtWidgets import QStyleOptionTab
 
 from enaml.qt.qt_menu import QCustomMenu
 
+from ..compat import mouse_event_pos
 from .event_types import QDockItemEvent, DockTabSelected
 from .q_dock_area import QDockArea
 from .q_bitmap_button import QBitmapButton
@@ -287,7 +288,7 @@ class QDockTabBar(QTabBar):
         super(QDockTabBar, self).mousePressEvent(event)
         self._has_mouse = False
         if event.button() == Qt.LeftButton:
-            index = self.tabAt(event.pos())
+            index = self.tabAt(mouse_event_pos(event))
             if index != -1:
                 self._has_mouse = True
                 data = self._tab_data[index]
@@ -296,10 +297,10 @@ class QDockTabBar(QTabBar):
                     # likey a no-op, but just in case
                     container.dockItem().clearAlert()
         elif event.button() == Qt.RightButton:
-            index = self.tabAt(event.pos())
+            index = self.tabAt(mouse_event_pos(event))
             if index != -1:
                 button = self.tabButton(index, QTabBar.RightSide)
-                if button.geometry().contains(event.pos()):
+                if button.geometry().contains(mouse_event_pos(event)):
                     return
                 item = self.parent().widget(index).dockItem()
                 item.titleBarRightClicked.emit(global_pos_from_event(event))
@@ -323,7 +324,7 @@ class QDockTabBar(QTabBar):
         super(QDockTabBar, self).mouseMoveEvent(event)
         if not self._has_mouse:
             return
-        pos = event.pos()
+        pos = mouse_event_pos(event)
         if self.rect().contains(pos):
             return
         x = max(0, min(pos.x(), self.width()))
@@ -335,11 +336,18 @@ class QDockTabBar(QTabBar):
             # The button must be Qt.LeftButton, not event.button().
             btn = Qt.LeftButton
             mod = event.modifiers()
-            evt = QMouseEvent(QEvent.MouseButtonRelease, QPointF(pos), btn,
-                              btn, mod)
+            gpos = global_pos_from_event(event)
+            evt = QMouseEvent(
+                QEvent.MouseButtonRelease,
+                QPointF(pos),
+                QPointF(gpos),
+                btn,
+                btn,
+                mod
+            )
             QApplication.sendEvent(self, evt)
             container = self.parent().widget(self.currentIndex())
-            container.untab(global_pos_from_event(event))
+            container.untab(gpos())
             self._has_mouse = False
 
     def mouseReleaseEvent(self, event):

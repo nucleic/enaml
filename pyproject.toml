@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "ply",
-    "atom>=0.8.0",
+    "atom>=0.8.0",  # XXX bump for add_members
     "kiwisolver>=1.2.0",
     "bytecode>=0.13.0",
 ]
@@ -39,7 +39,7 @@ dynamic=["version"]
 qt5-pyqt = ["qtpy>=2.1.0", "PyQt5"]
 qt5-pyside = ["qtpy>=2.1.0", "pyside2"]
 qt6-pyqt = ["qtpy>=2.1.0", "PyQt6>=6.3.1"]
-qt6-pyside = ["qtpy>=2.1.0", "pyside6>=6.2.3"]
+qt6-pyside = ["qtpy>=2.3.0", "pyside6>=6.2.3"]
 scintilla-qt5-pyqt = ["QScintilla"]
 scintilla-qt6-pyqt = ["PyQt6-QScintilla"]
 matplotlib-qt = ["matplotlib"]

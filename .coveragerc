@@ -3,6 +3,7 @@ branch = True
 include =
     */enaml/*
 omit =
+    */enaml/library.zip/*
     */enaml/qt/docking/dock_images/*
     */tests/*
 

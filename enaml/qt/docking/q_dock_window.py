@@ -13,6 +13,7 @@ from enaml.qt.QtCore import (
 )
 from enaml.qt.QtWidgets import QFrame, QHBoxLayout, QLayout
 
+from ..compat import mouse_event_pos
 from .event_types import DockAreaContentsChanged
 from .q_bitmap_button import QBitmapButton, QCheckedBitmapButton
 from .q_dock_area import QDockArea
@@ -22,8 +23,6 @@ from .xbms import (
     CLOSE_BUTTON, MAXIMIZE_BUTTON, RESTORE_BUTTON, LINKED_BUTTON,
     UNLINKED_BUTTON
 )
-
-from . import hover_event_pos
 
 
 class QDockWindowButtons(QFrame):
@@ -421,7 +420,7 @@ class QDockWindow(QDockFrame):
         if event.button() == Qt.LeftButton:
             geo = self.titleBarGeometry()
             geo.setRight(self._title_buttons.geometry().left())
-            if geo.contains(event.pos()):
+            if geo.contains(mouse_event_pos(event)):
                 self.toggleMaximized()
                 event.accept()
 
@@ -432,7 +431,7 @@ class QDockWindow(QDockFrame):
         over the dock window buttons.
 
         """
-        pos = hover_event_pos(event)
+        pos = mouse_event_pos(event)
         if self._title_buttons.geometry().contains(pos):
             self.unsetCursor()
         else:
@@ -450,7 +449,7 @@ class QDockWindow(QDockFrame):
         if event.button() == Qt.LeftButton:
             state = self.frame_state
             if state.press_pos is None:
-                state.press_pos = event.pos()
+                state.press_pos = mouse_event_pos(event)
                 return True
         return False
 
