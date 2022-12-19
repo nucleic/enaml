@@ -37,10 +37,11 @@ jobs:
           pip install -r docs/requirements.txt
       - name: Install project
         run: |
-          pip install -e .
+          pip install .
       - name: Install graphviz
         uses: ts-graphviz/setup-graphviz@v1
       - name: Build documentation
         run: |
+          cd docs
           mkdir docs_output;
-          sphinx-build docs/source docs_output -W -b html;
+          sphinx-build source docs_output -W -b html;
