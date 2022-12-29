@@ -323,14 +323,14 @@ class CodeGenerator(Atom):
             bc.Instr("LOAD_BUILD_CLASS"),               # TOS -> builtins.__build_class__
         )
 
-    def make_function(self, n_defaults=0, name=None):
+    def make_function(self, flags=0, name=None):
         """ Make a function from a code object on the TOS.
 
         """
         if not PY311:
             self.load_const(name)
         self.code_ops.append(                           # TOS -> qual_name -> code -> defaults
-            bc.Instr("MAKE_FUNCTION", n_defaults),      # TOS -> func
+            bc.Instr("MAKE_FUNCTION", flags),           # TOS -> func
         )
 
     def push_null(self):
