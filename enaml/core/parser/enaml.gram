@@ -82,8 +82,8 @@ enamldef_simple_item:
 pragmas[List[enaml_ast.Pragma]]:
     | pragma+
 pragma[enaml_ast.Pragma]:
-    | "pragma" a=NAME ['(' b=','.pragma_arg+ ')' { b }] NEWLINE {
-        enaml_ast.Pragma(command=a.string, arguments=b or [], LOCATIONS)
+    | "pragma" a=NAME args=['(' b=','.pragma_arg+ ')' { b }] NEWLINE {
+        enaml_ast.Pragma(command=a.string, arguments=args or [], LOCATIONS)
      }
 pragma_arg[enaml_ast.PragmaArg]:
     | a=NAME { enaml_ast.PragmaArg(kind="token", value=a.string) }
