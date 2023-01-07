@@ -75,7 +75,8 @@ class BasePythonParser(Parser):
             if self._exception is not None:
                 raise self._exception
             else:
-                raise SyntaxError("invalid syntax")
+                token = self._tokenizer.diagnose()
+                raise SyntaxError("invalid syntax", (self.filename, token.start, 0, token.line))
 
         return res
 

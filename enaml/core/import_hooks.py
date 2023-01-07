@@ -10,16 +10,15 @@ import os
 import io
 import struct
 import sys
-import types
 from abc import ABCMeta, abstractmethod, abstractclassmethod
 from collections import defaultdict, namedtuple
 from zipfile import ZipFile
 
 from importlib.machinery import ModuleSpec
-from importlib.util import module_from_spec, MAGIC_NUMBER
+from importlib.util import MAGIC_NUMBER
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
-from .parser import parse_file
+from .parser import parse
 from ..compat import read_source, detect_encoding, update_code_co_filename
 
 
@@ -362,7 +361,7 @@ class EnamlImporter(AbstractEnamlImporter):
         """
         file_info = self.file_info
         src_mod_time = self.get_source_modified_time()
-        ast = parse_file(file_info.src_path)
+        ast = parse(self.read_source(), file_info.src_path)
         code = EnamlCompiler.compile(ast, file_info.src_path)
         self._write_cache(code, src_mod_time, file_info)
         return (code, file_info.src_path)
@@ -459,7 +458,7 @@ class EnamlZipImporter(EnamlImporter):
                         os.path.exists(archive_path)):
 
                     # Path where code should be within the archive
-                    code_path = '/'.join(pkgpath+[leaf])
+                    code_path = '/'.join(pkgpath + [leaf])
                     try:
                         with ZipFile(archive_path, 'r') as archive:
                             name_list = archive.namelist()
@@ -548,9 +547,6 @@ class EnamlZipImporter(EnamlImporter):
         # Required to work with universal newlines
         with self.archive.open(self.code_path) as f:
             src = io.TextIOWrapper(f, enc).read()
-
-        if sys.version_info.major == 2:
-            src = src.encode('utf-8')
 
         return src
 

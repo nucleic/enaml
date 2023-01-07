@@ -8,7 +8,7 @@
 import io
 import os
 import tokenize
-from typing import Optional, Callable, Iterator, Union
+from typing import Callable, Iterator, Optional, TextIO, Union
 
 from pegen.tokenizer import Tokenizer
 
@@ -17,7 +17,7 @@ from .enaml_parser import EnamlParser
 
 
 def _parse(
-    stream: io.TextIOBase,
+    stream: TextIO,
     path: str = "Enaml",
     py_version: Optional[tuple] = None,
     token_stream_factory: Optional[
@@ -36,14 +36,14 @@ def _parse(
     parser = EnamlParser(
         tokenizer,
         verbose=verbose,
-        filename=os.path.basename(path),
+        filename=path,
         py_version=py_version,
     )
     return parser.parse("start")
 
 
 # XXX document
-# filename is named so for back ward compat
+# filename is named so for backward compatibility
 def parse(
     source: str,
     filename: str = "Enaml",
@@ -67,16 +67,3 @@ def parse(
         io.StringIO(source), filename, py_version, token_stream_factory, verbose
     )
 
-
-# XXX document
-def parse_file(
-    path: Union[str, os.PathLike],
-    py_version: Optional[tuple] = None,
-    token_stream_factory: Optional[
-        Callable[[Callable[[], str]], Iterator[tokenize.TokenInfo]]
-    ] = None,
-    verbose: bool = False,
-) -> Module:
-    """Optimized parsing function for parsing source files."""
-    with tokenize.open(path) as f:
-        return _parse(f, path, py_version, token_stream_factory, verbose)

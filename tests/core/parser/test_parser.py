@@ -81,7 +81,7 @@ def test_syntax_error_traceback_correct_path(tmpdir):
         tb = traceback.format_exc()
         print(tb)
         lines = tb.strip().split("\n")
-        assert ('File "{}", line 5'.format(test_module_path) in
+        assert ('File "{}", line (5, 35)'.format(test_module_path) in
             (lines[-3] if PY39 else lines[-4]))
     finally:
         sys.path.remove(tmpdir.strpath)

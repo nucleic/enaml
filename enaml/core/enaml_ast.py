@@ -1,31 +1,19 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2021, Nucleic Development Team.
+# Copyright (c) 2013-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 import ast
-from atom.api import Atom, Bool, Enum, Int, List, Str, Instance, Tuple, Typed
+from atom.api import Atom, Bool, Enum, List, Str, Instance, Tuple, Typed
 
 
 class ASTNode(ast.AST, Atom):
     """ The base class for Enaml ast nodes.
 
     """
-    #: The line number in the .enaml file at which the source for the generated
-    #: node starts.
-    lineno = Int(-1)
-
-    #: Offset in the start line at which the source corresponding to the node starts.
-    col_offset = Int(-1)
-
-    #: The line number in the .enaml file at which the source for the generated
-    #: node ends.
-    end_lineno = Int(-1)
-
-    #: Offset in the end line at which the source corresponding to the node ends.
-    end_col_offset = Int(-1)
+    pass
 
 
 class PragmaArg(Atom):

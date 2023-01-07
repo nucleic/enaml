@@ -11,8 +11,9 @@ import ast
 import itertools
 from typing import Any, List, NoReturn, Optional, Tuple, TypeVar, Union
 
-from enaml.core import enaml_ast
 from pegen.parser import Parser, logger, memoize, memoize_left_rec
+
+from enaml.core import enaml_ast
 
 from .base_enaml_parser import BaseEnamlParser as Parser
 
@@ -189,14 +190,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect("pragma"))
             and (a := self.name())
-            and (opt := self._tmp_7(),)
+            and (args := self._tmp_7(),)
             and (_newline := self.expect("NEWLINE"))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
             return enaml_ast.Pragma(
                 command=a.string,
-                arguments=b or [],
+                arguments=args or [],
                 lineno=start_lineno,
                 col_offset=start_col_offset,
                 end_lineno=end_lineno,
@@ -1238,12 +1239,9 @@ class EnamlParser(Parser):
         ):
             return return_stmt
         self._reset(mark)
-        if (
-            self.positive_lookahead(
-                self._tmp_46,
-            )
-            and (import_stmt := self.import_stmt())
-        ):
+        if self.positive_lookahead(
+            self._tmp_46,
+        ) and (import_stmt := self.import_stmt()):
             return import_stmt
         self._reset(mark)
         if self.positive_lookahead(self.expect, "raise") and (
@@ -1312,39 +1310,27 @@ class EnamlParser(Parser):
     def compound_stmt(self) -> Optional[Any]:
         # compound_stmt: &('def' | '@' | 'async') function_def | &'if' if_stmt | &('class' | '@') class_def | &('with' | 'async') with_stmt | &('for' | 'async') for_stmt | &'try' try_stmt | &'while' while_stmt | match_stmt
         mark = self._mark()
-        if (
-            self.positive_lookahead(
-                self._tmp_47,
-            )
-            and (function_def := self.function_def())
-        ):
+        if self.positive_lookahead(
+            self._tmp_47,
+        ) and (function_def := self.function_def()):
             return function_def
         self._reset(mark)
         if self.positive_lookahead(self.expect, "if") and (if_stmt := self.if_stmt()):
             return if_stmt
         self._reset(mark)
-        if (
-            self.positive_lookahead(
-                self._tmp_48,
-            )
-            and (class_def := self.class_def())
-        ):
+        if self.positive_lookahead(
+            self._tmp_48,
+        ) and (class_def := self.class_def()):
             return class_def
         self._reset(mark)
-        if (
-            self.positive_lookahead(
-                self._tmp_49,
-            )
-            and (with_stmt := self.with_stmt())
-        ):
+        if self.positive_lookahead(
+            self._tmp_49,
+        ) and (with_stmt := self.with_stmt()):
             return with_stmt
         self._reset(mark)
-        if (
-            self.positive_lookahead(
-                self._tmp_50,
-            )
-            and (for_stmt := self.for_stmt())
-        ):
+        if self.positive_lookahead(
+            self._tmp_50,
+        ) and (for_stmt := self.for_stmt()):
             return for_stmt
         self._reset(mark)
         if self.positive_lookahead(self.expect, "try") and (
@@ -4992,12 +4978,9 @@ class EnamlParser(Parser):
                 end_col_offset=end_col_offset,
             )
         self._reset(mark)
-        if (
-            self.positive_lookahead(
-                self.string,
-            )
-            and (strings := self.strings())
-        ):
+        if self.positive_lookahead(
+            self.string,
+        ) and (strings := self.strings()):
             return strings
         self._reset(mark)
         if a := self.number():
@@ -9676,54 +9659,54 @@ class EnamlParser(Parser):
         return None
 
     KEYWORDS = (
-        "yield",
-        "for",
-        "with",
-        "raise",
-        "elif",
-        "continue",
-        "import",
-        "True",
-        "break",
-        "return",
-        "in",
-        "class",
-        "and",
-        "while",
-        "as",
-        "lambda",
         "except",
+        "nonlocal",
+        "from",
+        "for",
+        "class",
+        "else",
+        "and",
+        "assert",
+        "as",
+        "True",
+        "yield",
+        "while",
+        "False",
+        "finally",
+        "continue",
+        "or",
+        "pass",
+        "raise",
+        "return",
+        "with",
+        "in",
+        "elif",
+        "is",
+        "if",
+        "try",
+        "def",
+        "await",
+        "break",
+        "None",
+        "import",
+        "lambda",
+        "del",
         "not",
         "global",
-        "from",
-        "nonlocal",
-        "if",
-        "assert",
-        "try",
-        "None",
         "async",
-        "await",
-        "finally",
-        "else",
-        "def",
-        "or",
-        "del",
-        "False",
-        "pass",
-        "is",
     )
     SOFT_KEYWORDS = (
-        "template",
-        "pragma",
-        "match",
-        "func",
-        "attr",
-        "_",
-        "alias",
-        "enamldef",
-        "event",
         "const",
+        "event",
+        "match",
         "case",
+        "func",
+        "_",
+        "enamldef",
+        "pragma",
+        "attr",
+        "alias",
+        "template",
     )
 
 
