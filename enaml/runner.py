@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,8 +8,6 @@
 """ Command-line tool to run .enaml files.
 
 """
-from __future__ import print_function
-
 import optparse
 import os
 import signal
@@ -17,7 +15,8 @@ import sys
 import types
 
 from enaml import imports
-from enaml.core.parser import parse_file
+from enaml.compat import read_source
+from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
 
 
@@ -38,8 +37,10 @@ def main():
         enaml_file_path = args[0]
         script_argv = args[1:]
 
+    enaml_code = read_source(enaml_file_path)
+
     # Parse and compile the Enaml source into a code object
-    ast = parse_file(enaml_file_path)
+    ast = parse(enaml_code, enaml_file_path)
     code = EnamlCompiler.compile(ast, enaml_file_path)
 
     # Create a proper module in which to execute the compiled code so
