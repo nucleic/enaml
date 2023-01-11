@@ -1206,10 +1206,32 @@ primary:
 
 slices:
     | a=slice !',' { a }
-    | a=','.slice+ [','] { ast.Tuple(elts=a, ctx=Load, LOCATIONS) }
+    | a=','.slice+ [','] {
+        ast.Tuple(elts=a, ctx=Load, LOCATIONS)
+        if sys.version_info >= (3, 9) else
+        (
+            ast.ExtSlice(dims=a, LOCATIONS)
+            if any(isinstance(e, ast.Slice) for e in a) else
+            ast.Index(value=ast.Tuple(elts=[e.value for e in a], ctx=Load, LOCATIONS), LOCATIONS)
+        )
+     }
+
 slice:
-    | a=[expression] ':' b=[expression] c=[':' d=[expression] { d }] { ast.Slice(lower=a, upper=b, step=c, LOCATIONS) }
-    | a=named_expression { a }
+    | a=[expression] ':' b=[expression] c=[':' d=[expression] { d }] {
+        ast.Slice(lower=a, upper=b, step=c, LOCATIONS)
+     }
+    | a=named_expression {
+        a
+        if sys.version_info >= (3, 9) or isinstance(a, ast.Slice) else
+        ast.Index(
+            value=a,
+            lineno=a.lineno,
+            col_offset=a.col_offset,
+            end_lineno=a.end_lineno,
+            end_col_offset=a.end_col_offset
+        )
+     }
+
 atom:
     | a=NAME { ast.Name(id=a.string, ctx=Load, LOCATIONS) }
     | 'True' { ast.Constant(value=True, LOCATIONS) }
