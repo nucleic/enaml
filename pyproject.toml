@@ -32,6 +32,7 @@ dependencies = [
     "atom>=0.8.0",  # XXX bump for add_members
     "kiwisolver>=1.2.0",
     "bytecode>=0.13.0",
+    "pegen>=0.1.0",
 ]
 dynamic=["version"]
 
