@@ -6,14 +6,33 @@
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 import ast
-from atom.api import Atom, Bool, Enum, List, Str, Instance, Tuple, Typed
+import sys
+
+from atom.api import Atom, Bool, Enum, Int, List, Str, Instance, Tuple, Typed
+
+if sys.version_info >= (3, 9):
+    bases = (ast.AST, Atom)
+else:
+    bases = (Atom,)
 
 
-class ASTNode(ast.AST, Atom):
+class ASTNode(*bases):  # type: ignore
     """ The base class for Enaml ast nodes.
 
     """
-    pass
+    #: The line number in the .enaml file at which the source for the generated
+    #: node starts.
+    lineno = Int(-1)
+
+    #: Offset in the start line at which the source corresponding to the node starts.
+    col_offset = Int(-1)
+
+    #: The line number in the .enaml file at which the source for the generated
+    #: node ends.
+    end_lineno = Int(-1)
+
+    #: Offset in the end line at which the source corresponding to the node ends.
+    end_col_offset = Int(-1)
 
 
 class PragmaArg(Atom):
