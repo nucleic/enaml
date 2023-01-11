@@ -10,11 +10,15 @@ import warnings
 from typing import Dict, Iterable, List, Type, Union
 
 from .. import enaml_ast
-from .base_python_parser import BasePythonParser, Del, Load, Store
+from .base_python_parser import BasePythonParser
 
-# XXX doc
+
 class BaseEnamlParser(BasePythonParser):
-    """"""
+    """Base class for an enaml parser.
+
+    It provides AST validation methods that are used by the actual parser.
+
+    """
 
     # The nodes which can be inverted to form an assignable expression.
     INVERTABLE = (ast.Name, ast.Attribute, ast.Call, ast.Subscript)
@@ -243,7 +247,7 @@ class BaseEnamlParser(BasePythonParser):
             Union[enaml_ast.PositionalParameter, enaml_ast.KeywordParameter]
         ],
         starparam: str,
-    ) -> dict[str, list]:
+    ) -> Dict[str, Union[list, str]]:
         keywords = []
         positional = []
         seen_params = set([starparam])

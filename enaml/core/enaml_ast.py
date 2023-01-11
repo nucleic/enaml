@@ -301,7 +301,7 @@ class Template(ASTNode):
     pragmas = List(Pragma)
 
     #: The parameters associated with the template.
-    parameters = Typed(TemplateParameters)
+    parameters = Typed(TemplateParameters, optional=False)
 
     #: The docstring for the template.
     docstring = Str()
