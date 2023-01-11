@@ -19,6 +19,7 @@
 # NOTE This file was generated using enaml/core/parser/generate_enaml_parser.py
 # DO NOT EDIT DIRECTLY
 import ast
+import sys
 import itertools
 from typing import Any, List, NoReturn, Optional, Tuple, TypeVar, Union
 
