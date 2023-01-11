@@ -4887,13 +4887,40 @@ class EnamlParser(Parser):
         if (a := self._gather_141()) and (opt := self.expect(","),):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast.Tuple(
-                elts=a,
-                ctx=Load,
-                lineno=start_lineno,
-                col_offset=start_col_offset,
-                end_lineno=end_lineno,
-                end_col_offset=end_col_offset,
+            return (
+                ast.Tuple(
+                    elts=a,
+                    ctx=Load,
+                    lineno=start_lineno,
+                    col_offset=start_col_offset,
+                    end_lineno=end_lineno,
+                    end_col_offset=end_col_offset,
+                )
+                if sys.version_info >= (3, 9)
+                else (
+                    ast.ExtSlice(
+                        dims=a,
+                        lineno=start_lineno,
+                        col_offset=start_col_offset,
+                        end_lineno=end_lineno,
+                        end_col_offset=end_col_offset,
+                    )
+                    if any(isinstance(e, ast.Slice) for e in a)
+                    else ast.Index(
+                        value=ast.Tuple(
+                            elts=[e.value for e in a],
+                            ctx=Load,
+                            lineno=start_lineno,
+                            col_offset=start_col_offset,
+                            end_lineno=end_lineno,
+                            end_col_offset=end_col_offset,
+                        ),
+                        lineno=start_lineno,
+                        col_offset=start_col_offset,
+                        end_lineno=end_lineno,
+                        end_col_offset=end_col_offset,
+                    )
+                )
             )
         self._reset(mark)
         return None
@@ -4923,7 +4950,17 @@ class EnamlParser(Parser):
             )
         self._reset(mark)
         if a := self.named_expression():
-            return a
+            return (
+                a
+                if sys.version_info >= (3, 9) or isinstance(a, ast.Slice)
+                else ast.Index(
+                    value=a,
+                    lineno=a.lineno,
+                    col_offset=a.col_offset,
+                    end_lineno=a.end_lineno,
+                    end_col_offset=a.end_col_offset,
+                )
+            )
         self._reset(mark)
         return None
 
@@ -9659,53 +9696,53 @@ class EnamlParser(Parser):
         return None
 
     KEYWORDS = (
-        "except",
-        "nonlocal",
-        "from",
-        "for",
-        "class",
-        "else",
-        "and",
-        "assert",
-        "as",
-        "True",
-        "yield",
-        "while",
         "False",
-        "finally",
-        "continue",
-        "or",
-        "pass",
-        "raise",
-        "return",
-        "with",
-        "in",
-        "elif",
-        "is",
-        "if",
-        "try",
         "def",
-        "await",
-        "break",
-        "None",
+        "or",
+        "and",
+        "else",
+        "with",
         "import",
-        "lambda",
-        "del",
-        "not",
-        "global",
+        "pass",
         "async",
+        "from",
+        "while",
+        "in",
+        "try",
+        "except",
+        "return",
+        "elif",
+        "finally",
+        "raise",
+        "yield",
+        "assert",
+        "not",
+        "if",
+        "break",
+        "nonlocal",
+        "is",
+        "for",
+        "global",
+        "None",
+        "class",
+        "True",
+        "del",
+        "await",
+        "continue",
+        "lambda",
+        "as",
     )
     SOFT_KEYWORDS = (
+        "match",
+        "alias",
+        "attr",
+        "_",
         "const",
         "event",
-        "match",
-        "case",
         "func",
-        "_",
+        "case",
         "enamldef",
         "pragma",
-        "attr",
-        "alias",
         "template",
     )
 
