@@ -307,7 +307,7 @@ class EnamlImporter(AbstractEnamlImporter):
                 os.mkdir(file_info.cache_dir)
             with open(file_info.cache_path, 'w+b') as cache_file:
                 cache_file.write(MAGIC_NUMBER)
-                cache_file.write(struct.pack('i', ts))
+                cache_file.write(struct.pack('<L', ts & 0xFFFF_FFFF))
                 marshal.dump(code, cache_file)
         except (OSError, IOError):
             pass
@@ -328,7 +328,7 @@ class EnamlImporter(AbstractEnamlImporter):
         """
         with open(file_info.cache_path, 'rb') as cache_file:
             magic = cache_file.read(4)
-            timestamp = struct.unpack('i', cache_file.read(4))[0]
+            timestamp = struct.unpack('<L', cache_file.read(4))[0]
         return (magic, timestamp)
 
     def read_source(self):
