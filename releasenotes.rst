@@ -3,6 +3,16 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+0.16.0 - unreleased
+-------------------
+- switch to use pegen to generate the parser PR #474
+  This results in a much easier to maintain parser (in particular when it comes
+  to supporting new Python features), provides with more detailed location
+  information which are needed on 3.11+.
+  It however comes with a speed penalty (x4 slowdown). There will be efforts to
+  mitigate this but since parsing should occurs only once for deployed application
+  the gains are expected to out weight the cost here.
+
 0.15.2 - 19/08/2022
 -------------------
 - fix position of popup view when multiple displays are used PR #500

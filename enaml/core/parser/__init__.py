@@ -1,45 +1,69 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# ------------------------------------------------------------------------------
+# Copyright (c) 2013-2022, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
-import sys
+# ------------------------------------------------------------------------------
+import io
+import os
+import tokenize
+from typing import Callable, Iterator, Optional, TextIO, Union
 
-from .base_parser import ParsingError
+from pegen.tokenizer import Tokenizer
 
-py_version = sys.version_info
-if py_version < (3,):
-    raise ImportError('Only Python 3 is supported.')
-else:
-    if py_version[1] < 3:
-        raise ImportError('Python < 3.3 is not supported.')
-    elif py_version[1] == 3:
-        from .parser3 import Python3EnamlParser
-        _parser = Python3EnamlParser()
-    elif py_version[1] == 4:
-        from .parser34 import Python34EnamlParser
-        _parser = Python34EnamlParser()
-    elif py_version[1] == 5:
-        from .parser35 import Python35EnamlParser
-        _parser = Python35EnamlParser()
-    elif py_version[1] in (6, 7):
-        from .parser36 import Python36EnamlParser
-        _parser = Python36EnamlParser()
-    elif py_version[1] == 8:
-        from .parser38 import Python38EnamlParser
-        _parser = Python38EnamlParser()
-    else:
-        from .parser39 import Python39EnamlParser
-        _parser = Python39EnamlParser()
+from ..enaml_ast import Module
+from .enaml_parser import EnamlParser
 
 
-def write_tables():
-    _parser.lexer().write_tables()
-    _parser.write_tables()
+def _parse(
+    stream: TextIO,
+    path: str = "Enaml",
+    py_version: Optional[tuple] = None,
+    token_stream_factory: Optional[
+        Callable[[Callable[[], str]], Iterator[tokenize.TokenInfo]]
+    ] = None,
+    verbose: bool = False,
+) -> Module:
+    tok_stream = (
+        token_stream_factory(stream.readline)
+        if token_stream_factory
+        else tokenize.generate_tokens(stream.readline)
+    )
+    tokenizer = Tokenizer(
+        tok_stream, verbose=verbose, path=path if os.path.isfile(path) else None
+    )
+    parser = EnamlParser(
+        tokenizer,
+        verbose=verbose,
+        filename=path,
+        py_version=py_version,
+    )
+    return parser.parse("start")
 
 
-def parse(enaml_source, filename='Enaml'):
-    """Parse an enaml file source. """
-    return _parser.parse(enaml_source, filename)
+# XXX document
+# filename is named so for backward compatibility
+def parse(
+    source: str,
+    filename: str = "Enaml",
+    py_version: Optional[tuple] = None,
+    token_stream_factory: Optional[
+        Callable[[Callable[[], str]], Iterator[tokenize.TokenInfo]]
+    ] = None,
+    verbose: bool = False,
+) -> Module:
+    """Parse enaml source text.
+
+    This function is meant for in memory sources and one should prefer parse_file
+    for sources existing in a file.
+
+    Parameters
+    ----------
+
+
+    """
+    return _parse(
+        io.StringIO(source), filename, py_version, token_stream_factory, verbose
+    )
+

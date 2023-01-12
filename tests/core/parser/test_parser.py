@@ -31,7 +31,7 @@ def validate_ast(py_node, enaml_node, dump_ast=False, offset=0):
         for name, field in ast.iter_fields(py_node):
             if name == 'ctx':
                 assert type(field) == type(getattr(enaml_node, name))
-            elif name not in ('lineno', 'col_offset'):
+            else:
                 field2 = getattr(enaml_node, name, None)
                 print('    '*offset, 'Validating:', name)
                 validate_ast(field, field2, offset=offset+1)
@@ -81,7 +81,7 @@ def test_syntax_error_traceback_correct_path(tmpdir):
         tb = traceback.format_exc()
         print(tb)
         lines = tb.strip().split("\n")
-        assert ('File "{}", line 5'.format(test_module_path) in
+        assert ('File "{}", line (5, 35)'.format(test_module_path) in
             (lines[-3] if PY39 else lines[-4]))
     finally:
         sys.path.remove(tmpdir.strpath)

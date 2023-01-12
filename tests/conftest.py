@@ -9,6 +9,7 @@
 
 """
 import os
+import pathlib
 from traceback import format_exc
 
 from enaml.application import Application
@@ -62,6 +63,23 @@ def pytest_configure(config):
     if s is not None:
         global DIALOG_SLEEP
         DIALOG_SLEEP = s
+
+
+@pytest.fixture(scope="session", autouse=True)
+def validate_parser_is_up_to_date():
+    """Check that the generated parser is up to date with its sources."""
+    from enaml.core.parser import base_enaml_parser, base_python_parser, enaml_parser
+
+    last_source_modif = max(
+        os.path.getmtime(base_enaml_parser.__file__),
+        os.path.getmtime(base_python_parser.__file__),
+        os.path.getmtime(pathlib.Path(base_enaml_parser.__file__).parent / "enaml.gram"),
+    )
+
+    assert os.path.getmtime(enaml_parser.__file__) >= last_source_modif, (
+        "Generated parser appears outdated compared to its sources, "
+        "re-generate it using enaml/core/parser/generate_enaml_parser.enaml"
+    )
 
 
 @pytest.fixture

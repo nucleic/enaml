@@ -22,12 +22,9 @@ from utils import wait_for_window_displayed
 
 
 def generate_cache(path):
-    #: Read
-    with open(path, 'r') as f:
-        enaml_code = f.read()
-
     #: Compile
-    ast = parse(enaml_code, filename=path)
+    with open(path) as f:
+        ast = parse(f.read(), path)
     code = EnamlCompiler.compile(ast, path)
 
     #: Generate cache

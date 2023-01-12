@@ -10,13 +10,12 @@ import os
 import io
 import struct
 import sys
-import types
 from abc import ABCMeta, abstractmethod, abstractclassmethod
 from collections import defaultdict, namedtuple
 from zipfile import ZipFile
 
 from importlib.machinery import ModuleSpec
-from importlib.util import module_from_spec, MAGIC_NUMBER
+from importlib.util import MAGIC_NUMBER
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
@@ -459,7 +458,7 @@ class EnamlZipImporter(EnamlImporter):
                         os.path.exists(archive_path)):
 
                     # Path where code should be within the archive
-                    code_path = '/'.join(pkgpath+[leaf])
+                    code_path = '/'.join(pkgpath + [leaf])
                     try:
                         with ZipFile(archive_path, 'r') as archive:
                             name_list = archive.namelist()
@@ -548,9 +547,6 @@ class EnamlZipImporter(EnamlImporter):
         # Required to work with universal newlines
         with self.archive.open(self.code_path) as f:
             src = io.TextIOWrapper(f, enc).read()
-
-        if sys.version_info.major == 2:
-            src = src.encode('utf-8')
 
         return src
 

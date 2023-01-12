@@ -15,7 +15,7 @@ is then used to unroll a list of these controls into the body of a form.
 << autodoc-me >>
 """
 from __future__ import print_function
-from atom.api import Atom, Bool, Enum, Event, Float, Int, Str,
+from atom.api import Atom, Bool, Enum, Event, Float, Int, Str
 
 from enaml.core.api import DynamicTemplate
 from enaml.stdlib.fields import FloatField
