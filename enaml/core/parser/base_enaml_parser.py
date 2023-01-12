@@ -29,7 +29,6 @@ class BaseEnamlParser(BasePythonParser):
         ast.ClassDef: "class definition",
         ast.Yield: "yield statement",
         ast.Return: "return statement",
-        ast.GeneratorExp: "generator expressions",
     }
 
     # The disallowed ast types on the rhs of a << operator
@@ -37,7 +36,6 @@ class BaseEnamlParser(BasePythonParser):
         ast.FunctionDef: "function definition",
         ast.ClassDef: "class definition",
         ast.Yield: "yield statement",
-        ast.GeneratorExp: "generator expressions",
     }
 
     # The disallowed ast types in the body of a declarative function
