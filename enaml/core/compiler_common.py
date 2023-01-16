@@ -895,12 +895,12 @@ def _insert_decl_function(cg, funcdef):
     #   ...
     #   LOAD_CONST      (<code object>)
     #   LOAD_CONST      (qualified name)
-    #   MAKE_FUCTION    (num defaults)      // TOS
+    #   MAKE_FUCTION    (flag)              // TOS
 
     # On Python 3.11 the stack is
     #   ...
     #   LOAD_CONST      (<code object>)
-    #   MAKE_FUCTION    (num defaults)      // TOS
+    #   MAKE_FUCTION    (flag)              // TOS
     code_index = -2 if PY311 else -3
 
     # extract the inner code object which represents the actual
