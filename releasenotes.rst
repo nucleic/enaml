@@ -12,6 +12,7 @@ Dates are written as DD/MM/YYYY
   It however comes with a speed penalty (x4 slowdown). There will be efforts to
   mitigate this but since parsing should occurs only once for deployed application
   the gains are expected to out weight the cost here.
+- implement hash and eq for decl functions PR #517
 
 0.15.2 - 19/08/2022
 -------------------
