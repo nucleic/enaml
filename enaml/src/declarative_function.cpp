@@ -360,6 +360,48 @@ BoundDMethod__call__( BoundDMethod* self, PyObject* args, PyObject* kwargs )
 
 
 PyObject*
+BoundDMethod_richcompare( BoundDMethod* self, PyObject* other, int opid  )
+{
+    if( opid == Py_EQ )
+    {
+        if( PyObject_TypeCheck( other, BoundDMethod::TypeObject ) )
+        {
+            BoundDMethod* other_bmeth = reinterpret_cast<BoundDMethod*>( other );
+            if(
+                self->im_self == other_bmeth->im_self
+                && self->im_key == other_bmeth->im_key
+                && self->im_func == other_bmeth->im_func
+            )
+                Py_RETURN_TRUE;
+        }
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_NOTIMPLEMENTED;
+}
+
+
+static Py_hash_t
+BoundDMethod_hash(BoundDMethod *self)
+{
+    Py_hash_t x, y, z;
+    x = _Py_HashPointer(self->im_self);
+    y = PyObject_Hash(self->im_func);
+    if (y == -1)
+        return -1;
+    z = PyObject_Hash(self->im_key);
+    if (z == -1)
+        return -1;
+    x = x ^ y;
+    if (x == -1)
+        x = -2;
+    x = x ^ z;
+    if (x == -1)
+        x = -2;
+    return x;
+}
+
+
+PyObject*
 BoundDMethod_get_func( BoundDMethod* self, void* ctxt )
 {
     return cppy::incref( self->im_func );
@@ -397,7 +439,9 @@ static PyType_Slot BoundDMethod_Type_slots[] = {
     { Py_tp_traverse, void_cast( BoundDMethod_traverse ) },      /* tp_traverse */
     { Py_tp_clear, void_cast( BoundDMethod_clear ) },            /* tp_clear */
     { Py_tp_getset, void_cast( BoundDMethod_getset ) },          /* tp_getset */
-    { Py_tp_call, void_cast( BoundDMethod__call__ ) },              /* tp_call */
+    { Py_tp_call, void_cast( BoundDMethod__call__ ) },           /* tp_call */
+    { Py_tp_richcompare, void_cast( BoundDMethod_richcompare ) },/* tp_richcompare */
+    { Py_tp_hash, void_cast( BoundDMethod_hash ) },              /* tp_hash */
     { Py_tp_repr, void_cast( BoundDMethod_repr ) },              /* tp_repr */
     { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },           /* tp_alloc */
     { Py_tp_free, void_cast( PyObject_GC_Del ) },                /* tp_free */

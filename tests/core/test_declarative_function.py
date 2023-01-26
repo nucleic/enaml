@@ -93,6 +93,35 @@ def test_declarative_function_get_and_call():
     assert '1 argument' in excinfo.exconly()
 
 
+def test_declarative_function_eq_and_hash():
+    """Test that BoundDeclarativeMethod eq works.
+
+    """
+    source = dedent("""\
+    from enaml.widgets.window import Window
+
+    enamldef MyWindow(Window): main:
+
+        func foo(arg):
+            return arg
+
+        func bar():
+            return main
+
+    """)
+    MyWindow = compile_source(source, 'MyWindow')
+    tester = MyWindow()
+    foo = tester.foo
+    assert tester.foo == foo
+    assert tester.foo != tester.bar
+    assert foo != tester.bar
+    assert hash(foo) == hash(tester.foo)
+
+    tester2 = MyWindow()
+    assert tester2.foo != tester.foo
+    assert hash(foo) != hash(tester2.foo)
+
+
 def test_calling_super():
     """Test calling a declarative function using super.
 
