@@ -30,7 +30,7 @@ jobs:
           - python-version: '3.10'
             qt-version: 5
             qt-binding: pyside
-          - python-version: '3.11'
+          - python-version: '3.11.2 - 3.12'
             qt-version: 5
             qt-binding: pyside
           - python-version: '3.8'
