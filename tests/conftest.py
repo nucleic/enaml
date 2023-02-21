@@ -8,6 +8,7 @@
 """Pytest fixtures.
 
 """
+import math
 import os
 import pathlib
 from traceback import format_exc
@@ -73,10 +74,16 @@ def validate_parser_is_up_to_date():
     last_source_modif = max(
         os.path.getmtime(base_enaml_parser.__file__),
         os.path.getmtime(base_python_parser.__file__),
-        os.path.getmtime(pathlib.Path(base_enaml_parser.__file__).parent / "enaml.gram"),
+        os.path.getmtime(
+            pathlib.Path(base_enaml_parser.__file__).parent / "enaml.gram"
+        ),
     )
 
-    assert os.path.getmtime(enaml_parser.__file__) >= last_source_modif, (
+    # We round the times to avoid spurious failure because both files were
+    # written at slightly different times.
+    assert math.ceil(os.path.getmtime(enaml_parser.__file__)) >= math.floor(
+        last_source_modif
+    ), (
         "Generated parser appears outdated compared to its sources, "
         "re-generate it using enaml/core/parser/generate_enaml_parser.enaml"
     )
@@ -109,7 +116,6 @@ def qt_app():
 
 @pytest.fixture
 def enaml_qtbot(qt_app, qtbot):
-
     qtbot.enaml_app = qt_app
     pixel_ratio = QtGui.QGuiApplication.primaryScreen().devicePixelRatio()
 
