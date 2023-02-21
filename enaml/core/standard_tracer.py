@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2020, Nucleic Development Team.
+# Copyright (c) 2013-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -62,7 +62,7 @@ class StandardTracer(CodeTracer):
     (obj, name) pairs of atom items discovered during tracing.
 
     """
-    __slots__ = ('owner', 'name', 'items')
+    __slots__ = ('owner', 'name', 'key', 'items')
 
     def __init__(self, owner, name):
         """ Initialize a StandardTracer.
@@ -70,12 +70,13 @@ class StandardTracer(CodeTracer):
         """
         self.owner = owner
         self.name = name
+        self.key = '_[%s|trace]' % name
         self.items = set()
 
     #--------------------------------------------------------------------------
     # Utility Methods
     #--------------------------------------------------------------------------
-    def trace_atom(self, obj, name):
+    def trace_atom(self, obj: Atom, name: str):
         """ Add the atom object and name pair to the traced items.
 
         Parameters
@@ -105,7 +106,7 @@ class StandardTracer(CodeTracer):
         """
         owner = self.owner
         name = self.name
-        key = '_[%s|trace]' % name
+        key = self.key
         storage = owner._d_storage
 
         # invalidate the old observer so that it can be collected
@@ -143,14 +144,13 @@ class StandardTracer(CodeTracer):
         if isinstance(obj, Atom):
             self.trace_atom(obj, attr)
 
-    def call_function(self, func, argtuple, argspec):
+    def call_function(self, func, argtuple: tuple, nargs: int):
         """ Called before the CALL_FUNCTION opcode is executed.
 
         This will trace the func if it is the builtin `getattr` and the
         object is an Atom instance. See also: `CodeTracer.call_function`
 
         """
-        nargs = argspec
         if (func is getattr and (nargs == 2 or nargs == 3)):
             obj, attr = argtuple[0], argtuple[1]
             if isinstance(obj, Atom) and isinstance(attr, str):

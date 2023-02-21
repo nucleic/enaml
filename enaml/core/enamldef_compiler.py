@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2019, Nucleic Development Team.
+# Copyright (c) 2013-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,7 +8,7 @@
 from . import block_compiler as block
 from . import compiler_common as cmn
 from .enaml_ast import EnamlDef
-from ..compat import POS_ONLY_ARGS
+from ..compat import POS_ONLY_ARGS, PY311
 
 
 class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
@@ -81,6 +81,9 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
+        if PY311:
+            cg.push_null()
+
         # Preload the helper to generate the enamldef
         cmn.load_helper(cg, 'make_enamldef')
 
@@ -91,6 +94,9 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
         # Validate the type of the base class
         with cg.try_squash_raise():
             cg.dup_top()
+            if PY311:
+                cg.push_null()  # base -> null
+                cg.rot_two()    # null -> base
             cmn.load_helper(cg, 'validate_declarative')
             cg.rot_two()                            # helper -> name -> base -> helper -> base
             cg.call_function(1)                     # helper -> name -> base -> retval
@@ -117,6 +123,9 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
         cg.call_function(3)                         # class
 
         # Build the compiler node
+        if PY311:
+            cg.push_null()
+            cg.rot_two()
         should_store = cmn.should_store_locals(node)
         cmn.load_helper(cg, 'enamldef_node')
         cg.rot_two()
@@ -133,6 +142,8 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
             self.visit(item)
 
         # Update the internal node ids for the hierarchy.
+        if PY311:
+            cg.push_null()
         cmn.load_node(cg, 0)
         cg.load_attr('update_id_nodes')
         cg.call_function()
@@ -257,14 +268,17 @@ class EnamlDefCompiler(cmn.CompilerBase):
         )
 
         # Prepare the code block for execution.
+        if PY311:
+            cg.push_null()
         cmn.fetch_helpers(cg)
         cmn.load_helper(cg, 'make_object')
         cg.call_function()
         cg.store_fast(cmn.SCOPE_KEY)
 
         # Load and invoke the first pass code object.
+        if PY311:
+            cg.push_null()
         cg.load_const(first_code)
-        cg.load_const(None)  # XXX better qualified name
         cg.make_function()
         for arg in first_args:
             cg.load_fast(arg)
@@ -272,8 +286,9 @@ class EnamlDefCompiler(cmn.CompilerBase):
         cg.store_fast(cmn.NODE_LIST)
 
         # Load and invoke the second pass code object.
+        if PY311:
+            cg.push_null()
         cg.load_const(second_code)
-        cg.load_const(None)  # XXX better qualified name
         cg.make_function()
         for arg in second_args:
             cg.load_fast(arg)

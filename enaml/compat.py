@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2022, Nucleic Development Team.
+# Copyright (c) 2013-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -15,6 +15,8 @@ PY38 = POS_ONLY_ARGS = sys.version_info >= (3, 8)
 PY39 = sys.version_info >= (3, 9)
 
 PY310 = sys.version_info >= (3, 10)
+
+PY311 = sys.version_info >= (3, 11)
 
 # Functions used to update the co_filename slot of a code object
 # Available in Python 3.5+ (tested up to 3.8)

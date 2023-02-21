@@ -23,13 +23,15 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.8', '3.9', '3.10', '3.11.2 - 3.12']
         qt-version: [5, 6]
         qt-binding: [pyqt, pyside]
         exclude:
           - python-version: '3.10'
             qt-version: 5
             qt-binding: pyside
+          - python-version: '3.11.2 - 3.12'
+            qt-version: 5
           - python-version: '3.8'
             qt-version: 6
           - os: ubuntu-latest

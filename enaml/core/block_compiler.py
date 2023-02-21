@@ -8,6 +8,7 @@
 from atom.api import Typed
 
 from . import compiler_common as cmn
+from ..compat import PY311
 
 
 class BaseBlockCompiler(cmn.CompilerBase):
@@ -136,6 +137,8 @@ class SecondPassBlockCompiler(BaseBlockCompiler):
             # Create the unpack map.
             cg = self.code_generator
             index = self.index_map[node]
+            if PY311:
+                cg.push_null()
             cmn.load_helper(cg, 'make_unpack_map')
             cmn.load_node(cg, index)
             cg.call_function(1)

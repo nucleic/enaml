@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2020, Nucleic Development Team.
+# Copyright (c) 2013-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -14,7 +14,7 @@ from types import CodeType
 import bytecode as bc
 from atom.api import Str, Typed
 
-from ..compat import PY38
+from ..compat import PY38, PY311
 from .code_generator import CodeGenerator
 from .enaml_ast import (
     AliasExpr, ASTVisitor, Binding, ChildDef, EnamlDef, StorageExpr, Template,
@@ -200,7 +200,7 @@ def fetch_globals(cg):
         The code generator with which to write the code.
 
     """
-    cg.load_global('globals')
+    cg.load_global('globals', push_null=True)
     cg.call_function()
     cg.store_fast(F_GLOBALS)
 
@@ -358,6 +358,8 @@ def append_node(cg, parent, index):
         The index of the target node in the node list.
 
     """
+    if PY311:
+        cg.push_null()
     load_node(cg, parent)
     cg.load_attr('children')
     cg.load_attr('append')
@@ -366,7 +368,7 @@ def append_node(cg, parent, index):
     cg.pop_top()
 
 
-def safe_eval_ast(cg, node, name, lineno, local_names):
+def safe_eval_ast(cg, node, name: str, lineno: int, local_names: set):
     """ Safe eval a Python ast node.
 
     This method will eval the python code represented by the ast
@@ -417,18 +419,42 @@ def analyse_globals_and_func_defs(pyast):
     return global_vars, has_def
 
 
-def rewrite_globals_access(code, global_vars):
-    """Update the function code global loads
+if PY311:
+    def rewrite_globals_access(code, global_vars: set):
+        """Update the function code global loads
 
-    This will rewrite the function to convert each LOAD_GLOBAL opcode
-    into a LOAD_NAME opcode, unless the associated name is known to have been
-    made global via the 'global' keyword.
+        This will rewrite the function to convert each LOAD_GLOBAL opcode
+        into a LOAD_NAME opcode, unless the associated name is known to have been
+        made global via the 'global' keyword.
 
-    """
-    for idx, instr in enumerate(code):
-        if (getattr(instr, "name", None) == "LOAD_GLOBAL" and
-                instr.arg not in global_vars):
-            instr.name = "LOAD_NAME"
+        """
+        # On Python 3.11 if the LOAD_GLOBAL has the PUSH_NULL flag set
+        # we have re-inject that when doing the rewrite or it jacks up the stack
+        inserts = []
+        for idx, instr in enumerate(code):
+            if (getattr(instr, "name", None) == "LOAD_GLOBAL" and
+                    instr.arg not in global_vars):
+                if instr.arg[0]:
+                    inserts.append(idx)
+                code[idx] = bc.Instr("LOAD_NAME", instr.arg[1])
+
+        # Walk backwards so indexes remain valid
+        for idx in reversed(inserts):
+            code.insert(idx, bc.Instr("PUSH_NULL"))
+
+else:
+    def rewrite_globals_access(code, global_vars: set):
+        """Update the function code global loads
+
+        This will rewrite the function to convert each LOAD_GLOBAL opcode
+        into a LOAD_NAME opcode, unless the associated name is known to have been
+        made global via the 'global' keyword.
+
+        """
+        for idx, instr in enumerate(code):
+            if (getattr(instr, "name", None) == "LOAD_GLOBAL" and
+                    instr.arg not in global_vars):
+                instr.name = "LOAD_NAME"
 
 
 def run_in_dynamic_scope(code, global_vars):
@@ -471,6 +497,9 @@ def run_in_dynamic_scope(code, global_vars):
             cg.code_ops.append(bc.Instr(i_name, i_arg))  # func
             load_helper(cg, 'wrap_func')                 # func -> wrap
             cg.rot_two()                                 # wrap -> func
+            if PY311:
+                cg.push_null()
+                cg.rot_three()
             cg.load_global('__scope__')                  # wrap -> func -> scope
             cg.call_function(2)                          # wrapped
             continue
@@ -505,6 +534,9 @@ def gen_child_def_node(cg, node, local_names):
     load_name(cg, node.typename, local_names)
     with cg.try_squash_raise():
         cg.dup_top()
+        if PY311:
+            cg.push_null()
+            cg.rot_two()
         load_helper(cg, 'validate_declarative')
         cg.rot_two()                            # base -> helper -> base
         cg.call_function(1)                     # base -> retval
@@ -513,6 +545,10 @@ def gen_child_def_node(cg, node, local_names):
     # Subclass the child class if needed
     store_types = (StorageExpr, AliasExpr, FuncDef)
     if any(isinstance(item, store_types) for item in node.body):
+
+        if PY311:
+            cg.push_null()
+            cg.rot_two()  # null -> base
 
         # Create the class code
         cg.load_build_class()
@@ -533,7 +569,6 @@ def gen_child_def_node(cg, node, local_names):
 
         class_code = class_cg.to_code()
         cg.load_const(class_code)
-        cg.load_const(None)  # XXX better qualified name
         cg.make_function()
 
         cg.rot_two()                            # builtins.__build_class_ -> class_func -> base
@@ -542,6 +577,9 @@ def gen_child_def_node(cg, node, local_names):
         cg.call_function(3)                     # class
 
     # Build the declarative compiler node
+    if PY311:
+        cg.push_null()
+        cg.rot_two()  # null -> class
     store_locals = should_store_locals(node)
     load_helper(cg, 'declarative_node')
     cg.rot_two()
@@ -573,6 +611,9 @@ def gen_template_inst_node(cg, node, local_names):
     load_name(cg, node.name, local_names)
     with cg.try_squash_raise():
         cg.dup_top()
+        if PY311:
+            cg.push_null()
+            cg.rot_two()  # null -> template
         load_helper(cg, 'validate_template')
         cg.rot_two()
         cg.call_function(1)
@@ -580,6 +621,10 @@ def gen_template_inst_node(cg, node, local_names):
 
     # Load the arguments for the instantiation call.
     arguments = node.arguments
+    if PY311:
+        cg.push_null()
+        cg.rot_two()  # null -> template
+
     for arg in arguments.args:
         safe_eval_ast(cg, arg.ast, node.name, arg.lineno, local_names)
     if arguments.stararg:
@@ -603,6 +648,9 @@ def gen_template_inst_node(cg, node, local_names):
         starname = identifiers.starname
         with cg.try_squash_raise():
             cg.dup_top()
+            if PY311:
+                cg.push_null()
+                cg.rot_two()  # null -> template_inst
             load_helper(cg, 'validate_unpack_size')
             cg.rot_two()
             cg.load_const(len(names))
@@ -611,6 +659,9 @@ def gen_template_inst_node(cg, node, local_names):
             cg.pop_top()
 
     # Load and call the helper to create the compiler node
+    if PY311:
+        cg.push_null()
+        cg.rot_two()  # null -> tmpl
     load_helper(cg, 'template_inst_node')
     cg.rot_two()
     cg.load_const(names)
@@ -685,6 +736,8 @@ def gen_template_inst_binding(cg, node, index):
 
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
+        if PY311:
+            cg.push_null()
         load_helper(cg, 'run_operator')
         load_node(cg, index)
         cg.load_fast(UNPACK_MAP)
@@ -726,6 +779,8 @@ def gen_operator_binding(cg, node, index, name):
 
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
+        if PY311:
+            cg.push_null()
         load_helper(cg, 'run_operator')
         load_node(cg, index)
         # For operators not in a template instance the scope_node and the node
@@ -759,6 +814,8 @@ def gen_alias_expr(cg, node, index):
     """
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
+        if PY311:
+            cg.push_null()
         load_helper(cg, 'add_alias')
         load_node(cg, index)
         cg.load_const(node.name)
@@ -791,6 +848,8 @@ def gen_storage_expr(cg, node, index, local_names):
     """
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
+        if PY311:
+            cg.push_null()
         load_helper(cg, 'add_storage')
         load_node(cg, index)
         cg.load_const(node.name)
@@ -836,11 +895,17 @@ def _insert_decl_function(cg, funcdef):
     #   ...
     #   LOAD_CONST      (<code object>)
     #   LOAD_CONST      (qualified name)
-    #   MAKE_FUCTION    (num defaults)      // TOS
+    #   MAKE_FUCTION    (flag)              // TOS
+
+    # On Python 3.11 the stack is
+    #   ...
+    #   LOAD_CONST      (<code object>)
+    #   MAKE_FUCTION    (flag)              // TOS
+    code_index = -2 if PY311 else -3
 
     # extract the inner code object which represents the actual
     # function code and update its flags
-    inner = bc.Bytecode.from_code(outer_ops[-3].arg)
+    inner = bc.Bytecode.from_code(outer_ops[code_index].arg)
     inner.flags ^= (inner.flags & bc.CompilerFlags.NEWLOCALS)
 
     # On Python 3 all comprehensions use a function call. To avoid scoping
@@ -850,7 +915,7 @@ def _insert_decl_function(cg, funcdef):
     else:
         rewrite_globals_access(inner, global_vars)
 
-    outer_ops[-3].arg = inner.to_code()
+    outer_ops[code_index].arg = inner.to_code()
 
     # inline the modified code ops into the code generator
     cg.code_ops.extend(outer_ops)
@@ -876,6 +941,8 @@ def gen_decl_funcdef(cg, node, index):
     """
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
+        if PY311:
+            cg.push_null()
         load_helper(cg, 'add_decl_function')
         load_node(cg, index)
         _insert_decl_function(cg, node.funcdef)

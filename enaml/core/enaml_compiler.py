@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2021, Nucleic Development Team.
+# Copyright (c) 2013-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,6 +11,7 @@ from . import compiler_common as cmn
 from .enaml_ast import Module
 from .enamldef_compiler import EnamlDefCompiler
 from .template_compiler import TemplateCompiler
+from ..compat import PY311
 
 # Increment this number whenever the compiler changes the code which it
 # generates. This number is used by the import hooks to know which version
@@ -214,9 +215,10 @@ class EnamlCompiler(cmn.CompilerBase):
     def visit_EnamlDef(self, node):
         # Invoke the enamldef code and store result in the namespace.
         cg = self.code_generator
+        if PY311:
+            cg.push_null()
         code = EnamlDefCompiler.compile(node, cg.filename)
         cg.load_const(code)
-        cg.load_const(None)  # XXX better qualified name
         cg.make_function()
         cg.call_function()
         cg.store_global(node.typename)
@@ -226,11 +228,15 @@ class EnamlCompiler(cmn.CompilerBase):
         cg.set_lineno(node.lineno)
 
         with cg.try_squash_raise():
+            if PY311:
+                cg.push_null()
 
             # Load and validate the parameter specializations
             for index, param in enumerate(node.parameters.positional):
                 spec = param.specialization
                 if spec is not None:
+                    if PY311:
+                        cg.push_null()
                     cmn.load_helper(cg, 'validate_spec', from_globals=True)
                     cg.load_const(index)
                     cmn.safe_eval_ast(
@@ -257,17 +263,13 @@ class EnamlCompiler(cmn.CompilerBase):
             # Generate the template code and function
             code = TemplateCompiler.compile(node, cg.filename)
             cg.load_const(code)
-
-            # Under Python 3 function have a qualified name
-            # XXX improve qualified name
-            cg.load_const(None)
             cg.make_function(0x01)
 
             # Load and call the helper which will build the template
             cmn.load_helper(cg, 'make_template', from_globals=True)
             cg.rot_three()
             cg.load_const(node.name)
-            cg.load_global('globals')
+            cg.load_global('globals', push_null=True)
             cg.call_function()
             cg.load_global(cmn.TEMPLATE_MAP)
             cg.call_function(5)

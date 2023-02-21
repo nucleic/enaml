@@ -10,6 +10,7 @@ from atom.api import List, Typed
 from . import block_compiler as block
 from . import compiler_common as cmn
 from .enaml_ast import ConstExpr, Template
+from ..compat import PY311
 
 
 def collect_local_names(node):
@@ -121,6 +122,8 @@ class FirstPassTemplateCompiler(block.FirstPassBlockCompiler):
         cg.set_lineno(node.lineno)
 
         # Create the template compiler node and store in the node list.
+        if PY311:
+            cg.push_null()
         cmn.load_helper(cg, 'template_node')
         cg.load_fast(cmn.SCOPE_KEY)
         cg.call_function(1)
@@ -131,6 +134,8 @@ class FirstPassTemplateCompiler(block.FirstPassBlockCompiler):
             self.visit(item)
 
         # Update the internal node ids for the hierarchy.
+        if PY311:
+            cg.push_null()
         cmn.load_node(cg, 0)
         cg.load_attr('update_id_nodes')
         cg.call_function()
@@ -164,6 +169,9 @@ class FirstPassTemplateCompiler(block.FirstPassBlockCompiler):
         if node.typename:
             with cg.try_squash_raise():
                 cg.dup_top()
+                if PY311:
+                    cg.push_null()
+                    cg.rot_two()
                 cmn.load_helper(cg, 'type_check_expr')
                 cg.rot_two()
                 cmn.load_typename(cg, node.typename, names)
@@ -316,13 +324,16 @@ class TemplateCompiler(cmn.CompilerBase):
 
         # Prepare the code block for execution.
         cmn.fetch_helpers(cg)
+        if PY311:
+            cg.push_null()
         cmn.load_helper(cg, 'make_object')
         cg.call_function()
         cg.store_fast(cmn.SCOPE_KEY)
 
         # Load and invoke the first pass code object.
+        if PY311:
+            cg.push_null()
         cg.load_const(first_code)
-        cg.load_const(None)  # XXX better qualified name
         cg.make_function()
         for arg in first_args:
             cg.load_fast(arg)
@@ -332,8 +343,9 @@ class TemplateCompiler(cmn.CompilerBase):
         cg.store_fast(cmn.T_CONSTS)
 
         # Load and invoke the second pass code object.
+        if PY311:
+            cg.push_null()
         cg.load_const(second_code)
-        cg.load_const(None)  # XXX better qualified name
         cg.make_function()
         for arg in second_args:
             cg.load_fast(arg)
@@ -345,6 +357,9 @@ class TemplateCompiler(cmn.CompilerBase):
 
         # Add the template scope to the node.
         cg.dup_top()
+        if PY311:
+            cg.push_null()
+            cg.rot_two()
         cmn.load_helper(cg, 'add_template_scope')
         cg.rot_two()
         cg.load_const(tuple(param_names + const_names))
