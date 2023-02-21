@@ -68,6 +68,7 @@ build-backend = "setuptools.build_meta"
 include-package-data = false
 
 [tool.setuptools.package-data]
+"enaml.core.parser" = ['*.gram']
 "enaml.applib" = ['*.enaml']
 "enaml.stdlib" = ['*.enaml']
 "enaml.workbench.core" = ['*.enaml']
