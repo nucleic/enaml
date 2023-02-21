@@ -6,12 +6,14 @@ Dates are written as DD/MM/YYYY
 0.16.0 - 21/02/2023
 -------------------
 - add support for Python 3.11+ PR #514
-  Python 3.11 is only tested with Qt6 backend
+  Python 3.11 is only tested with Qt6 backend and does not include support for
+  catching exception groups.
 - fix several issues related to PySide6 PR #513
 - switch to use pegen to generate the parser PR #474
   This results in a much easier to maintain parser (in particular when it comes
-  to supporting new Python features), provides with more detailed location
-  information which are needed on 3.11+.
+  to supporting new Python features). It provides with more detailed location
+  information which are needed on 3.11+ and add support for the match statement
+  in enaml files.
   It however comes with a speed penalty (x4 slowdown). There will be efforts to
   mitigate this but since parsing should occurs only once for deployed application
   the gains are expected to out weight the cost here.
