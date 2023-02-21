@@ -3,8 +3,11 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.16.0 - unreleased
+0.16.0 - 21/02/2023
 -------------------
+- add support for Python 3.11+ PR #514
+  Python 3.11 is only tested with Qt6 backend
+- fix several issues related to PySide6 PR #513
 - switch to use pegen to generate the parser PR #474
   This results in a much easier to maintain parser (in particular when it comes
   to supporting new Python features), provides with more detailed location
