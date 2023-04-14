@@ -42,6 +42,11 @@ SOURCE =\
 """
 from enaml.widgets.api import *
 
+try:
+    pass
+except Exception as e:
+    pass
+
 enamldef Main(Window):
 
     Field: fd:
