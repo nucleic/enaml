@@ -347,7 +347,7 @@ class QDockTabBar(QTabBar):
             )
             QApplication.sendEvent(self, evt)
             container = self.parent().widget(self.currentIndex())
-            container.untab(gpos())
+            container.untab(gpos)
             self._has_mouse = False
 
     def mouseReleaseEvent(self, event):
