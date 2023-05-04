@@ -42,12 +42,14 @@ jobs:
       - name: Install linux only test dependency
         if: matrix.os == 'ubuntu-latest'
         shell: bash
-        # Install all dependencies needed to run Qt on linux (taken from the qt website
-        # and completed by adding package marked missing when running with
-        # QT_DEBUG_PLUGINS=1)
+        # Install all dependencies needed to run Qt on linux (taken from the qt website)
         run: |
           sudo apt-get update --fix-missing
-          sudo apt-get install -y libfontconfig1-dev libfreetype6-dev libx11-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync0-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-xinerama0-dev libxcb-xkb-dev libxkbcommon-x11-dev libxcb-xtest0-dev  libegl1-mesa xvfb --fix-missing
+          if [ "${{ matrix.qt-version }}" == ' ]; then5
+            cat ci/qt5-linux.txt | xargs sudo apt-get -y install
+          else
+            cat ci/qt6-linux.txt | xargs sudo apt-get -y install
+          fi
           sudo apt-get install -y herbstluftwm scrot
       - name: Checkout branch
         uses: actions/checkout@v3
