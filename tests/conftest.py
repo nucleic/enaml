@@ -105,9 +105,16 @@ def qt_app():
     except Exception:
         pytest.skip("No Qt binding found: %s" % format_exc())
 
+    # Import it before starting the app as otherwise it can cause issues
+    # in particular with PySide
+    try:
+        from enaml.qt import QtWebEngineWidgets
+    except Exception:
+        pass
+
     app = QtApplication.instance()
     if app is None:
-        app = QtApplication()
+        app = QtApplication("enaml-testing-app")
         yield app
         app.stop()
     else:

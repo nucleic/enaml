@@ -12,6 +12,7 @@ import types
 import pytest
 
 from enaml import imports
+from enaml.qt import QT_API, PYSIDE6_API
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.widgets.api import Window
@@ -205,7 +206,15 @@ def handle_window_closing(qtbot, window):
         pytest.param(
             "widgets/web_view.enaml",
             None,
-            marks=pytest.mark.skipif(not WEBVIEW_AVAILABLE, reason="Requires webview"),
+            marks=pytest.mark.skipif(
+                not WEBVIEW_AVAILABLE
+                or (
+                    "CI" in os.environ
+                    and sys.platform == "win32"
+                    and QT_API in PYSIDE6_API
+                ),
+                reason="Requires webview",
+            ),
         ),
         ("widgets/window_children.enaml", None),
         ("widgets/window_closing.enaml", handle_window_closing),

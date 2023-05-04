@@ -39,18 +39,19 @@ jobs:
             qt-binding: pyside
       fail-fast: false
     steps:
-      - name: Install linux only test dependency
-        if: matrix.os == 'ubuntu-latest'
-        shell: bash
-        # Install all dependencies needed to run Qt on linux (taken from the qt website
-        # and completed by adding package marked missing when running with
-        # QT_DEBUG_PLUGINS=1)
-        run: |
-          sudo apt-get update --fix-missing
-          sudo apt-get install -y libfontconfig1-dev libfreetype6-dev libx11-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync0-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-xinerama0-dev libxcb-xkb-dev libxkbcommon-x11-dev libxcb-xtest0-dev  libegl1-mesa xvfb --fix-missing
-          sudo apt-get install -y herbstluftwm scrot
       - name: Checkout branch
         uses: actions/checkout@v3
+      - name: Install linux only test dependency
+        if: matrix.os == 'ubuntu-latest'
+        # Install all dependencies needed to run Qt on linux (taken from the qt website)
+        run: |
+          sudo apt-get update --fix-missing;
+          if [ "${{ matrix.qt-version }}" == 5 ]; then
+            cat ci/qt5_linux.txt | xargs sudo apt-get -y install
+          else
+            cat ci/qt6_linux.txt | xargs sudo apt-get -y install
+          fi
+          sudo apt-get install -y herbstluftwm scrot
       - name: Get history and tags for SCM versioning to work
         run: |
           git fetch --prune --unshallow
@@ -78,33 +79,27 @@ jobs:
           CPPFLAGS: --coverage
         # Build extensions manually to allow getting C coverage data
         run: |
-          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
-          pip uninstall enaml --yes
-          python setup.py develop
+          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
       - name: Install project (with-extras pyqt)
         if: matrix.python-version == '3.10' && matrix.qt-binding == 'pyqt'
         env:
           CPPFLAGS: --coverage
         # Build extensions manually to allow getting C coverage data
         run: |
-          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
-          pip uninstall enaml --yes
-          python setup.py develop
+          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
       - name: Install project (with-extras pyside)
         if: matrix.python-version == '3.10' && matrix.qt-binding != 'pyqt'
         env:
           CPPFLAGS: --coverage
         # Build extensions manually to allow getting C coverage data
         run: |
-          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt]
-          pip uninstall enaml --yes
-          python setup.py develop
+          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt]
       - name: Install test requirements
         run: |
           pip install -r test_requirements.txt
       - name: Run tests (Windows, Mac)
         if: matrix.os != 'ubuntu-latest'
-        run: python -X dev -m pytest tests --cov --cov-report xml -rs
+        run: python -X dev -m pytest tests -v --cov --cov-report xml -rs
       - name: Run tests (Linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash -l {0}
@@ -116,7 +111,7 @@ jobs:
           sleep 3
           herbstluftwm &
           sleep 1
-          python -X dev -m pytest tests --cov --cov-report xml -rs
+          python -X dev -m pytest tests -v --cov --cov-report xml -rs
       - name: Generate C++ coverage reports
         if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         run: |

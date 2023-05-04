@@ -64,7 +64,7 @@ def main():
     requested = options.component
     if requested in ns:
         from enaml.qt.qt_application import QtApplication
-        app = QtApplication()
+        app = QtApplication("enaml-runner")
         window = ns[requested]()
         window.show()
         window.send_to_front()
