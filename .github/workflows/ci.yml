@@ -46,9 +46,9 @@ jobs:
         run: |
           sudo apt-get update --fix-missing
           if [ "${{ matrix.qt-version }}" == 5 ]; then
-            cat ci/qt5-linux.txt | xargs sudo apt-get -y install
+            cat ci/qt5_linux.txt | xargs sudo apt-get -y install
           else
-            cat ci/qt6-linux.txt | xargs sudo apt-get -y install
+            cat ci/qt6_linux.txt | xargs sudo apt-get -y install
           fi
           sudo apt-get install -y herbstluftwm scrot
       - name: Checkout branch
