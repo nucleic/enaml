@@ -1,11 +1,10 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# ------------------------------------------------------------------------------
+# Copyright (c) 2013-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
-from importlib.resources import path
+# ------------------------------------------------------------------------------
 import sys
 
 from atom.api import Atom, Float, Int, Str, Typed, Value, set_default
@@ -14,19 +13,36 @@ from enaml.qt.QtCore import Qt, QRect, QPoint
 from enaml.qt.QtGui import QPainter, QPixmap
 from enaml.qt.QtWidgets import QFrame
 
+if sys.version_info >= (3, 9):
+    from importlib.resources import files, as_file
+
+    def path(package, resource):
+        """A context manager providing a file path object to the resource.
+
+        If the resource does not already exist on its own on the file system,
+        a temporary file will be created. If the file was created, the file
+        will be deleted upon exiting the context manager (no exception is
+        raised if the file was deleted prior to the context manager
+        exiting).
+        """
+        return as_file(files(package) / resource)
+
+else:
+    from importlib.resources import path
+
 
 class QGuideRose(QFrame):
-    """ A custom QFrame which implements a collection of docking guides.
+    """A custom QFrame which implements a collection of docking guides.
 
     This widget must always be used as an independent top-level window.
     The dock area which uses the rose should manually set the geometry
     of the widget before showing it.
 
     """
-    class Guide(object):
-        """ An enum class for identifying guide locations.
 
-        """
+    class Guide(object):
+        """An enum class for identifying guide locations."""
+
         #: No relevant guide.
         NoGuide = 0
 
@@ -91,13 +107,14 @@ class QGuideRose(QFrame):
         BorderExWest = 20
 
     class Mode(object):
-        """ An enum class for defining the mode for the guide rose.
+        """An enum class for defining the mode for the guide rose.
 
         A mode is an or'd combination of flags which dictate which parts
         of the guide rose are active on the screen. The modes related to
         the centerpiece should be considered mutually exclusive.
 
         """
+
         #: Nothing will be shown.
         NoMode = 0x0
 
@@ -120,16 +137,14 @@ class QGuideRose(QFrame):
         AreaCenter = 0x20
 
     def __init__(self):
-        """ Initialize a QGuideRose.
-
-        """
+        """Initialize a QGuideRose."""
         super(QGuideRose, self).__init__()
         # On Mac, setting the translucent background does not cause the
         # frame shadow to be hidden; it must be explicitly hidden. Mac
         # also requires the window to be a tooltip in order to be raised
         # above the rubber band in the Z-order. On Windows, the tooltip
         # leaves a dropshadow on Qt >= 4.8 whereas tool does not.
-        if sys.platform == 'darwin':
+        if sys.platform == "darwin":
             self.setAttribute(Qt.WA_MacNoShadow, True)
             flags = Qt.ToolTip
         else:
@@ -146,13 +161,11 @@ class QGuideRose(QFrame):
         self._hsplit_guide = SplitHorizontalGuide()
         self._area_guide = AreaCenterGuide()
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Private API
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def _layoutGuides(self):
-        """ Layout the guides based on the current widget geometry.
-
-        """
+        """Layout the guides based on the current widget geometry."""
         self._border_guide.layout(self.rect())
         self._compass_guide.layout(self._center_point)
         self._compass_ex_guide.layout(self._center_point)
@@ -160,11 +173,11 @@ class QGuideRose(QFrame):
         self._hsplit_guide.layout(self._center_point)
         self._area_guide.layout(self._center_point)
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Public API
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def centerPoint(self):
-        """ Get the center point of the guide rose.
+        """Get the center point of the guide rose.
 
         Returns
         -------
@@ -176,7 +189,7 @@ class QGuideRose(QFrame):
         return self._center_point
 
     def setCenterPoint(self, pos):
-        """ Set the center point of the guide rose.
+        """Set the center point of the guide rose.
 
         Parameters
         ----------
@@ -191,7 +204,7 @@ class QGuideRose(QFrame):
             self.update()
 
     def mode(self):
-        """ Get the mode of the guide rose.
+        """Get the mode of the guide rose.
 
         Returns
         -------
@@ -202,7 +215,7 @@ class QGuideRose(QFrame):
         return self._mode
 
     def setMode(self, mode):
-        """ Set the mode of the guide rose.
+        """Set the mode of the guide rose.
 
         Parameters
         ----------
@@ -215,7 +228,7 @@ class QGuideRose(QFrame):
             self.update()
 
     def mouseOver(self, pos):
-        """ Update the guide pads based on the mouse position.
+        """Update the guide pads based on the mouse position.
 
         This current mode of the guide rose is used to determine which
         of the guide pads to should be updated.
@@ -235,7 +248,7 @@ class QGuideRose(QFrame):
         self.update()
 
     def guideAt(self, pos, mode=None):
-        """ Get the guide which lies underneath a given position.
+        """Get the guide which lies underneath a given position.
 
         Parameters
         ----------
@@ -281,11 +294,11 @@ class QGuideRose(QFrame):
                 return g
         return Guide.NoGuide
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Reimplementations
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def resizeEvent(self, event):
-        """ Handle the resize event for the rose.
+        """Handle the resize event for the rose.
 
         This handler will relayout the guides on a resize.
 
@@ -293,7 +306,7 @@ class QGuideRose(QFrame):
         self._layoutGuides()
 
     def paintEvent(self, event):
-        """ Handle the paint event for the rose.
+        """Handle the paint event for the rose.
 
         This handler will redraw all of the guides for the rose.
 
@@ -317,9 +330,8 @@ class QGuideRose(QFrame):
 
 
 class GuideImage(Atom):
-    """ A class which manages the painting of a guide image.
+    """A class which manages the painting of a guide image."""
 
-    """
     #: The default alpha value for guide transparency.
     TRANSPARENT = 0.60
 
@@ -340,7 +352,7 @@ class GuideImage(Atom):
 
     @classmethod
     def load_image(cls, name):
-        """ Load the guide image for the given name into a QPixmap.
+        """Load the guide image for the given name into a QPixmap.
 
         This function is hard-coded to return the named .png image from
         the ./dockguides directory located alongside this file. It is not
@@ -349,13 +361,13 @@ class GuideImage(Atom):
         """
         image = cls._images.get(name)
         if image is None:
-            with path('enaml.qt.docking.dock_images', '%s.png' % name) as file:
+            with path("enaml.qt.docking.dock_images", "%s.png" % name) as file:
                 image = QPixmap(str(file))
                 cls._images[name] = image
         return image
 
     def __init__(self, name):
-        """ Initialize a GuideImage.
+        """Initialize a GuideImage.
 
         Parameters
         ----------
@@ -366,19 +378,15 @@ class GuideImage(Atom):
         self.image = self.load_image(name)
 
     def opacify(self):
-        """ Make the guide image opaque.
-
-        """
+        """Make the guide image opaque."""
         self.opacity = self.OPAQUE
 
     def transparentize(self):
-        """ Make the guide image transparent.
-
-        """
+        """Make the guide image transparent."""
         self.opacity = self.TRANSPARENT
 
     def contains(self, point):
-        """ Test whether the image contains a point.
+        """Test whether the image contains a point.
 
         Parameters
         ----------
@@ -394,7 +402,7 @@ class GuideImage(Atom):
         return self.rect.contains(point)
 
     def paint(self, painter):
-        """ Paint the image using the given painter.
+        """Paint the image using the given painter.
 
         Parameters
         ----------
@@ -413,14 +421,13 @@ class GuideImage(Atom):
 
 
 class GuideHandler(Atom):
-    """ A base class for defining guide handlers.
+    """A base class for defining guide handlers."""
 
-    """
     #: The last guide hit during a mouseover.
     _last_guide = Typed(GuideImage)
 
     def iterguides(self):
-        """ Iterate the guides managed by this handler.
+        """Iterate the guides managed by this handler.
 
         Returns
         -------
@@ -432,7 +439,7 @@ class GuideHandler(Atom):
         raise NotImplementedError
 
     def iterboxes(self):
-        """ Iterate the boxes which lie under the guides.
+        """Iterate the boxes which lie under the guides.
 
         Returns
         -------
@@ -444,7 +451,7 @@ class GuideHandler(Atom):
         raise NotImplementedError
 
     def guide_at(self, pos):
-        """ Get the guide under the given mouse position.
+        """Get the guide under the given mouse position.
 
         Parameters
         ----------
@@ -463,7 +470,7 @@ class GuideHandler(Atom):
         return QGuideRose.Guide.NoGuide
 
     def mouse_over(self, pos):
-        """ Perform a mouse over of the guides.
+        """Perform a mouse over of the guides.
 
         Parameters
         ----------
@@ -484,7 +491,7 @@ class GuideHandler(Atom):
                 self._last_guide.transparentize()
 
     def paint(self, painter):
-        """ Paint the guides using the supplied painter.
+        """Paint the guides using the supplied painter.
 
         Parameters
         ----------
@@ -499,29 +506,32 @@ class GuideHandler(Atom):
 
 
 class BorderGuide(GuideHandler):
-    """ A guide handler which manages the border guide.
+    """A guide handler which manages the border guide."""
 
-    """
-    _guides = Value(factory=lambda: {
-        QGuideRose.Guide.BorderNorth: GuideImage('thin_horizontal'),
-        QGuideRose.Guide.BorderExNorth: GuideImage('bar_horizontal'),
-        QGuideRose.Guide.BorderEast: GuideImage('thin_vertical'),
-        QGuideRose.Guide.BorderExEast: GuideImage('bar_vertical'),
-        QGuideRose.Guide.BorderSouth: GuideImage('thin_horizontal'),
-        QGuideRose.Guide.BorderExSouth: GuideImage('bar_horizontal'),
-        QGuideRose.Guide.BorderWest: GuideImage('thin_vertical'),
-        QGuideRose.Guide.BorderExWest: GuideImage('bar_vertical'),
-    })
+    _guides = Value(
+        factory=lambda: {
+            QGuideRose.Guide.BorderNorth: GuideImage("thin_horizontal"),
+            QGuideRose.Guide.BorderExNorth: GuideImage("bar_horizontal"),
+            QGuideRose.Guide.BorderEast: GuideImage("thin_vertical"),
+            QGuideRose.Guide.BorderExEast: GuideImage("bar_vertical"),
+            QGuideRose.Guide.BorderSouth: GuideImage("thin_horizontal"),
+            QGuideRose.Guide.BorderExSouth: GuideImage("bar_horizontal"),
+            QGuideRose.Guide.BorderWest: GuideImage("thin_vertical"),
+            QGuideRose.Guide.BorderExWest: GuideImage("bar_vertical"),
+        }
+    )
 
-    _boxes = Value(factory=lambda: {
-        QGuideRose.Guide.BorderNorth: GuideImage('guide_box'),
-        QGuideRose.Guide.BorderEast: GuideImage('guide_box'),
-        QGuideRose.Guide.BorderSouth: GuideImage('guide_box'),
-        QGuideRose.Guide.BorderWest: GuideImage('guide_box'),
-    })
+    _boxes = Value(
+        factory=lambda: {
+            QGuideRose.Guide.BorderNorth: GuideImage("guide_box"),
+            QGuideRose.Guide.BorderEast: GuideImage("guide_box"),
+            QGuideRose.Guide.BorderSouth: GuideImage("guide_box"),
+            QGuideRose.Guide.BorderWest: GuideImage("guide_box"),
+        }
+    )
 
     def iterguides(self):
-        """ Iterate the guides managed by the handler.
+        """Iterate the guides managed by the handler.
 
         Returns
         -------
@@ -533,7 +543,7 @@ class BorderGuide(GuideHandler):
         return iter(self._guides.items())
 
     def iterboxes(self):
-        """ Iterate the boxes which lie under the guides.
+        """Iterate the boxes which lie under the guides.
 
         Returns
         -------
@@ -545,7 +555,7 @@ class BorderGuide(GuideHandler):
         return iter(self._boxes.values())
 
     def layout(self, rect):
-        """ Layout the guides for the given rect.
+        """Layout the guides for the given rect.
 
         Parameters
         ----------
@@ -575,21 +585,22 @@ class BorderGuide(GuideHandler):
 
 
 class CompassGuide(GuideHandler):
-    """ A guide handler which manages the standard compass guide.
+    """A guide handler which manages the standard compass guide."""
 
-    """
-    _guides = Value(factory=lambda: {
-        QGuideRose.Guide.CompassNorth: GuideImage('arrow_north'),
-        QGuideRose.Guide.CompassEast: GuideImage('arrow_east'),
-        QGuideRose.Guide.CompassSouth: GuideImage('arrow_south'),
-        QGuideRose.Guide.CompassWest: GuideImage('arrow_west'),
-        QGuideRose.Guide.CompassCenter: GuideImage('center'),
-    })
+    _guides = Value(
+        factory=lambda: {
+            QGuideRose.Guide.CompassNorth: GuideImage("arrow_north"),
+            QGuideRose.Guide.CompassEast: GuideImage("arrow_east"),
+            QGuideRose.Guide.CompassSouth: GuideImage("arrow_south"),
+            QGuideRose.Guide.CompassWest: GuideImage("arrow_west"),
+            QGuideRose.Guide.CompassCenter: GuideImage("center"),
+        }
+    )
 
-    _box = Value(factory=lambda: GuideImage('cross_box'))
+    _box = Value(factory=lambda: GuideImage("cross_box"))
 
     def iterguides(self):
-        """ Iterate the guides for the compass.
+        """Iterate the guides for the compass.
 
         Returns
         -------
@@ -601,7 +612,7 @@ class CompassGuide(GuideHandler):
         return iter(self._guides.items())
 
     def iterboxes(self):
-        """ Iterate the boxes which lie under the guides.
+        """Iterate the boxes which lie under the guides.
 
         Returns
         -------
@@ -613,7 +624,7 @@ class CompassGuide(GuideHandler):
         yield self._box
 
     def layout(self, pos):
-        """ Layout the guides for the given position.
+        """Layout the guides for the given position.
 
         Parameters
         ----------
@@ -634,25 +645,26 @@ class CompassGuide(GuideHandler):
 
 
 class CompassExGuide(GuideHandler):
-    """ A class which renders the extended compass guide.
+    """A class which renders the extended compass guide."""
 
-    """
-    _guides = Value(factory=lambda: {
-        QGuideRose.Guide.CompassNorth: GuideImage('arrow_north'),
-        QGuideRose.Guide.CompassEast: GuideImage('arrow_east'),
-        QGuideRose.Guide.CompassSouth: GuideImage('arrow_south'),
-        QGuideRose.Guide.CompassWest: GuideImage('arrow_west'),
-        QGuideRose.Guide.CompassCenter: GuideImage('center'),
-        QGuideRose.Guide.CompassExNorth: GuideImage('bar_horizontal'),
-        QGuideRose.Guide.CompassExEast: GuideImage('bar_vertical'),
-        QGuideRose.Guide.CompassExSouth: GuideImage('bar_horizontal'),
-        QGuideRose.Guide.CompassExWest: GuideImage('bar_vertical'),
-    })
+    _guides = Value(
+        factory=lambda: {
+            QGuideRose.Guide.CompassNorth: GuideImage("arrow_north"),
+            QGuideRose.Guide.CompassEast: GuideImage("arrow_east"),
+            QGuideRose.Guide.CompassSouth: GuideImage("arrow_south"),
+            QGuideRose.Guide.CompassWest: GuideImage("arrow_west"),
+            QGuideRose.Guide.CompassCenter: GuideImage("center"),
+            QGuideRose.Guide.CompassExNorth: GuideImage("bar_horizontal"),
+            QGuideRose.Guide.CompassExEast: GuideImage("bar_vertical"),
+            QGuideRose.Guide.CompassExSouth: GuideImage("bar_horizontal"),
+            QGuideRose.Guide.CompassExWest: GuideImage("bar_vertical"),
+        }
+    )
 
-    _box = Value(factory=lambda: GuideImage('cross_ex_box'))
+    _box = Value(factory=lambda: GuideImage("cross_ex_box"))
 
     def iterguides(self):
-        """ Iterate the guides for the extented compass.
+        """Iterate the guides for the extented compass.
 
         Returns
         -------
@@ -664,7 +676,7 @@ class CompassExGuide(GuideHandler):
         return iter(self._guides.items())
 
     def iterboxes(self):
-        """ Iterate the boxes which lie under the guides.
+        """Iterate the boxes which lie under the guides.
 
         Returns
         -------
@@ -676,7 +688,7 @@ class CompassExGuide(GuideHandler):
         yield self._box
 
     def layout(self, pos):
-        """ Layout the guides for the extended compass.
+        """Layout the guides for the extended compass.
 
         Parameters
         ----------
@@ -701,25 +713,22 @@ class CompassExGuide(GuideHandler):
 
 
 class SingleGuide(GuideHandler):
-    """ A base class for defining a single guide.
+    """A base class for defining a single guide."""
 
-    """
     guide_enum = Int(QGuideRose.Guide.NoGuide)
 
-    image_name = Str('')
+    image_name = Str("")
 
-    _box = Value(factory=lambda: GuideImage('guide_box'))
+    _box = Value(factory=lambda: GuideImage("guide_box"))
 
     _guide = Typed(GuideImage)
 
     def _default__guide(self):
-        """ The default value handler for the '_guide' attribute.
-
-        """
+        """The default value handler for the '_guide' attribute."""
         return GuideImage(self.image_name)
 
     def iterguides(self):
-        """ Iterate the guides for the compass.
+        """Iterate the guides for the compass.
 
         Returns
         -------
@@ -731,7 +740,7 @@ class SingleGuide(GuideHandler):
         yield (self.guide_enum, self._guide)
 
     def iterboxes(self):
-        """ Iterate the boxes which lie under the guides.
+        """Iterate the boxes which lie under the guides.
 
         Returns
         -------
@@ -743,7 +752,7 @@ class SingleGuide(GuideHandler):
         yield self._box
 
     def layout(self, pos):
-        """ Layout the guides for the given position.
+        """Layout the guides for the given position.
 
         Parameters
         ----------
@@ -758,27 +767,24 @@ class SingleGuide(GuideHandler):
 
 
 class SplitHorizontalGuide(SingleGuide):
-    """ A single guide which uses the horizontal split image.
+    """A single guide which uses the horizontal split image."""
 
-    """
     guide_enum = set_default(QGuideRose.Guide.SplitHorizontal)
 
-    image_name = set_default('split_horizontal')
+    image_name = set_default("split_horizontal")
 
 
 class SplitVerticalGuide(SingleGuide):
-    """ A single guide which uses the vertical split image.
+    """A single guide which uses the vertical split image."""
 
-    """
     guide_enum = set_default(QGuideRose.Guide.SplitVertical)
 
-    image_name = set_default('split_vertical')
+    image_name = set_default("split_vertical")
 
 
 class AreaCenterGuide(SingleGuide):
-    """ A single guide which uses the area center image.
+    """A single guide which uses the area center image."""
 
-    """
     guide_enum = set_default(QGuideRose.Guide.AreaCenter)
 
-    image_name = set_default('center')
+    image_name = set_default("center")
