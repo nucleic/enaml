@@ -99,7 +99,7 @@ jobs:
           pip install -r test_requirements.txt
       - name: Run tests (Windows, Mac)
         if: matrix.os != 'ubuntu-latest'
-        run: python -X dev -m pytest tests --cov --cov-report xml -rs
+        run: python -X dev -m pytest tests -v --cov --cov-report xml -rs
       - name: Run tests (Linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash -l {0}
@@ -111,7 +111,7 @@ jobs:
           sleep 3
           herbstluftwm &
           sleep 1
-          python -X dev -m pytest tests --cov --cov-report xml -rs
+          python -X dev -m pytest tests -v --cov --cov-report xml -rs
       - name: Generate C++ coverage reports
         if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
         run: |
