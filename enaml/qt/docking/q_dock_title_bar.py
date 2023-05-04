@@ -21,7 +21,7 @@ from .xbms import (
 )
 
 
-class IDockTitleBar(QWidget):
+class IDockTitleBar:
     """ An interface class for defining a title bar.
 
     """
@@ -308,7 +308,8 @@ class QDockTitleBar(QFrame, IDockTitleBar):
             The parent of the title bar.
 
         """
-        super(QDockTitleBar, self).__init__(parent)
+        QFrame.__init__(self)
+        self.setParent(parent)
         self._buttons = self.CloseButton | self.MaximizeButton | self.PinButton
         self._is_editable = False
         self._force_hidden = False
