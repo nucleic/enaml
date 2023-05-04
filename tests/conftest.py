@@ -107,7 +107,7 @@ def qt_app():
 
     app = QtApplication.instance()
     if app is None:
-        app = QtApplication()
+        app = QtApplication("enaml-testing-app")
         yield app
         app.stop()
     else:
