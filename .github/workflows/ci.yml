@@ -79,27 +79,21 @@ jobs:
           CPPFLAGS: --coverage
         # Build extensions manually to allow getting C coverage data
         run: |
-          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
-          pip uninstall enaml --yes
-          python setup.py develop
+          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
       - name: Install project (with-extras pyqt)
         if: matrix.python-version == '3.10' && matrix.qt-binding == 'pyqt'
         env:
           CPPFLAGS: --coverage
         # Build extensions manually to allow getting C coverage data
         run: |
-          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
-          pip uninstall enaml --yes
-          python setup.py develop
+          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
       - name: Install project (with-extras pyside)
         if: matrix.python-version == '3.10' && matrix.qt-binding != 'pyqt'
         env:
           CPPFLAGS: --coverage
         # Build extensions manually to allow getting C coverage data
         run: |
-          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt]
-          pip uninstall enaml --yes
-          python setup.py develop
+          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt]
       - name: Install test requirements
         run: |
           pip install -r test_requirements.txt
