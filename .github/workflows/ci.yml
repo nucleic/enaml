@@ -41,11 +41,9 @@ jobs:
     steps:
       - name: Install linux only test dependency
         if: matrix.os == 'ubuntu-latest'
-        shell: bash
         # Install all dependencies needed to run Qt on linux (taken from the qt website)
         run: |
-          ls;
-          sudo apt-get update --fix-missing;
+          sudo apt-get update --fix-missing
           if [ "${{ matrix.qt-version }}" == 5 ]; then
             cat ci/qt5_linux.txt | xargs sudo apt-get -y install
           else
