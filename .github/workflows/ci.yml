@@ -39,6 +39,8 @@ jobs:
             qt-binding: pyside
       fail-fast: false
     steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
       - name: Install linux only test dependency
         if: matrix.os == 'ubuntu-latest'
         # Install all dependencies needed to run Qt on linux (taken from the qt website)
@@ -50,8 +52,6 @@ jobs:
             cat ci/qt6_linux.txt | xargs sudo apt-get -y install
           fi
           sudo apt-get install -y herbstluftwm scrot
-      - name: Checkout branch
-        uses: actions/checkout@v3
       - name: Get history and tags for SCM versioning to work
         run: |
           git fetch --prune --unshallow
