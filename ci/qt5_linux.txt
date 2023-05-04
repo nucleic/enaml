@@ -18,7 +18,6 @@ libxcb-xfixes0-dev
 libxcb-shape0-dev
 libxcb-randr0-dev
 libxcb-render-util0-dev
-libxcd-xinerama-dev
 libxkbcommon-dev
 libxkbcommon-x11-dev
 libxcb-xinerama0-dev
