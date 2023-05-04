@@ -21,3 +21,8 @@ libxcb-render-util0-dev
 libxcd-xinerama-dev
 libxkbcommon-dev
 libxkbcommon-x11-dev
+libxcb-xinerama0-dev
+libxcb-xkb-dev
+libxcb-xtest0-dev
+libegl1-mesa
+xvfb
