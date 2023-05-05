@@ -12,7 +12,6 @@ import types
 import pytest
 
 from enaml import imports
-from enaml.qt import QT_API, PYSIDE6_API
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.widgets.api import Window
@@ -23,6 +22,11 @@ from utils import (
     wait_for_destruction,
     handle_question,
 )
+
+try:
+    from enaml.qt import QT_API, PYSIDE6_API
+except ImportError:
+    pass  # test will be skipped in this case
 
 try:
     import numpy
