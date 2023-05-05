@@ -3,6 +3,11 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+0.16.1 - 05/05/2023
+-------------------
+- fix typo causing a crash in dock area PR #523
+- fix a multi-inheritance issue with pyside6 which affected the dock area PR #525
+
 0.16.0 - 21/02/2023
 -------------------
 - add support for Python 3.11+ PR #514
