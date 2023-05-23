@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2021, Nucleic Development Team.
+# Copyright (c) 2021-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,6 +11,17 @@ import pytest
 
 from enaml.core.code_generator import CodeGenerator
 
+# See Issue #521
+IMPORT_SRC = """
+import logging
+log = logging.getLogger(__name__)
+try:
+    import backend_1
+    backend_1_available = True
+except ImportError as e:
+    log.exception(e)
+    backend_1_available = False
+"""
 
 # Since we cannot have a return outside a function I am not sure we can ever
 # encounter a non-implicit return opcode.
@@ -19,6 +30,7 @@ from enaml.core.code_generator import CodeGenerator
     ("if a:\n    print("")", []),
     ("for i in range(10):\n    i", []),
     ("with open(f) as f:\n   print(f.readlines())", []),
+    (IMPORT_SRC, [])
 ])
 def test_python_block_insertion(source, return_on_lines):
     cg = CodeGenerator()
