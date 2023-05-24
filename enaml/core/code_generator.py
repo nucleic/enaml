@@ -566,9 +566,8 @@ class CodeGenerator(Atom):
                         # We use a NOP to be sure to always have a valid jump target
                         new_end = new_end or cfg.add_block([bc.Instr("NOP")])
                         block.append(bc.Instr("JUMP_FORWARD", new_end))
-
-            if new_end is not None:
-                last_block.next_block = new_end
+                    elif new_end is not None:
+                        last_block.next_block = new_end
 
             bc_code = cfg.to_bytecode()
         # Skip the LOAD_CONST RETURN_VALUE pair if it exists
