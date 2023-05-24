@@ -69,7 +69,7 @@ jobs:
           pip install setuptools-scm[toml]
           pip install numpy
           pip install git+https://github.com/we-like-parsers/pegen --no-deps
-          pip install git+https://github.com/MatthieuDartiailh/bytecode@cfg-analysis-fix
+          pip install git+https://github.com/MatthieuDartiailh/bytecode@main
           pip install git+https://github.com/nucleic/cppy@main
           pip install git+https://github.com/nucleic/atom@main
           pip install git+https://github.com/nucleic/kiwi@main
