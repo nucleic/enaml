@@ -13,7 +13,7 @@ import pytest
 import traceback
 from textwrap import dedent
 
-from enaml.compat import PY39
+from enaml.compat import PY310, PY311
 
 
 def validate_ast(py_node, enaml_node, dump_ast=False, offset=0):
@@ -81,7 +81,43 @@ def test_syntax_error_traceback_correct_path(tmpdir):
         tb = traceback.format_exc()
         print(tb)
         lines = tb.strip().split("\n")
-        assert ('File "{}", line (5, 35)'.format(test_module_path) in
-            (lines[-3] if PY39 else lines[-4]))
+        line = '\n'.join(lines[-4:])
+
+        if PY310 or PY311:
+            expected = 'File "{}", line 5'.format(test_module_path)
+        else:
+            expected = 'File "{}", line (5, 35)'.format(test_module_path)
+    finally:
+        sys.path.remove(tmpdir.strpath)
+
+
+def test_syntax_error_traceback_show_line(tmpdir):
+    """ Test that a syntax error retains the path to the file
+
+    """
+    test_module_path = os.path.join(tmpdir.strpath, 'test_syntax.enaml')
+
+    with open(test_module_path, 'w') as f:
+        f.write(dedent("""
+        from enaml.widgets.api import Container, Label
+
+        enamldf CustomLabel(Container):
+            Label # : missing intentionally
+                text = "Hello world"
+        """))
+
+    try:
+        sys.path.append(tmpdir.strpath)
+        with enaml.imports():
+            from test_syntax import CustomLabel
+        assert False, "Should raise a syntax error"
+    except Exception as e:
+        tb = traceback.format_exc()
+        print(tb)
+        lines = tb.strip().split("\n")
+        line = '\n'.join(lines[-4:])
+
+        expected = 'enamldf CustomLabel(Container):'
+        assert expected in line
     finally:
         sys.path.remove(tmpdir.strpath)
