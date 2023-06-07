@@ -16,6 +16,8 @@ from typing import Any, List, NoReturn, Optional, Tuple, TypeVar, Union
 from pegen.parser import Parser
 from pegen.tokenizer import Tokenizer
 
+from enaml.compat import PY310
+
 # Singleton ast nodes, created once for efficiency
 Load = ast.Load()
 Store = ast.Store()
@@ -78,7 +80,11 @@ class BasePythonParser(Parser):
                 token = self._tokenizer.diagnose()
                 lineno, offset = token.start
                 end_lineno, end_offset = token.end
-                raise SyntaxError("invalid syntax", (self.filename, lineno, offset, token.line, end_lineno, end_offset))
+                if PY310:
+                    args = (self.filename, lineno, offset, token.line, end_lineno, end_offset)
+                else:
+                    args = (self.filename, lineno, offset, token.line)
+                raise SyntaxError("invalid syntax", args)
 
         return res
 

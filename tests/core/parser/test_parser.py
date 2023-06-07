@@ -82,11 +82,8 @@ def test_syntax_error_traceback_correct_path(tmpdir):
         print(tb)
         lines = tb.strip().split("\n")
         line = '\n'.join(lines[-4:])
-
-        if PY310 or PY311:
-            expected = 'File "{}", line 5'.format(test_module_path)
-        else:
-            expected = 'File "{}", line (5, 35)'.format(test_module_path)
+        expected = 'File "{}", line 5'.format(test_module_path)
+        assert expected in line
     finally:
         sys.path.remove(tmpdir.strpath)
 
