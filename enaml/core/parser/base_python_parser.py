@@ -76,7 +76,9 @@ class BasePythonParser(Parser):
                 raise self._exception
             else:
                 token = self._tokenizer.diagnose()
-                raise SyntaxError("invalid syntax", (self.filename, token.start, 0, token.line))
+                lineno, offset = token.start
+                end_lineno, end_offset = token.end
+                raise SyntaxError("invalid syntax", (self.filename, lineno, offset, token.line, end_lineno, end_offset))
 
         return res
 
