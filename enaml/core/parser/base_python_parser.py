@@ -101,7 +101,9 @@ class BasePythonParser(Parser):
 
     def raise_indentation_error(self, msg) -> None:
         """Raise an indentation error."""
-        raise IndentationError(msg)
+        node = self._tokenizer.peek()
+        self.store_syntax_error_known_location(msg, node, IndentationError)
+        raise self._exception
 
     def get_expr_name(self, node) -> str:
         """Get a descriptive name for an expression."""
@@ -253,7 +255,8 @@ class BasePythonParser(Parser):
         self,
         message: str,
         start: Optional[Tuple[int, int]] = None,
-        end: Optional[Tuple[int, int]] = None
+        end: Optional[Tuple[int, int]] = None,
+        exc_type: type = SyntaxError
     ) -> None:
         line_from_token = start is None and end is None
         if start is None or end is None:
@@ -272,7 +275,7 @@ class BasePythonParser(Parser):
         args = (self.filename, start[0], start[1], line)
         if sys.version_info >= (3, 10):
             args += (end[0], end[1])
-        self._exception = SyntaxError(message, args)
+        self._exception = exc_type(message, args)
 
     def store_syntax_error(self, message: str) -> None:
         self._store_syntax_error(message)
@@ -281,7 +284,12 @@ class BasePythonParser(Parser):
         self._store_syntax_error(message)
         return self._exception
 
-    def store_syntax_error_known_location(self, message: str, node) -> None:
+    def store_syntax_error_known_location(
+        self,
+        message: str,
+        node,
+        exc_type: type = SyntaxError
+    ) -> None:
         """Store a syntax error that occured at a given AST node."""
         if isinstance(node, tokenize.TokenInfo):
             start = node.start
@@ -290,7 +298,7 @@ class BasePythonParser(Parser):
             start = node.lineno, node.col_offset
             end = node.end_lineno, node.end_col_offset
 
-        self._store_syntax_error(message, start, end)
+        self._store_syntax_error(message, start, end, exc_type)
 
     def store_syntax_error_known_range(
         self,

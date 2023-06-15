@@ -118,3 +118,149 @@ def test_syntax_error_traceback_show_line(tmpdir):
         assert expected in line
     finally:
         sys.path.remove(tmpdir.strpath)
+
+
+INDENTATION_TESTS = {
+     "enamldef-block": (
+        """
+        from enaml.widgets.api import Window, Container, Label
+
+        enamldef MainWindow(Window):
+        attr x = 1
+        """,
+        "attr x = 1",
+    ),
+    "childdef-block": (
+        """
+        from enaml.widgets.api import Window, Container, Label
+
+        enamldef MainWindow(Window):
+            Container:
+            Label: # no indent
+                text = "Hello world"
+        """,
+        "Label: # no indent",
+    ),
+    "childdef-indent-mismatch": (
+        """
+        from enaml.widgets.api import Window, Container, Label
+
+        enamldef MainWindow(Window):
+            Container:
+                Label:
+                    text = "Hello world"
+                 Label: # indent mismatch
+                    text = "Hello world"
+        """,
+        "Label: # indent mismatch",
+    ),
+    "childdef-attr": (
+        """
+        from enaml.widgets.api import Window, Container, Label
+
+        enamldef MainWindow(Window):
+            Container:
+                Label:
+                text = 'Hello world'
+        """,
+        "text = 'Hello world'"
+    ),
+    "if-block": (
+        """
+        from enaml.widgets.api import Window
+
+        enamldef MainWindow(Window):
+            func go():
+                if True:
+                x = 1
+                else:
+                    x = 0
+        """,
+        "x = 1",
+    ),
+    "for-block": (
+        """
+        from enaml.widgets.api import Window
+
+        enamldef MainWindow(Window):
+            func go():
+                x = 0
+                for i in range(4):
+                x += 1
+        """,
+        "x += 1"
+    ),
+    "try-block": (
+        """
+        from enaml.widgets.api import Window
+        enamldef MainWindow(Window):
+            func go():
+                try:
+                x = 1/0
+                except Exception as e:
+                    print(e)
+        """,
+        "x = 1/0"
+    ),
+    "except-block": (
+        """
+        from enaml.widgets.api import Window
+
+        enamldef MainWindow(Window):
+            func go():
+                try:
+                    x = 0
+                except Exception as e:
+                print(e)
+        """,
+        "print(e)"
+    ),
+    "finally-block": (
+        """
+        from enaml.widgets.api import Window
+
+        enamldef MainWindow(Window):
+            func go():
+                try:
+                    x = 0
+                finally:
+                x = 2
+                return 3
+        """,
+        "x = 2"
+    ),
+    "class": (
+        """
+        from enaml.widgets.api import Window, Container, Label
+
+        class Foo:
+            x = 1
+           def add():
+               self.x += 1
+        """,
+        "def add()",
+    ),
+}
+
+@pytest.mark.parametrize("label", INDENTATION_TESTS.keys())
+def test_indent_error_traceback_show_line(tmpdir, label):
+    """ Test that a syntax error retains the path to the file
+
+    """
+    test_module_path = os.path.join(tmpdir.strpath, f'test_indent_{label}.enaml')
+    source, expected= INDENTATION_TESTS[label]
+    with open(test_module_path, 'w') as f:
+        f.write(dedent(source.lstrip("\n")))
+    try:
+        sys.path.append(tmpdir.strpath)
+        with enaml.imports():
+            __import__(f"test_indent_{label}")
+        assert False, "Should raise a identation error"
+    except IndentationError as e:
+        tb = traceback.format_exc()
+        print(tb)
+        lines = tb.strip().split("\n")
+        line = '\n'.join(lines[-4:])
+        assert expected in line
+    finally:
+        sys.path.remove(tmpdir.strpath)
