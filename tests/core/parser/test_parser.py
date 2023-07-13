@@ -98,7 +98,7 @@ def test_syntax_error_traceback_show_line(tmpdir):
         f.write(dedent("""
         from enaml.widgets.api import Container, Label
 
-        enamldf CustomLabel(Container):
+        enamldef CustomLabel(Container):
             Label # : missing intentionally
                 text = "Hello world"
         """))
@@ -114,7 +114,7 @@ def test_syntax_error_traceback_show_line(tmpdir):
         lines = tb.strip().split("\n")
         line = '\n'.join(lines[-4:])
 
-        expected = 'enamldf CustomLabel(Container):'
+        expected = 'enamldef CustomLabel(Container):'
         assert expected in line
     finally:
         sys.path.remove(tmpdir.strpath)
