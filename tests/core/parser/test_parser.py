@@ -114,7 +114,7 @@ def test_syntax_error_traceback_show_line(tmpdir):
         lines = tb.strip().split("\n")
         line = '\n'.join(lines[-4:])
 
-        expected = 'enamldef CustomLabel(Container):'
+        expected = 'Label # : missing intentionally'
         assert expected in line
     finally:
         sys.path.remove(tmpdir.strpath)
