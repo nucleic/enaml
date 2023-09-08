@@ -6,7 +6,7 @@ Dates are written as DD/MM/YYYY
 XXXXX
 -----
 - fix bug in Enaml parser that was not showing proper location of syntax and
-  indentatoin errors in tracebacks when the error was in an Enaml file.
+  indentation errors in tracebacks when the error was in an Enaml file.
 
 0.16.1 - 05/05/2023
 -------------------
