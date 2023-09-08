@@ -85,7 +85,7 @@ def validate_parser_is_up_to_date():
         last_source_modif
     ), (
         "Generated parser appears outdated compared to its sources, "
-        "re-generate it using enaml/core/parser/generate_enaml_parser.enaml"
+        "re-generate it using `python -m enaml.core.parser.generate_enaml_parser`"
     )
 
 

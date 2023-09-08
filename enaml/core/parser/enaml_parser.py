@@ -8,13 +8,12 @@
 # NOTE This file was generated using enaml/core/parser/generate_enaml_parser.py
 # DO NOT EDIT DIRECTLY
 import ast
-import itertools
 import sys
+import itertools
 from typing import Any, List, NoReturn, Optional, Tuple, TypeVar, Union
 
-from pegen.parser import Parser, logger, memoize, memoize_left_rec
-
 from enaml.core import enaml_ast
+from pegen.parser import Parser, logger, memoize, memoize_left_rec
 
 from .base_enaml_parser import BaseEnamlParser as Parser
 
@@ -22,6 +21,8 @@ from .base_enaml_parser import BaseEnamlParser as Parser
 Load = ast.Load()
 Store = ast.Store()
 Del = ast.Del()
+
+
 # Keywords and soft keywords are listed at the end of the parser definition.
 class EnamlParser(Parser):
     @memoize
@@ -9697,54 +9698,54 @@ class EnamlParser(Parser):
         return None
 
     KEYWORDS = (
-        "nonlocal",
-        "global",
-        "True",
-        "while",
-        "for",
-        "elif",
-        "del",
-        "from",
-        "pass",
-        "def",
-        "except",
-        "None",
-        "with",
+        "class",
         "or",
-        "return",
+        "del",
         "not",
-        "and",
-        "await",
-        "finally",
         "in",
+        "await",
+        "except",
+        "return",
+        "try",
         "import",
+        "break",
+        "else",
+        "for",
+        "with",
+        "async",
+        "None",
+        "assert",
+        "global",
+        "if",
+        "as",
+        "True",
         "yield",
         "raise",
-        "assert",
-        "else",
-        "False",
-        "lambda",
-        "class",
-        "async",
-        "break",
-        "if",
-        "try",
-        "as",
-        "continue",
+        "and",
+        "finally",
         "is",
+        "while",
+        "pass",
+        "from",
+        "False",
+        "elif",
+        "lambda",
+        "nonlocal",
+        "def",
+        "continue",
     )
     SOFT_KEYWORDS = (
-        "event",
-        "template",
-        "attr",
-        "const",
-        "func",
-        "pragma",
         "case",
-        "alias",
-        "_",
-        "enamldef",
+        "template",
         "match",
+        "event",
+        "alias",
+        "attr",
+        "enamldef",
+        "const",
+        "_",
+        "pragma",
+        "func",
     )
 
 
