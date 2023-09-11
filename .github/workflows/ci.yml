@@ -40,7 +40,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install linux only test dependency
         if: matrix.os == 'ubuntu-latest'
         # Install all dependencies needed to run Qt on linux (taken from the qt website)
