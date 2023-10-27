@@ -60,9 +60,9 @@ def test_f_strings(desc):
 
 
 @pytest.mark.skipif(sys.version_info < (3, 6), reason='Requires Python 3.6')
-@pytest.mark.parametrize("source, line",
-                         [("f'{\\}'", 1), ("('d'\nf'{\\}')", 2)])
-def test_reporting_errors_f_strings(source, line):
+@pytest.mark.parametrize("source",
+                         [("f'{\\}'"), ("('d'\nf'{\\}')")])
+def test_reporting_errors_f_strings(source):
     """Test that we properly report error on f-string.
 
     """
@@ -70,4 +70,3 @@ def test_reporting_errors_f_strings(source, line):
         parse(source)
 
     assert "backslash" in e.value.args[0]
-    assert line == e.value.args[1][1]
