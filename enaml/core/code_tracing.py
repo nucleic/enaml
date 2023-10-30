@@ -680,9 +680,8 @@ def inject_inversion(bytecode):
     elif i_name == "LOAD_ATTR":
         new_code.extend(call_inverter_load_attr(i_arg[1] if PY312 else i_arg))
     elif i_name == "CALL":
-        # TODO optimize out dead branch based on version
         # In Python 3.11 PRECALL is before CALL (CALL is new in 3.11)
-        if PY311:
+        if not PY312:
             new_code.pop()  # Remove PRECALL
         new_code.extend(call_inverter_call_function(i_arg))
     elif i_name == "CALL_FUNCTION":
