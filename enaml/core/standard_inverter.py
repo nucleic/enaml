@@ -47,7 +47,7 @@ class StandardInverter(CodeInverter):
         setattr(obj, attr, value)
 
     def call_function(self, func, argtuple, argspec, value):
-        """ Called before the CALL_FUNCTION opcode is executed.
+        """ Called before the CALL opcode is executed.
 
         This method inverts a call to the builtin `getattr` into a call
         to the builtin `setattr`. All other calls will raise.
