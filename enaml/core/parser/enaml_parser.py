@@ -5514,7 +5514,7 @@ class EnamlParser(Parser):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
             return ast.Constant(
-                value=t.string.encode(),
+                value=t.string,
                 lineno=start_lineno,
                 col_offset=start_col_offset,
                 end_lineno=end_lineno,
