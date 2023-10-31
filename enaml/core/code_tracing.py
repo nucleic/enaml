@@ -285,6 +285,16 @@ if PY312:
             Instr("POP_TOP"),                             # obj
         ]
 
+    def call_tracer_return_const(tracer_op: str, const, Instr=bc.Instr):
+        return [
+            Instr("PUSH_NULL"),                           # obj -> null
+            Instr(tracer_op, '_[tracer]'),                # obj -> null -> tracer
+            Instr("LOAD_ATTR", (False, 'return_value')),  # obj -> null -> tracefunc
+            Instr("LOAD_CONST", const),                   # obj -> null -> tracefunc -> obj
+            Instr("CALL", 0x0001),                        # obj -> retval
+            Instr("POP_TOP"),                             # obj
+        ]
+
 elif PY311:
     def call_tracer_load_attr(tracer_op: str, i_arg: int, Instr=bc.Instr):
         return [                                # obj
@@ -350,6 +360,9 @@ elif PY311:
             Instr("POP_TOP"),                    # obj
         ]
 
+    def call_tracer_return_const(tracer_op: str, const, Instr=bc.Instr):
+        raise NotImplementedError()
+
 else:
     def call_tracer_load_attr(tracer_op: str, i_arg: int, Instr=bc.Instr):
         return [                                # obj
@@ -407,6 +420,9 @@ else:
             Instr("CALL_FUNCTION", 0x0001),      # obj -> retval
             Instr("POP_TOP"),                    # obj
         ]
+
+    def call_tracer_return_const(tracer_op: str, const, Instr=bc.Instr):
+        raise NotImplementedError()
 
 
 def inject_tracing(bytecode, nested=False):
@@ -476,6 +492,8 @@ def inject_tracing(bytecode, nested=False):
             inserts[idx] = call_tracer_get_iter(tracer_op)
         elif i_name == "RETURN_VALUE":
             inserts[idx] = call_tracer_return_value(tracer_op)
+        elif i_name == "RETURN_CONST":
+            inserts[idx] = call_tracer_return_const(tracer_op, i_arg)
         elif isinstance(i_arg, CodeType):
             # Inject tracing in nested code object if they use their parent
             # locals.
