@@ -226,13 +226,24 @@ py_expr[enaml_ast.PythonExpression]:
 decl_funcdef:
     | 'async' a=sync_decl_fundef {
         enaml_ast.AsyncFuncDef(
-            funcdef=ast.AsyncFunctionDef(
-                name=a.funcdef.name,
-                args=a.funcdef.args,
-                returns=a.funcdef.returns,
-                body=a.funcdef.body,
-                decorator_list=a.funcdef.decorator_list,
-                LOCATIONS,
+            funcdef=(
+                ast.AsyncFunctionDef(
+                    name=a.funcdef.name,
+                    args=a.funcdef.args,
+                    returns=a.funcdef.returns,
+                    body=a.funcdef.body,
+                    decorator_list=a.funcdef.decorator_list,
+                    type_params=[],
+                    LOCATIONS,
+                ) if sys.version_info >= (3, 12)
+                else ast.AsyncFunctionDef(
+                    name=a.funcdef.name,
+                    args=a.funcdef.args,
+                    returns=a.funcdef.returns,
+                    body=a.funcdef.body,
+                    decorator_list=a.funcdef.decorator_list,
+                    LOCATIONS,
+                )
             ),
             is_override=a.is_override,
             LOCATIONS
@@ -243,13 +254,24 @@ decl_funcdef:
 sync_decl_fundef:
     | "func" a=NAME '(' b=[params] ')' r=['->' z=expression { z }] &&':' c=block {
         enaml_ast.FuncDef(
-            funcdef=ast.FunctionDef(
-                name=a.string,
-                args=b or self.make_arguments(None, [], None, [], None),
-                returns=r,
-                body=self.validate_decl_func_body(c),
-                decorator_list=[],
-                LOCATIONS
+            funcdef=(
+                ast.FunctionDef(
+                    name=a.string,
+                    args=b or self.make_arguments(None, [], None, [], None),
+                    returns=r,
+                    body=self.validate_decl_func_body(c),
+                    decorator_list=[],
+                    type_params=[],
+                    LOCATIONS
+                ) if sys.version_info >= (3, 12)
+                else ast.FunctionDef(
+                    name=a.string,
+                    args=b or self.make_arguments(None, [], None, [], None),
+                    returns=r,
+                    body=self.validate_decl_func_body(c),
+                    decorator_list=[],
+                    LOCATIONS
+                )
             ),
             is_override=False,
             LOCATIONS
@@ -257,13 +279,24 @@ sync_decl_fundef:
      }
     | a=NAME x='=' y='>' '(' b=[params] ')' r=['->' z=expression { z }] &&':' c=block {
         enaml_ast.FuncDef(
-            funcdef=ast.FunctionDef(
-                name=a.string,
-                args=b or self.make_arguments(None, [], None, [], None),
-                returns=r,
-                body=self.validate_decl_func_body(c),
-                decorator_list=[],
-                LOCATIONS
+            funcdef=(
+                ast.FunctionDef(
+                    name=a.string,
+                    args=b or self.make_arguments(None, [], None, [], None),
+                    returns=r,
+                    body=self.validate_decl_func_body(c),
+                    decorator_list=[],
+                    type_params=[],
+                    LOCATIONS
+                ) if sys.version_info >= (3, 12)
+                else ast.FunctionDef(
+                    name=a.string,
+                    args=b or self.make_arguments(None, [], None, [], None),
+                    returns=r,
+                    body=self.validate_decl_func_body(c),
+                    decorator_list=[],
+                    LOCATIONS
+                )
             ),
             is_override=True,
             LOCATIONS

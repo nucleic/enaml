@@ -595,16 +595,31 @@ class EnamlParser(Parser):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
             return enaml_ast.AsyncFuncDef(
-                funcdef=ast.AsyncFunctionDef(
-                    name=a.funcdef.name,
-                    args=a.funcdef.args,
-                    returns=a.funcdef.returns,
-                    body=a.funcdef.body,
-                    decorator_list=a.funcdef.decorator_list,
-                    lineno=start_lineno,
-                    col_offset=start_col_offset,
-                    end_lineno=end_lineno,
-                    end_col_offset=end_col_offset,
+                funcdef=(
+                    ast.AsyncFunctionDef(
+                        name=a.funcdef.name,
+                        args=a.funcdef.args,
+                        returns=a.funcdef.returns,
+                        body=a.funcdef.body,
+                        decorator_list=a.funcdef.decorator_list,
+                        type_params=[],
+                        lineno=start_lineno,
+                        col_offset=start_col_offset,
+                        end_lineno=end_lineno,
+                        end_col_offset=end_col_offset,
+                    )
+                    if sys.version_info >= (3, 12)
+                    else ast.AsyncFunctionDef(
+                        name=a.funcdef.name,
+                        args=a.funcdef.args,
+                        returns=a.funcdef.returns,
+                        body=a.funcdef.body,
+                        decorator_list=a.funcdef.decorator_list,
+                        lineno=start_lineno,
+                        col_offset=start_col_offset,
+                        end_lineno=end_lineno,
+                        end_col_offset=end_col_offset,
+                    )
                 ),
                 is_override=a.is_override,
                 lineno=start_lineno,
@@ -637,16 +652,31 @@ class EnamlParser(Parser):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
             return enaml_ast.FuncDef(
-                funcdef=ast.FunctionDef(
-                    name=a.string,
-                    args=b or self.make_arguments(None, [], None, [], None),
-                    returns=r,
-                    body=self.validate_decl_func_body(c),
-                    decorator_list=[],
-                    lineno=start_lineno,
-                    col_offset=start_col_offset,
-                    end_lineno=end_lineno,
-                    end_col_offset=end_col_offset,
+                funcdef=(
+                    ast.FunctionDef(
+                        name=a.string,
+                        args=b or self.make_arguments(None, [], None, [], None),
+                        returns=r,
+                        body=self.validate_decl_func_body(c),
+                        decorator_list=[],
+                        type_params=[],
+                        lineno=start_lineno,
+                        col_offset=start_col_offset,
+                        end_lineno=end_lineno,
+                        end_col_offset=end_col_offset,
+                    )
+                    if sys.version_info >= (3, 12)
+                    else ast.FunctionDef(
+                        name=a.string,
+                        args=b or self.make_arguments(None, [], None, [], None),
+                        returns=r,
+                        body=self.validate_decl_func_body(c),
+                        decorator_list=[],
+                        lineno=start_lineno,
+                        col_offset=start_col_offset,
+                        end_lineno=end_lineno,
+                        end_col_offset=end_col_offset,
+                    )
                 ),
                 is_override=False,
                 lineno=start_lineno,
@@ -670,16 +700,31 @@ class EnamlParser(Parser):
             end_lineno, end_col_offset = tok.end
             return (
                 enaml_ast.FuncDef(
-                    funcdef=ast.FunctionDef(
-                        name=a.string,
-                        args=b or self.make_arguments(None, [], None, [], None),
-                        returns=r,
-                        body=self.validate_decl_func_body(c),
-                        decorator_list=[],
-                        lineno=start_lineno,
-                        col_offset=start_col_offset,
-                        end_lineno=end_lineno,
-                        end_col_offset=end_col_offset,
+                    funcdef=(
+                        ast.FunctionDef(
+                            name=a.string,
+                            args=b or self.make_arguments(None, [], None, [], None),
+                            returns=r,
+                            body=self.validate_decl_func_body(c),
+                            decorator_list=[],
+                            type_params=[],
+                            lineno=start_lineno,
+                            col_offset=start_col_offset,
+                            end_lineno=end_lineno,
+                            end_col_offset=end_col_offset,
+                        )
+                        if sys.version_info >= (3, 12)
+                        else ast.FunctionDef(
+                            name=a.string,
+                            args=b or self.make_arguments(None, [], None, [], None),
+                            returns=r,
+                            body=self.validate_decl_func_body(c),
+                            decorator_list=[],
+                            lineno=start_lineno,
+                            col_offset=start_col_offset,
+                            end_lineno=end_lineno,
+                            end_col_offset=end_col_offset,
+                        )
                     ),
                     is_override=True,
                     lineno=start_lineno,
