@@ -1,10 +1,10 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2013-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 import ast
 from contextlib import contextmanager
 
@@ -544,7 +544,14 @@ class CodeGenerator(Atom):
         """Insert the compiled code for a Python Expression ast or string."""
         code = compile(pydata, self.filename, mode="eval")
         bc_code = bc.Bytecode.from_code(code)
-        if trim:  # skip ReturnValue
+        if PY311:  # Trim irrelevant RESUME opcode
+            bc_code = bc_code[1:]
+        if bc_code[-1].name == "RETURN_CONST":
+            bc_code[-1] = bc.Instr(
+                "LOAD_CONST", bc_code[-1].arg, location=bc_code[-1].location
+            )
+            trim = False
+        if trim:  # skip RETURN_VALUE opcode
             bc_code = bc_code[:-1]
         self.code_ops.extend(bc_code)
 
