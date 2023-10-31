@@ -462,7 +462,7 @@ def inject_tracing(bytecode, nested=False):
             # arguments and the argument is directly the number of arguments
             # on the stack.
             inserts[idx] = call_tracer_call_function(tracer_op, i_arg)
-        elif i_name == "CALL" and last_i_name != "KW_NAMES":
+        elif PY312 and i_name == "CALL" and last_i_name != "KW_NAMES":
             # On Python 3.12, CALL is not preceded with a PRECALL
             # Skip, if the last instruction was a KW_NAMES
             inserts[idx] = call_tracer_call_function(tracer_op, i_arg)
