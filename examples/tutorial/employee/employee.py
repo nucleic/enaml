@@ -48,7 +48,7 @@ class Person(Atom):
 
         """
         # grab the current date time
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         # estimate the person's age within one year accuracy
         age = now.year - self.dob.year
         # check to see if the current date is before their birthday and
