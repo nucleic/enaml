@@ -30,6 +30,10 @@ jobs:
           - python-version: '3.10'
             qt-version: 5
             qt-binding: pyside
+          # Segfaults on exit on all OSes (11/2023)
+          - python-version: '3.12'
+            qt-version: 6
+            qt-binding: pyside
           - python-version: '3.11'
             qt-version: 5
           - python-version: '3.12'
