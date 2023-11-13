@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2023, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -85,7 +85,7 @@ class StandardWriteHandler(WriteHandler, HandlerMixin):
 class StandardTracedReadHandler(ReadHandler, HandlerMixin):
     """ An expression read handler which traces code execution.
 
-    This handler is used in conjuction with the standard '<<' operator.
+    This handler is used in conjunction with the standard '<<' operator.
 
     """
     def __call__(self, owner, name):

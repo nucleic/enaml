@@ -118,6 +118,13 @@ class CodeGenerator(Atom):
             else:
                 bc_code.flags ^= bc_code.flags & flag
         bc_code.update_flags()
+        # Ensure all code objects starts with a RESUME to get the right frame
+        if PY311:
+            for i, instr in enumerate(bc_code):
+                if isinstance(instr, bc.Instr):
+                    if instr.name != "RESUME":
+                        bc_code.insert(i, bc.Instr("RESUME", 0))
+                    break
 
         return bc_code.to_code()
 
@@ -499,6 +506,8 @@ class CodeGenerator(Atom):
             _inspector.visit(pydata)
         code = compile(pydata, self.filename, mode="exec")
         bc_code = bc.Bytecode.from_code(code)
+        if PY311:  # Trim irrelevant RESUME opcode
+            bc_code = bc_code[1:]
         # On python 3.10 with a with or try statement the implicit return None
         # can be duplicated. We remove return None from all basic blocks when
         # it was not present in the AST
