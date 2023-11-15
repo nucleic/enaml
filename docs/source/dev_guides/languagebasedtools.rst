@@ -140,7 +140,7 @@ Pygments is an open-source generic syntax highlighter. It is used by
 An Enaml lexer for Pygments is available at ``tools/pygments``.
 
 To install, change into the ``./tools/pygments`` directory, and run
-``python setup.py install``.
+``pip install -e .``.
 
 Alternatively, it can be installed directly from `PyPi`_: ``pip install pygments-enaml``
 

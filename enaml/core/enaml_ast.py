@@ -10,8 +10,10 @@ import sys
 
 from atom.api import Atom, Bool, Enum, Int, List, Str, Instance, Tuple, Typed
 
-if sys.version_info >= (3, 9):
-    bases = (ast.AST, Atom)
+if sys.version_info >= (3, 12):
+    bases = (Atom,)
+elif sys.version_info >= (3, 9):
+    bases = (ast.AST, Atom,)
 else:
     bases = (Atom,)
 

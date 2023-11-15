@@ -145,7 +145,7 @@ class StandardTracer(CodeTracer):
             self.trace_atom(obj, attr)
 
     def call_function(self, func, argtuple: tuple, nargs: int):
-        """ Called before the CALL_FUNCTION opcode is executed.
+        """ Called before the CALL opcode is executed.
 
         This will trace the func if it is the builtin `getattr` and the
         object is an Atom instance. See also: `CodeTracer.call_function`
