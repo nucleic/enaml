@@ -1,14 +1,11 @@
 Welcome to Enaml
 ================
 
-.. image:: https://travis-ci.org/nucleic/enaml.svg?branch=main
-    :target: https://travis-ci.org/nucleic/enaml
-    :alt: Build Status
+.. image:: https://github.com/nucleic/enaml/workflows/Continuous%20Integration/badge.svg
+    :target: https://github.com/nucleic/enaml/actions
 .. image:: https://ci.appveyor.com/api/projects/status/p2bapt3y6n7xixcl?svg=true
     :target: https://ci.appveyor.com/project/nucleic/enaml
     :alt: Appveyor Build Status
-.. image:: https://github.com/nucleic/enaml/workflows/Continuous%20Integration/badge.svg
-    :target: https://github.com/nucleic/enaml/actions
 .. image:: https://codecov.io/gh/nucleic/enaml/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/nucleic/enaml
     :alt: Code Coverage Status

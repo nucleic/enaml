@@ -3,14 +3,14 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.17.0 - unreleased
+0.17.0 - 20/11/2023
 -------------------
 - support for Python 3.12 PR #535
   Python 3.12 is only tested with Qt6
   All syntactic features of Python 3.12 are supported and catching error groups
   is now supported.
-- fix bug in Enaml parser that was not showing proper location of syntax and
-  indentation errors in tracebacks when the error was in an Enaml file.
+- fix a bug in Enaml parser that was not showing proper location of syntax and
+  indentation errors in tracebacks when the error was in an Enaml file. PR #530
 
 0.16.1 - 05/05/2023
 -------------------
