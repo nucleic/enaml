@@ -112,7 +112,7 @@ jobs:
         name: python-package-distributions
         path: dist/
     - name: Sign the dists with Sigstore
-      uses: sigstore/gh-action-sigstore-python@v1.2.3
+      uses: sigstore/gh-action-sigstore-python@v2.1.0
       with:
         password: ${{ secrets.pypi_password }}
         inputs: >-
