@@ -112,7 +112,7 @@ jobs:
         name: artifact
         path: dist
     - name: Sign the dists with Sigstore
-      uses: sigstore/gh-action-sigstore-python@v2.1.0
+      uses: sigstore/gh-action-sigstore-python@v2.1.1
       with:
         password: ${{ secrets.pypi_password }}
         inputs: >-
