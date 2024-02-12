@@ -41,7 +41,7 @@ jobs:
         run: |
           pip install .
       - name: Install graphviz
-        uses: ts-graphviz/setup-graphviz@v1
+        uses: ts-graphviz/setup-graphviz@v2
       - name: Build documentation
         run: |
           cd docs
