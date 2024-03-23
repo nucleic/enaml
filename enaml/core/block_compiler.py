@@ -111,6 +111,10 @@ class FirstPassBlockCompiler(BaseBlockCompiler):
         # Grab the index of the parent node for later use.
         self.aux_index_map[node] = self.parent_index()
 
+    def visit_ConstExpr(self, node):
+        # Grab the index of the parent node for later use.
+        self.aux_index_map[node] = self.parent_index()
+
     def visit_FuncDef(self, node):
         # Grab the index of the parent node for later use.
         self.aux_index_map[node] = self.parent_index()
@@ -179,6 +183,12 @@ class SecondPassBlockCompiler(BaseBlockCompiler):
         cmn.gen_storage_expr(cg, node, index, self.local_names)
         if node.expr is not None:
             cmn.gen_operator_binding(cg, node.expr, index, node.name)
+
+    def visit_ConstExpr(self, node):
+        # Generate the code for the const expression.
+        cg = self.code_generator
+        index = self.parent_index()
+        cmn.gen_const_expr(cg, node, index, self.local_names)
 
     def visit_FuncDef(self, node):
         # Generate the code for the function declaration.

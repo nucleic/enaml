@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from functools import update_wrapper
 
-from atom.api import Event, Instance, Member, add_member
+from atom.api import Event, Instance, Member, ReadOnly, add_member
 from atom.datastructures.api import sortedmap
 
 from .alias import Alias
@@ -125,7 +125,7 @@ def add_storage(node, name, store_type, kind):
     store_type : type or None
         The type of values to allow on the attribute.
 
-    kind : 'attr' or 'event'
+    kind : 'attr', 'event', or 'const'
         The kind of storage to add to the class.
 
     """
@@ -151,6 +151,8 @@ def add_storage(node, name, store_type, kind):
         new = d_(Event(store_type), writable=False, final=False)
     elif kind == 'attr':
         new = d_(Instance(store_type), final=False)
+    elif kind == 'const':
+        new = d_(ReadOnly(store_type), final=False)
     else:
         raise RuntimeError("invalid kind '%s'" % kind)
 

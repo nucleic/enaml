@@ -21,8 +21,6 @@ from .base_enaml_parser import BaseEnamlParser as Parser
 Load = ast.Load()
 Store = ast.Store()
 Del = ast.Del()
-
-
 # Keywords and soft keywords are listed at the end of the parser definition.
 class EnamlParser(Parser):
     @memoize
@@ -416,7 +414,7 @@ class EnamlParser(Parser):
 
     @memoize
     def child_def_simple_item(self) -> Optional[Any]:
-        # child_def_simple_item: binding | ex_binding | alias_expr | storage_expr | 'pass' NEWLINE
+        # child_def_simple_item: binding | ex_binding | alias_expr | storage_expr | const_expr | 'pass' NEWLINE
         mark = self._mark()
         tok = self._tokenizer.peek()
         start_lineno, start_col_offset = tok.start
@@ -431,6 +429,9 @@ class EnamlParser(Parser):
         self._reset(mark)
         if storage_expr := self.storage_expr():
             return storage_expr
+        self._reset(mark)
+        if const_expr := self.const_expr():
+            return const_expr
         self._reset(mark)
         if (self.expect("pass")) and (self.expect("NEWLINE")):
             tok = self._tokenizer.get_last_non_whitespace_token()

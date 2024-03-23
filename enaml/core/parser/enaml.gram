@@ -164,6 +164,7 @@ child_def_simple_item:
     | ex_binding
     | alias_expr
     | storage_expr
+    | const_expr
     | 'pass' NEWLINE { ast.Pass(LOCATIONS) }
 
 # --- Binding --------------------------------------------------------------------------

@@ -862,6 +862,61 @@ def gen_storage_expr(cg, node, index, local_names):
         cg.pop_top()
 
 
+def gen_const_expr(cg, node, index, local_names):
+    """ Generate the code for a const expression.
+
+    The caller should ensure that NODE_LIST is present in the fast
+    locals of the code object.
+
+    Parameters
+    ----------
+    cg : CodeGenerator
+        The code generator with which to write the code.
+
+    node : ConstExpr
+        The enaml ast node of interest.
+
+    index : int
+        The index of the target node in the node list.
+
+    local_names : set
+        The set of fast local names available to the code object.
+
+    """
+    with cg.try_squash_raise():
+        cg.set_lineno(node.lineno)
+        if PY311:
+            cg.push_null()
+        load_helper(cg, 'add_storage')
+        load_node(cg, index)
+        cg.load_const(node.name)
+        if node.typename:
+            load_typename(cg, node.typename, local_names)
+        else:
+            cg.load_const(None)
+        cg.load_const("const")
+        cg.call_function(4)
+        cg.pop_top()
+
+    # Generate the operator
+    code = sanitize_operator_code(cg.filename, 'eval', node.expr.ast)
+    with cg.try_squash_raise():
+        cg.set_lineno(node.lineno)
+        if PY311:
+            cg.push_null()
+        load_helper(cg, 'run_operator')
+        load_node(cg, index)
+        # For operators not in a template instance the scope_node and the node
+        # are one and the same hence the dup_top.
+        cg.dup_top()
+        cg.load_const(node.name)
+        cg.load_const("=")
+        cg.load_const(code)
+        cg.load_fast(F_GLOBALS)
+        cg.call_function(6)
+        cg.pop_top()
+
+
 def _insert_decl_function(cg, funcdef):
     """ Create and place a declarative function on the TOS.
 
