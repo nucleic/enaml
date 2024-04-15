@@ -241,6 +241,24 @@ def test_syntax_20():
     compile_source(source, 'Main')
 
 
+def test_syntax_21():
+    source = dedent("""\
+    template Other(*Args):
+        Slider:
+            pass
+
+    template Main(Model):
+        const args = [
+            m for m in Model.members().values()
+            if isinstance(m, Float)
+        ]
+        Other(args): *all:
+            pass
+
+    """)
+    compile_source(source, 'Main')
+
+
 #------------------------------------------------------------------------------
 # Bad Template Syntax
 #------------------------------------------------------------------------------

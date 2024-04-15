@@ -588,10 +588,14 @@ class CodeGenerator(Atom):
         stored_names = set()
         code_ops = self.code_ops
         for idx, instr in enumerate(code_ops):
+            if not isinstance(instr, bc.Instr):
+                continue
             if instr.name == "STORE_NAME":
                 stored_names.add(instr.arg)
                 instr.name = "STORE_FAST"
         for idx, instr in enumerate(code_ops):
+            if not isinstance(instr, bc.Instr):
+                continue
             i_name = instr.name
             if i_name == "LOAD_NAME":
                 i_arg = instr.arg
