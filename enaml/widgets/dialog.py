@@ -22,6 +22,9 @@ class ProxyDialog(ProxyWindow):
     def exec_(self):
         raise NotImplementedError
 
+    def open(self):
+        raise NotImplementedError
+
     def done(self, result):
         raise NotImplementedError
 
@@ -67,6 +70,16 @@ class Dialog(Window):
         if not self.proxy_is_active:
             self.activate_proxy()
         return self.proxy.exec_()
+
+    def open(self):
+        """ Launch the dialog as a modal window.
+
+        """
+        if not self.is_initialized:
+            self.initialize()
+        if not self.proxy_is_active:
+            self.activate_proxy()
+        return self.proxy.open()
 
     def done(self, result):
         """ Close the dialog and set the result value.
