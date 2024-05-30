@@ -69,7 +69,7 @@ enamldef Main(MainWindow): window:
         Label:
             text = f"Rejected: {window.rejected}"
 
-        PushButton: async_button
+        PushButton: async_button:
             text = "Launch Dialog Asynchronously"
             clicked::
                 window.do_starting()
