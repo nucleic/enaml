@@ -74,6 +74,8 @@ class Dialog(Window):
     def open(self):
         """ Launch the dialog as a modal window.
 
+        Note that this is nonblocking and you will recieve
+        the result via the `finished` and `accepted` or `rejected` events.
         """
         if not self.is_initialized:
             self.initialize()
