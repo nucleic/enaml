@@ -113,9 +113,10 @@ def test_dialog_asynchronous(enaml_qtbot):
 
     # click the Ok button in the dialog.
     enaml_qtbot.mouseClick(next(otherWindow for otherWindow in window.windows if otherWindow.title == 'Test Dialog').ok_button.proxy.widget, QtCore.Qt.LeftButton)
+    enaml_qtbot.waitUntil(lambda: len(window.windows) == 1)
 
     # FIXME it appears as if dialogs do not properly unregister themselves from the window set when closed and out of scope.
-    #assert len(window.windows) == 1
+    assert len(window.windows) == 1
     assert window.starting == 1
     assert window.started  == 1
     assert window.finished == 1
@@ -125,7 +126,7 @@ def test_dialog_asynchronous(enaml_qtbot):
     # click the button to launch the dialog.
     enaml_qtbot.mouseClick(window.async_button.proxy.widget, QtCore.Qt.LeftButton)
 
-    #assert len(window.windows) == 2
+    assert len(window.windows) == 2
     assert window.starting == 2
     assert window.started  == 2
     assert window.finished == 1
@@ -134,8 +135,9 @@ def test_dialog_asynchronous(enaml_qtbot):
 
     # click the Cancel button in the dialog.
     enaml_qtbot.mouseClick(next(otherWindow for otherWindow in window.windows if otherWindow.title == 'Test Dialog').cancel_button.proxy.widget, QtCore.Qt.LeftButton)
+    enaml_qtbot.waitUntil(lambda: len(window.windows) == 1)
 
-    #assert len(window.windows) == 1
+    assert len(window.windows) == 1
     assert window.starting == 2
     assert window.started  == 2
     assert window.finished == 2
