@@ -38,8 +38,12 @@ jobs:
             qt-version: 5
           - python-version: '3.12'
             qt-version: 5
-          - python-version: '3.13'
+          - python-version: '3.13-dev'
             qt-version: 5
+          # No available wheels (26-082-024)
+          - python-version: '3.13-dev'
+            qt-version: 6
+            qt-binding: pyside
           - os: ubuntu-latest
             qt-version: 6
             qt-binding: pyside
