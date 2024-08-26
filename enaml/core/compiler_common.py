@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -14,7 +14,7 @@ from types import CodeType
 import bytecode as bc
 from atom.api import Str, Typed
 
-from ..compat import PY38, PY311, PY312
+from ..compat import PY311, PY312
 from .code_generator import CodeGenerator
 from .enaml_ast import (
     AliasExpr, ASTVisitor, Binding, ChildDef, EnamlDef, StorageExpr, Template,
@@ -880,10 +880,7 @@ def _insert_decl_function(cg, funcdef):
     global_vars, has_defs = analyse_globals_and_func_defs(funcdef)
 
     # generate the code object which will create the function
-    if PY38:
-        mod = ast.Module(body=[funcdef], type_ignores=[])
-    else:
-        mod = ast.Module(body=[funcdef])
+    mod = ast.Module(body=[funcdef], type_ignores=[])
     code = compile(mod, cg.filename, mode='exec')
 
     # convert to a bytecode object and remove the leading and

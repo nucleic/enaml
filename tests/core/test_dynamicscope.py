@@ -12,7 +12,6 @@ from collections import Counter
 import pytest
 
 from atom.datastructures.api import sortedmap
-from enaml.compat import PY39
 from enaml.core.dynamicscope import UserKeyError, DynamicScope
 
 
@@ -123,7 +122,7 @@ def test_dynamic_scope_creation():
     referents = gc.get_referents(dynamicscope)
     supposed_referents = (
         [owner, change, tracer, locs, globs, builtins] +
-        ([type(dynamicscope)] if PY39 else [])
+        ([type(dynamicscope)])
     )
     assert len(referents) == len(supposed_referents)
     for r in referents:
@@ -258,7 +257,7 @@ def test_dynamicscope_lifecycle(dynamicscope, nonlocals):
     owner, tracer = dynamicscope[1][0], dynamicscope[1][-1]
     assert 'Nonlocals[' in repr(nonlocals)
     assert (Counter(gc.get_referents(nonlocals)) ==
-        Counter([owner, tracer] + ([type(nonlocals)] if PY39 else []))
+        Counter([owner, tracer] + ([type(nonlocals)]))
     )
 
     del dynamicscope

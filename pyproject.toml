@@ -1,5 +1,5 @@
 # --------------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@
 name = "enaml"
 description = "Declarative DSL for building rich user interfaces in Python"
 readme = "README.rst"
-requires-python = ">=3.8,!=3.11.0,!=3.11.1"
+requires-python = ">=3.10,!=3.11.0,!=3.11.1"
 license = {file = "LICENSE"}
 authors = [
   {name = "The Nucleic Development Team", email = "sccolbert@gmail.com"}
@@ -22,11 +22,10 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dependencies = [
@@ -83,7 +82,7 @@ include-package-data = false
 write_to = "enaml/version.py"
 write_to_template = """
 # --------------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #

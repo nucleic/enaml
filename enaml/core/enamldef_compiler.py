@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,7 +8,7 @@
 from . import block_compiler as block
 from . import compiler_common as cmn
 from .enaml_ast import EnamlDef
-from ..compat import POS_ONLY_ARGS, PY311
+from ..compat import PY311
 
 
 class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
@@ -105,20 +105,12 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
         # Build the enamldef class
         cg.build_tuple(1)
         cg.build_map()
-        if POS_ONLY_ARGS:
-            cg.load_const('__module__')
-            cg.load_global('__name__')
-        else:
-            cg.load_global('__name__')
-            cg.load_const('__module__')
+        cg.load_const('__module__')
+        cg.load_global('__name__')
         cg.add_map()                               # helper -> name -> bases -> dict
         if node.docstring:
-            if POS_ONLY_ARGS:
-                cg.load_const('__doc__')
-                cg.load_const(node.docstring)
-            else:
-                cg.load_const(node.docstring)
-                cg.load_const('__doc__')
+            cg.load_const('__doc__')
+            cg.load_const(node.docstring)
             cg.add_map()
         cg.call_function(3)                         # class
 

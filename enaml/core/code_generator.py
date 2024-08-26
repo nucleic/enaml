@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,7 +11,7 @@ from contextlib import contextmanager
 import bytecode as bc
 from atom.api import Atom, Bool, Int, List, Str
 
-from ..compat import POS_ONLY_ARGS, PY38, PY39, PY310, PY311, PY312
+from ..compat import PY310, PY311, PY312, PY313
 
 
 class _ReturnNoneIdentifier(ast.NodeVisitor):
@@ -95,8 +95,7 @@ class CodeGenerator(Atom):
             - self.varargs
             - self.varkwargs
         )
-        if POS_ONLY_ARGS:
-            bc_code.posonlyargcount = self.posonlyargs
+        bc_code.posonlyargcount = self.posonlyargs
         bc_code.kwonlyargcount = self.kwonlyargs
 
         for name in ("name", "filename", "firstlineno", "docstring"):
@@ -299,9 +298,17 @@ class CodeGenerator(Atom):
         """Make a function from a code object on the TOS."""
         if not PY311:
             self.load_const(name)
-        self.code_ops.append(  # TOS -> qual_name -> code -> defaults
-            bc.Instr("MAKE_FUNCTION", flags),  # TOS -> func
-        )
+        if PY313:
+            self.code_ops.extend(
+                (
+                    bc.Instr("MAKE_FUNCTION"), # TOS -> qual_name -> code
+                    bc.Instr("SET_FUNCTION_ATTRIBUTE", flags),  # TOS -> func -> attrs
+                )
+            )
+        else:
+            self.code_ops.append(  # TOS -> qual_name -> code -> defaults
+                bc.Instr("MAKE_FUNCTION", flags),  # TOS -> func
+            )
 
     def push_null(self):
         """Push NULL on the TOS."""
@@ -417,7 +424,7 @@ class CodeGenerator(Atom):
             ]
             self.code_ops.extend(ops)
         else:
-            op_code = "SETUP_FINALLY" if PY38 else "SETUP_EXCEPT"
+            op_code = "SETUP_FINALLY"
             self.code_ops.append(
                 bc.Instr(op_code, exc_label),  # TOS
             )
@@ -443,8 +450,6 @@ class CodeGenerator(Atom):
                 bc.Instr("JUMP_FORWARD", end_label),  # TOS
                 end_label,  # TOS
             ]
-            if not PY39:
-                ops.insert(-1, bc.Instr("END_FINALLY"))
             self.code_ops.extend(ops)
 
     @contextmanager
@@ -467,10 +472,9 @@ class CodeGenerator(Atom):
         # automatically
         end_label = bc.Label()
         load_op = "LOAD_FAST" if fast_var else "LOAD_GLOBAL"
-        if PY38:
-            self.code_ops.append(
-                bc.Instr("SETUP_LOOP", end_label),
-            )
+        self.code_ops.append(
+            bc.Instr("SETUP_LOOP", end_label),
+        )
         if PY311 and not fast_var:
             # LOAD_GLOBAL expects a tuple on 3.11
             iter_var = (False, iter_var)
@@ -491,11 +495,10 @@ class CodeGenerator(Atom):
                 jump_label,
             ]
         )
-        if PY38:
-            self.code_ops.extend(
-                bc.Instr("POP_BLOCK"),
-                end_label,
-            )
+        self.code_ops.extend(
+            bc.Instr("POP_BLOCK"),
+            end_label,
+        )
         if PY312:
             self.code_ops.append(bc.Instr("END_FOR"))
 
