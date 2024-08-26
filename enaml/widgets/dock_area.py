@@ -91,7 +91,7 @@ class DockArea(ConstraintsWidget):
     #:
     #: Only one mode of styling should be used for the dock area at a
     #: time. Using both modes simultaneously is undefined.
-    style = d_(Str('vs-2010'))
+    style = d_(Str('vs-2024'))
 
     #: Whether or not dock events are enabled for the area.
     dock_events_enabled = d_(Bool(False))

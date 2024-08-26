@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2014-2017, Nucleic Development Team.
+# Copyright (c) 2014-2024,, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -29,11 +29,11 @@ class QtApplication(Application):
 
     def __init__(self,  appname=None):
         """ Initialize a QtApplication.
-        
+
         Parameters
         ----------
         appname : str, optional
-            Explicit application name to use for setting the WM_CLASS attribute 
+            Explicit application name to use for setting the WM_CLASS attribute
             on Linux.
 
         """
@@ -42,7 +42,7 @@ class QtApplication(Application):
             self._qapp = QApplication.instance() or QApplication([appname])
         else:
             self._qapp = QApplication.instance() or QApplication([])
-            
+
         self.resolver = ProxyResolver(factories=QT_FACTORIES)
 
     #--------------------------------------------------------------------------

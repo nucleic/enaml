@@ -742,7 +742,7 @@ template MetroStyle():
 # Registry
 #------------------------------------------------------------------------------
 __STYLE_REGISTRY = {
-    'vs-2010': VS2010Style,
+    'vs-2024': VS2010Style,
     'grey-wind': GreyWindStyle,
     'new-moon': NewMoonStyle,
     'metro': MetroStyle

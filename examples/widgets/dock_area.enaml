@@ -206,7 +206,7 @@ enamldef Main(Window):
         ObjectCombo: style_c:
             items = available_styles()
             to_string = cap_case
-            selected = 'vs-2010'
+            selected = 'vs-2024'
         CheckBox: c_box:
             text = 'Enable Dock Events'
             checked := area.dock_events_enabled
