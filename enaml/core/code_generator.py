@@ -299,12 +299,15 @@ class CodeGenerator(Atom):
         if not PY311:
             self.load_const(name)
         if PY313:
-            self.code_ops.extend(
-                (
-                    bc.Instr("MAKE_FUNCTION"), # TOS -> qual_name -> code
-                    bc.Instr("SET_FUNCTION_ATTRIBUTE", flags),  # TOS -> func -> attrs
+            if flags:
+                self.code_ops.extend(
+                    (
+                        bc.Instr("MAKE_FUNCTION"), # TOS -> qual_name -> code
+                        bc.Instr("SET_FUNCTION_ATTRIBUTE", flags),  # TOS -> func -> attrs
+                    )
                 )
-            )
+            else:
+                self.code_ops.append(bc.Instr("MAKE_FUNCTION"))
         else:
             self.code_ops.append(  # TOS -> qual_name -> code -> defaults
                 bc.Instr("MAKE_FUNCTION", flags),  # TOS -> func
@@ -318,7 +321,13 @@ class CodeGenerator(Atom):
 
     def call_function(self, n_args=0, n_kwds=0):
         """Call a function on the TOS with the given args and kwargs."""
-        if PY311:
+        if PY313 and n_kwds:
+             # NOTE: In Python 3.13 the caller must push null
+            # onto the stack before calling this
+            # TOS -> null -> func -> args -> kwargs_names -> kwargs (tuple)
+            arg = n_args + n_kwds
+            self.code_ops.append(bc.Instr("CALL_KW", arg))
+        elif PY311:
             # NOTE: In Python 3.11 the caller must push null
             # onto the stack before calling this
             # TOS -> null -> func -> args -> kwargs -> kwargs_names
