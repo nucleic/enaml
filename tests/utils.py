@@ -19,8 +19,8 @@ from enaml.application import timed_call
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse
 from enaml.widgets.api import Window, Dialog, PopupView
-with enaml.imports():
-    from enaml.stdlib.message_box import MessageBox
+# with enaml.imports():
+#     from enaml.stdlib.message_box import MessageBox
 
 # Timeout for qtbot wait (the value used is large due to Travis being sometimes
 # very slow).
