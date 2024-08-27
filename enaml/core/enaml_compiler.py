@@ -11,7 +11,7 @@ from . import compiler_common as cmn
 from .enaml_ast import Module
 from .enamldef_compiler import EnamlDefCompiler
 from .template_compiler import TemplateCompiler
-from ..compat import PY311
+from ..compat import PY311, PY313
 
 # Increment this number whenever the compiler changes the code which it
 # generates. This number is used by the import hooks to know which version
@@ -228,16 +228,22 @@ class EnamlCompiler(cmn.CompilerBase):
         cg.set_lineno(node.lineno)
 
         with cg.try_squash_raise():
-            if PY311:
+            # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+            # Python 3.13 one after
+            if not PY313 and PY311:
                 cg.push_null()
 
             # Load and validate the parameter specializations
             for index, param in enumerate(node.parameters.positional):
                 spec = param.specialization
                 if spec is not None:
-                    if PY311:
+                    # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+                    # Python 3.13 one after
+                    if not PY313 and PY311:
                         cg.push_null()
                     cmn.load_helper(cg, 'validate_spec', from_globals=True)
+                    if PY313:
+                        cg.push_null()
                     cg.load_const(index)
                     cmn.safe_eval_ast(
                         cg, spec.ast, node.name, param.lineno, set()
@@ -268,6 +274,9 @@ class EnamlCompiler(cmn.CompilerBase):
             # Load and call the helper which will build the template
             cmn.load_helper(cg, 'make_template', from_globals=True)
             cg.rot_three()
+            if PY313:
+                cg.push_null()
+                cg.rot_three()
             cg.load_const(node.name)
             cg.load_global('globals', push_null=True)
             cg.call_function()

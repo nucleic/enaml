@@ -321,12 +321,12 @@ class CodeGenerator(Atom):
 
     def call_function(self, n_args=0, n_kwds=0):
         """Call a function on the TOS with the given args and kwargs."""
-        if PY313 and n_kwds:
-             # NOTE: In Python 3.13 the caller must push null
+        if PY313:
+            # NOTE: In Python 3.13 the caller must push null
             # onto the stack before calling this
-            # TOS -> null -> func -> args -> kwargs_names -> kwargs (tuple)
+            # TOS -> func -> null -> args -> kwargs_names -> kwargs (tuple)
             arg = n_args + n_kwds
-            self.code_ops.append(bc.Instr("CALL_KW", arg))
+            self.code_ops.append(bc.Instr("CALL_KW" if n_kwds else "CALL", arg))
         elif PY311:
             # NOTE: In Python 3.11 the caller must push null
             # onto the stack before calling this

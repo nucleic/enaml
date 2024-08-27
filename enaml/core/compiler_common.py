@@ -14,11 +14,11 @@ from types import CodeType
 import bytecode as bc
 from atom.api import Str, Typed
 
-from ..compat import PY311, PY312
+from ..compat import PY311, PY312, PY313
 from .code_generator import CodeGenerator
 from .enaml_ast import (
     AliasExpr, ASTVisitor, Binding, ChildDef, EnamlDef, StorageExpr, Template,
-    TemplateInst, PythonExpression, PythonModule, FuncDef
+    TemplateInst, PythonExpression, PythonModule, FuncDef, OperatorExpr, TemplateInstBinding
 )
 
 #: The name of the compiler helpers in the global scope.
@@ -85,7 +85,7 @@ def unhandled_pragma(name, filename, lineno):
     warnings.warn_explicit(msg, SyntaxWarning, filename, lineno)
 
 
-def warn_pragmas(node, filename):
+def warn_pragmas(node, filename: str) -> None:
     """ Emit a warning if there are any pragmas defined on the node.
 
     Parameters
@@ -128,7 +128,7 @@ def should_store_locals(node):
     return False
 
 
-def count_nodes(node):
+def count_nodes(node: Template) -> int:
     """ Count the number of compiler nodes needed for the template.
 
     Parameters
@@ -175,7 +175,7 @@ def has_list_comp(pyast):
     return False
 
 
-def fetch_helpers(cg):
+def fetch_helpers(cg: CodeGenerator) -> None:
     """ Fetch the compiler helpers and store in fast locals.
 
     This function should be called once on a code generator before
@@ -191,7 +191,7 @@ def fetch_helpers(cg):
     cg.store_fast(C_HELPERS)
 
 
-def fetch_globals(cg):
+def fetch_globals(cg: CodeGenerator) -> None:
     """ Fetch the globals and store in fast locals.
 
     Parameters
@@ -205,7 +205,7 @@ def fetch_globals(cg):
     cg.store_fast(F_GLOBALS)
 
 
-def load_helper(cg, name, from_globals=False):
+def load_helper(cg: CodeGenerator, name: str, from_globals: bool=False):
     """ Load a compiler helper onto the TOS.
 
     The caller should have already invoked the 'fetch_locals' function
@@ -233,7 +233,7 @@ def load_helper(cg, name, from_globals=False):
     cg.binary_subscr()
 
 
-def load_name(cg, name, local_names):
+def load_name(cg: CodeGenerator, name: str, local_names: set[str]) -> None:
     """ Load a name onto the TOS.
 
     If the name exists in the local names set, it is loaded from
@@ -257,7 +257,7 @@ def load_name(cg, name, local_names):
         cg.load_global(name)
 
 
-def load_typename(cg, node, local_names):
+def load_typename(cg: CodeGenerator, node: ast.Name | ast.Attribute, local_names: set[str]) -> None:
     """ Load a dotted name onto the TOS.
 
     If the name exists in the local names set, it is loaded from
@@ -284,7 +284,7 @@ def load_typename(cg, node, local_names):
         raise TypeError('Unsupported node %s' % type(node))
 
 
-def make_node_list(cg, count):
+def make_node_list(cg: CodeGenerator, count: int):
     """ Create the node list and store in fast locals.
 
     Parameters
@@ -303,7 +303,7 @@ def make_node_list(cg, count):
     cg.store_fast(NODE_LIST)
 
 
-def store_node(cg, index):
+def store_node(cg: CodeGenerator, index: int):
     """ Store the node on TOS into the node list.
 
     The caller should ensure that NODE_LIST exists in fast locals.
@@ -322,7 +322,7 @@ def store_node(cg, index):
     cg.store_subscr()
 
 
-def load_node(cg, index):
+def load_node(cg: CodeGenerator, index: int):
     """ Load the node at the given index in the node list.
 
     The caller should ensure that NODE_LIST exists in fast locals.
@@ -341,7 +341,7 @@ def load_node(cg, index):
     cg.binary_subscr()
 
 
-def append_node(cg, parent, index):
+def append_node(cg: CodeGenerator, parent: int, index: int):
     """ Append the node on the TOS as a child of the specified node.
 
     The caller should ensure that NODE_LIST exists in fast locals.
@@ -358,11 +358,15 @@ def append_node(cg, parent, index):
         The index of the target node in the node list.
 
     """
-    if PY311:
+    # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+    # Python 3.13 one after
+    if not PY313 and PY311:
         cg.push_null()
     load_node(cg, parent)
     cg.load_attr('children')
     cg.load_attr('append')
+    if PY313:
+        cg.push_null()
     load_node(cg, index)
     cg.call_function(1)
     cg.pop_top()
@@ -420,7 +424,7 @@ def analyse_globals_and_func_defs(pyast):
 
 
 if PY311:
-    def rewrite_globals_access(code, global_vars: set):
+    def rewrite_globals_access(code, global_vars: set[str]) -> None:
         """Update the function code global loads
 
         This will rewrite the function to convert each LOAD_GLOBAL opcode
@@ -443,7 +447,7 @@ if PY311:
             code.insert(idx, bc.Instr("PUSH_NULL"))
 
 else:
-    def rewrite_globals_access(code, global_vars: set):
+    def rewrite_globals_access(code, global_vars: set[str]) -> None:
         """Update the function code global loads
 
         This will rewrite the function to convert each LOAD_GLOBAL opcode
@@ -457,7 +461,7 @@ else:
                 instr.name = "LOAD_NAME"
 
 
-def run_in_dynamic_scope(code, global_vars):
+def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
     """Wrap functions defined in operators/decl func to run them in the proper
     dynamic scope.
 
@@ -494,12 +498,14 @@ def run_in_dynamic_scope(code, global_vars):
             inner.update_flags()
             i_arg = inner.to_code()
         elif any(i_name == make_fun_op for make_fun_op in _MAKE_FUNC):
-            cg.code_ops.append(bc.Instr(i_name, i_arg))  # func
-            load_helper(cg, 'wrap_func')                 # func -> wrap
-            cg.rot_two()                                 # wrap -> func
-            if PY311:
+            # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+            # Python 3.13 one after
+            if not PY313 and PY311:
                 cg.push_null()
-                cg.rot_three()
+            load_helper(cg, 'wrap_func')                 # wrap
+            if PY313:
+                cg.push_null()
+            cg.code_ops.append(bc.Instr(i_name, i_arg))  # wrap -> func
             cg.load_global('__scope__')                  # wrap -> func -> scope
             cg.call_function(2)                          # wrapped
             continue
@@ -512,7 +518,7 @@ def run_in_dynamic_scope(code, global_vars):
     code.update_flags()
 
 
-def gen_child_def_node(cg, node, local_names):
+def gen_child_def_node(cg: CodeGenerator, node: ChildDef, local_names: set[str]) -> None:
     """ Generate the code to create the child def compiler node.
 
     The caller should ensure that SCOPE_KEY is present in the fast
@@ -534,11 +540,16 @@ def gen_child_def_node(cg, node, local_names):
     load_name(cg, node.typename, local_names)
     with cg.try_squash_raise():
         cg.dup_top()
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
-            cg.rot_two()
+            cg.rot_two()                        # base -> null -> base
         load_helper(cg, 'validate_declarative')
         cg.rot_two()                            # base -> helper -> base
+        if PY313:
+            cg.push_null()
+            cg.rot_two()                        # base -> helper -> null -> base
         cg.call_function(1)                     # base -> retval
         cg.pop_top()                            # base
 
@@ -546,13 +557,19 @@ def gen_child_def_node(cg, node, local_names):
     store_types = (StorageExpr, AliasExpr, FuncDef)
     if any(isinstance(item, store_types) for item in node.body):
 
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
-            cg.rot_two()  # null -> base
+            cg.rot_two()                        # null -> base
 
         # Create the class code
         cg.load_build_class()
         cg.rot_two()                            # builtins.__build_class_ -> base
+
+        if PY313:
+            cg.push_null()
+            cg.rot_two()                        # builtins.__build_class_ -> null -> base
 
         class_cg = CodeGenerator()
         class_cg.filename = cg.filename
@@ -577,19 +594,24 @@ def gen_child_def_node(cg, node, local_names):
         cg.call_function(3)                     # class
 
     # Build the declarative compiler node
-    if PY311:
+    # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+    # Python 3.13 one after
+    if not PY313 and PY311:
         cg.push_null()
-        cg.rot_two()  # null -> class
+        cg.rot_two()                            # null -> class
     store_locals = should_store_locals(node)
     load_helper(cg, 'declarative_node')
-    cg.rot_two()
+    cg.rot_two()                                # helper -> class
+    if PY313:
+        cg.push_null()
+        cg.rot_two()                            # helper -> null -> class
     cg.load_const(node.identifier)
     cg.load_fast(SCOPE_KEY)
     cg.load_const(store_locals)                 # helper -> class -> identifier -> key -> bool
     cg.call_function(4)                         # node
 
 
-def gen_template_inst_node(cg, node, local_names):
+def gen_template_inst_node(cg: CodeGenerator, node: TemplateInst, local_names: set[str]) -> None:
     """ Generate the code to create a template inst compiler node.
 
     The caller should ensure that SCOPE_KEY is present in the fast
@@ -611,11 +633,16 @@ def gen_template_inst_node(cg, node, local_names):
     load_name(cg, node.name, local_names)
     with cg.try_squash_raise():
         cg.dup_top()
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
             cg.rot_two()  # null -> template
         load_helper(cg, 'validate_template')
         cg.rot_two()
+        if PY313:
+            cg.push_null()
+            cg.rot_two()  # helper -> null -> template
         cg.call_function(1)
         cg.pop_top()
 
@@ -623,7 +650,8 @@ def gen_template_inst_node(cg, node, local_names):
     arguments = node.arguments
     if PY311:
         cg.push_null()
-        cg.rot_two()  # null -> template
+        if PY313:
+            cg.rot_two()  # null -> template
 
     for arg in arguments.args:
         safe_eval_ast(cg, arg.ast, node.name, arg.lineno, local_names)
@@ -648,22 +676,32 @@ def gen_template_inst_node(cg, node, local_names):
         starname = identifiers.starname
         with cg.try_squash_raise():
             cg.dup_top()
-            if PY311:
+            # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+            # Python 3.13 one after
+            if not PY313 and PY311:
                 cg.push_null()
                 cg.rot_two()  # null -> template_inst
             load_helper(cg, 'validate_unpack_size')
             cg.rot_two()
+            if PY313:
+                cg.push_null()
+                cg.rot_two()  # helper -> null -> template_inst
             cg.load_const(len(names))
             cg.load_const(bool(starname))
             cg.call_function(3)
             cg.pop_top()
 
     # Load and call the helper to create the compiler node
-    if PY311:
+    # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+    # Python 3.13 one after
+    if not PY313 and PY311:
         cg.push_null()
         cg.rot_two()  # null -> tmpl
     load_helper(cg, 'template_inst_node')
     cg.rot_two()
+    if PY313:
+        cg.push_null()
+        cg.rot_two()  # helper -> null -> tmpl
     cg.load_const(names)
     cg.load_const(starname)
     cg.load_fast(SCOPE_KEY)
@@ -671,7 +709,7 @@ def gen_template_inst_node(cg, node, local_names):
     cg.call_function(5)
 
 
-def sanitize_operator_code(filename, mode, ast):
+def sanitize_operator_code(filename: str, mode, ast):
     """ Take special care of handling globals and function definitions.
 
     If an operator contains global access using the global keyword, those should
@@ -710,7 +748,7 @@ def sanitize_operator_code(filename, mode, ast):
     return b_code.to_code()
 
 
-def gen_template_inst_binding(cg, node, index):
+def gen_template_inst_binding(cg: CodeGenerator, node: TemplateInstBinding, index: int) -> None:
     """ Generate the code for a template inst binding.
 
     The caller should ensure that UNPACK_MAP and F_GLOBALS are present
@@ -736,9 +774,13 @@ def gen_template_inst_binding(cg, node, index):
 
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
         load_helper(cg, 'run_operator')
+        if PY313:
+            cg.push_null()
         load_node(cg, index)
         cg.load_fast(UNPACK_MAP)
         cg.load_const(node.name)
@@ -751,7 +793,7 @@ def gen_template_inst_binding(cg, node, index):
         cg.pop_top()
 
 
-def gen_operator_binding(cg, node, index, name):
+def gen_operator_binding(cg: CodeGenerator, node, index: int, name: str) -> None:
     """ Generate the code for an operator binding.
 
     The caller should ensure that F_GLOBALS and NODE_LIST are present
@@ -794,7 +836,7 @@ def gen_operator_binding(cg, node, index, name):
         cg.pop_top()
 
 
-def gen_alias_expr(cg, node, index):
+def gen_alias_expr(cg: CodeGenerator, node: AliasExpr, index: int) -> None:
     """ Generate the code for an alias expression.
 
     The caller should ensure that NODE_LIST is present in the fast
@@ -814,9 +856,13 @@ def gen_alias_expr(cg, node, index):
     """
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
         load_helper(cg, 'add_alias')
+        if PY313:
+            cg.push_null()
         load_node(cg, index)
         cg.load_const(node.name)
         cg.load_const(node.target)
@@ -825,7 +871,7 @@ def gen_alias_expr(cg, node, index):
         cg.pop_top()
 
 
-def gen_storage_expr(cg, node, index, local_names):
+def gen_storage_expr(cg: CodeGenerator, node: StorageExpr, index: int, local_names: set[str]) -> None:
     """ Generate the code for a storage expression.
 
     The caller should ensure that NODE_LIST is present in the fast
@@ -848,9 +894,13 @@ def gen_storage_expr(cg, node, index, local_names):
     """
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
         load_helper(cg, 'add_storage')
+        if PY313:
+            cg.push_null()
         load_node(cg, index)
         cg.load_const(node.name)
         if node.typename:
@@ -919,7 +969,7 @@ def _insert_decl_function(cg, funcdef):
     cg.code_ops.extend(outer_ops)
 
 
-def gen_decl_funcdef(cg, node, index):
+def gen_decl_funcdef(cg: CodeGenerator, node: FuncDef, index: int) -> None:
     """ Generate the code for a declarative function definition.
 
     The caller should ensure that NODE_LIST is present in the fast
@@ -939,9 +989,13 @@ def gen_decl_funcdef(cg, node, index):
     """
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
         load_helper(cg, 'add_decl_function')
+        if PY313:
+            cg.push_null()
         load_node(cg, index)
         _insert_decl_function(cg, node.funcdef)
         cg.load_const(node.is_override)
@@ -957,7 +1011,7 @@ class CompilerBase(ASTVisitor):
     filename = Str()
 
     #: The code generator to use for this compiler.
-    code_generator = Typed(CodeGenerator)
+    code_generator = Typed(CodeGenerator, optional=False)
 
     def _default_code_generator(self):
         """ Create the default code generator instance.
