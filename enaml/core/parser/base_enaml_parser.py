@@ -52,10 +52,6 @@ class BaseEnamlParser(BasePythonParser):
             ast=ast.Module(
                 body=stmts,
                 type_ignores=[],
-                lineno=stmts[0].lineno,
-                col_offset=stmts[0].col_offset,
-                end_lineno=stmts[-1].end_lineno,
-                end_col_offset=stmts[-1].end_col_offset,
             ),
             lineno=stmts[0].lineno,
             col_offset=stmts[0].col_offset,
