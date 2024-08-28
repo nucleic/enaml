@@ -165,11 +165,16 @@ class CodeGenerator(Atom):
         """Load an attribute from the object on TOS."""
         if PY312:
             args = (push_null_or_self, name)
+        elif PY311:
+            args = name
+            self.code_ops.append("DUP_TOP")
         else:
             args = name
         self.code_ops.append(  # TOS -> obj
             bc.Instr("LOAD_ATTR", args),  # TOS -> value
         )
+        if not PY312 and PY311:
+            self.rot_two()
 
     def store_global(self, name):
         """Store the TOS as a global."""

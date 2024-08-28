@@ -358,15 +358,9 @@ def append_node(cg: CodeGenerator, parent: int, index: int):
         The index of the target node in the node list.
 
     """
-    # Python 3.11 and 3.12 requires a NULL before a function that is not a method
-    # Python 3.13 one after
-    if not PY313 and PY311:
-        cg.push_null()
     load_node(cg, parent)
     cg.load_attr('children')
-    cg.load_attr('append')
-    if PY313:
-        cg.push_null()
+    cg.load_attr('append', push_null_or_self=True)
     load_node(cg, index)
     cg.call_function(1)
     cg.pop_top()
@@ -498,14 +492,17 @@ def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
             inner.update_flags()
             i_arg = inner.to_code()
         elif any(i_name == make_fun_op for make_fun_op in _MAKE_FUNC):
+            cg.code_ops.append(bc.Instr(i_name, i_arg))  # func
+            load_helper(cg, 'wrap_func')                 # func -> wrap
+            cg.rot_two()                                 # wrap -> func
             # Python 3.11 and 3.12 requires a NULL before a function that is not a method
             # Python 3.13 one after
-            if not PY313 and PY311:
-                cg.push_null()
-            load_helper(cg, 'wrap_func')                 # wrap
-            if PY313:
-                cg.push_null()
-            cg.code_ops.append(bc.Instr(i_name, i_arg))  # wrap -> func
+            if PY311:
+                cg.push_null()                           # wrap -> func -> null
+                if PY313:
+                    cg.rot_two()                         # wrap -> null -> func
+                else:
+                    cg.rot_three()                       # null -> wrap -> func
             cg.load_global('__scope__')                  # wrap -> func -> scope
             cg.call_function(2)                          # wrapped
             continue
@@ -649,8 +646,8 @@ def gen_template_inst_node(cg: CodeGenerator, node: TemplateInst, local_names: s
     # Load the arguments for the instantiation call.
     arguments = node.arguments
     if PY311:
-        cg.push_null()
-        if PY313:
+        cg.push_null()    # template -> null
+        if not PY313:
             cg.rot_two()  # null -> template
 
     for arg in arguments.args:
@@ -821,9 +818,11 @@ def gen_operator_binding(cg: CodeGenerator, node, index: int, name: str) -> None
 
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
-        if PY311:
+        if not PY313 and PY311:
             cg.push_null()
         load_helper(cg, 'run_operator')
+        if PY313:
+            cg.push_null()
         load_node(cg, index)
         # For operators not in a template instance the scope_node and the node
         # are one and the same hence the dup_top.
@@ -949,7 +948,17 @@ def _insert_decl_function(cg, funcdef):
     #   ...
     #   LOAD_CONST      (<code object>)
     #   MAKE_FUCTION    (flag)              // TOS
-    code_index = -2 if PY311 else -3
+    code_offset = -1 if PY311 else -2
+
+    # Look for the MAKE_FUNCTION instruction
+    # 3.13 make the exact position variable due to the possible existence of
+    # a SET_FUNCTION_ATTRIBUTE
+    code_index = -1
+    for index, i in enumerate(outer_ops):
+        if i.name == "MAKE_FUNCTION":
+            break
+    code_index = index + code_offset
+    assert code_index > 0
 
     # extract the inner code object which represents the actual
     # function code and update its flags

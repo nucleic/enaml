@@ -215,11 +215,13 @@ class EnamlCompiler(cmn.CompilerBase):
     def visit_EnamlDef(self, node):
         # Invoke the enamldef code and store result in the namespace.
         cg = self.code_generator
-        if PY311:
+        if not PY313 and PY311:
             cg.push_null()
         code = EnamlDefCompiler.compile(node, cg.filename)
         cg.load_const(code)
         cg.make_function()
+        if PY313:
+            cg.push_null()
         cg.call_function()
         cg.store_global(node.typename)
 
@@ -233,6 +235,7 @@ class EnamlCompiler(cmn.CompilerBase):
             if not PY313 and PY311:
                 cg.push_null()
 
+            # XXX
             # Load and validate the parameter specializations
             for index, param in enumerate(node.parameters.positional):
                 spec = param.specialization
@@ -264,19 +267,19 @@ class EnamlCompiler(cmn.CompilerBase):
             # Under Python 3.6+ default positional arguments are passed as a
             # single tuple and MAKE_FUNCTION is passed the flag 0x01 to
             # indicate that there is default positional arguments.
-            cg.build_tuple(len(node.parameters.keywords))
+            cg.build_tuple(len(node.parameters.keywords))            # tuple
 
             # Generate the template code and function
             code = TemplateCompiler.compile(node, cg.filename)
-            cg.load_const(code)
-            cg.make_function(0x01)
+            cg.load_const(code)                                      # tuple -> code
+            cg.make_function(0x01)                                   # tuple -> func
 
             # Load and call the helper which will build the template
-            cmn.load_helper(cg, 'make_template', from_globals=True)
-            cg.rot_three()
+            cmn.load_helper(cg, 'make_template', from_globals=True)  # tuple -> helper -> func
+            cg.rot_three()                                           # func -> tuple
             if PY313:
                 cg.push_null()
-                cg.rot_three()
+                cg.rot_rot()
             cg.load_const(node.name)
             cg.load_global('globals', push_null=True)
             cg.call_function()
