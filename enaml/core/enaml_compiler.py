@@ -235,7 +235,6 @@ class EnamlCompiler(cmn.CompilerBase):
             if not PY313 and PY311:
                 cg.push_null()
 
-            # XXX
             # Load and validate the parameter specializations
             for index, param in enumerate(node.parameters.positional):
                 spec = param.specialization
@@ -275,11 +274,11 @@ class EnamlCompiler(cmn.CompilerBase):
             cg.make_function(0x01)                                   # tuple -> func
 
             # Load and call the helper which will build the template
-            cmn.load_helper(cg, 'make_template', from_globals=True)  # tuple -> helper -> func
-            cg.rot_three()                                           # func -> tuple
+            cmn.load_helper(cg, 'make_template', from_globals=True)  # tuple -> func -> helper
+            cg.rot_three()                                           # helper -> func -> tuple
             if PY313:
-                cg.push_null()
-                cg.rot_rot()
+                cg.push_null()  # helper -> func -> tuple -> null
+                cg.rot_three()  # helper -> null -> func -> tuple
             cg.load_const(node.name)
             cg.load_global('globals', push_null=True)
             cg.call_function()
