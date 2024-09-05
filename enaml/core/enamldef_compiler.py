@@ -87,7 +87,7 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
             cg.push_null()
 
         # Preload the helper to generate the enamldef
-        cmn.load_helper(cg, 'make_enamldef')
+        cmn.load_helper(cg, 'make_enamldef')        # helper
 
         if PY313:
             cg.push_null()
@@ -98,7 +98,7 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
 
         # Validate the type of the base class
         with cg.try_squash_raise():
-            cg.dup_top()
+            cg.dup_top()                            # helper -> name -> base -> base
             # Python 3.11 and 3.12 requires a NULL before a function that is not a method
             # Python 3.13 one after
             if not PY313 and PY311:

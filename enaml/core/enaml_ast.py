@@ -374,7 +374,7 @@ class TemplateInstBinding(ASTNode):
     chain = Tuple()
 
     #: The operator expression for the binding.
-    expr = Typed(OperatorExpr)
+    expr = Typed(OperatorExpr, optional=False)
 
     _fields = ("name", "chain", "expr")
 

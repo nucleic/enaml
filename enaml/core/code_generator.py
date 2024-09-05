@@ -20,7 +20,7 @@ class _ReturnNoneIdentifier(ast.NodeVisitor):
     def __init__(self) -> None:
         super().__init__()
         # Lines on which an explicit return None or return exist
-        self.lines = set()
+        self.lines: set[int] = set()
 
     def visit_Return(self, node: ast.Return) -> None:
         if not node.value or (
