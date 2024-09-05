@@ -218,7 +218,7 @@ operator_expr:
      }
 py_expr[enaml_ast.PythonExpression]:
     | a=expression {
-        enaml_ast.PythonExpression(ast=ast.Expression(body=a, LOCATIONS), LOCATIONS)
+        enaml_ast.PythonExpression(ast=ast.Expression(body=a), LOCATIONS)
      }
 
 # --- Declarative function -------------------------------------------------------------
@@ -419,7 +419,7 @@ template_args:
 template_argument:
     | a=expression {
         enaml_ast.PythonExpression(
-            ast=ast.Expression(body=a, LOCATIONS),
+            ast=ast.Expression(body=a),
             LOCATIONS,
         )
       }

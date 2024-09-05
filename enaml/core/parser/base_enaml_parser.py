@@ -135,16 +135,17 @@ class BaseEnamlParser(BasePythonParser):
                     msg = msg % forbidden_nodes[type(item)]
                     self.raise_syntax_error_known_location(msg, item)
 
-        func_node = ast.FunctionDef()
-        func_node.name = "f"
-        func_node.args = self.make_arguments(None, [], None, None, None)
-        func_node.decorator_list = []
-        func_node.returns = None
-        func_node.body = body
-        func_node.lineno = body[0].lineno
-        func_node.col_offset = body[0].col_offset
-        func_node.end_lineno = body[-1].end_lineno
-        func_node.end_col_offset = body[-1].end_col_offset
+        func_node = ast.FunctionDef(
+            name = "f",
+            args = self.make_arguments(None, [], None, None, None),
+            decorator_list = [],
+            returns = None,
+            body = body,
+            lineno = body[0].lineno,
+            col_offset = body[0].col_offset,
+            end_lineno = body[-1].end_lineno,
+            end_col_offset = body[-1].end_col_offset,
+        )
 
         return self.create_python_module([func_node])
 
