@@ -153,6 +153,7 @@ def count_nodes(node: Template) -> int:
     return node_count
 
 
+# XXX
 def has_list_comp(pyast):
     """ Determine whether a Python expression has a list comprehension.
 
@@ -426,19 +427,20 @@ if PY311:
         made global via the 'global' keyword.
 
         """
-        # On Python 3.11 if the LOAD_GLOBAL has the PUSH_NULL flag set
+        # On Python 3.11+ if the LOAD_GLOBAL has the PUSH_NULL flag set
         # we have re-inject that when doing the rewrite or it jacks up the stack
+        # On Python 3.13+, the NULL is loaded after the value
         inserts = []
         for idx, instr in enumerate(code):
             if (getattr(instr, "name", None) == "LOAD_GLOBAL" and
-                    instr.arg not in global_vars):
+                    instr.arg[1] not in global_vars):
                 if instr.arg[0]:
                     inserts.append(idx)
                 code[idx] = bc.Instr("LOAD_NAME", instr.arg[1])
 
         # Walk backwards so indexes remain valid
         for idx in reversed(inserts):
-            code.insert(idx, bc.Instr("PUSH_NULL"))
+            code.insert(idx + (1 if PY313 else 0), bc.Instr("PUSH_NULL"))
 
 else:
     def rewrite_globals_access(code, global_vars: set[str]) -> None:
@@ -471,10 +473,17 @@ def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
     """
     # Code generator used to modify the bytecode
     cg = CodeGenerator()
+
+    if PY311 and getattr(code[0], "name", None) == "RESUME":
+        cg.code_ops.append(code[0])
+        instrs = code[1:]
+    else:
+        instrs = code
+
     fetch_helpers(cg)
 
     # Scan all ops to detect function call after GET_ITER
-    for instr in code:
+    for instr in instrs:
         if not isinstance(instr, bc.Instr):
             cg.code_ops.append(instr)
             continue
@@ -507,7 +516,7 @@ def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
             cg.call_function(2)                          # wrapped
             continue
 
-        cg.code_ops.append(bc.Instr(i_name, i_arg))
+        cg.code_ops.append(bc.Instr(i_name, i_arg, location=instr.location))
 
     del code[:]
     code.extend(cg.code_ops)
