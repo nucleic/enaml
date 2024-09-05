@@ -17,7 +17,7 @@ from enaml.application import Application
 from enaml.widgets.api import Window
 from enaml.widgets.widget import Widget
 
-# from utils import wait_for_window_displayed, close_window_or_popup
+from utils import wait_for_window_displayed, close_window_or_popup
 
 # Make sure enaml already imported qt to avoid issues with pytest
 try:
@@ -42,7 +42,7 @@ except Exception:
 
 
 import pytest
-# from utils import close_all_windows, close_all_popups
+from utils import close_all_windows, close_all_popups
 
 #: Global variable linked to the --enaml-sleep cmd line option.
 DIALOG_SLEEP = 0

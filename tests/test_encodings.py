@@ -92,8 +92,7 @@ def test_unicode_identifier():
         attr a = 1.e6
     """)
     myWindow = compile_source(source, 'MyWindow')()
-    exec("𠁒 = 'test'")
-    assert locals()['𠁒'] == getattr(myWindow, """𠁒""")
+    assert getattr(myWindow, """𠁒""") == "test"
 
 
 if __name__ == '__main__':

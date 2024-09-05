@@ -105,7 +105,6 @@ def handle_window_closing(qtbot, window):
 
     qtbot.wait_until(check_window_closed)
 
-
 @pytest.mark.parametrize(
     "path, handler",
     [
