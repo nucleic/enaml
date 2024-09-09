@@ -161,20 +161,26 @@ class CodeGenerator(Atom):
             bc.Instr("LOAD_CONST", const),  # TOS -> value
         )
 
-    def load_attr(self, name, push_null_or_self: bool = False):
+    def load_attr(self, name):
         """Load an attribute from the object on TOS."""
         if PY312:
-            args = (push_null_or_self, name)
-        elif PY311:
-            args = name
-            self.code_ops.append("DUP_TOP")
+            args = (False, name)
         else:
             args = name
-        self.code_ops.append(  # TOS -> obj
+        self.code_ops.append(             # TOS -> obj
             bc.Instr("LOAD_ATTR", args),  # TOS -> value
         )
-        if not PY312 and PY311:
-            self.rot_two()
+
+    def load_method(self, name):
+        """Load a method from an object on TOS."""
+        if PY312:
+            self.code_ops.append(                     # TOS -> obj
+                                                      # on 3.12 the order is reversed
+                bc.Instr("LOAD_ATTR", (True, name)),  # TOS -> method -> self
+            )
+        else:
+            # On 3.10 one has to use call_method next
+            self.code_ops.append(bc.Instr("LOAD_METHOD", name))
 
     def store_global(self, name):
         """Store the TOS as a global."""
@@ -324,7 +330,7 @@ class CodeGenerator(Atom):
             bc.Instr("PUSH_NULL"),  # TOS -> NULL
         )
 
-    def call_function(self, n_args=0, n_kwds=0):
+    def call_function(self, n_args=0, n_kwds=0, is_method: bool = False):
         """Call a function on the TOS with the given args and kwargs."""
         if PY313:
             # NOTE: In Python 3.13 the caller must push null
@@ -346,10 +352,16 @@ class CodeGenerator(Atom):
             self.code_ops.extend(ops)
         else:
             if n_kwds:
+                if is_method:
+                    raise ValueError(
+                        "Method calling convention cannot be used with keywords"
+                    )
                 # kwargs_name should be a tuple listing the keyword
                 # arguments names
                 # TOS -> func -> args -> kwargs -> kwargs_names
                 op, arg = "CALL_FUNCTION_KW", n_args + n_kwds
+            elif is_method:
+                op, arg = "CALL_METHOD", n_args
             else:
                 op, arg = "CALL_FUNCTION", n_args
             self.code_ops.append(bc.Instr(op, arg))  # TOS -> retval

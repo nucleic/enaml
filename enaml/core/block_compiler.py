@@ -8,6 +8,7 @@
 from atom.api import Typed
 
 from . import compiler_common as cmn
+from .enaml_ast import TemplateInst, ChildDef
 from ..compat import PY311, PY313
 
 
@@ -44,7 +45,7 @@ class FirstPassBlockCompiler(BaseBlockCompiler):
     #: A mapping of auxiliary ast node -> compiler node index.
     aux_index_map = Typed(dict, ())
 
-    def visit_ChildDef(self, node):
+    def visit_ChildDef(self, node: ChildDef):
         # Claim the index for the compiler node.
         index = len(self.index_map)
         self.index_map[node] = index
@@ -66,7 +67,7 @@ class FirstPassBlockCompiler(BaseBlockCompiler):
         for item in node.body:
             self.visit(item)
 
-    def visit_TemplateInst(self, node):
+    def visit_TemplateInst(self, node: TemplateInst):
         # No pragmas are supported yet for template inst nodes.
         cmn.warn_pragmas(node, self.filename)
 

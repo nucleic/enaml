@@ -153,29 +153,6 @@ def count_nodes(node: Template) -> int:
     return node_count
 
 
-# XXX
-def has_list_comp(pyast):
-    """ Determine whether a Python expression has a list comprehension.
-
-    This function is only used under Python 2.
-
-    Parameters
-    ----------
-    pyast : Expression
-        The Python Expression ast of interest.
-
-    Returns
-    -------
-    result : bool
-        True if the ast includes a list comprehension, False otherwise.
-
-    """
-    for item in ast.walk(pyast):
-        if isinstance(item, ast.ListComp):
-            return True
-    return False
-
-
 def fetch_helpers(cg: CodeGenerator) -> None:
     """ Fetch the compiler helpers and store in fast locals.
 
@@ -361,9 +338,9 @@ def append_node(cg: CodeGenerator, parent: int, index: int):
     """
     load_node(cg, parent)
     cg.load_attr('children')
-    cg.load_attr('append', push_null_or_self=True)
+    cg.load_method('append')
     load_node(cg, index)
-    cg.call_function(1)
+    cg.call_function(1, is_method=True)
     cg.pop_top()
 
 
@@ -967,7 +944,7 @@ def _insert_decl_function(cg, funcdef):
         if i.name == "MAKE_FUNCTION":
             break
     code_index = index + code_offset
-    assert code_index > 0
+    assert code_index >= 0
 
     # extract the inner code object which represents the actual
     # function code and update its flags

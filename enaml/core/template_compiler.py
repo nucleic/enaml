@@ -138,11 +138,9 @@ class FirstPassTemplateCompiler(block.FirstPassBlockCompiler):
             self.visit(item)
 
         # Update the internal node ids for the hierarchy.
-        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
-        # Python 3.13 one after
         cmn.load_node(cg, 0)
-        cg.load_attr('update_id_nodes', push_null_or_self=True)
-        cg.call_function()
+        cg.load_method('update_id_nodes')
+        cg.call_function(is_method=True)
         cg.pop_top()
 
         # Load the compiler node list for returning.

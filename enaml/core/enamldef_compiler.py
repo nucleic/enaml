@@ -150,8 +150,8 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
 
         # Update the internal node ids for the hierarchy.
         cmn.load_node(cg, 0)
-        cg.load_attr('update_id_nodes', push_null_or_self=True)
-        cg.call_function()
+        cg.load_method('update_id_nodes')
+        cg.call_function(is_method=True)
         cg.pop_top()
 
         # Load and return the compiler node list..
