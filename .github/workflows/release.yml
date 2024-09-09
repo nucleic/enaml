@@ -116,10 +116,11 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
-        name: artifact
+        pattern: cibw-*
         path: dist
+        merge-multiple: true
     - name: Sign the dists with Sigstore
       uses: sigstore/gh-action-sigstore-python@v3.0.0
       with:
