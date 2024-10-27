@@ -80,7 +80,7 @@ jobs:
       - name: Store artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: cibw-wheels-${{ runner.os }}-${{ matrix.manylinux_version }}-${{ matrix.archs }}
+          name: cibw-wheels-${{ runner.os }}-${{ matrix.python }}
           path: dist/*.whl
 
   publish:
