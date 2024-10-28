@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -104,7 +104,6 @@ def handle_window_closing(qtbot, window):
         assert not Window.windows
 
     qtbot.wait_until(check_window_closed)
-
 
 @pytest.mark.parametrize(
     "path, handler",

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -92,8 +92,7 @@ def test_unicode_identifier():
         attr a = 1.e6
     """)
     myWindow = compile_source(source, 'MyWindow')()
-    exec("𠁒 = 'test'")
-    assert locals()['𠁒'] == getattr(myWindow, """𠁒""")
+    assert getattr(myWindow, """𠁒""") == "test"
 
 
 if __name__ == '__main__':

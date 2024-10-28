@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -68,7 +68,7 @@ main_doc = 'index'
 
 # General information about the project.
 project = 'Enaml'
-copyright = '2013-2023, Nucleic Development Team'
+copyright = '2013-2024, Nucleic Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -292,7 +292,7 @@ man_pages = [
 epub_title = 'Enaml'
 epub_author = 'Chris Colbert'
 epub_publisher = 'Nucleic Development Team'
-epub_copyright = '2013-2023, Nucleic Development Team'
+epub_copyright = '2013-2024, Nucleic Development Team'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

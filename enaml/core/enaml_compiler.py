@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,7 +11,7 @@ from . import compiler_common as cmn
 from .enaml_ast import Module
 from .enamldef_compiler import EnamlDefCompiler
 from .template_compiler import TemplateCompiler
-from ..compat import PY311
+from ..compat import PY311, PY313
 
 # Increment this number whenever the compiler changes the code which it
 # generates. This number is used by the import hooks to know which version
@@ -215,11 +215,13 @@ class EnamlCompiler(cmn.CompilerBase):
     def visit_EnamlDef(self, node):
         # Invoke the enamldef code and store result in the namespace.
         cg = self.code_generator
-        if PY311:
+        if not PY313 and PY311:
             cg.push_null()
         code = EnamlDefCompiler.compile(node, cg.filename)
         cg.load_const(code)
         cg.make_function()
+        if PY313:
+            cg.push_null()
         cg.call_function()
         cg.store_global(node.typename)
 
@@ -228,16 +230,22 @@ class EnamlCompiler(cmn.CompilerBase):
         cg.set_lineno(node.lineno)
 
         with cg.try_squash_raise():
-            if PY311:
+            # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+            # Python 3.13 one after
+            if not PY313 and PY311:
                 cg.push_null()
 
             # Load and validate the parameter specializations
             for index, param in enumerate(node.parameters.positional):
                 spec = param.specialization
                 if spec is not None:
-                    if PY311:
+                    # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+                    # Python 3.13 one after
+                    if not PY313 and PY311:
                         cg.push_null()
                     cmn.load_helper(cg, 'validate_spec', from_globals=True)
+                    if PY313:
+                        cg.push_null()
                     cg.load_const(index)
                     cmn.safe_eval_ast(
                         cg, spec.ast, node.name, param.lineno, set()
@@ -258,16 +266,19 @@ class EnamlCompiler(cmn.CompilerBase):
             # Under Python 3.6+ default positional arguments are passed as a
             # single tuple and MAKE_FUNCTION is passed the flag 0x01 to
             # indicate that there is default positional arguments.
-            cg.build_tuple(len(node.parameters.keywords))
+            cg.build_tuple(len(node.parameters.keywords))            # tuple
 
             # Generate the template code and function
             code = TemplateCompiler.compile(node, cg.filename)
-            cg.load_const(code)
-            cg.make_function(0x01)
+            cg.load_const(code)                                      # tuple -> code
+            cg.make_function(0x01)                                   # tuple -> func
 
             # Load and call the helper which will build the template
-            cmn.load_helper(cg, 'make_template', from_globals=True)
-            cg.rot_three()
+            cmn.load_helper(cg, 'make_template', from_globals=True)  # tuple -> func -> helper
+            cg.rot_three()                                           # helper -> func -> tuple
+            if PY313:
+                cg.push_null()  # helper -> func -> tuple -> null
+                cg.rot_three()  # helper -> null -> func -> tuple
             cg.load_const(node.name)
             cg.load_global('globals', push_null=True)
             cg.call_function()

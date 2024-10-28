@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,7 +8,8 @@
 from atom.api import Typed
 
 from . import compiler_common as cmn
-from ..compat import PY311
+from .enaml_ast import TemplateInst, ChildDef
+from ..compat import PY311, PY313
 
 
 class BaseBlockCompiler(cmn.CompilerBase):
@@ -44,7 +45,7 @@ class FirstPassBlockCompiler(BaseBlockCompiler):
     #: A mapping of auxiliary ast node -> compiler node index.
     aux_index_map = Typed(dict, ())
 
-    def visit_ChildDef(self, node):
+    def visit_ChildDef(self, node: ChildDef):
         # Claim the index for the compiler node.
         index = len(self.index_map)
         self.index_map[node] = index
@@ -66,7 +67,7 @@ class FirstPassBlockCompiler(BaseBlockCompiler):
         for item in node.body:
             self.visit(item)
 
-    def visit_TemplateInst(self, node):
+    def visit_TemplateInst(self, node: TemplateInst):
         # No pragmas are supported yet for template inst nodes.
         cmn.warn_pragmas(node, self.filename)
 
@@ -137,9 +138,13 @@ class SecondPassBlockCompiler(BaseBlockCompiler):
             # Create the unpack map.
             cg = self.code_generator
             index = self.index_map[node]
-            if PY311:
+            # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+            # Python 3.13 one after
+            if not PY313 and PY311:
                 cg.push_null()
             cmn.load_helper(cg, 'make_unpack_map')
+            if PY313:
+                cg.push_null()
             cmn.load_node(cg, index)
             cg.call_function(1)
             cg.store_fast(cmn.UNPACK_MAP)

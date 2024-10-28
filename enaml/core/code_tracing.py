@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,7 +8,7 @@
 from types import CodeType
 
 import bytecode as bc
-from ..compat import PY311, PY312
+from ..compat import PY311, PY312, PY313
 
 
 class CodeTracer(object):
@@ -224,8 +224,77 @@ class CodeInverter(object):
         """
         self.fail()
 
+if PY313:
+    def call_tracer_load_attr(tracer_op: str, i_arg: int, Instr=bc.Instr):
+        return [                                         # obj
+            Instr(tracer_op, '_[tracer]'),               # obj -> tracer
+            Instr("LOAD_ATTR", (False, 'load_attr')),    # obj -> tracefunc
+            Instr("PUSH_NULL"),                          # obj -> tracefunc -> null
+            Instr("COPY", 3),                            # obj -> tracefunc -> null -> obj
+            Instr("LOAD_CONST", i_arg),                  # obj -> tracefunc -> null -> obj -> attr
+            Instr("CALL", 0x0002),                       # obj -> retval
+            Instr("POP_TOP"),                            # obj
+        ]
 
-if PY312:
+    def call_tracer_call_function(tracer_op: str, i_arg: int, Instr=bc.Instr):
+        # n_stack_args = i_arg
+        return [                                           # func -> null -> arg(0) -> arg(1) -> ... -> arg(n-1)
+            Instr("BUILD_TUPLE", i_arg),                   # func -> null -> argtuple
+            Instr(tracer_op, '_[tracer]'),                 # func -> null -> argtuple -> tracer
+            Instr("LOAD_ATTR", (False, 'call_function')),  # func -> null -> argtuple -> tracefunc
+            Instr("PUSH_NULL"),                            # func -> null -> argtuple -> tracefunc -> null
+            Instr("COPY", 5),                              # func -> null -> argtuple -> tracefunc -> null -> func
+            Instr("COPY", 4),                              # func -> null -> argtuple -> tracefunc -> null -> func -> argtuple
+            Instr("LOAD_CONST", i_arg),                    # func -> null -> argtuple -> tracefunc -> null -> func -> argtuple -> argspec
+            Instr("CALL", 0x0003),                         # func -> null -> argtuple -> retval
+            Instr("POP_TOP"),                              # func -> null -> argtuple
+            Instr("UNPACK_SEQUENCE", i_arg),               # func -> null -> arg(n-1) -> arg(n-2) -> ... -> arg(0)
+            Instr("BUILD_TUPLE", i_arg),                   # func -> null -> reversedargtuple
+            Instr("UNPACK_SEQUENCE", i_arg),               # func -> null -> arg(0) -> arg(1) -> ... -> arg(n-1)
+        ]
+
+    def call_tracer_binary_subscr(tracer_op: str, Instr=bc.Instr):
+        return [                                           # obj -> idx
+            Instr(tracer_op, '_[tracer]'),                 # obj -> idx -> tracer
+            Instr("LOAD_ATTR", (False, 'binary_subscr')),  # obj -> idx -> tracefunc
+            Instr("PUSH_NULL"),                            # obj -> idx -> tracefunc -> null
+            Instr("COPY", 4),                              # obj -> idx -> tracefunc -> null -> obj
+            Instr("COPY", 4),                              # obj -> idx -> tracefunc -> null -> obj -> idx
+            Instr("CALL", 0x0002),                         # obj -> idx -> retval
+            Instr("POP_TOP"),                              # obj -> idx
+        ]
+
+    def call_tracer_get_iter(tracer_op: str, Instr=bc.Instr):
+        return [                                      # obj
+            Instr(tracer_op, '_[tracer]'),            # obj -> tracer
+            Instr("LOAD_ATTR", (False, 'get_iter')),  # obj -> tracefunc
+            Instr("PUSH_NULL"),                       # obj -> tracefunc -> null
+            Instr("COPY", 3),                         # obj -> tracefunc -> null -> obj
+            Instr("CALL", 0x0001),                    # obj -> retval
+            Instr("POP_TOP"),                         # obj
+        ]
+
+    def call_tracer_return_value(tracer_op: str, Instr=bc.Instr):
+        return [
+            Instr(tracer_op, '_[tracer]'),                # obj -> tracer
+            Instr("LOAD_ATTR", (False, 'return_value')),  # obj -> tracefunc
+            Instr("PUSH_NULL"),                           # obj -> tracefunc -> null
+            Instr("COPY", 3),                             # obj -> tracefunc -> null -> obj
+            Instr("CALL", 0x0001),                        # obj -> retval
+            Instr("POP_TOP"),                             # obj
+        ]
+
+    def call_tracer_return_const(tracer_op: str, const, Instr=bc.Instr):
+        return [
+            Instr(tracer_op, '_[tracer]'),                # obj -> tracer
+            Instr("LOAD_ATTR", (False, 'return_value')),  # obj -> tracefunc
+            Instr("PUSH_NULL"),                           # obj -> tracefunc -> null
+            Instr("LOAD_CONST", const),                   # obj -> tracefunc -> null -> obj
+            Instr("CALL", 0x0001),                        # obj -> retval
+            Instr("POP_TOP"),                             # obj
+        ]
+
+elif PY312:
     def call_tracer_load_attr(tracer_op: str, i_arg: int, Instr=bc.Instr):
         return [                                         # obj
             Instr("PUSH_NULL"),                          # obj -> null
@@ -512,8 +581,58 @@ def inject_tracing(bytecode, nested=False):
 
     return new_code
 
+if PY313:
+    def call_inverter_load_name(i_arg: int, Instr=bc.Instr):
+        return [
+            Instr("LOAD_FAST", '_[inverter]'),         # inverter
+            Instr("LOAD_ATTR", (False, 'load_name')),  # invertfunc
+            Instr("PUSH_NULL"),                        # inverterfunc -> null
+            Instr("LOAD_CONST", i_arg),                # invertfunc -> null -> name
+            Instr("LOAD_FAST", '_[value]'),            # invertfunc -> null -> name - > value
+            Instr("CALL", 0x0002),                     # retval
+            Instr("RETURN_VALUE"),                     #
+        ]
 
-if PY312:
+    def call_inverter_load_attr(i_arg: int, Instr=bc.Instr):
+        return [                                       # obj
+            Instr("LOAD_FAST", '_[inverter]'),         # obj -> inverter
+            Instr("LOAD_ATTR", (False, 'load_attr')),  # obj -> invertfunc
+            Instr("SWAP", 2),                          # invertfunc -> obj
+            Instr("PUSH_NULL"),                        # invertfunc -> obj -> null
+            Instr("SWAP", 2),                          # invertfunc -> null -> obj
+            Instr("LOAD_CONST", i_arg),                # invertfunc -> null -> obj -> attr
+            Instr("LOAD_FAST", '_[value]'),            # invertfunc -> null -> obj -> attr -> value
+            Instr("CALL", 0x0003),                     # retval
+            Instr("RETURN_VALUE"),                     #
+        ]
+
+    def call_inverter_call_function(i_arg: int, Instr=bc.Instr):
+        # n_stack_args = i_arg
+        return [                                           # func -> null -> arg(0) -> arg(1) -> ... -> arg(n-1)
+            Instr("BUILD_TUPLE", i_arg),                   # func -> null -> argtuple
+            Instr("LOAD_FAST", '_[inverter]'),             # func -> null -> argtuple -> inverter
+            Instr("LOAD_ATTR", (False, 'call_function')),  # func -> null -> argtuple -> invertfunc
+            Instr("SWAP", 4),                              # invertfunc -> null -> argtuple -> func
+            Instr("SWAP", 2),                              # invertfunc -> null -> func -> argtuple
+            Instr("LOAD_CONST", i_arg),                    # invertfunc -> null -> func -> argtuple -> argspec
+            Instr("LOAD_FAST", '_[value]'),                # invertfunc -> null -> func -> argtuple -> argspec -> value
+            Instr("CALL", 0x0004),                         # retval
+            Instr("RETURN_VALUE"),                         #
+        ]
+
+    def call_inverter_binary_subsrc(Instr=bc.Instr):
+        return [                                           # obj -> index
+            Instr("PUSH_NULL"),                            # obj -> index -> null
+            Instr("SWAP", 2),                              # obj -> null -> index
+            Instr("LOAD_FAST", '_[inverter]'),             # obj -> null -> index -> inverter
+            Instr("LOAD_ATTR", (False, 'binary_subscr')),  # obj -> null -> index -> invertfunc
+            Instr("SWAP", 4),                              # invertfunc -> null -> index ->  obj
+            Instr("SWAP", 2),                              # invertfunc -> null ->  obj -> index
+            Instr("LOAD_FAST", '_[value]'),                # invertfunc -> null ->  obj -> index -> value
+            Instr("CALL", 0x0003),                         # retval
+            Instr("RETURN_VALUE"),                         #
+        ]
+elif PY312:
     def call_inverter_load_name(i_arg: int, Instr=bc.Instr):
         return [
             Instr("PUSH_NULL"),                        # null -> inverter

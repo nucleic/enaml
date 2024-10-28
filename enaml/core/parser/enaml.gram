@@ -1,5 +1,5 @@
 #---------------------------------------------------------------------------------------
-# Copyright (c) 2021-2023, Nucleic Development Team.
+# Copyright (c) 2021-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@
 
 @header'''
 #---------------------------------------------------------------------------------------
-# Copyright (c) 2021-2023, Nucleic Development Team.
+# Copyright (c) 2021-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -218,7 +218,7 @@ operator_expr:
      }
 py_expr[enaml_ast.PythonExpression]:
     | a=expression {
-        enaml_ast.PythonExpression(ast=ast.Expression(body=a, LOCATIONS), LOCATIONS)
+        enaml_ast.PythonExpression(ast=ast.Expression(body=a), LOCATIONS)
      }
 
 # --- Declarative function -------------------------------------------------------------
@@ -419,7 +419,7 @@ template_args:
 template_argument:
     | a=expression {
         enaml_ast.PythonExpression(
-            ast=ast.Expression(body=a, LOCATIONS),
+            ast=ast.Expression(body=a),
             LOCATIONS,
         )
       }
@@ -2237,7 +2237,7 @@ invalid_while_stmt[NoReturn]:
         )
      }
 invalid_for_stmt[NoReturn]:
-    | [ASYNC] 'for' star_targets 'in' star_expressions NEWLINE { self.raise_syntax_error("expected ':'") }
+    | ['async'] 'for' star_targets 'in' star_expressions NEWLINE { self.raise_syntax_error("expected ':'") }
     | ['async'] a='for' star_targets 'in' star_expressions ':' NEWLINE !INDENT {
         self.raise_indentation_error(
             f"expected an indented block after 'for' statement on line {a.start[0]}"

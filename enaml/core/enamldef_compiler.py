@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,7 +8,7 @@
 from . import block_compiler as block
 from . import compiler_common as cmn
 from .enaml_ast import EnamlDef
-from ..compat import POS_ONLY_ARGS, PY311
+from ..compat import PY311, PY313
 
 
 class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
@@ -81,11 +81,16 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
 
         # Preload the helper to generate the enamldef
-        cmn.load_helper(cg, 'make_enamldef')
+        cmn.load_helper(cg, 'make_enamldef')        # helper
+
+        if PY313:
+            cg.push_null()
 
         # Load the base class for the enamldef
         cg.load_const(node.typename)
@@ -93,42 +98,44 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
 
         # Validate the type of the base class
         with cg.try_squash_raise():
-            cg.dup_top()
-            if PY311:
+            cg.dup_top()                            # helper -> name -> base -> base
+            # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+            # Python 3.13 one after
+            if not PY313 and PY311:
                 cg.push_null()  # base -> null
                 cg.rot_two()    # null -> base
             cmn.load_helper(cg, 'validate_declarative')
             cg.rot_two()                            # helper -> name -> base -> helper -> base
+            if PY313:
+                cg.push_null()
+                cg.rot_two()                        # helper -> name -> base -> helper -> null -> base
             cg.call_function(1)                     # helper -> name -> base -> retval
             cg.pop_top()                            # helper -> name -> base
 
         # Build the enamldef class
         cg.build_tuple(1)
         cg.build_map()
-        if POS_ONLY_ARGS:
-            cg.load_const('__module__')
-            cg.load_global('__name__')
-        else:
-            cg.load_global('__name__')
-            cg.load_const('__module__')
+        cg.load_const('__module__')
+        cg.load_global('__name__')
         cg.add_map()                               # helper -> name -> bases -> dict
         if node.docstring:
-            if POS_ONLY_ARGS:
-                cg.load_const('__doc__')
-                cg.load_const(node.docstring)
-            else:
-                cg.load_const(node.docstring)
-                cg.load_const('__doc__')
+            cg.load_const('__doc__')
+            cg.load_const(node.docstring)
             cg.add_map()
-        cg.call_function(3)                         # class
+        cg.call_function(3)                        # class
 
         # Build the compiler node
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
             cg.rot_two()
         should_store = cmn.should_store_locals(node)
         cmn.load_helper(cg, 'enamldef_node')
         cg.rot_two()
+        if PY313:
+            cg.push_null()
+            cg.rot_two()
         cg.load_const(node.identifier)
         cg.load_fast(cmn.SCOPE_KEY)
         cg.load_const(should_store)                 # helper -> class -> identifier -> bool
@@ -142,11 +149,9 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
             self.visit(item)
 
         # Update the internal node ids for the hierarchy.
-        if PY311:
-            cg.push_null()
         cmn.load_node(cg, 0)
-        cg.load_attr('update_id_nodes')
-        cg.call_function()
+        cg.load_method('update_id_nodes')
+        cg.call_function(is_method=True)
         cg.pop_top()
 
         # Load and return the compiler node list..
@@ -268,28 +273,38 @@ class EnamlDefCompiler(cmn.CompilerBase):
         )
 
         # Prepare the code block for execution.
-        if PY311:
+        if not PY313 and PY311:
             cg.push_null()
         cmn.fetch_helpers(cg)
         cmn.load_helper(cg, 'make_object')
+        if PY313:
+            cg.push_null()
         cg.call_function()
         cg.store_fast(cmn.SCOPE_KEY)
 
         # Load and invoke the first pass code object.
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
         cg.load_const(first_code)
         cg.make_function()
+        if PY313:
+            cg.push_null()
         for arg in first_args:
             cg.load_fast(arg)
         cg.call_function(len(first_args))
         cg.store_fast(cmn.NODE_LIST)
 
         # Load and invoke the second pass code object.
-        if PY311:
+        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+        # Python 3.13 one after
+        if not PY313 and PY311:
             cg.push_null()
         cg.load_const(second_code)
         cg.make_function()
+        if PY313:
+            cg.push_null()
         for arg in second_args:
             cg.load_fast(arg)
         cg.call_function(len(second_args))

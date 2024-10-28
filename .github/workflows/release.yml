@@ -36,7 +36,7 @@ jobs:
       - name: Store artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: artifact
+          name: cibw-sdist
           path: dist/*
 
   build_wheels:
@@ -45,7 +45,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        python: [38, 39, 310, 311, 312]
+        python: [310, 311, 312, 313]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,17 +63,24 @@ jobs:
           python -m pip install wheel cibuildwheel
       - name: Build wheels
         env:
+          # On Windows, we explicitly request MSVC compilers (as GitHub Action runners have
+          # MinGW on PATH that would be picked otherwise), switch to a static build for
+          # runtimes, but use dynamic linking for `VCRUNTIME140.dll`, `VCRUNTIME140_1.dll`,
+          # and the UCRT. This avoids requiring specific versions of `MSVCP140.dll`, while
+          # keeping shared state with the rest of the Python process/extensions.
+          CIBW_CONFIG_SETTINGS_WINDOWS: >-
+            setup-args="--vsenv"
+            setup-args="-Db_vscrt=mt"
+            setup-args="-Dcpp_link_args=['ucrt.lib','vcruntime.lib','/nodefaultlib:libucrt.lib','/nodefaultlib:libvcruntime.lib']"
           CIBW_BUILD: cp${{ matrix.python }}-*
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: python -m pytest {package}/tests -v
-          # Disable FH4 to avoid linking against VC2014_1
-          ENAML_DISABLE_FH4: 1
         run: |
           python -m cibuildwheel . --output-dir dist
       - name: Store artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: artifact
+          name: cibw-wheels-${{ runner.os }}-${{ matrix.python }}
           path: dist/*.whl
 
   publish:
@@ -81,10 +88,12 @@ jobs:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download all the dists
+        uses: actions/download-artifact@v4.1.7
         with:
-          name: artifact
+          pattern: cibw-*
           path: dist
+          merge-multiple: true
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
@@ -107,10 +116,11 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
-        name: artifact
+        pattern: cibw-*
         path: dist
+        merge-multiple: true
     - name: Sign the dists with Sigstore
       uses: sigstore/gh-action-sigstore-python@v3.0.0
       with:

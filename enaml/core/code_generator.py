@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,7 +11,7 @@ from contextlib import contextmanager
 import bytecode as bc
 from atom.api import Atom, Bool, Int, List, Str
 
-from ..compat import POS_ONLY_ARGS, PY38, PY39, PY310, PY311, PY312
+from ..compat import PY310, PY311, PY312, PY313
 
 
 class _ReturnNoneIdentifier(ast.NodeVisitor):
@@ -20,7 +20,7 @@ class _ReturnNoneIdentifier(ast.NodeVisitor):
     def __init__(self) -> None:
         super().__init__()
         # Lines on which an explicit return None or return exist
-        self.lines = set()
+        self.lines: set[int] = set()
 
     def visit_Return(self, node: ast.Return) -> None:
         if not node.value or (
@@ -95,8 +95,7 @@ class CodeGenerator(Atom):
             - self.varargs
             - self.varkwargs
         )
-        if POS_ONLY_ARGS:
-            bc_code.posonlyargcount = self.posonlyargs
+        bc_code.posonlyargcount = self.posonlyargs
         bc_code.kwonlyargcount = self.kwonlyargs
 
         for name in ("name", "filename", "firstlineno", "docstring"):
@@ -162,15 +161,26 @@ class CodeGenerator(Atom):
             bc.Instr("LOAD_CONST", const),  # TOS -> value
         )
 
-    def load_attr(self, name, push_null_or_self: bool = False):
+    def load_attr(self, name):
         """Load an attribute from the object on TOS."""
         if PY312:
-            args = (push_null_or_self, name)
+            args = (False, name)
         else:
             args = name
-        self.code_ops.append(  # TOS -> obj
+        self.code_ops.append(             # TOS -> obj
             bc.Instr("LOAD_ATTR", args),  # TOS -> value
         )
+
+    def load_method(self, name):
+        """Load a method from an object on TOS."""
+        if PY312:
+            self.code_ops.append(                     # TOS -> obj
+                                                      # on 3.12 the order is reversed
+                bc.Instr("LOAD_ATTR", (True, name)),  # TOS -> method -> self
+            )
+        else:
+            # On 3.10 one has to use call_method next
+            self.code_ops.append(bc.Instr("LOAD_METHOD", name))
 
     def store_global(self, name):
         """Store the TOS as a global."""
@@ -299,9 +309,20 @@ class CodeGenerator(Atom):
         """Make a function from a code object on the TOS."""
         if not PY311:
             self.load_const(name)
-        self.code_ops.append(  # TOS -> qual_name -> code -> defaults
-            bc.Instr("MAKE_FUNCTION", flags),  # TOS -> func
-        )
+        if PY313:
+            if flags:
+                self.code_ops.extend(
+                    (
+                        bc.Instr("MAKE_FUNCTION"), # TOS -> qual_name -> code
+                        bc.Instr("SET_FUNCTION_ATTRIBUTE", flags),  # TOS -> func -> attrs
+                    )
+                )
+            else:
+                self.code_ops.append(bc.Instr("MAKE_FUNCTION"))
+        else:
+            self.code_ops.append(  # TOS -> qual_name -> code -> defaults
+                bc.Instr("MAKE_FUNCTION", flags),  # TOS -> func
+            )
 
     def push_null(self):
         """Push NULL on the TOS."""
@@ -309,9 +330,15 @@ class CodeGenerator(Atom):
             bc.Instr("PUSH_NULL"),  # TOS -> NULL
         )
 
-    def call_function(self, n_args=0, n_kwds=0):
+    def call_function(self, n_args=0, n_kwds=0, is_method: bool = False):
         """Call a function on the TOS with the given args and kwargs."""
-        if PY311:
+        if PY313:
+            # NOTE: In Python 3.13 the caller must push null
+            # onto the stack before calling this
+            # TOS -> func -> null -> args -> kwargs_names -> kwargs (tuple)
+            arg = n_args + n_kwds
+            self.code_ops.append(bc.Instr("CALL_KW" if n_kwds else "CALL", arg))
+        elif PY311:
             # NOTE: In Python 3.11 the caller must push null
             # onto the stack before calling this
             # TOS -> null -> func -> args -> kwargs -> kwargs_names
@@ -325,10 +352,16 @@ class CodeGenerator(Atom):
             self.code_ops.extend(ops)
         else:
             if n_kwds:
+                if is_method:
+                    raise ValueError(
+                        "Method calling convention cannot be used with keywords"
+                    )
                 # kwargs_name should be a tuple listing the keyword
                 # arguments names
                 # TOS -> func -> args -> kwargs -> kwargs_names
                 op, arg = "CALL_FUNCTION_KW", n_args + n_kwds
+            elif is_method:
+                op, arg = "CALL_METHOD", n_args
             else:
                 op, arg = "CALL_FUNCTION", n_args
             self.code_ops.append(bc.Instr(op, arg))  # TOS -> retval
@@ -417,7 +450,7 @@ class CodeGenerator(Atom):
             ]
             self.code_ops.extend(ops)
         else:
-            op_code = "SETUP_FINALLY" if PY38 else "SETUP_EXCEPT"
+            op_code = "SETUP_FINALLY"
             self.code_ops.append(
                 bc.Instr(op_code, exc_label),  # TOS
             )
@@ -443,8 +476,6 @@ class CodeGenerator(Atom):
                 bc.Instr("JUMP_FORWARD", end_label),  # TOS
                 end_label,  # TOS
             ]
-            if not PY39:
-                ops.insert(-1, bc.Instr("END_FINALLY"))
             self.code_ops.extend(ops)
 
     @contextmanager
@@ -467,10 +498,9 @@ class CodeGenerator(Atom):
         # automatically
         end_label = bc.Label()
         load_op = "LOAD_FAST" if fast_var else "LOAD_GLOBAL"
-        if PY38:
-            self.code_ops.append(
-                bc.Instr("SETUP_LOOP", end_label),
-            )
+        self.code_ops.append(
+            bc.Instr("SETUP_LOOP", end_label),
+        )
         if PY311 and not fast_var:
             # LOAD_GLOBAL expects a tuple on 3.11
             iter_var = (False, iter_var)
@@ -491,11 +521,10 @@ class CodeGenerator(Atom):
                 jump_label,
             ]
         )
-        if PY38:
-            self.code_ops.extend(
-                bc.Instr("POP_BLOCK"),
-                end_label,
-            )
+        self.code_ops.extend(
+            bc.Instr("POP_BLOCK"),
+            end_label,
+        )
         if PY312:
             self.code_ops.append(bc.Instr("END_FOR"))
 

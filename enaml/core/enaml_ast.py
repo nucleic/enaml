@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2023, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -374,7 +374,7 @@ class TemplateInstBinding(ASTNode):
     chain = Tuple()
 
     #: The operator expression for the binding.
-    expr = Typed(OperatorExpr)
+    expr = Typed(OperatorExpr, optional=False)
 
     _fields = ("name", "chain", "expr")
 

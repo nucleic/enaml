@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -742,7 +742,7 @@ template MetroStyle():
 # Registry
 #------------------------------------------------------------------------------
 __STYLE_REGISTRY = {
-    'vs-2010': VS2010Style,
+    'vs-2024': VS2010Style,
     'grey-wind': GreyWindStyle,
     'new-moon': NewMoonStyle,
     'metro': MetroStyle
