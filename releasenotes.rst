@@ -3,8 +3,9 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.17.1 - unreleased
+0.18.0 - 28/10/2024
 -------------------
+- support for Python 3.13 PR #556
 - fix possible error in rewrite fast locals when using templates on 3.12 PR #550
 
 0.17.0 - 20/11/2023
