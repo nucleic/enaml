@@ -36,6 +36,12 @@ jobs:
             qt-version: 5
           - python-version: '3.13'
             qt-version: 5
+          - python-version: '3.12'
+            qt-version: 6
+            qt-binding: pyside
+          - python-version: '3.13'
+            qt-version: 6
+            qt-binding: pyside
           - os: ubuntu-latest
             qt-version: 6
             qt-binding: pyside
