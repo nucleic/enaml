@@ -71,8 +71,8 @@ jobs:
           pip install setuptools-scm[toml]
           pip install numpy
           pip install git+https://github.com/nucleic/cppy@main
-          pip install git+https://github.com/nucleic/atom@3.13-support
-          pip install git+https://github.com/MatthieuDartiailh/bytecode@py313
+          pip install git+https://github.com/nucleic/atom@main
+          pip install git+https://github.com/MatthieuDartiailh/bytecode@main
           pip install git+https://github.com/nucleic/kiwi@main
       - name: Install project (no-extras)
         if: matrix.python-version != '3.10'
