@@ -9,50 +9,7 @@ from atom.api import Atom, atomref
 
 from .alias import Alias
 from .code_tracing import CodeTracer
-
-
-class SubscriptionObserver(object):
-    """ An observer object which manages a tracer subscription.
-
-    """
-    __slots__ = ('ref', 'name')
-
-    def __init__(self, owner, name):
-        """ Initialize a SubscriptionObserver.
-
-        Parameters
-        ----------
-        owner : Declarative
-            The declarative owner of interest.
-
-        name : string
-            The name to which the operator is bound.
-
-        """
-        self.ref = atomref(owner)
-        self.name = name
-
-    def __bool__(self):
-        """ The notifier is valid when it has an internal owner.
-
-        The atom observer mechanism will remove the observer when it
-        tests boolean False.
-
-        """
-        return bool(self.ref)
-
-    def __call__(self, change):
-        """ The handler for the change notification.
-
-        This will be invoked by the Atom observer mechanism when the
-        item which is being observed changes.
-
-        """
-        if self.ref:
-            owner = self.ref()
-            engine = owner._d_engine
-            if engine is not None:
-                engine.update(owner, self.name)
+from .subscription_observer import SubscriptionObserver
 
 
 class StandardTracer(CodeTracer):
