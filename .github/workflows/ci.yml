@@ -125,7 +125,7 @@ jobs:
           bash -c "find . -type f -name '*.gcno' -exec gcov -pb --all-blocks {} +" || true
           ls
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
