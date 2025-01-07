@@ -96,10 +96,7 @@ SubscriptionObserver_traverse( SubscriptionObserver* self, visitproc visit, void
 {
     Py_VISIT( self->atomref );
     Py_VISIT( self->name );
-    #if PY_VERSION_HEX >= 0x03090000
-    // This was not needed before Python 3.9 (Python issue 35810 and 40217)
     Py_VISIT(Py_TYPE(self));
-    #endif
     return 0;
 }
 
@@ -116,8 +113,7 @@ SubscriptionObserver_dealloc( SubscriptionObserver* self )
 int
 SubscriptionObserver__bool__( SubscriptionObserver* self )
 {
-    cppy::ptr atomrefptr( cppy::incref( self->atomref ) );
-    return atomrefptr.is_truthy();
+    return PyObject_IsTrue( self->atomref );
 }
 
 
@@ -133,10 +129,9 @@ PyObject*
 SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject* kwargs )
 {
 
-    cppy::ptr atomrefptr( cppy::incref( self->atomref ) );
-    if( atomrefptr.is_truthy() )
+    if( PyObject_IsTrue( self->atomref ) )
     {
-        cppy::ptr owner( PyObject_CallNoArgs( atomrefptr.get() ) );
+        cppy::ptr owner( PyObject_CallNoArgs( self->atomref ) );
         cppy::ptr engine( owner.getattr("_d_engine") );
         if ( !engine.is_none() )
         {
@@ -161,11 +156,10 @@ SubscriptionObserver_richcompare( SubscriptionObserver* self, PyObject* other, i
         if( SubscriptionObserver::TypeCheck( other ) )
         {
             SubscriptionObserver* so_other = reinterpret_cast<SubscriptionObserver*>( other );
-            cppy::ptr sref( cppy::incref( self->atomref ) );
-            cppy::ptr sname( cppy::incref( self->name ) );
-            cppy::ptr oref( cppy::incref( so_other->atomref ) );
-            cppy::ptr oname( cppy::incref( so_other->name ) );
-            if( sref.richcmp( oref, Py_EQ ) && sname.richcmp(oname, Py_EQ ))
+            if(
+                PyObject_RichCompareBool( self->atomref, so_other->atomref, Py_EQ )
+                && PyObject_RichCompareBool( self->name, so_other->name, Py_EQ )
+            )
             {
                 Py_RETURN_TRUE;
             }
