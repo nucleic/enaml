@@ -1,4 +1,5 @@
-
+build-essential
+libgl1-mesa-dev
 libfontconfig1-dev
 libfreetype6-dev
 libx11-dev
@@ -13,15 +14,11 @@ libxcb-keysyms1-dev
 libxcb-image0-dev
 libxcb-shm0-dev
 libxcb-icccm4-dev
-libxcb-sync0-dev
+libxcb-sync-dev
 libxcb-xfixes0-dev
 libxcb-shape0-dev
 libxcb-randr0-dev
 libxcb-render-util0-dev
+libxcb-xinerama0-dev
 libxkbcommon-dev
 libxkbcommon-x11-dev
-libxcb-xinerama0-dev
-libxcb-xkb-dev
-libxcb-xtest0-dev
-libegl1-mesa
-xvfb

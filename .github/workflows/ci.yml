@@ -52,14 +52,16 @@ jobs:
       - name: Install linux only test dependency
         if: matrix.os == 'ubuntu-latest'
         # Install all dependencies needed to run Qt on linux (taken from the qt website)
+        # https://doc.qt.io/qt-6/linux.html
+        # https://doc.qt.io/qt-6/linux-requirements.html
         run: |
           sudo apt-get update --fix-missing;
           if [ "${{ matrix.qt-version }}" == 5 ]; then
-            cat ci/qt5_linux.txt | xargs sudo apt-get -y install
+            cat ci/qt5_linux.txt | xargs sudo apt -y install
           else
-            cat ci/qt6_linux.txt | xargs sudo apt-get -y install
+            cat ci/qt6_linux.txt | xargs sudo apt -y install
           fi
-          sudo apt-get install -y herbstluftwm scrot
+          sudo apt install -y xvfb herbstluftwm scrot
       - name: Get history and tags for SCM versioning to work
         run: |
           git fetch --prune --unshallow
