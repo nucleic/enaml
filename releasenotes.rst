@@ -3,6 +3,10 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+0.18.1 - Unreleased
+-------------------
+- Move standard_tracer's subscription observer to cpp to improve performance PR #562
+
 0.18.0 - 28/10/2024
 -------------------
 - support for Python 3.13 PR #556
