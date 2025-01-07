@@ -21,6 +21,9 @@
 namespace enaml
 {
 
+// ptr to atom.api.atomref
+static cppy::ptr atomref;
+
 // POD struct - all member fields are considered private
 struct SubscriptionObserver
 {
@@ -59,19 +62,6 @@ SubscriptionObserver_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
         return 0;
     }
     SubscriptionObserver* self = reinterpret_cast<SubscriptionObserver*>( ptr.get() );
-
-    cppy::ptr atom_api( PyImport_ImportModule("atom.api") );
-    if ( !atom_api )
-    {
-        PyErr_SetString( PyExc_ImportError, "Could not import atom.api" );
-        return 0;
-    }
-    cppy::ptr atomref( atom_api.getattr("atomref") );
-    if ( !atomref )
-    {
-        PyErr_SetString( PyExc_ImportError, "Could not import atom.api.atomref" );
-        return 0;
-    }
 
     self->atomref = PyObject_CallOneArg(atomref.get(), owner);
     if( !self->atomref )
@@ -277,6 +267,19 @@ namespace
     {
         if( !SubscriptionObserver::Ready() )
         {
+            return -1;
+        }
+
+        cppy::ptr atom_api( PyImport_ImportModule("atom.api") );
+        if ( !atom_api )
+        {
+            PyErr_SetString( PyExc_ImportError, "Could not import atom.api" );
+            return -1;
+        }
+        atomref.set( atom_api.getattr("atomref") );
+        if ( !atomref )
+        {
+            PyErr_SetString( PyExc_ImportError, "Could not import atom.api.atomref" );
             return -1;
         }
 
