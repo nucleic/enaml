@@ -125,13 +125,13 @@ SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject*
         cppy::ptr engine( owner.getattr("_d_engine") );
         if ( !engine.is_none() )
         {
-            cppy::ptr args( PyTuple_New( 2 ) );
-            if( !args )
+            cppy::ptr update_args( PyTuple_New( 2 ) );
+            if( !update_args )
                 return 0;
-            PyTuple_SET_ITEM( args.get(), 0, cppy::incref( owner.get() ) );
-            PyTuple_SET_ITEM( args.get(), 1, cppy::incref( self->name ) );
+            PyTuple_SET_ITEM( update_args.get(), 0, cppy::incref( owner.get() ) );
+            PyTuple_SET_ITEM( update_args.get(), 1, cppy::incref( self->name ) );
             cppy::ptr update( engine.getattr( "update" ) );
-            return update.call( args );
+            return update.call( update_args );
         }
     }
     Py_RETURN_NONE;
