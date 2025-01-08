@@ -85,8 +85,6 @@ int
 SubscriptionObserver_traverse( SubscriptionObserver* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->atomref );
-    Py_VISIT( self->name );
-    Py_VISIT(Py_TYPE(self));
     return 0;
 }
 
@@ -122,7 +120,11 @@ SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject*
     if( PyObject_IsTrue( self->atomref ) )
     {
         cppy::ptr owner( PyObject_CallNoArgs( self->atomref ) );
+        if ( !owner )
+            return 0;
         cppy::ptr engine( owner.getattr("_d_engine") );
+        if ( !engine )
+            return 0;
         if ( !engine.is_none() )
         {
             cppy::ptr update_args( PyTuple_New( 2 ) );
@@ -131,6 +133,8 @@ SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject*
             PyTuple_SET_ITEM( update_args.get(), 0, cppy::incref( owner.get() ) );
             PyTuple_SET_ITEM( update_args.get(), 1, cppy::incref( self->name ) );
             cppy::ptr update( engine.getattr( "update" ) );
+            if ( !update )
+                return 0;
             return update.call( update_args );
         }
     }
@@ -181,10 +185,9 @@ SubscriptionObserver_get_ref( SubscriptionObserver* self, void* context )
 PyObject*
 SubscriptionObserver_set_ref( SubscriptionObserver* self, PyObject* value, void* context )
 {
-    if( reinterpret_cast<PyObject*>( self ) == value )
-        return 0;
-    cppy::ptr old( self->atomref );
-    self->atomref = cppy::incref( value );
+    if( value != Py_None )
+        return cppy::type_error("ref can only be set to None");
+    cppy::replace( &self->atomref, Py_None );
     return 0;
 }
 
