@@ -142,28 +142,6 @@ SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject*
 }
 
 
-PyObject*
-SubscriptionObserver_richcompare( SubscriptionObserver* self, PyObject* other, int opid )
-{
-    if( opid == Py_EQ )
-    {
-        if( SubscriptionObserver::TypeCheck( other ) )
-        {
-            SubscriptionObserver* so_other = reinterpret_cast<SubscriptionObserver*>( other );
-            if(
-                PyObject_RichCompareBool( self->atomref, so_other->atomref, Py_EQ )
-                && PyObject_RichCompareBool( self->name, so_other->name, Py_EQ )
-            )
-            {
-                Py_RETURN_TRUE;
-            }
-        }
-        Py_RETURN_FALSE;
-    }
-    Py_RETURN_NOTIMPLEMENTED;
-}
-
-
 PyDoc_STRVAR(SubscriptionObserver__doc__,
     "SubscriptionObserver(owner, name)\n\n"
     "An observer object which manages a tracer subscription.\n"
@@ -215,7 +193,6 @@ static PyType_Slot SubscriptionObserver_Type_slots[] = {
     { Py_tp_clear, void_cast( SubscriptionObserver_clear ) },              /* tp_clear */
     { Py_tp_call, void_cast( SubscriptionObserver_call ) },                /* tp_call */
     { Py_tp_doc, cast_py_tp_doc( SubscriptionObserver__doc__ ) },          /* tp_doc */
-    { Py_tp_richcompare, void_cast( SubscriptionObserver_richcompare ) },  /* tp_richcompare */
     { Py_nb_bool, void_cast( SubscriptionObserver__bool__ ) },             /* nb_bool */
     { Py_tp_getset, void_cast( SubscriptionObserver_getset ) },            /* tp_getset */
     { Py_tp_new, void_cast( SubscriptionObserver_new ) },                  /* tp_new */

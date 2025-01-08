@@ -34,7 +34,7 @@ def test_subscription_observer_compare():
     label = Label()
     observer = SubscriptionObserver(label, "text")
     assert observer != SubscriptionObserver(label, "style")
-    assert observer == SubscriptionObserver(label, "text")
+    assert observer != SubscriptionObserver(label, "text")
 
 
 def test_subscription_observer_update():
