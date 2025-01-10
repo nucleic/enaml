@@ -242,6 +242,31 @@ def test_dynamicscope_del(dynamicscope):
     assert 'str' in excinfo.exconly()
 
 
+def test_dynamicscope_mapping(dynamicscope):
+    """Test the contains items, keys, value, update, and iter.
+
+    """
+    dynamicscope, extra = dynamicscope
+    owner = extra[0]
+    change = extra[4]
+
+    assert set(dynamicscope.keys()) == {'a', 'b', 'c', 'e', 'self', 'change'}
+
+    for v in dynamicscope.values():
+        assert v in [1, 2, 3, 4, 5, owner, change]
+
+    dynamicscope.update({"x": "y"})
+
+    with pytest.raises(TypeError):
+        dynamicscope.update(1) # not mapping
+    with pytest.raises(TypeError):
+        dynamicscope.update({1: 2}) # invalid key type
+
+    assert {k for k in dynamicscope} == {'a', 'b', 'c', 'e', 'self', 'change', 'x'}
+
+    assert dict(dynamicscope.items())["x"] == "y"
+
+
 @pytest.fixture
 def nonlocals(dynamicscope):
     """Access the nonlocals of a dynamic scope.
