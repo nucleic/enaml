@@ -67,3 +67,7 @@ def test_handling_wrong_arguments():
     with pytest.raises(TypeError) as excinfo:
         call_func(func, (), {}, 1)
     assert 'mapping' in excinfo.exconly()
+
+    with pytest.raises(TypeError) as excinfo:
+        call_func(func, ())
+    assert 'must have 3 or 4 arguments' in excinfo.exconly()

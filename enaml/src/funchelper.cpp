@@ -22,7 +22,7 @@ from Python's funcobject.c
 PyObject*
 call_func( PyObject* mod, PyObject *const *args, Py_ssize_t nargs )
 {
-    if( !(nargs == 3 || nargs == 4) )
+    if( !(nargs == 4 || nargs == 3) )
     {
         PyErr_SetString( PyExc_TypeError, "call_func must have 3 or 4 arguments" );
         return 0;
