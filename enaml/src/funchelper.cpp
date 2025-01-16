@@ -64,11 +64,11 @@ call_func( PyObject* mod, PyObject* args )
     if( ( argdefs ) && PyTuple_Check( argdefs ) )
     {
         defaults = &PyTuple_GET_ITEM( reinterpret_cast<PyTupleObject*>( argdefs ), 0 );
-        num_defaults = PyTuple_Size( argdefs );
+        num_defaults = PyTuple_GET_SIZE( argdefs );
     }
 
     PyObject** keywords = 0;
-    Py_ssize_t num_keywords = PyDict_Size( func_kwargs );
+    Py_ssize_t num_keywords = PyDict_GET_SIZE( func_kwargs );
     if( num_keywords > 0 )
     {
         keywords = PyMem_NEW( PyObject*, 2 * num_keywords );
@@ -90,7 +90,7 @@ call_func( PyObject* mod, PyObject* args )
         PyFunction_GET_GLOBALS( func ),
         func_locals,
         &PyTuple_GET_ITEM( func_args, 0 ),
-        PyTuple_Size( func_args ),
+        PyTuple_GET_SIZE( func_args ),
         keywords, num_keywords, defaults, num_defaults,
         NULL, PyFunction_GET_CLOSURE( func )
     );
