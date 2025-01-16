@@ -20,17 +20,18 @@ from Python's funcobject.c
 
 */
 PyObject*
-call_func( PyObject* mod, PyObject* args )
+call_func( PyObject* mod, PyObject *const *args, Py_ssize_t nargs )
 {
-    PyObject* func;
-    PyObject* func_args;
-    PyObject* func_kwargs;
-    PyObject* func_locals = Py_None;
-
-    if( !PyArg_UnpackTuple( args, "call_func", 3, 4, &func, &func_args, &func_kwargs, &func_locals ) )
+    if( !(nargs == 3 || nargs == 4) )
     {
+        PyErr_SetString( PyExc_TypeError, "call_func must have 3 or 4 arguments" );
         return 0;
     }
+
+    PyObject* func = args[0];
+    PyObject* func_args = args[1];
+    PyObject* func_kwargs = args[2];
+    PyObject* func_locals = nargs == 4 ? args[3] : Py_None;
 
     if( !PyFunction_Check( func ) )
     {
@@ -115,7 +116,7 @@ funchelper_modexec( PyObject *mod )
 
 static PyMethodDef
 funchelper_methods[] = {
-    { "call_func", ( PyCFunction )call_func, METH_VARARGS,
+    { "call_func", ( PyCFunction )call_func, METH_FASTCALL,
       "call_func(func, args, kwargs[, locals])" },
     { 0 } // sentinel
 };
