@@ -22,9 +22,9 @@ namespace enaml
 {
 
 // ptr to atom.api.atomref
-static cppy::ptr atomref;
-static cppy::ptr d_engine_str;
-static cppy::ptr update_str;
+static PyObject* atomref;
+static PyObject* d_engine_str;
+static PyObject* update_str;
 
 // POD struct - all member fields are considered private
 struct SubscriptionObserver
@@ -65,7 +65,7 @@ SubscriptionObserver_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     }
     SubscriptionObserver* self = reinterpret_cast<SubscriptionObserver*>( ptr.get() );
 
-    self->ref = PyObject_CallOneArg(atomref.get(), owner);
+    self->ref = PyObject_CallOneArg(atomref, owner);
     if( !self->ref )
     {
         return 0;
@@ -124,7 +124,7 @@ SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject*
         cppy::ptr owner( PyObject_CallNoArgs( self->ref ) );
         if ( !owner )
             return 0;
-        cppy::ptr engine( owner.getattr( d_engine_str.get() ) );
+        cppy::ptr engine( owner.getattr( d_engine_str ) );
         if ( !engine )
             return 0;
         if ( !engine.is_none() )
@@ -134,7 +134,7 @@ SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject*
                 return 0;
             PyTuple_SET_ITEM( update_args.get(), 0, cppy::incref( owner.get() ) );
             PyTuple_SET_ITEM( update_args.get(), 1, cppy::incref( self->name ) );
-            cppy::ptr update( engine.getattr( update_str.get() ) );
+            cppy::ptr update( engine.getattr( update_str ) );
             if ( !update )
                 return 0;
             return update.call( update_args );
@@ -252,11 +252,11 @@ namespace
             return -1;
         }
 
-        update_str = cppy::ptr( PyUnicode_FromString("update") );
+        update_str = PyUnicode_FromString("update");
         if ( !update_str )
             return -1;
 
-        d_engine_str = cppy::ptr( PyUnicode_FromString("_d_engine") );
+        d_engine_str = PyUnicode_FromString("_d_engine");
         if ( !d_engine_str )
             return -1;
 
@@ -266,7 +266,7 @@ namespace
             PyErr_SetString( PyExc_ImportError, "Could not import atom.api" );
             return -1;
         }
-        atomref.set( atom_api.getattr("atomref") );
+        atomref = atom_api.getattr("atomref");
         if ( !atomref )
         {
             PyErr_SetString( PyExc_ImportError, "Could not import atom.api.atomref" );
