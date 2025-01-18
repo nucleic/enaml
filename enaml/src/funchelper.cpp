@@ -20,17 +20,18 @@ from Python's funcobject.c
 
 */
 PyObject*
-call_func( PyObject* mod, PyObject* args )
+call_func( PyObject* mod, PyObject *const *args, Py_ssize_t nargs )
 {
-    PyObject* func;
-    PyObject* func_args;
-    PyObject* func_kwargs;
-    PyObject* func_locals = Py_None;
-
-    if( !PyArg_UnpackTuple( args, "call_func", 3, 4, &func, &func_args, &func_kwargs, &func_locals ) )
+    if( !(nargs == 4 || nargs == 3) )
     {
+        PyErr_SetString( PyExc_TypeError, "call_func must have 3 or 4 arguments" );
         return 0;
     }
+
+    PyObject* func = args[0];
+    PyObject* func_args = args[1];
+    PyObject* func_kwargs = args[2];
+    PyObject* func_locals = nargs == 4 ? args[3] : Py_None;
 
     if( !PyFunction_Check( func ) )
     {
@@ -64,11 +65,11 @@ call_func( PyObject* mod, PyObject* args )
     if( ( argdefs ) && PyTuple_Check( argdefs ) )
     {
         defaults = &PyTuple_GET_ITEM( reinterpret_cast<PyTupleObject*>( argdefs ), 0 );
-        num_defaults = PyTuple_Size( argdefs );
+        num_defaults = PyTuple_GET_SIZE( argdefs );
     }
 
     PyObject** keywords = 0;
-    Py_ssize_t num_keywords = PyDict_Size( func_kwargs );
+    Py_ssize_t num_keywords = PyDict_GET_SIZE( func_kwargs );
     if( num_keywords > 0 )
     {
         keywords = PyMem_NEW( PyObject*, 2 * num_keywords );
@@ -90,7 +91,7 @@ call_func( PyObject* mod, PyObject* args )
         PyFunction_GET_GLOBALS( func ),
         func_locals,
         &PyTuple_GET_ITEM( func_args, 0 ),
-        PyTuple_Size( func_args ),
+        PyTuple_GET_SIZE( func_args ),
         keywords, num_keywords, defaults, num_defaults,
         NULL, PyFunction_GET_CLOSURE( func )
     );
@@ -115,7 +116,7 @@ funchelper_modexec( PyObject *mod )
 
 static PyMethodDef
 funchelper_methods[] = {
-    { "call_func", ( PyCFunction )call_func, METH_VARARGS,
+    { "call_func", ( PyCFunction )call_func, METH_FASTCALL,
       "call_func(func, args, kwargs[, locals])" },
     { 0 } // sentinel
 };
