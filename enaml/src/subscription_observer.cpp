@@ -23,6 +23,8 @@ namespace enaml
 
 // ptr to atom.api.atomref
 static cppy::ptr atomref;
+static cppy::ptr d_engine_str;
+static cppy::ptr update_str;
 
 // POD struct - all member fields are considered private
 struct SubscriptionObserver
@@ -122,20 +124,14 @@ SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject*
         cppy::ptr owner( PyObject_CallNoArgs( self->ref ) );
         if ( !owner )
             return 0;
-        cppy::ptr engine( owner.getattr("_d_engine") );
+        cppy::ptr engine( owner.getattr( d_engine_str.get() ) );
         if ( !engine )
             return 0;
         if ( !engine.is_none() )
         {
-            cppy::ptr update_args( PyTuple_New( 2 ) );
-            if( !update_args )
-                return 0;
-            PyTuple_SET_ITEM( update_args.get(), 0, cppy::incref( owner.get() ) );
-            PyTuple_SET_ITEM( update_args.get(), 1, cppy::incref( self->name ) );
-            cppy::ptr update( engine.getattr( "update" ) );
-            if ( !update )
-                return 0;
-            return update.call( update_args );
+            PyObject* call_args[] = { engine.get(), owner.get(), self->name };
+            size_t nargsf = 2 | PY_VECTORCALL_ARGUMENTS_OFFSET;
+            return PyObject_VectorcallMethod(update_str.get(), call_args, nargsf, 0);
         }
     }
     Py_RETURN_NONE;
@@ -249,6 +245,14 @@ namespace
         {
             return -1;
         }
+
+        update_str = cppy::ptr( PyUnicode_FromString("update") );
+        if ( !update_str )
+            return -1;
+
+        d_engine_str = cppy::ptr( PyUnicode_FromString("_d_engine") );
+        if ( !d_engine_str )
+            return -1;
 
         cppy::ptr atom_api( PyImport_ImportModule("atom.api") );
         if ( !atom_api )
