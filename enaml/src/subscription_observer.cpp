@@ -129,15 +129,9 @@ SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject*
             return 0;
         if ( !engine.is_none() )
         {
-            cppy::ptr update_args( PyTuple_New( 2 ) );
-            if( !update_args )
-                return 0;
-            PyTuple_SET_ITEM( update_args.get(), 0, cppy::incref( owner.get() ) );
-            PyTuple_SET_ITEM( update_args.get(), 1, cppy::incref( self->name ) );
-            cppy::ptr update( engine.getattr( update_str ) );
-            if ( !update )
-                return 0;
-            return update.call( update_args );
+            PyObject* call_args[] = { engine.get(), owner.get(), self->name };
+            size_t nargsf = 3 | PY_VECTORCALL_ARGUMENTS_OFFSET;
+            return PyObject_VectorcallMethod(update_str, call_args, nargsf, 0);
         }
     }
     Py_RETURN_NONE;
