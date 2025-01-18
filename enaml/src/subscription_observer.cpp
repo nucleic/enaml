@@ -28,7 +28,7 @@ static cppy::ptr atomref;
 struct SubscriptionObserver
 {
     PyObject_HEAD
-    PyObject* atomref;
+    PyObject* ref;
     PyObject* name;
 
     static PyType_Spec TypeObject_Spec;
@@ -63,8 +63,8 @@ SubscriptionObserver_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     }
     SubscriptionObserver* self = reinterpret_cast<SubscriptionObserver*>( ptr.get() );
 
-    self->atomref = PyObject_CallOneArg(atomref.get(), owner);
-    if( !self->atomref )
+    self->ref = PyObject_CallOneArg(atomref.get(), owner);
+    if( !self->ref )
     {
         return 0;
     }
@@ -76,7 +76,7 @@ SubscriptionObserver_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 void
 SubscriptionObserver_clear( SubscriptionObserver* self )
 {
-    Py_CLEAR( self->atomref );
+    Py_CLEAR( self->ref );
     Py_CLEAR( self->name );
 }
 
@@ -84,7 +84,7 @@ SubscriptionObserver_clear( SubscriptionObserver* self )
 int
 SubscriptionObserver_traverse( SubscriptionObserver* self, visitproc visit, void* arg )
 {
-    Py_VISIT( self->atomref );
+    Py_VISIT( self->ref );
     return 0;
 }
 
@@ -101,7 +101,7 @@ SubscriptionObserver_dealloc( SubscriptionObserver* self )
 int
 SubscriptionObserver__bool__( SubscriptionObserver* self )
 {
-    return PyObject_IsTrue( self->atomref );
+    return PyObject_IsTrue( self->ref );
 }
 
 
@@ -117,9 +117,9 @@ PyObject*
 SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject* kwargs )
 {
 
-    if( PyObject_IsTrue( self->atomref ) )
+    if( PyObject_IsTrue( self->ref ) )
     {
-        cppy::ptr owner( PyObject_CallNoArgs( self->atomref ) );
+        cppy::ptr owner( PyObject_CallNoArgs( self->ref ) );
         if ( !owner )
             return 0;
         cppy::ptr engine( owner.getattr("_d_engine") );
@@ -156,7 +156,7 @@ PyDoc_STRVAR(SubscriptionObserver__doc__,
 PyObject*
 SubscriptionObserver_get_ref( SubscriptionObserver* self, void* context )
 {
-    return cppy::incref( self->atomref );
+    return cppy::incref( self->ref );
 }
 
 
@@ -165,7 +165,7 @@ SubscriptionObserver_set_ref( SubscriptionObserver* self, PyObject* value, void*
 {
     if( value != Py_None )
         return cppy::type_error("ref can only be set to None");
-    cppy::replace( &self->atomref, Py_None );
+    cppy::replace( &self->ref, Py_None );
     return 0;
 }
 
