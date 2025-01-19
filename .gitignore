@@ -1,6 +1,7 @@
 *.pyc
 *.un~
 *.swp
+*.kate-swp
 *.egg-info
 *.so
 *.pyd

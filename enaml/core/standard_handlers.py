@@ -61,7 +61,7 @@ class StandardReadHandler(ReadHandler, HandlerMixin):
         f_builtins = f_globals['__builtins__']
         f_locals = self.get_locals(owner)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins)
-        return call_func(func, (), {}, scope)
+        return call_func(func, (), None, scope)
 
 
 class StandardWriteHandler(WriteHandler, HandlerMixin):
@@ -79,7 +79,7 @@ class StandardWriteHandler(WriteHandler, HandlerMixin):
         f_builtins = f_globals['__builtins__']
         f_locals = self.get_locals(owner)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins, change)
-        call_func(func, (), {}, scope)
+        call_func(func, (), None, scope)
 
 
 class StandardTracedReadHandler(ReadHandler, HandlerMixin):
@@ -98,7 +98,7 @@ class StandardTracedReadHandler(ReadHandler, HandlerMixin):
         f_locals = self.get_locals(owner)
         tr = StandardTracer(owner, name)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins, None, tr)
-        return call_func(func, (tr,), {}, scope)
+        return call_func(func, (tr,), None, scope)
 
 
 class StandardInvertedWriteHandler(WriteHandler, HandlerMixin):
@@ -117,4 +117,4 @@ class StandardInvertedWriteHandler(WriteHandler, HandlerMixin):
         f_locals = self.get_locals(owner)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins)
         inverter = StandardInverter(scope)
-        call_func(func, (inverter, change['value']), {}, scope)
+        call_func(func, (inverter, change['value']), None, scope)

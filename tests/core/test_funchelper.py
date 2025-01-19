@@ -48,6 +48,21 @@ def test_handling_none_as_locals():
     assert call_func(func, (), {'a': 1}, None) == 1
 
 
+def test_handling_none_as_kewords():
+    """Test passing None as keywords.
+
+    """
+    assert call_func(func, (), None, {'a': 1}) == 1
+
+
+def test_handling_none_as_scope():
+    """Test passing None and omitting scope.
+
+    """
+    assert call_func(func, (), {'a': 1}, None) == 1
+    assert call_func(func, (), {'a': 1}, None) == 1
+
+
 def test_handling_wrong_arguments():
     """Test handling incorrect arguments.
 
@@ -61,7 +76,7 @@ def test_handling_wrong_arguments():
     assert 'tuple' in excinfo.exconly()
 
     with pytest.raises(TypeError) as excinfo:
-        call_func(func, (), None, None)
+        call_func(func, (), [], None)
     assert 'dict' in excinfo.exconly()
 
     with pytest.raises(TypeError) as excinfo:
@@ -70,4 +85,4 @@ def test_handling_wrong_arguments():
 
     with pytest.raises(TypeError) as excinfo:
         call_func(func, ())
-    assert 'must have 3 or 4 arguments' in excinfo.exconly()
+    assert 'must have 4 arguments' in excinfo.exconly()

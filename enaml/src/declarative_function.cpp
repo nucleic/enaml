@@ -64,6 +64,10 @@ namespace
 static PyObject* DynamicScope;
 static PyObject* call_func;
 static PyObject* super_disallowed;
+static PyObject* globals_str;
+static PyObject* builtins_str;
+static PyObject* d_storage_str;
+static PyObject* super_str;
 
 
 #define FREELIST_MAX 128
@@ -85,11 +89,10 @@ PyObject*
 _Invoke( PyObject* func, PyObject* key, PyObject* self, PyObject* args,
          PyObject* kwargs )
 {
-    cppy::ptr pfunc( cppy::incref( func ) );
-    cppy::ptr f_globals( pfunc.getattr( "__globals__" ) );
+    cppy::ptr f_globals( PyObject_GetAttr( func, globals_str ) );
     if( !f_globals )
-        return cppy::attribute_error( pfunc.get(), "__globals__" );
-    cppy::ptr f_builtins( cppy::xincref( PyDict_GetItemString( f_globals.get(), "__builtins__" ) ) );
+        return 0;
+    PyObject* f_builtins = PyDict_GetItem( f_globals.get(), builtins_str ); // borrowed
     if( !f_builtins ){
         PyErr_Format(
             PyExc_KeyError,
@@ -98,25 +101,33 @@ _Invoke( PyObject* func, PyObject* key, PyObject* self, PyObject* args,
         );
         return 0;
     }
-    cppy::ptr pself( cppy::incref( self ) );
-    cppy::ptr d_storage( pself.getattr( "_d_storage" ) );
+    cppy::ptr d_storage( PyObject_GetAttr( self, d_storage_str ) );
     if( !d_storage )
-        return cppy::attribute_error( pself.get(), "_d_storage" );
+        return 0;
 
-    cppy::ptr empty( PyDict_New() );
-    cppy::ptr f_locals( PyObject_CallMethod( d_storage.get(), "get", "OO", key, empty.get() ) );
-    cppy::ptr scope(
-        PyObject_CallFunctionObjArgs( DynamicScope, self, f_locals.get(),
-                                      f_globals.get(),
-                                      f_builtins.get(), 0 )
-        );
-    if( PyMapping_SetItemString( scope.get(), "super", cppy::incref( super_disallowed ) ) == -1 )
+    cppy::ptr f_locals( PyObject_GetItem( d_storage.get(), key ) ); // key should normally exist
+    if ( !f_locals )
+    {
+        if( PyErr_Occurred() )
+        {
+            if ( PyErr_ExceptionMatches( PyExc_KeyError ) )
+                PyErr_Clear();
+            else
+                return 0;
+        }
+        f_locals = PyDict_New();
+        if ( !f_locals )
+            return 0;
+    }
+    PyObject* scope_args[] = { self, f_locals.get(), f_globals.get(), f_builtins };
+    cppy::ptr scope( PyObject_Vectorcall( DynamicScope, scope_args, 4, 0 ) );
+    if ( !scope )
+        return 0;
+    if( !scope.setitem( super_str, super_disallowed ) ) // Does not steal value
         return cppy::system_error( "Failed to set key super in dynamic scope" );
 
-    cppy::ptr pkw( cppy::xincref( kwargs ) );
-    if( !pkw )
-        pkw.set( PyDict_New() );
-    return PyObject_CallFunctionObjArgs( call_func, func, args, pkw.get(), scope.get(), 0 );
+    PyObject* call_args[] = { func, args, kwargs, scope.get() };
+    return PyObject_Vectorcall( call_func, call_args, 4, 0 );
 }
 
 
@@ -197,8 +208,7 @@ DFunc__get__( DFunc* self, PyObject* im_self, PyObject* type )
 PyObject*
 DFunc__call__( DFunc* self, PyObject* args, PyObject* kwargs )
 {
-    cppy::ptr argsptr( cppy::incref( args ) );
-    Py_ssize_t args_size = PyTuple_GET_SIZE( argsptr.get() );
+    Py_ssize_t args_size = PyTuple_GET_SIZE( args );
     if( args_size == 0 )
     {
         std::ostringstream ostr;
@@ -206,12 +216,12 @@ DFunc__call__( DFunc* self, PyObject* args, PyObject* kwargs )
         ostr << args_size << " given)";
         return cppy::type_error( ostr.str().c_str() );
     }
-    cppy::ptr pself( cppy::incref( PyTuple_GET_ITEM( argsptr.get(), 0 ) ) );
-    cppy::ptr pargs( PyTuple_GetSlice( argsptr.get(), 1, args_size ) );
+    PyObject* pself = PyTuple_GET_ITEM( args, 0 );
+    cppy::ptr pargs( PyTuple_GetSlice( args, 1, args_size ) );
     if( !pargs )
         return cppy::system_error( "DeclarativeFunction.__call__ failed to "
                                    "slice arguments." );
-    return _Invoke( self->im_func, self->im_key, pself.get(), pargs.get(), kwargs );
+    return _Invoke( self->im_func, self->im_key, pself, pargs.get(), kwargs );
 }
 
 
@@ -567,6 +577,22 @@ declarative_function_modexec( PyObject *mod )
     DynamicScope = dm_cls.release();
     call_func = fh_cls.release();
     super_disallowed = sup.release();
+
+    globals_str = PyUnicode_FromString("__globals__");
+    if ( !globals_str )
+        return -1;
+
+    builtins_str = PyUnicode_FromString("__builtins__");
+    if ( !builtins_str )
+        return -1;
+
+    d_storage_str = PyUnicode_FromString("_d_storage");
+    if ( !d_storage_str )
+        return -1;
+
+    super_str = PyUnicode_FromString("super");
+    if ( !super_str )
+        return -1;
 
     return 0;
 }

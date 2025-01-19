@@ -22,16 +22,16 @@ from Python's funcobject.c
 PyObject*
 call_func( PyObject* mod, PyObject *const *args, Py_ssize_t nargs )
 {
-    if( !(nargs == 4 || nargs == 3) )
+    if( nargs != 4 )
     {
-        PyErr_SetString( PyExc_TypeError, "call_func must have 3 or 4 arguments" );
+        PyErr_SetString( PyExc_TypeError, "call_func must have 4 arguments" );
         return 0;
     }
 
     PyObject* func = args[0];
     PyObject* func_args = args[1];
     PyObject* func_kwargs = args[2];
-    PyObject* func_locals = nargs == 4 ? args[3] : Py_None;
+    PyObject* func_locals = args[3];
 
     if( !PyFunction_Check( func ) )
     {
@@ -42,12 +42,6 @@ call_func( PyObject* mod, PyObject *const *args, Py_ssize_t nargs )
     if( !PyTuple_Check( func_args ) )
     {
         PyErr_SetString( PyExc_TypeError, "arguments must be a tuple" );
-        return 0;
-    }
-
-    if( !PyDict_Check( func_kwargs ) )
-    {
-        PyErr_SetString( PyExc_TypeError, "keywords must be a dict" );
         return 0;
     }
 
@@ -69,21 +63,30 @@ call_func( PyObject* mod, PyObject *const *args, Py_ssize_t nargs )
     }
 
     PyObject** keywords = 0;
-    Py_ssize_t num_keywords = PyDict_GET_SIZE( func_kwargs );
-    if( num_keywords > 0 )
+    Py_ssize_t num_keywords = 0;
+    if( func_kwargs && func_kwargs != Py_None )
     {
-        keywords = PyMem_NEW( PyObject*, 2 * num_keywords );
-        if( !keywords )
+        if ( !PyDict_Check( func_kwargs ) )
         {
-            PyErr_NoMemory();
+            PyErr_SetString( PyExc_TypeError, "keywords must be a dict or None" );
             return 0;
         }
-        Py_ssize_t i = 0;
-        Py_ssize_t pos = 0;
-        while( PyDict_Next( func_kwargs, &pos, &keywords[ i ], &keywords[ i + 1 ] ) )
-            i += 2;
-        num_keywords = i / 2;
-        /* XXX This is broken if the caller deletes dict items! */
+        num_keywords = PyDict_GET_SIZE( func_kwargs );
+        if( num_keywords > 0 )
+        {
+            keywords = PyMem_NEW( PyObject*, 2 * num_keywords );
+            if( !keywords )
+            {
+                PyErr_NoMemory();
+                return 0;
+            }
+            Py_ssize_t i = 0;
+            Py_ssize_t pos = 0;
+            while( PyDict_Next( func_kwargs, &pos, &keywords[ i ], &keywords[ i + 1 ] ) )
+                i += 2;
+            num_keywords = i / 2;
+            /* XXX This is broken if the caller deletes dict items! */
+        }
     }
 
     PyObject* result = PyEval_EvalCodeEx(
