@@ -784,9 +784,105 @@ DynamicScope_contains( DynamicScope* self, PyObject* key )
     return test_dynamic_attr( self->owner, key );
 }
 
+PyObject*
+_DynamicScope_dict( DynamicScope* self)
+{
+    cppy::ptr items( PyDict_New() );
+    if ( !items )
+        return 0;
+
+    if ( PyDict_Update( items.get(), self->f_builtins ) )
+        return 0;
+
+    if ( PyDict_Update( items.get(), self->f_globals ) )
+        return 0;
+
+    if ( PyDict_Update( items.get(), self->f_locals ) )
+        return 0;
+
+    if ( self->f_writes && PyDict_Update( items.get(), self->f_writes ) )
+        return 0;
+
+    if ( self->change && PyDict_SetItemString( items.get(), "change", cppy::incref(self->change) ) )
+        return 0;
+
+    if ( PyDict_SetItemString( items.get(), "self", cppy::incref(self->owner) ) )
+        return 0;
+
+    return items.release();
+}
+
+
+PyObject*
+DynamicScope_items( DynamicScope* self)
+{
+    cppy::ptr dict( _DynamicScope_dict( self ) );
+    if ( !dict )
+        return 0;
+    return PyDict_Items( dict.get() );
+}
+
+
+PyObject*
+DynamicScope_keys( DynamicScope* self)
+{
+    cppy::ptr dict( _DynamicScope_dict( self ) );
+    if ( !dict )
+        return 0;
+    return PyDict_Keys( dict.get() );
+}
+
+
+PyObject*
+DynamicScope_values( DynamicScope* self)
+{
+    cppy::ptr dict( _DynamicScope_dict( self ) );
+    if ( !dict )
+        return 0;
+    return PyDict_Values( dict.get() );
+}
+
+
+PyObject*
+DynamicScope_iter( DynamicScope* self)
+{
+    cppy::ptr dict( _DynamicScope_dict( self ) );
+    if ( !dict )
+        return 0;
+    return dict.iter();
+}
+
+
+PyObject*
+DynamicScope_update( DynamicScope* self, PyObject* arg )
+{
+    if( !PyMapping_Check( arg ) )
+        return cppy::type_error( arg, "mapping" );
+
+    cppy::ptr items( cppy::incref( arg ) );
+    cppy::ptr iter( items.iter() );
+    if ( !iter )
+        return 0;
+
+    cppy::ptr key;
+    while ( (key = iter.next())  )
+    {
+        cppy::ptr value ( PyObject_GetItem( items.get(), key.get() ) );
+        if ( !value )
+            return 0;
+        if ( DynamicScope_setitem( self, key.get(), value.get() ) )
+            return 0;
+    }
+
+    Py_RETURN_NONE;
+}
 
 static PyMethodDef DynamicScope_methods[] = {
     {"get",    reinterpret_cast<PyCFunction>(DynamicScope_get), METH_VARARGS, ""},
+    {"items",  reinterpret_cast<PyCFunction>(DynamicScope_items), METH_NOARGS, ""},
+    {"keys",   reinterpret_cast<PyCFunction>(DynamicScope_keys), METH_NOARGS, ""},
+    {"values", reinterpret_cast<PyCFunction>(DynamicScope_values), METH_NOARGS, ""},
+    {"update", reinterpret_cast<PyCFunction>(DynamicScope_update), METH_O, ""},
     { 0 }  // Sentinel
 };
 
@@ -801,6 +897,7 @@ static PyType_Slot DynamicScope_Type_slots[] = {
     { Py_mp_subscript, void_cast( DynamicScope_getitem ) },      /* mp_subscript */
     { Py_mp_ass_subscript, void_cast( DynamicScope_setitem ) },  /* mp_ass_subscript */
     { Py_sq_contains, void_cast( DynamicScope_contains ) },      /* sq_contains */
+    { Py_tp_iter, void_cast( DynamicScope_iter ) },              /* tp_iter */
     { 0, 0 },
 };
 
