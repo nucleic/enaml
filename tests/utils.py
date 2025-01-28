@@ -149,6 +149,7 @@ def wait_for_window_displayed(qtbot, window, timeout=1000):
         msg = 'Window must be activated before waiting for display'
         raise RuntimeError(msg)
     qtbot.wait_exposed(window.proxy.widget, timeout=timeout)
+    qtbot.wait(25)
 
 
 class EventObserver(Atom):
