@@ -86,11 +86,6 @@ enamldef Main(Window):
 
 """
 
-
-@pytest.mark.skipif(
-    "CI" in os.environ and sys.platform.startswith("linux"),
-    reason='Skip on linux CI where setting up a windows manager is a nightmare'
-)
 @pytest.mark.parametrize("widgets, mods",
                          [(["f4", "f3", "f6", "f2", "f7", "f5", "f1"], [False]*7),
                           (["f5", "f7", "f2", "f6", "f3", "f4", "f1"], [True]*7),
