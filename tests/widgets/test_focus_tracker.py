@@ -44,10 +44,6 @@ enamldef Main(Window):
 
 """
 
-@pytest.mark.skipif(
-    "CI" in os.environ and sys.platform.startswith("linux"),
-    reason='Skip on linux CI where setting up a windows manager is a nightmare'
-)
 def test_focus_tracking(enaml_qtbot, enaml_sleep):
     """Test moving the focus forward in the presence of a custom focus traversal.
 
