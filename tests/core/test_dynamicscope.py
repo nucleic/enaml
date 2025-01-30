@@ -27,6 +27,8 @@ def dynamicscope():
             self.should_raise = should_raise
 
         def __get__(self, instance, objtype=None):
+            if instance is None:
+                return self
             if not self.should_raise:
                 return instance
             else:
@@ -50,6 +52,8 @@ def dynamicscope():
             self._parent = None
             self.attribute1 = 1
             self._prop2 = 0
+            self._top = 0
+            self.should_raise = True
 
         owner = NonDataDescriptor()
 
@@ -65,7 +69,8 @@ def dynamicscope():
 
         @property
         def key_raise(self):
-            raise KeyError()
+            if self.should_raise:
+                raise KeyError()
 
         non_data_key_raise = NonDataDescriptor(True)
 
@@ -241,6 +246,57 @@ def test_dynamicscope_del(dynamicscope):
         del dynamicscope[1]
     assert 'str' in excinfo.exconly()
 
+
+def test_dynamicscope_mapping(dynamicscope):
+    """Test the contains items, keys, value, update, and iter."""
+    dynamicscope, extra = dynamicscope
+    owner = extra[0]
+    change = extra[4]
+
+    assert "attribute1" in list(dynamicscope)
+
+    keys = {
+        "a",
+        "b",
+        "c",
+        "e",
+        "self",
+        "change",
+        "attribute1",
+        "attribute2",
+        "key_raise",
+        "non_data_key_raise",
+        "owner",
+        "prop1",
+        "prop2",
+        "write_only",
+        "should_raise",
+        "top"
+    }
+    # There is a bunch of __...__ we don't care about'
+    assert not keys.difference(set(dynamicscope.keys()))
+    all_keys = list(dynamicscope)
+    print(all_keys)
+    assert not keys.difference(set(all_keys))
+
+    # These cause errors...
+    owner.should_raise = False
+    owner.__class__.non_data_key_raise.should_raise = False
+
+    parent = owner._parent
+    values = list(dynamicscope.values())
+    for v in (0, 1, 2, 3, 5, owner, change):
+        assert v in values
+
+    dynamicscope.update({"x": "y"})
+
+    with pytest.raises(AttributeError):
+        dynamicscope.update(1)  # not mapping
+    with pytest.raises(TypeError):
+        dynamicscope.update({1: 2})  # invalid key type
+
+    keys.add("x")
+    assert dict(dynamicscope.items())["x"] == "y"
 
 @pytest.fixture
 def nonlocals(dynamicscope):
