@@ -785,6 +785,53 @@ DynamicScope_contains( DynamicScope* self, PyObject* key )
 }
 
 
+PyObject* DynamicScope_get_owner( DynamicScope* self )
+{
+    return cppy::incref( self->owner );
+}
+
+
+PyObject* DynamicScope_get_change( DynamicScope* self )
+{
+    return cppy::incref( self->change ? self->change : Py_None );
+}
+
+
+PyObject* DynamicScope_get_f_locals( DynamicScope* self )
+{
+    return cppy::incref( self->f_locals );
+}
+
+
+PyObject* DynamicScope_get_f_globals( DynamicScope* self )
+{
+    return cppy::incref( self->f_globals );
+}
+
+
+PyObject* DynamicScope_get_f_builtins( DynamicScope* self )
+{
+    return cppy::incref( self->f_builtins );
+}
+
+
+PyObject* DynamicScope_get_f_writes( DynamicScope* self )
+{
+    return cppy::incref( self->f_writes ? self->f_writes : Py_None );
+}
+
+static PyGetSetDef
+DynamicScope_getset[] = {
+    { "_owner", ( getter )DynamicScope_get_owner, 0, "Get owner." },
+    { "_change", ( getter )DynamicScope_get_change, 0, "Get change." },
+    { "_f_locals", ( getter )DynamicScope_get_f_locals, 0, "Get f_locals." },
+    { "_f_globals", ( getter )DynamicScope_get_f_globals, 0, "Get f_globals." },
+    { "_f_builtins", ( getter )DynamicScope_get_f_builtins, 0, "Get f_builtins." },
+    { "_f_writes", ( getter )DynamicScope_get_f_writes, 0, "Get f_writes." },
+    { 0 } // sentinel
+};
+
+
 static PyMethodDef DynamicScope_methods[] = {
     {"get",    reinterpret_cast<PyCFunction>(DynamicScope_get), METH_VARARGS, ""},
     { 0 }  // Sentinel
@@ -797,6 +844,7 @@ static PyType_Slot DynamicScope_Type_slots[] = {
     { Py_tp_new, void_cast( DynamicScope_new ) },                /* tp_new */
     { Py_tp_alloc, void_cast( PyType_GenericAlloc ) },           /* tp_alloc */
     { Py_tp_free, void_cast( PyObject_GC_Del ) },                /* tp_free */
+    { Py_tp_getset, void_cast( DynamicScope_getset ) },          /* tp_getset */
     { Py_tp_methods, void_cast( DynamicScope_methods ) },        /* tp_methods */
     { Py_mp_subscript, void_cast( DynamicScope_getitem ) },      /* mp_subscript */
     { Py_mp_ass_subscript, void_cast( DynamicScope_setitem ) },  /* mp_ass_subscript */
@@ -812,10 +860,11 @@ PyTypeObject* DynamicScope::TypeObject = NULL;
 
 
 PyType_Spec DynamicScope::TypeObject_Spec = {
-	"enaml.dynamicscope.DynamicScope",    /* tp_name */
+	"enaml._dynamicscope._DynamicScope",    /* tp_name */
 	sizeof( DynamicScope ),               /* tp_basicsize */
 	0,                                    /* tp_itemsize */
 	Py_TPFLAGS_DEFAULT
+	|Py_TPFLAGS_BASETYPE
     |Py_TPFLAGS_HAVE_GC
     |Py_TPFLAGS_DICT_SUBCLASS,            /* tp_flags */
     DynamicScope_Type_slots               /* slots */
@@ -869,7 +918,7 @@ dynamicscope_modexec( PyObject *mod )
 
     // DynamicScope
     cppy::ptr dynamicscope( pyobject_cast( DynamicScope::TypeObject ) );
-	if( PyModule_AddObject( mod, "DynamicScope", dynamicscope.get() ) < 0 )
+	if( PyModule_AddObject( mod, "_DynamicScope", dynamicscope.get() ) < 0 )
 	{
 		return -1;
 	}
@@ -895,7 +944,7 @@ PyModuleDef_Slot dynamicscope_slots[] = {
 
 struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
-        "dynamicscope",
+        "_dynamicscope",
         "dynamicscope extension module",
         0,
         dynamicscope_methods,
@@ -912,7 +961,7 @@ struct PyModuleDef moduledef = {
 }  // namespace enaml
 
 
-PyMODINIT_FUNC PyInit_dynamicscope( void )
+PyMODINIT_FUNC PyInit__dynamicscope( void )
 {
     return PyModuleDef_Init( &enaml::moduledef );
 }
