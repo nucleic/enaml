@@ -10,6 +10,40 @@ from enaml.core.declarative import Declarative
 from enaml.core._dynamicscope import _DynamicScope, UserKeyError
 
 
+class DynamicScope(_DynamicScope):
+    """_DynamicScope is a C++ class which exposes the following attributes:
+
+    _owner
+    _change
+    _f_writes
+    _f_locals
+    _f_globals
+    _f_builtins
+
+    """
+    def __iter__(self):
+        """Iterate the keys available in the dynamicscope."""
+        keys = _generate_keys(self)
+        return _filter_keys(keys)
+
+    def keys(self):
+        """Iterate the keys available in the dynamicscope."""
+        return iter(self)
+
+    def values(self):
+        """Iterate the values available in the dynamicscope."""
+        return (self[key] for key in self)
+
+    def items(self):
+        """Iterate the (key, value) pairs available in the dynamicscope."""
+        return ((key, self[key]) for key in self)
+
+    def update(self, scope):
+        """Update the dynamicscope with a mapping of items."""
+        for key, value in scope.items():
+            self[key] = value
+
+
 def _generate_keys(scope: DynamicScope):
     """ Generate *all* of the attributes names available from a dynamic scope.
 
@@ -70,38 +104,4 @@ def _filter_keys(keys: Iterable[string]):
             continue
         seen.add(key)
         yield key
-
-
-class DynamicScope(_DynamicScope):
-    """_DynamicScope is a C++ class which exposes the following attributes:
-
-    _owner
-    _change
-    _f_writes
-    _f_locals
-    _f_globals
-    _f_builtins
-
-    """
-    def __iter__(self):
-        """Iterate the keys available in the dynamicscope."""
-        keys = _generate_keys(self)
-        return _filter_keys(keys)
-
-    def keys(self):
-        """Iterate the keys available in the dynamicscope."""
-        return iter(self)
-
-    def values(self):
-        """Iterate the values available in the dynamicscope."""
-        return (self[key] for key in self)
-
-    def items(self):
-        """Iterate the (key, value) pairs available in the dynamicscope."""
-        return ((key, self[key]) for key in self)
-
-    def update(self, scope):
-        """Update the dynamicscope with a mapping of items."""
-        for key, value in scope.items():
-            self[key] = value
 
