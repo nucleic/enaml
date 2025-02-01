@@ -85,7 +85,7 @@ def _generate_keys(scope: DynamicScope):
         owner = owner._parent
 
 
-def _filter_keys(keys: Iterable[string]):
+def _filter_keys(keys: Iterable[str]):
     """ Filter an iterable of keys for duplicates and private names.
 
     Parameters
