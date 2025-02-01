@@ -6,8 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ------------------------------------------------------------------------------
 from collections.abc import Iterable
-from enaml.core.declarative import Declarative
-from enaml.core._dynamicscope import _DynamicScope, UserKeyError
+from enaml.core._dynamicscope import _DynamicScope
 
 
 class DynamicScope(_DynamicScope):
