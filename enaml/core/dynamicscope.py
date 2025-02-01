@@ -5,52 +5,71 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ------------------------------------------------------------------------------
-from functools import partial
-from itertools import chain, repeat
+from collections.abc import Iterable
 from enaml.core.declarative import Declarative
 from enaml.core._dynamicscope import _DynamicScope, UserKeyError
 
 
-def d_iter(owner: Declarative):
-    """Iterate attribute names of the declarative and it's ancestors.
+def _generate_keys(scope: DynamicScope):
+    """ Generate *all* of the attributes names available from a dynamic scope.
 
     Parameters
     ----------
-    owner: Declarative
-        The declarative to walk.
+    scope: DynamicScope
+        The scope object of interest
 
     Yields
     ------
-    name: string
-        The attribute name
+    All of the attribute names accesible by code running in a dynamic scope,
+    in the order that they would be found during expression execution.
 
     """
+    # The first names to yield are any assigned local variables.
+    if scope._f_writes is not None:
+        yield from scope._f_writes
+
+    # The next name to yield is the magic `self` object.
+    yield 'self'
+
+    # The next name to yield is the magic `change` object, if it exists.
+    if scope._change is not None:
+        yield 'change'
+
+    # Next, yield the names from the real local scope.
+    yield from scope._f_locals
+
+    # Then, the module globals.
+    yield from scope._f_globals
+
+    # Then, the normal builtins.
+    yield from scope._f_builtins
+
+    # Lastly, traverse the parent hiearchy and yield their attribute names.
+    owner = scope._owner
     while owner is not None:
-        for name in dir(owner):
-            yield name
+        yield from dir(owner)
         owner = owner._parent
 
 
-def include_key(key: str, used: set) -> bool:
-    """Filter function to determine whether the key should be included in the
-    dynamicscope's iter results.
+def _filter_keys(keys: Iterable[string]):
+    """ Filter an iterable of keys for duplicates and private names.
 
     Parameters
     ----------
-    key: string
-        The scope key.
-    used: set[str]
-        The set of keys already seen.
+    keys: Iterable[string]
+        The keys to filter.
 
-    Returns
-    -------
-    result: bool
-        Whether the key should be included.
+    Yields
+    ------
+    The input keys filtered for private `_` names and duplicates.
+
     """
-    if key.startswith("_") or key in used:
-        return False
-    used.add(key)
-    return True
+    seen = set()
+    for key in keys:
+        if key.startswith('_') or key in seen:
+            continue
+        seen.add(key)
+        yield key
 
 
 class DynamicScope(_DynamicScope):
@@ -64,30 +83,10 @@ class DynamicScope(_DynamicScope):
     _f_builtins
 
     """
-
     def __iter__(self):
         """Iterate the keys available in the dynamicscope."""
-        used = set()
-        fwrites_it = iter(self._f_writes or ())
-        self_it = repeat("self", 1)
-        change_it = repeat("change", 1 if self._change else 0)
-        flocals_it = iter(self._f_locals)
-        fglobals_it = iter(self._f_globals)
-        fbuiltins_it = iter(self._f_builtins)
-        fields_it = d_iter(self._owner)
-        unique_scope_keys = partial(include_key, used=used)
-        return filter(
-            unique_scope_keys,
-            chain(
-                fwrites_it,
-                self_it,
-                change_it,
-                flocals_it,
-                fglobals_it,
-                fbuiltins_it,
-                fields_it,
-            )
-        )
+        keys = _generate_keys(self)
+        return _filter_keys(keys)
 
     def keys(self):
         """Iterate the keys available in the dynamicscope."""
@@ -105,3 +104,4 @@ class DynamicScope(_DynamicScope):
         """Update the dynamicscope with a mapping of items."""
         for key, value in scope.items():
             self[key] = value
+
