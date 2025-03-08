@@ -102,6 +102,12 @@ class QtDialog(QtWindow, ProxyDialog):
         """
         return bool(self.widget.exec_())
 
+    def open(self):
+        """ Launch the dialog as a modal window.
+
+        """
+        self.widget.open()
+
     def done(self, result):
         """ Close the dialog and set the result code.
 
