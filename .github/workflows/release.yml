@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Get history and tags for SCM versioning to work
         run: |
           git fetch --prune --unshallow
@@ -48,7 +48,7 @@ jobs:
         python: [310, 311, 312, 313]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Get history and tags for SCM versioning to work
         run: |
           git fetch --prune --unshallow
