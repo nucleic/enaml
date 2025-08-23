@@ -11,7 +11,7 @@ from contextlib import contextmanager
 import bytecode as bc
 from atom.api import Atom, Bool, Int, List, Str
 
-from ..compat import PY310, PY311, PY312, PY313
+from ..compat import PY310, PY311, PY312, PY313, PY314
 
 
 class _ReturnNoneIdentifier(ast.NodeVisitor):
@@ -229,9 +229,13 @@ class CodeGenerator(Atom):
 
     def binary_subscr(self):
         """Subscript the #2 item with the TOS."""
-        self.code_ops.append(  # TOS -> obj -> idx
-            bc.Instr("BINARY_SUBSCR"),  # TOS -> value
-        )
+        if PY314:
+            # In Python 3.14 BINARY_SUBSCR was replaced with BINARY_OP 6
+            self.code_ops.append(bc.Instr("BINARY_OP", bc.BinaryOp.SUBSCR))
+        else:
+            self.code_ops.append(  # TOS -> obj -> idx
+                bc.Instr("BINARY_SUBSCR"),  # TOS -> value
+            )
 
     def binary_multiply(self):
         """Multiply the 2 items on the TOS."""
