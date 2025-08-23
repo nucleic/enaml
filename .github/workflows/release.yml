@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Get history and tags for SCM versioning to work
         run: |
           git fetch --prune --unshallow
@@ -45,10 +45,10 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        python: [310, 311, 312, 313]
+        python: [310, 311, 312, 313, 314]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Get history and tags for SCM versioning to work
         run: |
           git fetch --prune --unshallow
@@ -87,20 +87,20 @@ jobs:
     if: github.event_name == 'push'
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/atom
+    permissions:
+      id-token: write
     steps:
       - name: Download all the dists
-        uses: actions/download-artifact@v4.2.1
+        uses: actions/download-artifact@v5.0.0
         with:
           pattern: cibw-*
           path: dist
           merge-multiple: true
 
       - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_password }}
-          # To test:
-          # repository_url: https://test.pypi.org/legacy/
 
   github-release:
     name: >-
@@ -116,15 +116,14 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v4.2.1
+      uses: actions/download-artifact@v5.0.0
       with:
         pattern: cibw-*
         path: dist
         merge-multiple: true
     - name: Sign the dists with Sigstore
-      uses: sigstore/gh-action-sigstore-python@v3.0.0
+      uses: sigstore/gh-action-sigstore-python@v3.0.1
       with:
-        password: ${{ secrets.pypi_password }}
         inputs: >-
           ./dist/*.tar.gz
           ./dist/*.whl
