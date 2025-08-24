@@ -646,7 +646,7 @@ def gen_template_inst_node(cg: CodeGenerator, node: TemplateInst, local_names: s
     argcount = len(arguments.args)
     varargs = bool(arguments.stararg)
     if varargs:
-        cg.call_function_var(argcount)
+        cg.call_function_var()
     else:
         cg.call_function(argcount)
 
