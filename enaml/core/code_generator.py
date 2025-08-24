@@ -220,7 +220,7 @@ class CodeGenerator(Atom):
 
     def return_value(self):
         """Return the value from the TOS."""
-        if PY312 and self.code_ops and self.code_ops[-1].name == "LOAD_CONST":
+        if not PY314 and PY312 and self.code_ops and self.code_ops[-1].name == "LOAD_CONST":
             self.code_ops[-1] = bc.Instr("RETURN_CONST", self.code_ops[-1].arg)
         else:
             self.code_ops.append(  # TOS -> value
