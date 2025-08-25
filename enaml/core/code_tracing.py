@@ -607,7 +607,7 @@ def inject_tracing(bytecode, nested=False):
             # Skip, if the last instruction was a KW_NAMES
             inserts[idx] = call_tracer_call_function(tracer_op, i_arg)
         elif i_name == "BINARY_SUBSCR" or (
-            PY314 and i_name == "BINARY_OP" and i_arg == bc.BinaryOP.SUBSCR
+            PY314 and i_name == "BINARY_OP" and i_arg == bc.BinaryOp.SUBSCR
         ):
             inserts[idx] = call_tracer_binary_subscr(tracer_op)
         elif i_name == "GET_ITER":
