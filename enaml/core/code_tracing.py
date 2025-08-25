@@ -923,7 +923,9 @@ def inject_inversion(bytecode):
     # inverting only require to detect getattr and setattr both in this project
     # and in traits-enaml. Those two are always called using the CALL_FUNCTION
     # bytecode instruction.
-    elif i_name == "BINARY_SUBSCR":
+    elif i_name == "BINARY_SUBSCR" or (
+        PY314 and i_name == "BINARY_OP" and i_arg == bc.BinaryOp.SUBSCR
+    ):
         new_code.extend(call_inverter_binary_subsrc())
     else:
         raise ValueError("can't invert code '%s'" % i_name)
