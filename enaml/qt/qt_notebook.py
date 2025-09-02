@@ -271,6 +271,19 @@ class QNotebook(QTabWidget):
             page.hide()
             self._hidden_pages[page] = index
 
+    def movePage(self, page, index: int):
+        """ Move a QPage instance within the notebook.
+
+        Parameters
+        ----------
+        page : QPage
+            The QPage instance to add to the notebook.
+        index : int
+            The index to which to move the page.
+
+        """
+        self.tabBar().moveTab(self.indexOf(page), index)
+
     def removePage(self, page):
         """ Remove a QPage instance from the notebook.
 
@@ -506,6 +519,16 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
             for index, dchild in enumerate(self.children()):
                 if child is dchild:
                     self.widget.insertPage(index, child.widget)
+
+    def child_moved(self, child):
+        """ Handle the child moved event for a QtNotebook.
+
+        """
+        super(QtNotebook, self).child_moved(child)
+        if isinstance(child, QtPage):
+            for index, dchild in enumerate(self.children()):
+                if child is dchild:
+                    self.widget.movePage(child.widget, index)
 
     def child_removed(self, child):
         """ Handle the child removed event for a QtNotebook.
