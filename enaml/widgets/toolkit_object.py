@@ -206,7 +206,7 @@ class ToolkitObject(Declarative):
         the 'child_moved()' method on an active proxy.
 
         """
-        super(ToolkitObject, self).child_added(child)
+        super(ToolkitObject, self).child_moved(child)
         if isinstance(child, ToolkitObject) and self.proxy_is_active:
             if not child.proxy_is_active:
                 child.activate_proxy()
