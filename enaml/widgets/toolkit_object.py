@@ -105,19 +105,6 @@ class ProxyToolkitObject(Atom):
         """
         pass
 
-    def child_moved(self, child):
-        """ Handle a child being moved within the object.
-
-        This method will only be called after the proxy tree is active
-        and the UI is running. The default implementation is a no-op.
-
-        Parameters
-        ----------
-        child : ProxyToolkitObject
-            The toolkit proxy child added to the object.
-
-        """
-        pass
 
     def child_removed(self, child):
         """ Handle a child being removed from the object.
@@ -198,19 +185,6 @@ class ToolkitObject(Declarative):
             if not child.proxy_is_active:
                 child.activate_proxy()
             self.proxy.child_added(child.proxy)
-
-    def child_moved(self, child):
-        """ A reimplemented child moved event handler.
-
-        This handler will invoke the superclass handler and then invoke
-        the 'child_moved()' method on an active proxy.
-
-        """
-        super(ToolkitObject, self).child_moved(child)
-        if isinstance(child, ToolkitObject) and self.proxy_is_active:
-            if not child.proxy_is_active:
-                child.activate_proxy()
-            self.proxy.child_moved(child.proxy)
 
     def child_removed(self, child):
         """ A reimplemented child removed event handler.
