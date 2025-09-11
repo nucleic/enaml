@@ -520,16 +520,6 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
                 if child is dchild:
                     self.widget.insertPage(index, child.widget)
 
-    def child_moved(self, child):
-        """ Handle the child moved event for a QtNotebook.
-
-        """
-        super(QtNotebook, self).child_moved(child)
-        if isinstance(child, QtPage):
-            for index, dchild in enumerate(self.children()):
-                if child is dchild:
-                    self.widget.movePage(child.widget, index)
-
     def child_removed(self, child):
         """ Handle the child removed event for a QtNotebook.
 
@@ -563,6 +553,12 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
     #--------------------------------------------------------------------------
     # ProxyNotebook API
     #--------------------------------------------------------------------------
+    def page_moved(self, child: QtPage):
+        """Handle a page being moved QtNotebook."""
+        for index, dchild in enumerate(self.children()):
+            if child is dchild:
+                self.widget.movePage(child.widget, index)
+
     def set_tab_style(self, style):
         """ Set the tab style for the tab bar in the widget.
 
