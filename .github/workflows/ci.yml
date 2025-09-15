@@ -88,16 +88,22 @@ jobs:
         if: matrix.python-version != '3.10'
         env:
           CPPFLAGS: --coverage
-        # Build extensions manually to allow getting C coverage data
+        # Use legacy command to install the library to be able to measure
+        # coverage of C++ code.
         run: |
-          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
+          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
+          pip uninstall enaml
+          python setup.py develop
       - name: Install project (with-extras pyqt)
         if: matrix.python-version == '3.10' && matrix.qt-binding == 'pyqt'
         env:
           CPPFLAGS: --coverage
-        # Build extensions manually to allow getting C coverage data
+        # Use legacy command to install the library to be able to measure
+        # coverage of C++ code.
         run: |
-          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
+          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
+          pip uninstall enaml
+          python setup.py develop
       - name: Install project (with-extras pyside)
         if: matrix.python-version == '3.10' && matrix.qt-binding != 'pyqt'
         env:
@@ -136,4 +142,3 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
-          files: ./coverage.xml,*.gcov
