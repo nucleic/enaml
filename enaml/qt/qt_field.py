@@ -5,6 +5,7 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+import warnings
 from atom.api import Int, Typed
 
 from enaml.widgets.field import ProxyField
@@ -192,14 +193,18 @@ class QtField(QtControl, ProxyField):
         """
         widget = self.widget
         handler = self.on_submit_text
-        try:
-            widget.lostFocus.disconnect()
-        except (TypeError, RuntimeError):  # was never connected
-            pass
-        try:
-            widget.returnPressed.disconnect()
-        except (TypeError, RuntimeError):  # was never connected
-            pass
+        # Pyside raises a warning if disconnecting a signal that was never
+        # connected. We catch and ignore these warnings.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            try:
+                widget.lostFocus.disconnect()
+            except (TypeError, RuntimeError):  # was never connected
+                pass
+            try:
+                widget.returnPressed.disconnect()
+            except (TypeError, RuntimeError):  # was never connected
+                pass
         if 'lost_focus' in triggers:
             widget.lostFocus.connect(handler)
         if 'return_pressed' in triggers:
