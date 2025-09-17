@@ -38,10 +38,7 @@ jobs:
             qt-version: 5
           - python-version: '3.14-dev'
             qt-version: 5
-          - python-version: '3.12'
-            qt-version: 6
-            qt-binding: pyside
-          - python-version: '3.13'
+          - python-version: '3.14-dev'
             qt-version: 6
             qt-binding: pyside
           - os: ubuntu-latest
