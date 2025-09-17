@@ -985,29 +985,29 @@ signaling_modexec( PyObject *mod )
     cppy::ptr wm_mod( PyImport_ImportModuleLevel( "weakmethod", mod_dict, 0, 0 , 1) );
     if( !wm_mod)
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to import known module)
     }
     cppy::ptr wm_cls( wm_mod.getattr( "WeakMethod" ) );
     if( !wm_cls )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to get known attribute)
     }
 
     cppy::ptr cr_mod( PyImport_ImportModuleLevel( "callableref", mod_dict, 0, 0, 1 ) );
     if( !cr_mod )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to import knwon module)
     }
     cppy::ptr cr_cls( cr_mod.getattr( "CallableRef" ) );
     if( !cr_cls )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to get known attribute)
     }
 
     cppy::ptr key( PyUnicode_FromString( "_[signals]" ) );
     if( !key )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create string)
     }
 
     SignalsKey = key.release();
@@ -1016,36 +1016,36 @@ signaling_modexec( PyObject *mod )
 
     if( !Signal::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create type)
     }
     if( !_Disconnector::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create type)
     }
     if( !BoundSignal::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create type)
     }
 
     // Signal
     cppy::ptr signal( pyobject_cast( Signal::TypeObject ) );
 	if( PyModule_AddObject( mod, "Signal", signal.get() ) < 0 )
 	{
-		return -1;
+		return -1;  // LCOV_EXCL_LINE (failed to add to module)
 	}
     signal.release();
     // _Disconnector
     cppy::ptr _disc( pyobject_cast( _Disconnector::TypeObject ) );
 	if( PyModule_AddObject( mod, "_Disconnector", _disc.get() ) < 0 )
 	{
-		return -1;
+		return -1;  // LCOV_EXCL_LINE (failed to add to module)
 	}
     _disc.release();
     // BoundSignal
     cppy::ptr bsignal( pyobject_cast( BoundSignal::TypeObject ) );
 	if( PyModule_AddObject( mod, "BoundSignal", bsignal.get() ) < 0 )
 	{
-		return -1;
+		return -1;  // LCOV_EXCL_LINE (failed to add to module)
 	}
     bsignal.release();
 

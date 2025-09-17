@@ -223,7 +223,7 @@ bool Color::Ready()
 	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
     if( !TypeObject )
     {
-        return false;
+        return false;  // LCOV_EXCL_LINE (failed type creation)
     }
     return true;
 }
@@ -239,14 +239,14 @@ colorext_modexec( PyObject *mod )
 {
     if( !Color::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type creation)
     }
 
     // callableref
     cppy::ptr color( pyobject_cast( Color::TypeObject ) );
 	if( PyModule_AddObject( mod, "Color", color.get() ) < 0 )
 	{
-		return -1;
+		return -1;  // LCOV_EXCL_LINE (failed type addition to module)
 	}
     color.release();
 

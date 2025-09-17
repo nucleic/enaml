@@ -311,7 +311,7 @@ bool Alias::Ready()
 	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
     if( !TypeObject )
     {
-        return false;
+        return false;  // LCOV_EXCL_LINE (failed type creation)
     }
     return true;
 }
@@ -328,19 +328,19 @@ alias_modexec( PyObject *mod )
     storage_str = PyUnicode_FromString( "_d_storage" );
     if( !storage_str )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed str creation)
     }
 
     if( !Alias::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type creation)
     }
 
     // alias
     cppy::ptr alias( pyobject_cast( Alias::TypeObject ) );
 	if( PyModule_AddObject( mod, "Alias", alias.get() ) < 0 )
 	{
-		return -1;
+		return -1; // LCOV_EXCL_LINE (failed type addition to module)
 	}
     alias.release();
 

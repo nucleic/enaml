@@ -514,45 +514,45 @@ declarative_function_modexec( PyObject *mod )
     cppy::ptr dm_mod( PyImport_ImportModuleLevel( "dynamicscope", mod_dict, 0, 0 , 1) );
     if( !dm_mod)
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed import of known existing module)
     }
     cppy::ptr dm_cls( dm_mod.getattr( "DynamicScope" ) );
     if( !dm_cls )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed import of known existing class)
     }
 
     cppy::ptr fh_mod( PyImport_ImportModuleLevel( "funchelper", mod_dict, 0, 0, 1 ) );
     if( !fh_mod )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed import of known existing module)
     }
     cppy::ptr fh_cls( fh_mod.getattr( "call_func" ) );
     if( !fh_cls )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed import of known existing function)
     }
 
     cppy::ptr sup( PyObject_GetAttrString( mod, "_super_disallowed" ) );
     if( !sup )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed import of known existing function)
     }
 
     if( !DFunc::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type creation)
     }
     if( !BoundDMethod::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type creation)
     }
 
     // DFunc
     cppy::ptr dfunc( pyobject_cast( DFunc::TypeObject ) );
 	if( PyModule_AddObject( mod, "DeclarativeFunction", dfunc.get() ) < 0 )
 	{
-		return -1;
+		return -1;  // LCOV_EXCL_LINE (failed type addition to module)
 	}
     dfunc.release();
 
@@ -560,7 +560,7 @@ declarative_function_modexec( PyObject *mod )
     cppy::ptr bdfunc( pyobject_cast( BoundDMethod::TypeObject ) );
 	if( PyModule_AddObject( mod, "BoundDeclarativeMethod", bdfunc.get() ) < 0 )
 	{
-		return -1;
+		return -1;  // LCOV_EXCL_LINE (failed type addition to module)
 	}
     bdfunc.release();
 

@@ -877,7 +877,7 @@ bool DynamicScope::Ready()
 	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
     if( !TypeObject )
     {
-        return false;
+        return false;  // LCOV_EXCL_LINE (failed to create type)
     }
     return true;
 }
@@ -894,33 +894,33 @@ dynamicscope_modexec( PyObject *mod )
     parent_str = PyUnicode_FromString( "_parent" );
     if( !parent_str )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create string)
     }
     dynamic_load_str = PyUnicode_FromString( "dynamic_load" );
     if( !dynamic_load_str )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create string)
     }
     UserKeyError = PyErr_NewException( "dynamicscope.UserKeyError", 0, 0 );
     if( !UserKeyError )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create type)
     }
 
     if( !Nonlocals::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create type)
     }
     if( !DynamicScope::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create type)
     }
 
     // DynamicScope
     cppy::ptr dynamicscope( pyobject_cast( DynamicScope::TypeObject ) );
 	if( PyModule_AddObject( mod, "_DynamicScope", dynamicscope.get() ) < 0 )
 	{
-		return -1;
+		return -1;  // LCOV_EXCL_LINE (failed to add to module)
 	}
     dynamicscope.release();
 
