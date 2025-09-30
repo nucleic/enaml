@@ -8,7 +8,7 @@
 from enaml.fontext import Font
 
 
-def test_QFont_from_Font(qt_app):
+def test_QFont_from_Font(qapp):
     # Regression test for PySide: QFont_from_Font was raising a TypeError
     # in its call to qfont.setStyle(font.style).  This test passes if it
     # does not raise an exception.

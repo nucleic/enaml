@@ -96,7 +96,7 @@ def enaml_sleep():
 
 
 @pytest.fixture(scope="session")
-def qt_app():
+def qapp():
     """Make sure a QtApplication is active."""
     if not QT_AVAILABLE:
         pytest.skip("Requires a Qt binding")
@@ -112,18 +112,17 @@ def qt_app():
     except Exception:
         pass
 
-    app = QtApplication.instance()
-    if app is None:
-        app = QtApplication("enaml-testing-app")
-        yield app
-        app.stop()
-    else:
-        yield app
+    app = QtApplication("enaml-testing-app")
+    yield app._qapp
+    app.stop()
 
 
 @pytest.fixture
-def enaml_qtbot(qt_app, qtbot):
-    qtbot.enaml_app = qt_app
+def enaml_qtbot(qapp, qtbot):
+    from enaml.qt.qt_application import QtApplication
+
+    qtbot.enaml_app = QtApplication.instance()
+    assert qtbot.enaml_app is not None
     pixel_ratio = QtGui.QGuiApplication.primaryScreen().devicePixelRatio()
 
     def get_global_pos(widget: Widget) -> QtCore.QPoint:
@@ -136,7 +135,7 @@ def enaml_qtbot(qt_app, qtbot):
     qtbot.get_global_pos = get_global_pos
 
     def post_event(widget, event):
-        qt_app._qapp.postEvent(widget, event)
+        qapp.postEvent(widget, event)
 
     qtbot.post_event = post_event
 

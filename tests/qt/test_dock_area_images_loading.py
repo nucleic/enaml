@@ -7,7 +7,7 @@
 # ------------------------------------------------------------------------------
 
 
-def test_loading_dock_area_images(qt_app):
+def test_loading_dock_area_images(qapp):
     from enaml.qt.QtCore import QRect, QPoint
     from enaml.qt.docking.q_guide_rose import BorderGuide, CompassGuide, CompassExGuide
 
