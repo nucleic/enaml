@@ -61,8 +61,11 @@ What it can do for you
 
 Supported Versions
 ==================
-Enaml applications can be run on any platform which supports Python (3.6+).
+Enaml applications can be run on any platform which supports Python (3.10+).
 The Qt backend requires Qt (5.9+, see https://doc.qt.io/qt-5/supported-platforms.html).
+
+Both PyQt and PySide are supported but PySide is not tested in CI due to some
+lingering segmentation faults in the CI environment when the testsuite complete.
 
 This includes Linux, Windows, MacOSX, Android and iOS. (Automated testing of Enaml runs on Linux, Windows and MacOSX.)
 

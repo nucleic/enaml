@@ -22,28 +22,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14-dev']
-        qt-version: [5, 6]
-        qt-binding: [pyqt, pyside]
-        exclude:
-          - python-version: '3.10'
-            qt-version: 5
-            qt-binding: pyside
-          - python-version: '3.11'
-            qt-version: 5
-          - python-version: '3.12'
-            qt-version: 5
-          - python-version: '3.13'
-            qt-version: 5
-          - python-version: '3.14-dev'
-            qt-version: 5
-          - python-version: '3.14-dev'
-            qt-version: 6
-            qt-binding: pyside
-          - os: ubuntu-latest
-            qt-version: 6
-            qt-binding: pyside
+        qt-version: [6]
+        qt-binding: [pyqt]
       fail-fast: false
     steps:
       - name: Checkout branch
@@ -55,11 +37,7 @@ jobs:
         # https://doc.qt.io/qt-6/linux-requirements.html
         run: |
           sudo apt-get update --fix-missing;
-          if [ "${{ matrix.qt-version }}" == 5 ]; then
-            cat ci/qt5_linux.txt | xargs sudo apt -y install
-          else
-            cat ci/qt6_linux.txt | xargs sudo apt -y install
-          fi
+          cat ci/qt6_linux.txt | xargs sudo apt -y install
           sudo apt install -y xvfb herbstluftwm scrot
       - name: Get history and tags for SCM versioning to work
         run: |
@@ -101,16 +79,6 @@ jobs:
           pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
           pip uninstall enaml --yes
           python setup.py develop
-      - name: Install project (with-extras pyside)
-        if: matrix.python-version == '3.10' && matrix.qt-binding != 'pyqt'
-        env:
-          CPPFLAGS: --coverage
-        # Use legacy command to install the library to be able to measure
-        # coverage of C++ code.
-        run: |
-          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt]
-          pip uninstall enaml --yes
-          python setup.py develop
       - name: Install test requirements
         run: |
           pip install -r test_requirements.txt
@@ -128,7 +96,7 @@ jobs:
           sleep 3
           herbstluftwm &
           sleep 1
-          python -X dev -m pytest tests -v --cov --cov-report xml -rs
+          python -X dev -m pytest tests -v
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:

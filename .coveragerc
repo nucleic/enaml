@@ -6,6 +6,10 @@ omit =
     */enaml/library.zip/*
     */enaml/qt/docking/dock_images/*
     */tests/*
+    # PySide6 cruft that should be ignored
+    */enaml/shibokensupport/*
+    */enaml/signature_bootstrap.py
+    */enaml/pyscript
 
 [report]
 # Regexes for lines to exclude from consideration
