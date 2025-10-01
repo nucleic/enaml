@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14-dev']
         qt-version: [6]
         qt-binding: [pyqt]
@@ -96,7 +96,7 @@ jobs:
           sleep 3
           herbstluftwm &
           sleep 1
-          python -X dev -m pytest tests -v
+          python -X dev -m pytest tests -v --cov --cov-report xml -rs
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
