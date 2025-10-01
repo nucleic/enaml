@@ -24,8 +24,19 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14-dev']
-        qt-version: [6]
+        qt-version: [5, 6]
         qt-binding: [pyqt]
+        exclude:
+          - python-version: '3.10'
+            os: macos-latest
+          - python-version: '3.11'
+            qt-version: 5
+          - python-version: '3.12'
+            qt-version: 5
+          - python-version: '3.13'
+            qt-version: 5
+          - python-version: '3.14-dev'
+            qt-version: 5
       fail-fast: false
     steps:
       - name: Checkout branch
