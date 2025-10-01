@@ -45,7 +45,6 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        python: [310, 311, 312, 313, 314]
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -63,6 +62,7 @@ jobs:
           python -m pip install wheel cibuildwheel
       - name: Build wheels
         env:
+          CIBW_BUILD: "cp311-* cp312-* cp313-* cp314-*"
           CIBW_ARCHS_MACOS: x86_64 universal2 arm64
           CIBW_ARCHS_WINDOWS: auto64
           CIBW_TEST_REQUIRES: pytest
