@@ -11,7 +11,8 @@ name = "enaml"
 description = "Declarative DSL for building rich user interfaces in Python"
 readme = "README.rst"
 requires-python = ">=3.10,!=3.11.0,!=3.11.1"
-license = {file = "LICENSE"}
+license = "BSD-3-Clause"
+license-files =["LICENSE"]
 authors = [
   {name = "The Nucleic Development Team", email = "sccolbert@gmail.com"}
 ]
@@ -19,7 +20,6 @@ maintainers = [
   {name = "Matthieu C. Dartiailh", email = "m.dartiailh@gmail.com"}
 ]
 classifiers = [
-    "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -61,7 +61,7 @@ enaml-run = "enaml.runner:main"
 enaml-compileall = "enaml.compile_all:main"
 
 [build-system]
-requires = ["setuptools>=61.2", "wheel", "setuptools_scm[toml]>=3.4.3", "cppy>=1.2.0"]
+requires = ["setuptools>=77.0", "wheel", "setuptools_scm[toml]>=3.4.3", "cppy>=1.2.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
