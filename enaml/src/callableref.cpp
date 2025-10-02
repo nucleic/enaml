@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013-2024, Nucleic Development Team.
+| Copyright (c) 2013-2025, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -198,7 +198,7 @@ bool CallableRef::Ready()
 	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
     if( !TypeObject )
     {
-        return false;
+        return false;  // LCOV_EXCL_LINE (failed type creation)
     }
     return true;
 }
@@ -220,14 +220,14 @@ callableref_modexec( PyObject *mod )
 {
     if( !CallableRef::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type creation)
     }
 
     // callableref
     cppy::ptr callableref( pyobject_cast(  CallableRef::TypeObject ) );
 	if( PyModule_AddObject( mod, "CallableRef", callableref.get() ) < 0 )
 	{
-		return -1;
+		return -1;  // LCOV_EXCL_LINE (failed type addition to module)
 	}
     callableref.release();
 

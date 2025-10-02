@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright (c) 2013-2024, Nucleic Development Team.
+# Copyright (c) 2013-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,7 +11,7 @@ from contextlib import contextmanager
 import bytecode as bc
 from atom.api import Atom, Bool, Int, List, Str
 
-from ..compat import PY310, PY311, PY312, PY313
+from ..compat import PY310, PY311, PY312, PY313, PY314
 
 
 class _ReturnNoneIdentifier(ast.NodeVisitor):
@@ -167,15 +167,15 @@ class CodeGenerator(Atom):
             args = (False, name)
         else:
             args = name
-        self.code_ops.append(             # TOS -> obj
+        self.code_ops.append(  # TOS -> obj
             bc.Instr("LOAD_ATTR", args),  # TOS -> value
         )
 
     def load_method(self, name):
         """Load a method from an object on TOS."""
         if PY312:
-            self.code_ops.append(                     # TOS -> obj
-                                                      # on 3.12 the order is reversed
+            self.code_ops.append(  # TOS -> obj
+                # on 3.12 the order is reversed
                 bc.Instr("LOAD_ATTR", (True, name)),  # TOS -> method -> self
             )
         else:
@@ -220,7 +220,12 @@ class CodeGenerator(Atom):
 
     def return_value(self):
         """Return the value from the TOS."""
-        if PY312 and self.code_ops and self.code_ops[-1].name == "LOAD_CONST":
+        if (
+            not PY314
+            and PY312
+            and self.code_ops
+            and self.code_ops[-1].name == "LOAD_CONST"
+        ):
             self.code_ops[-1] = bc.Instr("RETURN_CONST", self.code_ops[-1].arg)
         else:
             self.code_ops.append(  # TOS -> value
@@ -229,9 +234,13 @@ class CodeGenerator(Atom):
 
     def binary_subscr(self):
         """Subscript the #2 item with the TOS."""
-        self.code_ops.append(  # TOS -> obj -> idx
-            bc.Instr("BINARY_SUBSCR"),  # TOS -> value
-        )
+        if PY314:
+            # In Python 3.14 BINARY_SUBSCR was replaced with BINARY_OP 6
+            self.code_ops.append(bc.Instr("BINARY_OP", bc.BinaryOp.SUBSCR))
+        else:
+            self.code_ops.append(  # TOS -> obj -> idx
+                bc.Instr("BINARY_SUBSCR"),  # TOS -> value
+            )
 
     def binary_multiply(self):
         """Multiply the 2 items on the TOS."""
@@ -313,8 +322,10 @@ class CodeGenerator(Atom):
             if flags:
                 self.code_ops.extend(
                     (
-                        bc.Instr("MAKE_FUNCTION"), # TOS -> qual_name -> code
-                        bc.Instr("SET_FUNCTION_ATTRIBUTE", flags),  # TOS -> func -> attrs
+                        bc.Instr("MAKE_FUNCTION"),  # TOS -> qual_name -> code
+                        bc.Instr(
+                            "SET_FUNCTION_ATTRIBUTE", flags
+                        ),  # TOS -> func -> attrs
                     )
                 )
             else:
@@ -366,15 +377,22 @@ class CodeGenerator(Atom):
                 op, arg = "CALL_FUNCTION", n_args
             self.code_ops.append(bc.Instr(op, arg))  # TOS -> retval
 
-    def call_function_var(self, n_args=0, n_kwds=0):
+    def call_function_var(self, kwds: bool = False):
         """Call a variadic function on the TOS with the given args and kwargs."""
         # Under Python 3.6+ positional arguments should always be stored
         # in a tuple and keywords in a mapping.
-        argspec = 1 if n_kwds else 0
 
-        self.code_ops.append(  # TOS -> func -> args -> kwargs -> varargs
-            bc.Instr("CALL_FUNCTION_EX", argspec),  # TOS -> retval
-        )
+        if PY314:
+            if kwds is False:
+                self.code_ops.append(bc.Instr("PUSH_NULL"))
+            self.code_ops.append(  # TOS -> func -> NULL -> args -> kwargs
+                bc.Instr("CALL_FUNCTION_EX"),  # TOS -> retval
+            )
+        else:
+            argspec = int(kwds)
+            self.code_ops.append(  # TOS -> func -> args -> kwargs -> varargs
+                bc.Instr("CALL_FUNCTION_EX", argspec),  # TOS -> retval
+            )
 
     def pop_top(self):
         """Pop the value from the TOS."""

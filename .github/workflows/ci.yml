@@ -23,32 +23,24 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14-dev']
         qt-version: [5, 6]
-        qt-binding: [pyqt, pyside]
+        qt-binding: [pyqt]
         exclude:
           - python-version: '3.10'
-            qt-version: 5
-            qt-binding: pyside
+            os: macos-latest
           - python-version: '3.11'
             qt-version: 5
           - python-version: '3.12'
             qt-version: 5
           - python-version: '3.13'
             qt-version: 5
-          - python-version: '3.12'
-            qt-version: 6
-            qt-binding: pyside
-          - python-version: '3.13'
-            qt-version: 6
-            qt-binding: pyside
-          - os: ubuntu-latest
-            qt-version: 6
-            qt-binding: pyside
+          - python-version: '3.14-dev'
+            qt-version: 5
       fail-fast: false
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install linux only test dependency
         if: matrix.os == 'ubuntu-latest'
         # Install all dependencies needed to run Qt on linux (taken from the qt website)
@@ -56,18 +48,14 @@ jobs:
         # https://doc.qt.io/qt-6/linux-requirements.html
         run: |
           sudo apt-get update --fix-missing;
-          if [ "${{ matrix.qt-version }}" == 5 ]; then
-            cat ci/qt5_linux.txt | xargs sudo apt -y install
-          else
-            cat ci/qt6_linux.txt | xargs sudo apt -y install
-          fi
+          cat ci/qt6_linux.txt | xargs sudo apt -y install
           sudo apt install -y xvfb herbstluftwm scrot
       - name: Get history and tags for SCM versioning to work
         run: |
           git fetch --prune --unshallow
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
@@ -75,7 +63,7 @@ jobs:
       - name: Install dependencies
         # Skip pegen deps because of https://github.com/we-like-parsers/pegen/issues/53
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools
           pip install setuptools-scm[toml]
           pip install numpy
           pip install git+https://github.com/nucleic/cppy@main
@@ -86,23 +74,22 @@ jobs:
         if: matrix.python-version != '3.10'
         env:
           CPPFLAGS: --coverage
-        # Build extensions manually to allow getting C coverage data
+        # Use legacy command to install the library to be able to measure
+        # coverage of C++ code.
         run: |
-          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
+          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }}]
+          pip uninstall enaml --yes
+          python setup.py develop
       - name: Install project (with-extras pyqt)
         if: matrix.python-version == '3.10' && matrix.qt-binding == 'pyqt'
         env:
           CPPFLAGS: --coverage
-        # Build extensions manually to allow getting C coverage data
+        # Use legacy command to install the library to be able to measure
+        # coverage of C++ code.
         run: |
-          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
-      - name: Install project (with-extras pyside)
-        if: matrix.python-version == '3.10' && matrix.qt-binding != 'pyqt'
-        env:
-          CPPFLAGS: --coverage
-        # Build extensions manually to allow getting C coverage data
-        run: |
-          pip install -e .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt]
+          pip install .[qt${{ matrix.qt-version }}-${{ matrix.qt-binding }},ipython-qt,matplotlib-qt,scintilla-qt${{ matrix.qt-version }}-pyqt,webview-qt${{ matrix.qt-version }}-pyqt]
+          pip uninstall enaml --yes
+          python setup.py develop
       - name: Install test requirements
         run: |
           pip install -r test_requirements.txt
@@ -121,11 +108,6 @@ jobs:
           herbstluftwm &
           sleep 1
           python -X dev -m pytest tests -v --cov --cov-report xml -rs
-      - name: Generate C++ coverage reports
-        if: (github.event_name != 'schedule' && matrix.os != 'windows-latest')
-        run: |
-          bash -c "find . -type f -name '*.gcno' -exec gcov -pb --all-blocks {} +" || true
-          ls
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
@@ -134,4 +116,3 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
-          files: ./coverage.xml,*.gcov

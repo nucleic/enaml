@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013-2024, Nucleic Development Team.
+| Copyright (c) 2013-2025, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -140,7 +140,7 @@ load_icon( PyObject* mod, PyObject* args )
     int width, height;
     cppy::ptr result( PyBytes_FromHICON( ( HICON )hicon, width, height ) );
     if( !result )
-        return 0;
+        return 0;  // LCOV_EXCL_LINE (failed to create bytes)
     return Py_BuildValue( "(O, (i, i))", result.get(), width, height );
 }
 
@@ -161,7 +161,7 @@ winutil_modexec( PyObject *mod )
 
     if( !WinEnum::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type creation)
     }
     MAKE_ENUM( Py_OIC_SAMPLE, OIC_SAMPLE );
     MAKE_ENUM( Py_OIC_HAND, OIC_HAND );

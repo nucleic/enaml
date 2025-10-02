@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013-2024, Nucleic Development Team.
+| Copyright (c) 2013-2025, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -268,7 +268,7 @@ bool Font::Ready()
 	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
     if( !TypeObject )
     {
-        return false;
+        return false;  // LCOV_EXCL_LINE (failed to create type)
     }
     return true;
 }
@@ -284,24 +284,24 @@ new_enum_class( const char* name )
 {
     cppy::ptr pyname( PyUnicode_FromString( name ) );
     if( !pyname )
-        return 0;
+        return 0;  // LCOV_EXCL_LINE (failed to create string)
     cppy::ptr args( PyTuple_New( 0 ) );
     if( !args )
-        return 0;
+        return 0;  // LCOV_EXCL_LINE (failed to create tuple)
     cppy::ptr kwargs( PyDict_New() );
     if( !kwargs )
-        return 0;
+        return 0;  // LCOV_EXCL_LINE (failed to create dict)
     cppy::ptr modname( PyUnicode_FromString( "fontext" ) );
     if( !modname )
-        return 0;
+        return 0;  // LCOV_EXCL_LINE (failed to create string)
     if( PyDict_SetItemString( kwargs.get(), "__module__", modname.get() ) != 0 )
-        return 0;
+        return 0;  // LCOV_EXCL_LINE (failed to set dict item)
     cppy::ptr callargs( PyTuple_Pack( 3, pyname.get(), args.get(), kwargs.get() ) );
     if( !callargs )
-        return 0;
+        return 0;  // LCOV_EXCL_LINE (failed to create tuple)
     cppy::ptr newclass( PyObject_CallObject( pyobject_cast( &PyType_Type ), callargs.get() ) );
     if( !newclass )
-        return 0;
+        return 0;  // LCOV_EXCL_LINE (failed to create class)
     // TODO make these enums more flexible
     pytype_cast( newclass.get() )->tp_new = 0;
     return newclass.release();
@@ -314,7 +314,7 @@ add_enum( PyObject* cls, const char* name, long value )
     cppy::ptr pyint( PyLong_FromLong( value ) );
     if( !pyint )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create int)
     }
     return PyObject_SetAttrString( cls, name, pyint.get() );
 }
@@ -325,22 +325,22 @@ fontext_modexec( PyObject *mod )
 {
     if( !Font::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type creation)
     }
     cppy::ptr PyFontStyle( new_enum_class( "FontStyle" ) );
     if( !PyFontStyle )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed enum creation)
     }
     cppy::ptr PyFontCaps( new_enum_class( "FontCaps" ) );
     if( !PyFontCaps )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed enum creation)
     }
     cppy::ptr PyFontStretch( new_enum_class( "FontStretch" ) );
     if( !PyFontCaps )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed enum creation)
     }
 
 #define AddEnum( cls, e ) \
@@ -374,25 +374,25 @@ fontext_modexec( PyObject *mod )
     cppy::ptr font( pyobject_cast( Font::TypeObject ) );
 	if( PyModule_AddObject( mod, "Font", font.get() ) < 0 )
 	{
-		return -1;
+		return -1;  // LCOV_EXCL_LINE (failed type addition to module)
 	}
     font.release();
 
     if( PyModule_AddObject( mod, "FontStyle", PyFontStyle.get() ) < 0 )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type addition to module)
     }
     PyFontStyle.release();
 
     if( PyModule_AddObject( mod, "FontCaps", PyFontCaps.get() ) < 0 )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type addition to module)
     }
     PyFontCaps.release();
 
     if( PyModule_AddObject( mod, "FontStretch", PyFontStretch.get() ) < 0 )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type addition to module)
     }
     PyFontStretch.release();
 

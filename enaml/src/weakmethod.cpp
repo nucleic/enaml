@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013-2024, Nucleic Development Team.
+| Copyright (c) 2013-2025, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -317,7 +317,7 @@ bool WeakMethod::Ready()
 	TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
     if( !TypeObject )
     {
-        return false;
+        return false;  // LCOV_EXCL_LINE (failed type creation)
     }
     // Delayed setting of weaklistoffset
     TypeObject->tp_weaklistoffset = offsetof( WeakMethod, weakreflist );
@@ -336,25 +336,25 @@ weakmethod_modexec( PyObject *mod )
     weak_methods = PyDict_New();
     if( !weak_methods )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create dict)
     }
 
     remove_str = PyUnicode_FromString( "_remove" );
     if( !remove_str )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed to create string)
     }
 
     if( !WeakMethod::Ready() )
     {
-        return -1;
+        return -1;  // LCOV_EXCL_LINE (failed type creation)
     }
 
     // WeakMethod
     cppy::ptr wmethod( pyobject_cast( WeakMethod::TypeObject ) );
 	if( PyModule_AddObject( mod, "WeakMethod", wmethod.get() ) < 0 )
 	{
-		return -1;
+		return -1;  // LCOV_EXCL_LINE (failed type addition to module)
 	}
     wmethod.release();
 

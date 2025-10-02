@@ -206,12 +206,12 @@ PyTypeObject* SubscriptionObserver::TypeObject = NULL;
 
 PyType_Spec SubscriptionObserver::TypeObject_Spec = {
     "enaml.core.subscription_observer.SubscriptionObserver",     /* tp_name */
-    sizeof( SubscriptionObserver ),               /* tp_basicsize */
-    0,                                   /* tp_itemsize */
+    sizeof( SubscriptionObserver ),                              /* tp_basicsize */
+    0,                                                           /* tp_itemsize */
     Py_TPFLAGS_DEFAULT
     |Py_TPFLAGS_BASETYPE
-    |Py_TPFLAGS_HAVE_GC,                 /* tp_flags */
-    SubscriptionObserver_Type_slots               /* slots */
+    |Py_TPFLAGS_HAVE_GC,                                         /* tp_flags */
+    SubscriptionObserver_Type_slots                              /* slots */
 };
 
 
@@ -221,7 +221,7 @@ bool SubscriptionObserver::Ready()
     TypeObject = pytype_cast( PyType_FromSpec( &TypeObject_Spec ) );
     if( !TypeObject )
     {
-        return false;
+        return false;  // LCOV_EXCL_LINE (failed type creation)
     }
     return true;
 }
@@ -243,35 +243,39 @@ namespace
     {
         if( !SubscriptionObserver::Ready() )
         {
-            return -1;
+            return -1;  // LCOV_EXCL_LINE (failed type creation)
         }
 
         update_str = PyUnicode_FromString("update");
         if ( !update_str )
-            return -1;
+            return -1;  // LCOV_EXCL_LINE (failed to create string)
 
         d_engine_str = PyUnicode_FromString("_d_engine");
         if ( !d_engine_str )
-            return -1;
+            return -1;  // LCOV_EXCL_LINE (failed to create string)
 
         cppy::ptr atom_api( PyImport_ImportModule("atom.api") );
         if ( !atom_api )
         {
+            // LCOV_EXCL_START
             PyErr_SetString( PyExc_ImportError, "Could not import atom.api" );
             return -1;
+            // LCOV_EXCL_STOP
         }
         atomref = atom_api.getattr("atomref");
         if ( !atomref )
         {
+            // LCOV_EXCL_START
             PyErr_SetString( PyExc_ImportError, "Could not import atom.api.atomref" );
             return -1;
+            // LCOV_EXCL_STOP
         }
 
         // subscription_observer
         cppy::ptr subscription_observer( pyobject_cast(  SubscriptionObserver::TypeObject ) );
         if( PyModule_AddObject( mod, "SubscriptionObserver", subscription_observer.get() ) < 0 )
         {
-            return -1;
+            return -1;  // LCOV_EXCL_LINE (failed type addition to module)
         }
         subscription_observer.release();
 

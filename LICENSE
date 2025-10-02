@@ -4,7 +4,7 @@
 Enaml is licensed under the terms of the Modified BSD License (also known as
 New or Revised BSD), as follows:
 
-Copyright (c) 2013-2024, Nucleic Development Team
+Copyright (c) 2013-2025, Nucleic Development Team
 Copyright (c) 2013, Enthought, Inc.
 
 All rights reserved.
@@ -88,7 +88,7 @@ With this in mind, the following banner should be used in any source code file
 to indicate the copyright and license terms:
 
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2024, Nucleic Development Team.
+# Copyright (c) 2013-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #

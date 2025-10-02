@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2024, Nucleic Development Team.
+# Copyright (c) 2013-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -14,7 +14,7 @@ from types import CodeType
 import bytecode as bc
 from atom.api import Str, Typed
 
-from ..compat import PY311, PY312, PY313
+from ..compat import PY311, PY312, PY313, PY314
 from .code_generator import CodeGenerator
 from .enaml_ast import (
     AliasExpr, ASTVisitor, Binding, ChildDef, EnamlDef, StorageExpr, Template,
@@ -646,7 +646,7 @@ def gen_template_inst_node(cg: CodeGenerator, node: TemplateInst, local_names: s
     argcount = len(arguments.args)
     varargs = bool(arguments.stararg)
     if varargs:
-        cg.call_function_var(argcount)
+        cg.call_function_var()
     else:
         cg.call_function(argcount)
 
@@ -921,7 +921,7 @@ def _insert_decl_function(cg, funcdef):
     # convert to a bytecode object and remove the leading and
     # trailing ops: STORE_NAME LOAD_CONST RETURN_VALUE
     # Python 3.12 uses RETURN_CONST
-    outer_ops = bc.Bytecode.from_code(code)[0:(-2 if PY312 else -3)]
+    outer_ops = bc.Bytecode.from_code(code)[0:(-2 if not PY314 and PY312 else -3)]
 
     # the stack now looks like the following:
     #   ...
