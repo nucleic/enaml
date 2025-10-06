@@ -271,6 +271,19 @@ class QNotebook(QTabWidget):
             page.hide()
             self._hidden_pages[page] = index
 
+    def movePage(self, page, index: int):
+        """ Move a QPage instance within the notebook.
+
+        Parameters
+        ----------
+        page : QPage
+            The QPage instance to add to the notebook.
+        index : int
+            The index to which to move the page.
+
+        """
+        self.tabBar().moveTab(self.indexOf(page), index)
+
     def removePage(self, page):
         """ Remove a QPage instance from the notebook.
 
@@ -540,6 +553,12 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
     #--------------------------------------------------------------------------
     # ProxyNotebook API
     #--------------------------------------------------------------------------
+    def page_moved(self, child: QtPage):
+        """Handle a page being moved QtNotebook."""
+        for index, dchild in enumerate(self.children()):
+            if child is dchild:
+                self.widget.movePage(child.widget, index)
+
     def set_tab_style(self, style):
         """ Set the tab style for the tab bar in the widget.
 

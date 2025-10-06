@@ -105,6 +105,7 @@ class ProxyToolkitObject(Atom):
         """
         pass
 
+
     def child_removed(self, child):
         """ Handle a child being removed from the object.
 

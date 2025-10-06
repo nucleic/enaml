@@ -22,6 +22,9 @@ class ProxyNotebook(ProxyConstraintsWidget):
     #: A reference to the Notebook declaration.
     declaration = ForwardTyped(lambda: Notebook)
 
+    def page_moved(self, page):
+        raise NotImplementedError
+
     def set_tab_style(self, style):
         raise NotImplementedError
 
@@ -81,6 +84,10 @@ class Notebook(ConstraintsWidget):
 
         """
         return [c for c in self.children if isinstance(c, Page)]
+
+    def child_moved(self, child):
+        if self.proxy_is_active and isinstance(child, Page) and child.proxy_is_active:
+            self.proxy.page_moved(child.proxy)
 
     #--------------------------------------------------------------------------
     # Observers
