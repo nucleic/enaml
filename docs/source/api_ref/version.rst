@@ -9,7 +9,7 @@ enaml.version
 .. autosummary::
     :nosignatures:
 
-    version_info
+    __version__
 
 
-.. autodata:: version_info
+.. autodata:: __version__
