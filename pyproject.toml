@@ -97,4 +97,4 @@ write_to_template = """
 
 __version__ = "{version}"
 """
-"""
+
