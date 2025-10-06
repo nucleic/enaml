@@ -3,9 +3,14 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.18.1 - Unreleased
+0.19.0 - unreleased
 -------------------
-- Move standard_tracer's subscription observer to cpp to improve performance PR #562
+- support for Python 3.14 PR #580
+- use cache_tag in import hooks PR #574
+- make dynamicscope iterable PR #571 #572
+- use vectorcall protocol in call_func helper PR #567
+- move standard_tracer's subscription observer to cpp to improve performance PR #562
+- add non-blocking open support to FileDialog PR #552
 
 0.18.0 - 28/10/2024
 -------------------
