@@ -12,6 +12,7 @@ Dates are written as DD/MM/YYYY
 - move standard_tracer's subscription observer to cpp to improve performance PR #562
 - add non-blocking open support to FileDialog PR #552
 - fix re-ordering of notebook tabs PR #583
+- remove version_info attribute from version.py
 
 0.18.0 - 28/10/2024
 -------------------
