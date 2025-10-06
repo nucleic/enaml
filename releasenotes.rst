@@ -3,7 +3,7 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
-0.19.0 - unreleased
+0.19.0 - 06/10/2025
 -------------------
 - support for Python 3.14 PR #580
 - use cache_tag in import hooks PR #574

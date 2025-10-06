@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/atom
+      url: https://pypi.org/p/enaml
     permissions:
       id-token: write
     steps:
