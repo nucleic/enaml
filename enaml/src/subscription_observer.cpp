@@ -86,7 +86,9 @@ SubscriptionObserver_clear( SubscriptionObserver* self )
 int
 SubscriptionObserver_traverse( SubscriptionObserver* self, visitproc visit, void* arg )
 {
+    Py_VISIT(Py_TYPE(self));
     Py_VISIT( self->ref );
+    // name does not need visited
     return 0;
 }
 
@@ -94,9 +96,11 @@ SubscriptionObserver_traverse( SubscriptionObserver* self, visitproc visit, void
 void
 SubscriptionObserver_dealloc( SubscriptionObserver* self )
 {
+    PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack( self );
     SubscriptionObserver_clear( self );
-    Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
+    tp->tp_free( reinterpret_cast<PyObject*>( self ) );
+    Py_DECREF(tp);
 }
 
 
@@ -119,7 +123,8 @@ PyObject*
 SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject* kwargs )
 {
 
-    if( PyObject_IsTrue( self->ref ) )
+    const auto r = PyObject_IsTrue( self->ref );
+    if( r == 1 )
     {
         cppy::ptr owner( PyObject_CallNoArgs( self->ref ) );
         if ( !owner )
@@ -134,6 +139,8 @@ SubscriptionObserver_call( SubscriptionObserver* self, PyObject* args, PyObject*
             return PyObject_VectorcallMethod(update_str, call_args, nargsf, 0);
         }
     }
+    else if ( r < 0 )
+        return 0;  // LCOV_EXCL_LINE (atomref bool failed)
     Py_RETURN_NONE;
 }
 
@@ -156,11 +163,14 @@ SubscriptionObserver_get_ref( SubscriptionObserver* self, void* context )
 }
 
 
-PyObject*
+int
 SubscriptionObserver_set_ref( SubscriptionObserver* self, PyObject* value, void* context )
 {
     if( value != Py_None )
-        return cppy::type_error("ref can only be set to None");
+    {
+        cppy::type_error("ref can only be set to None");
+        return -1;
+    }
     cppy::replace( &self->ref, Py_None );
     return 0;
 }

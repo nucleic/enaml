@@ -17,6 +17,8 @@ def test_subscription_observer_ref():
     assert bool(observer)
     assert observer.name == "text"
     assert observer.ref() is label
+    with pytest.raises(TypeError):
+        observer.ref = label
     observer.ref = None
     assert not bool(observer)
 
