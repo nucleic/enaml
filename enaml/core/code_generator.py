@@ -11,7 +11,7 @@ from contextlib import contextmanager
 import bytecode as bc
 from atom.api import Atom, Bool, Int, List, Str
 
-from ..compat import PY310, PY311, PY312, PY313, PY314
+from ..compat import PY311, PY312, PY313, PY314
 
 
 class _ReturnNoneIdentifier(ast.NodeVisitor):
@@ -548,51 +548,46 @@ class CodeGenerator(Atom):
 
     def insert_python_block(self, pydata, trim=True):
         """Insert the compiled code for a Python Module ast or string."""
-        if PY310:
-            _inspector = _ReturnNoneIdentifier()
-            _inspector.visit(pydata)
+        _inspector = _ReturnNoneIdentifier()
+        _inspector.visit(pydata)
         code = compile(pydata, self.filename, mode="exec")
         bc_code = bc.Bytecode.from_code(code)
         if PY311:  # Trim irrelevant RESUME opcode
             bc_code = bc_code[1:]
-        # On python 3.10 with a with or try statement the implicit return None
-        # can be duplicated. We remove return None from all basic blocks when
+        # With a with or try statement the implicit return None can be
+        # duplicated. We remove return None from all basic blocks when
         # it was not present in the AST
-        if PY310:
-            cfg = bc.ControlFlowGraph.from_bytecode(bc_code)
-            new_end = None
-            last_block = cfg[-1]
-            for block in list(cfg):
-                if isinstance(block[-1], bc.Instr) and (
-                    (rc := (block[-1].name == "RETURN_CONST" and block[-1].arg is None))
-                    or (
-                        block[-1].name == "RETURN_VALUE"
-                        and block[-2].name == "LOAD_CONST"
-                        and block[-2].arg is None
-                        and block[-1].lineno not in _inspector.lines
-                    )
-                ):
-                    if rc:
-                        del block[-1]
-                    else:
-                        del block[-2:]
-                    # If as a result of the trimming the block is empty, we add
-                    # a NOP to make sure it is valid still
-                    if not any(isinstance(i, bc.Instr) for i in block):
-                        block.append(bc.Instr("NOP"))
-                    # If we have multiple block jump to the end of the last block
-                    # to execute the code that may be appended to this block
-                    if block is not last_block:
-                        # We use a NOP to be sure to always have a valid jump target
-                        new_end = new_end or cfg.add_block([bc.Instr("NOP")])
-                        block.append(bc.Instr("JUMP_FORWARD", new_end))
-                    elif new_end is not None:
-                        last_block.next_block = new_end
+        cfg = bc.ControlFlowGraph.from_bytecode(bc_code)
+        new_end = None
+        last_block = cfg[-1]
+        for block in list(cfg):
+            if isinstance(block[-1], bc.Instr) and (
+                (rc := (block[-1].name == "RETURN_CONST" and block[-1].arg is None))
+                or (
+                    block[-1].name == "RETURN_VALUE"
+                    and block[-2].name == "LOAD_CONST"
+                    and block[-2].arg is None
+                    and block[-1].lineno not in _inspector.lines
+                )
+            ):
+                if rc:
+                    del block[-1]
+                else:
+                    del block[-2:]
+                # If as a result of the trimming the block is empty, we add
+                # a NOP to make sure it is valid still
+                if not any(isinstance(i, bc.Instr) for i in block):
+                    block.append(bc.Instr("NOP"))
+                # If we have multiple block jump to the end of the last block
+                # to execute the code that may be appended to this block
+                if block is not last_block:
+                    # We use a NOP to be sure to always have a valid jump target
+                    new_end = new_end or cfg.add_block([bc.Instr("NOP")])
+                    block.append(bc.Instr("JUMP_FORWARD", new_end))
+                elif new_end is not None:
+                    last_block.next_block = new_end
 
-            bc_code = cfg.to_bytecode()
-        # Skip the LOAD_CONST RETURN_VALUE pair if it exists
-        elif trim and bc_code[-1].name == "RETURN_VALUE":
-            bc_code = bc_code[:-2]
+        bc_code = cfg.to_bytecode()
 
         self.code_ops.extend(bc_code)
 

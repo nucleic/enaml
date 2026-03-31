@@ -10,7 +10,7 @@
 name = "enaml"
 description = "Declarative DSL for building rich user interfaces in Python"
 readme = "README.rst"
-requires-python = ">=3.10,!=3.11.0,!=3.11.1"
+requires-python = ">=3.11"
 license = "BSD-3-Clause"
 license-files =["LICENSE"]
 authors = [
@@ -22,7 +22,6 @@ maintainers = [
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
