@@ -1,4 +1,4 @@
-sphinx
+sphinx<9
 sphinx-rtd-theme
 packaging
 git+https://github.com/nucleic/cppy@main
