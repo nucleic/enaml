@@ -5,6 +5,9 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+import gc
+import sys
+
 from textwrap import dedent
 
 import pytest
@@ -12,6 +15,22 @@ import pytest
 from enaml.core.alias import Alias
 from utils import compile_source
 
+
+def test_alias_init_deinit():
+    """Test alias constructor """
+    rc = sys.getrefcount(Alias)
+    alias = Alias('fd', ('text', ), object())
+    del alias
+    gc.collect()
+    assert sys.getrefcount(Alias) == rc
+
+    with pytest.raises(TypeError):
+        # 1st arg must be a str
+        alias = Alias(None, ('text', ), object())
+
+    with pytest.raises(TypeError):
+        # 2nd arg must be a tuple
+        alias = Alias("fd", "text", object())
 
 def test_alias_attributes():
     """Test accessing an alias attributes.

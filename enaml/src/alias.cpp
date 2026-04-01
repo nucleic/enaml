@@ -51,7 +51,7 @@ Alias_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     PyObject* target;
     PyObject* chain;
     PyObject* key;
-    if( !PyArg_ParseTuple( args, "OOO", &target, &chain, &key ) )
+    if( !PyArg_ParseTuple( args, "UOO", &target, &chain, &key ) )
         return 0;
     if( !PyTuple_CheckExact( chain ) )
         return cppy::type_error( "argument 2 must be a tuple" );
@@ -70,10 +70,12 @@ Alias_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 void
 Alias_dealloc( Alias* self )
 {
+    PyTypeObject *tp = Py_TYPE(self);
     Py_CLEAR( self->target );
     Py_CLEAR( self->chain );
     Py_CLEAR( self->key );
-    Py_TYPE(self)->tp_free( pyobject_cast( self ) );
+    tp->tp_free( pyobject_cast( self ) );
+    Py_DECREF(tp);
 }
 
 
@@ -325,7 +327,7 @@ namespace
 int
 alias_modexec( PyObject *mod )
 {
-    storage_str = PyUnicode_FromString( "_d_storage" );
+    storage_str = PyUnicode_InternFromString( "_d_storage" );
     if( !storage_str )
     {
         return -1;  // LCOV_EXCL_LINE (failed str creation)
