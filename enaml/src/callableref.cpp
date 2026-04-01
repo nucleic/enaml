@@ -78,10 +78,7 @@ int
 CallableRef_traverse( CallableRef* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->objref );
-#if PY_VERSION_HEX >= 0x03090000
-    // This was not needed before Python 3.9 (Python issue 35810 and 40217)
     Py_VISIT(Py_TYPE(self));
-#endif
     return 0;
 }
 
@@ -89,9 +86,11 @@ CallableRef_traverse( CallableRef* self, visitproc visit, void* arg )
 void
 CallableRef_dealloc( CallableRef* self )
 {
+    PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack( self );
     CallableRef_clear( self );
-    Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
+    tp->tp_free( reinterpret_cast<PyObject*>( self ) );
+    Py_DECREF(tp);
 }
 
 
@@ -120,20 +119,28 @@ CallableRef_richcompare( CallableRef* self, PyObject* other, int opid )
         {
             CallableRef* cref_other = reinterpret_cast<CallableRef*>( other );
             cppy::ptr oref( cppy::incref( cref_other->objref ) );
-            if( sref.richcmp( oref, Py_EQ ) )
+            switch (sref.richcmp( oref, Py_EQ ))
             {
-                Py_RETURN_TRUE;
+                case 1:
+                    Py_RETURN_TRUE;
+                case 0:
+                    Py_RETURN_FALSE;
+                default:
+                    return nullptr; // LCOV_EXCL_LINE (failed richcmp)
             }
-            Py_RETURN_FALSE;
         }
         if( PyWeakref_CheckRef( other ) )
         {
             cppy::ptr oref( cppy::incref( other ) );
-            if( sref.richcmp( oref, Py_EQ ) )
+            switch( sref.richcmp( oref, Py_EQ ) )
             {
-                Py_RETURN_TRUE;
+                case 1:
+                    Py_RETURN_TRUE;
+                case 0:
+                    Py_RETURN_FALSE;
+                default:
+                    return nullptr;
             }
-            Py_RETURN_FALSE;
         }
         Py_RETURN_FALSE;
     }
