@@ -62,7 +62,7 @@ jobs:
           python -m pip install wheel cibuildwheel
       - name: Build wheels
         env:
-          CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
+          CIBW_BUILD: "cp311-* cp312-* cp313-* cp314-*"
           CIBW_ARCHS_MACOS: x86_64 universal2 arm64
           CIBW_ARCHS_WINDOWS: auto64
           CIBW_TEST_REQUIRES: pytest

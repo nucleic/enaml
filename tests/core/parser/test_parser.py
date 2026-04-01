@@ -13,7 +13,7 @@ import pytest
 import traceback
 from textwrap import dedent
 
-from enaml.compat import PY310, PY311
+from enaml.compat import PY311
 
 
 def validate_ast(py_node, enaml_node, dump_ast=False, offset=0):

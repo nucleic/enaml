@@ -130,9 +130,9 @@ class BasePythonParser(Parser):
             last_token.start[0],
             last_token.start[1] + 1,
             last_token.line,
+            last_token.end[0],
+            last_token.end[1] + 1,
         )
-        if sys.version_info >= (3, 10):
-            args += (last_token.end[0], last_token.end[1] + 1)
         raise IndentationError(msg, args)
 
     def get_expr_name(self, node) -> str:
@@ -319,9 +319,14 @@ class BasePythonParser(Parser):
         try:
             m = ast.parse(source)
         except SyntaxError as err:
-            args = (err.filename, err.lineno + line_offset - 2, err.offset, err.text)
-            if sys.version_info >= (3, 10):
-                args += (err.end_lineno + line_offset - 2, err.end_offset)
+            args = (
+                err.filename,
+                err.lineno + line_offset - 2,
+                err.offset,
+                err.text,
+                err.end_lineno + line_offset - 2,
+                err.end_offset,
+            )
             err_args = (err.msg, args)
             # Ensure we do not keep the frame alive longer than necessary
             # by explicitly deleting the error once we got what we needed out
@@ -367,7 +372,7 @@ class BasePythonParser(Parser):
         return [comp for _, comp in pairs]
 
     def set_arg_type_comment(self, arg, type_comment):
-        if type_comment or sys.version_info < (3, 9):
+        if type_comment:
             arg.type_comment = type_comment
         return arg
 
@@ -436,9 +441,7 @@ class BasePythonParser(Parser):
         # tokenize.py index column offset from 0 while Cpython index column
         # offset at 1 when reporting SyntaxError, so we need to increment
         # the column offset when reporting the error.
-        args = (self.filename, start[0], start[1] + 1, line)
-        if sys.version_info >= (3, 10):
-            args += (end[0], end[1] + 1)
+        args = (self.filename, start[0], start[1] + 1, line, end[0], end[1] + 1)
 
         return SyntaxError(message, args)
 
@@ -457,9 +460,7 @@ class BasePythonParser(Parser):
         if res is None:
             last_token = self._tokenizer.diagnose()
             end = last_token.start
-            if sys.version_info >= (3, 12) or (
-                sys.version_info >= (3, 11) and last_token.type != 4
-            ):  # i.e. not a \n
+            if sys.version_info >= (3, 12) or last_token.type != 4:  # i.e. not a \n
                 end = last_token.end
             self.raise_raw_syntax_error(
                 f"expected {expectation}", last_token.start, end

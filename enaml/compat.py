@@ -10,8 +10,6 @@ import re
 import codecs
 import tokenize
 
-PY310 = sys.version_info >= (3, 10)
-
 PY311 = sys.version_info >= (3, 11)
 
 PY312 = sys.version_info >= (3, 12)
