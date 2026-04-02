@@ -73,8 +73,10 @@ Color_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 void
 Color_dealloc( Color* self )
 {
+    PyTypeObject *tp = Py_TYPE(self);
     Py_CLEAR( self->tkdata );
-    Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
+    tp->tp_free( reinterpret_cast<PyObject*>( self ) );
+    Py_DECREF(tp);
 }
 
 
