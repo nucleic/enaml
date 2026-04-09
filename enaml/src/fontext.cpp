@@ -111,9 +111,11 @@ Font_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 void
 Font_dealloc( Font* self )
 {
+    PyTypeObject *tp = Py_TYPE(self);
     Py_CLEAR( self->tkdata );
     Py_CLEAR( self->family );
-    Py_TYPE( self )->tp_free( pyobject_cast( self ) );
+    tp->tp_free( pyobject_cast( self ) );
+    Py_DECREF(tp);
 }
 
 
@@ -338,7 +340,7 @@ fontext_modexec( PyObject *mod )
         return -1;  // LCOV_EXCL_LINE (failed enum creation)
     }
     cppy::ptr PyFontStretch( new_enum_class( "FontStretch" ) );
-    if( !PyFontCaps )
+    if( !PyFontStretch )
     {
         return -1;  // LCOV_EXCL_LINE (failed enum creation)
     }
