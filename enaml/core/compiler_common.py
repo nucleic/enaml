@@ -553,7 +553,7 @@ def gen_child_def_node(cg: CodeGenerator, node: ChildDef, local_names: set[str])
 
         class_code = class_cg.to_code()
         cg.load_const(class_code)
-        cg.make_function()
+        cg.make_method()
 
         cg.rot_two()                            # builtins.__build_class_ -> class_func -> base
         cg.load_const(node.typename)

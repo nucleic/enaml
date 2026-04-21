@@ -342,14 +342,8 @@ class TemplateCompiler(cmn.CompilerBase):
         cg.store_fast(cmn.SCOPE_KEY)
 
         # Load and invoke the first pass code object.
-        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
-        # Python 3.13 one after
-        if not PY313:
-            cg.push_null()
         cg.load_const(first_code)
         cg.make_function()
-        if PY313:
-            cg.push_null()
         for arg in first_args:
             cg.load_fast(arg)
         cg.call_function(len(first_args))
@@ -358,14 +352,8 @@ class TemplateCompiler(cmn.CompilerBase):
         cg.store_fast(cmn.T_CONSTS)
 
         # Load and invoke the second pass code object.
-        # Python 3.11 and 3.12 requires a NULL before a function that is not a method
-        # Python 3.13 one after
-        if not PY313:
-            cg.push_null()
         cg.load_const(second_code)
         cg.make_function()
-        if PY313:
-            cg.push_null()
         for arg in second_args:
             cg.load_fast(arg)
         cg.call_function(len(second_args))
