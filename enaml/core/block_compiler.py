@@ -9,7 +9,7 @@ from atom.api import Typed
 
 from . import compiler_common as cmn
 from .enaml_ast import TemplateInst, ChildDef
-from ..compat import PY311, PY313
+from ..compat import PY313
 
 
 class BaseBlockCompiler(cmn.CompilerBase):
@@ -140,7 +140,7 @@ class SecondPassBlockCompiler(BaseBlockCompiler):
             index = self.index_map[node]
             # Python 3.11 and 3.12 requires a NULL before a function that is not a method
             # Python 3.13 one after
-            if not PY313 and PY311:
+            if not PY313:
                 cg.push_null()
             cmn.load_helper(cg, 'make_unpack_map')
             if PY313:

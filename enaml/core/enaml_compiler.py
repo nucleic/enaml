@@ -11,7 +11,7 @@ from . import compiler_common as cmn
 from .enaml_ast import Module
 from .enamldef_compiler import EnamlDefCompiler
 from .template_compiler import TemplateCompiler
-from ..compat import PY311, PY313
+from ..compat import PY313
 
 # Increment this number whenever the compiler changes the code which it
 # generates. This number is used by the import hooks to know which version
@@ -215,7 +215,7 @@ class EnamlCompiler(cmn.CompilerBase):
     def visit_EnamlDef(self, node):
         # Invoke the enamldef code and store result in the namespace.
         cg = self.code_generator
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         code = EnamlDefCompiler.compile(node, cg.filename)
         cg.load_const(code)
@@ -232,7 +232,7 @@ class EnamlCompiler(cmn.CompilerBase):
         with cg.try_squash_raise():
             # Python 3.11 and 3.12 requires a NULL before a function that is not a method
             # Python 3.13 one after
-            if not PY313 and PY311:
+            if not PY313:
                 cg.push_null()
 
             # Load and validate the parameter specializations
@@ -241,7 +241,7 @@ class EnamlCompiler(cmn.CompilerBase):
                 if spec is not None:
                     # Python 3.11 and 3.12 requires a NULL before a function that is not a method
                     # Python 3.13 one after
-                    if not PY313 and PY311:
+                    if not PY313:
                         cg.push_null()
                     cmn.load_helper(cg, 'validate_spec', from_globals=True)
                     if PY313:

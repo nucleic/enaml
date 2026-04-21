@@ -11,7 +11,7 @@ from contextlib import contextmanager
 import bytecode as bc
 from atom.api import Atom, Bool, Int, List, Str
 
-from ..compat import PY311, PY312, PY313, PY314
+from ..compat import PY312, PY313, PY314
 
 
 class _ReturnNoneIdentifier(ast.NodeVisitor):
@@ -118,12 +118,11 @@ class CodeGenerator(Atom):
                 bc_code.flags ^= bc_code.flags & flag
         bc_code.update_flags()
         # Ensure all code objects starts with a RESUME to get the right frame
-        if PY311:
-            for i, instr in enumerate(bc_code):
-                if isinstance(instr, bc.Instr):
-                    if instr.name != "RESUME":
-                        bc_code.insert(i, bc.Instr("RESUME", 0))
-                    break
+        for i, instr in enumerate(bc_code):
+            if isinstance(instr, bc.Instr):
+                if instr.name != "RESUME":
+                    bc_code.insert(i, bc.Instr("RESUME", 0))
+                break
 
         return bc_code.to_code()
 
@@ -135,12 +134,8 @@ class CodeGenerator(Atom):
 
     def load_global(self, name, push_null=False):
         """Load a global variable onto the TOS."""
-        if PY311:
-            args = (push_null, name)
-        else:
-            args = name
         self.code_ops.append(  # TOS
-            bc.Instr("LOAD_GLOBAL", args),  # TOS -> value
+            bc.Instr("LOAD_GLOBAL", (push_null, name)),  # TOS -> value
         )
 
     def load_name(self, name):
@@ -244,32 +239,20 @@ class CodeGenerator(Atom):
 
     def binary_multiply(self):
         """Multiply the 2 items on the TOS."""
-        if PY311:
-            instr = bc.Instr("BINARY_OP", 5)
-        else:
-            instr = bc.Instr("BINARY_MULTIPLY")
         self.code_ops.append(  # TOS -> val_1 -> val_2
-            instr,  # TOS -> retval
+            bc.Instr("BINARY_OP", 5),  # TOS -> retval
         )
 
     def binary_add(self):
         """Add the 2 items on the TOS."""
-        if PY311:
-            instr = bc.Instr("BINARY_OP", 0)
-        else:
-            instr = bc.Instr("BINARY_ADD")
         self.code_ops.append(  # TOS -> val_1 -> val_2
-            instr,  # TOS -> retval
+            bc.Instr("BINARY_OP", 0),  # TOS -> retval
         )
 
     def dup_top(self):
         """Duplicate the value on the TOS."""
-        if PY311:
-            instr = bc.Instr("COPY", 1)
-        else:
-            instr = bc.Instr("DUP_TOP")
         self.code_ops.append(  # TOS -> value
-            instr,  # TOS -> value -> value
+            bc.Instr("COPY", 1),  # TOS -> value -> value
         )
 
     def build_map(self, n=0):
@@ -316,8 +299,6 @@ class CodeGenerator(Atom):
 
     def make_function(self, flags=0, name=None):
         """Make a function from a code object on the TOS."""
-        if not PY311:
-            self.load_const(name)
         if PY313:
             if flags:
                 self.code_ops.extend(
@@ -349,7 +330,7 @@ class CodeGenerator(Atom):
             # TOS -> func -> null -> args -> kwargs_names -> kwargs (tuple)
             arg = n_args + n_kwds
             self.code_ops.append(bc.Instr("CALL_KW" if n_kwds else "CALL", arg))
-        elif PY311:
+        else:
             # NOTE: In Python 3.11 the caller must push null
             # onto the stack before calling this
             # TOS -> null -> func -> args -> kwargs -> kwargs_names
@@ -361,21 +342,6 @@ class CodeGenerator(Atom):
             if n_kwds:
                 ops.insert(0, bc.Instr("KW_NAMES", 3))
             self.code_ops.extend(ops)
-        else:
-            if n_kwds:
-                if is_method:
-                    raise ValueError(
-                        "Method calling convention cannot be used with keywords"
-                    )
-                # kwargs_name should be a tuple listing the keyword
-                # arguments names
-                # TOS -> func -> args -> kwargs -> kwargs_names
-                op, arg = "CALL_FUNCTION_KW", n_args + n_kwds
-            elif is_method:
-                op, arg = "CALL_METHOD", n_args
-            else:
-                op, arg = "CALL_FUNCTION", n_args
-            self.code_ops.append(bc.Instr(op, arg))  # TOS -> retval
 
     def call_function_var(self, kwds: bool = False):
         """Call a variadic function on the TOS with the given args and kwargs."""
@@ -402,27 +368,18 @@ class CodeGenerator(Atom):
 
     def rot_two(self):
         """Rotate the two values on the TOS."""
-        if PY311:
-            instr = bc.Instr("SWAP", 2)
-        else:
-            instr = bc.Instr("ROT_TWO")
         self.code_ops.append(  # TOS -> val_1 -> val_2
-            instr,  # TOS -> val_2 -> val_1
+            bc.Instr("SWAP", 2),  # TOS -> val_2 -> val_1
         )
 
     def rot_three(self):
         """Rotate the three values on the TOS."""
-        if PY311:
-            self.code_ops.extend(
-                (  # TOS -> val_1 -> val_2 -> val_3
-                    bc.Instr("SWAP", 3),  # TOS -> val_3 -> val_2 -> val_1
-                    bc.Instr("SWAP", 2),  # TOS -> val_3 -> val_1 -> val_2
-                )
+        self.code_ops.extend(
+            (  # TOS -> val_1 -> val_2 -> val_3
+                bc.Instr("SWAP", 3),  # TOS -> val_3 -> val_2 -> val_1
+                bc.Instr("SWAP", 2),  # TOS -> val_3 -> val_1 -> val_2
             )
-        else:
-            self.code_ops.append(  # TOS -> val_1 -> val_2 -> val_3
-                bc.Instr("ROT_THREE")  # TOS -> val_3 -> val_1 -> val_2
-            )
+        )
 
     def unpack_sequence(self, n):
         """Unpack the sequence on the TOS."""
@@ -444,57 +401,28 @@ class CodeGenerator(Atom):
         """
         exc_label = bc.Label()
         end_label = bc.Label()
-        if PY311:
-            self.code_ops.append(tb := bc.TryBegin(exc_label, False))
-            first_new = len(self.code_ops)
-            yield
-            for i in self.code_ops[first_new:]:
-                if isinstance(i, bc.TryBegin):
-                    raise ValueError(
-                        "try_squash_raise cannot wrap a block containing "
-                        "exception handling logic. Wrapped block is:\n"
-                        f"{self.code_ops[first_new:]}"
-                    )
-            ops = [
-                bc.TryEnd(tb),
-                bc.Instr("JUMP_FORWARD", end_label),
-                # Under Python 3.11 only the actual exception is pushed
-                exc_label,  # TOS -> val
-                bc.Instr("LOAD_CONST", None),  # TOS -> val -> None
-                bc.Instr("COPY", 2),  # TOS -> val -> None -> val
-                bc.Instr("STORE_ATTR", "__traceback__"),  # TOS -> val
-                bc.Instr("RAISE_VARARGS", 1),
-                end_label,
-            ]
-            self.code_ops.extend(ops)
-        else:
-            op_code = "SETUP_FINALLY"
-            self.code_ops.append(
-                bc.Instr(op_code, exc_label),  # TOS
-            )
-            yield
-            # exc is only the exception type which can be used for matching
-            # val is the exception value, raising it directly preserve the traceback
-            # tb is the traceback and is of little interest
-            # We reset the traceback to None to make it appear as if the code
-            # raised the exception instead of a function called by it
-            ops = [  # TOS
-                bc.Instr("POP_BLOCK"),  # TOS
-                bc.Instr("JUMP_FORWARD", end_label),  # TOS
-                exc_label,  # TOS -> tb -> val -> exc
-                bc.Instr("POP_TOP"),  # TOS -> tb -> val
-                bc.Instr("ROT_TWO"),  # TOS -> val -> tb
-                bc.Instr("POP_TOP"),  # TOS -> val
-                bc.Instr("DUP_TOP"),  # TOS -> val -> val
-                bc.Instr("LOAD_CONST", None),  # TOS -> val -> val -> None
-                bc.Instr("ROT_TWO"),  # TOS -> val -> None -> val
-                bc.Instr("STORE_ATTR", "__traceback__"),  # TOS -> val
-                bc.Instr("RAISE_VARARGS", 1),  # TOS
-                bc.Instr("POP_EXCEPT"),
-                bc.Instr("JUMP_FORWARD", end_label),  # TOS
-                end_label,  # TOS
-            ]
-            self.code_ops.extend(ops)
+        self.code_ops.append(tb := bc.TryBegin(exc_label, False))
+        first_new = len(self.code_ops)
+        yield
+        for i in self.code_ops[first_new:]:
+            if isinstance(i, bc.TryBegin):
+                raise ValueError(
+                    "try_squash_raise cannot wrap a block containing "
+                    "exception handling logic. Wrapped block is:\n"
+                    f"{self.code_ops[first_new:]}"
+                )
+        ops = [
+            bc.TryEnd(tb),
+            bc.Instr("JUMP_FORWARD", end_label),
+            # Under Python 3.11 only the actual exception is pushed
+            exc_label,  # TOS -> val
+            bc.Instr("LOAD_CONST", None),  # TOS -> val -> None
+            bc.Instr("COPY", 2),  # TOS -> val -> None -> val
+            bc.Instr("STORE_ATTR", "__traceback__"),  # TOS -> val
+            bc.Instr("RAISE_VARARGS", 1),
+            end_label,
+        ]
+        self.code_ops.extend(ops)
 
     @contextmanager
     def for_loop(self, iter_var, fast_var=True):
@@ -519,7 +447,7 @@ class CodeGenerator(Atom):
         self.code_ops.append(
             bc.Instr("SETUP_LOOP", end_label),
         )
-        if PY311 and not fast_var:
+        if not fast_var:
             # LOAD_GLOBAL expects a tuple on 3.11
             iter_var = (False, iter_var)
         self.code_ops.extend(
@@ -552,8 +480,8 @@ class CodeGenerator(Atom):
         _inspector.visit(pydata)
         code = compile(pydata, self.filename, mode="exec")
         bc_code = bc.Bytecode.from_code(code)
-        if PY311:  # Trim irrelevant RESUME opcode
-            bc_code = bc_code[1:]
+        # Trim irrelevant RESUME opcode
+        bc_code = bc_code[1:]
         # With a with or try statement the implicit return None can be
         # duplicated. We remove return None from all basic blocks when
         # it was not present in the AST
@@ -595,8 +523,8 @@ class CodeGenerator(Atom):
         """Insert the compiled code for a Python Expression ast or string."""
         code = compile(pydata, self.filename, mode="eval")
         bc_code = bc.Bytecode.from_code(code)
-        if PY311:  # Trim irrelevant RESUME opcode
-            bc_code = bc_code[1:]
+        # Trim irrelevant RESUME opcode
+        bc_code = bc_code[1:]
         if bc_code[-1].name == "RETURN_CONST":
             bc_code[-1] = bc.Instr(
                 "LOAD_CONST", bc_code[-1].arg, location=bc_code[-1].location
@@ -646,12 +574,10 @@ class CodeGenerator(Atom):
                     arg_names.append(i_arg)
                 elif i_arg in stored_names:
                     op = "LOAD_FAST"
-                elif PY311:
+                else:
                     # TODO: Is there a better way to do this?
                     code_ops[idx] = bc.Instr("LOAD_GLOBAL", (False, instr.arg))
                     continue
-                else:
-                    op = "LOAD_GLOBAL"
                 instr.name = op
             elif i_name == "DELETE_NAME":
                 if instr.arg in stored_names:
