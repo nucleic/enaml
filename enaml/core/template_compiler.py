@@ -10,7 +10,7 @@ from atom.api import List, Typed
 from . import block_compiler as block
 from . import compiler_common as cmn
 from .enaml_ast import ConstExpr, Template
-from ..compat import PY311, PY313
+from ..compat import PY313
 
 
 def collect_local_names(node):
@@ -124,7 +124,7 @@ class FirstPassTemplateCompiler(block.FirstPassBlockCompiler):
         # Create the template compiler node and store in the node list.
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         cmn.load_helper(cg, 'template_node')
         if PY313:
@@ -173,7 +173,7 @@ class FirstPassTemplateCompiler(block.FirstPassBlockCompiler):
                 cg.dup_top()
                 # Python 3.11 and 3.12 requires a NULL before a function that is not a method
                 # Python 3.13 one after
-                if not PY313 and PY311:
+                if not PY313:
                     cg.push_null()
                     cg.rot_two()
                 cmn.load_helper(cg, 'type_check_expr')
@@ -333,7 +333,7 @@ class TemplateCompiler(cmn.CompilerBase):
         cmn.fetch_helpers(cg)
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         cmn.load_helper(cg, 'make_object')
         if PY313:
@@ -344,7 +344,7 @@ class TemplateCompiler(cmn.CompilerBase):
         # Load and invoke the first pass code object.
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         cg.load_const(first_code)
         cg.make_function()
@@ -360,7 +360,7 @@ class TemplateCompiler(cmn.CompilerBase):
         # Load and invoke the second pass code object.
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         cg.load_const(second_code)
         cg.make_function()
@@ -378,7 +378,7 @@ class TemplateCompiler(cmn.CompilerBase):
         cg.dup_top()
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
             cg.rot_two()
         cmn.load_helper(cg, 'add_template_scope')

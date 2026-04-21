@@ -13,8 +13,6 @@ import pytest
 import traceback
 from textwrap import dedent
 
-from enaml.compat import PY311
-
 
 def validate_ast(py_node, enaml_node, dump_ast=False, offset=0):
     """Validate each node of an ast against another ast.
