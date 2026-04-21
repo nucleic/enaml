@@ -553,7 +553,7 @@ def gen_child_def_node(cg: CodeGenerator, node: ChildDef, local_names: set[str])
 
         class_code = class_cg.to_code()
         cg.load_const(class_code)
-        cg.make_function()
+        cg.make_method()
 
         cg.rot_two()                            # builtins.__build_class_ -> class_func -> base
         cg.load_const(node.typename)
@@ -906,20 +906,25 @@ def _insert_decl_function(cg, funcdef):
     # Python 3.12 uses RETURN_CONST
     outer_ops = bc.Bytecode.from_code(code)[0:(-2 if not PY314 and PY312 else -3)]
 
-    # the stack now looks like the following:
+    # On 3.14 if the function has annotations it looks like
+    #   ...
+    #   LOAD_CONST      (<code object __annotate__>)
+    #   MAKE_FUNCTION   (flag)              // TOS
+    #   LOAD_CONST      (<code object>)
+    #   MAKE_FUNCTION   (flag)              // TOS
+
+    # Otherwise the stack now looks like the following:
     #   ...
     #   LOAD_CONST      (<code object>)
-    #   MAKE_FUCTION    (flag)              // TOS
+    #   MAKE_FUNCTION   (flag)              // TOS
 
     # Look for the MAKE_FUNCTION instruction
     # 3.13 make the exact position variable due to the possible existence of
     # a SET_FUNCTION_ATTRIBUTE
+    code_index = 0
     for index, i in enumerate(outer_ops):
         if i.name == "MAKE_FUNCTION":
-            break
-    else:
-        index = 0
-    code_index = index - 1
+            code_index = index - 1
     assert code_index >= 0
 
     # extract the inner code object which represents the actual

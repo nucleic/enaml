@@ -63,7 +63,7 @@ def test_declarative_function_get_and_call():
             assert main is self
             return main
 
-        func call2():
+        func call2() -> Window:
             return main
 
     """)
