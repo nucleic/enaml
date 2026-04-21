@@ -14,7 +14,7 @@ from types import CodeType
 import bytecode as bc
 from atom.api import Str, Typed
 
-from ..compat import PY311, PY312, PY313, PY314
+from ..compat import PY312, PY313, PY314
 from .code_generator import CodeGenerator
 from .enaml_ast import (
     AliasExpr, ASTVisitor, Binding, ChildDef, EnamlDef, StorageExpr, Template,
@@ -395,43 +395,28 @@ def analyse_globals_and_func_defs(pyast):
     return global_vars, has_def
 
 
-if PY311:
-    def rewrite_globals_access(code, global_vars: set[str]) -> None:
-        """Update the function code global loads
+def rewrite_globals_access(code, global_vars: set[str]) -> None:
+    """Update the function code global loads
 
-        This will rewrite the function to convert each LOAD_GLOBAL opcode
-        into a LOAD_NAME opcode, unless the associated name is known to have been
-        made global via the 'global' keyword.
+    This will rewrite the function to convert each LOAD_GLOBAL opcode
+    into a LOAD_NAME opcode, unless the associated name is known to have been
+    made global via the 'global' keyword.
 
-        """
-        # On Python 3.11+ if the LOAD_GLOBAL has the PUSH_NULL flag set
-        # we have re-inject that when doing the rewrite or it jacks up the stack
-        # On Python 3.13+, the NULL is loaded after the value
-        inserts = []
-        for idx, instr in enumerate(code):
-            if (getattr(instr, "name", None) == "LOAD_GLOBAL" and
-                    instr.arg[1] not in global_vars):
-                if instr.arg[0]:
-                    inserts.append(idx)
-                code[idx] = bc.Instr("LOAD_NAME", instr.arg[1])
+    """
+    # On Python 3.11+ if the LOAD_GLOBAL has the PUSH_NULL flag set
+    # we have re-inject that when doing the rewrite or it jacks up the stack
+    # On Python 3.13+, the NULL is loaded after the value
+    inserts = []
+    for idx, instr in enumerate(code):
+        if (getattr(instr, "name", None) == "LOAD_GLOBAL" and
+                instr.arg[1] not in global_vars):
+            if instr.arg[0]:
+                inserts.append(idx)
+            code[idx] = bc.Instr("LOAD_NAME", instr.arg[1])
 
-        # Walk backwards so indexes remain valid
-        for idx in reversed(inserts):
-            code.insert(idx + (1 if PY313 else 0), bc.Instr("PUSH_NULL"))
-
-else:
-    def rewrite_globals_access(code, global_vars: set[str]) -> None:
-        """Update the function code global loads
-
-        This will rewrite the function to convert each LOAD_GLOBAL opcode
-        into a LOAD_NAME opcode, unless the associated name is known to have been
-        made global via the 'global' keyword.
-
-        """
-        for idx, instr in enumerate(code):
-            if (getattr(instr, "name", None) == "LOAD_GLOBAL" and
-                    instr.arg not in global_vars):
-                instr.name = "LOAD_NAME"
+    # Walk backwards so indexes remain valid
+    for idx in reversed(inserts):
+        code.insert(idx + (1 if PY313 else 0), bc.Instr("PUSH_NULL"))
 
 
 def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
@@ -451,7 +436,7 @@ def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
     # Code generator used to modify the bytecode
     cg = CodeGenerator()
 
-    if PY311 and getattr(code[0], "name", None) == "RESUME":
+    if getattr(code[0], "name", None) == "RESUME":
         cg.code_ops.append(code[0])
         instrs = code[1:]
     else:
@@ -483,12 +468,11 @@ def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
             cg.rot_two()                                 # wrap -> func
             # Python 3.11 and 3.12 requires a NULL before a function that is not a method
             # Python 3.13 one after
-            if PY311:
-                cg.push_null()                           # wrap -> func -> null
-                if PY313:
-                    cg.rot_two()                         # wrap -> null -> func
-                else:
-                    cg.rot_three()                       # null -> wrap -> func
+            cg.push_null()                           # wrap -> func -> null
+            if PY313:
+                cg.rot_two()                         # wrap -> null -> func
+            else:
+                cg.rot_three()                       # null -> wrap -> func
             cg.load_global('__scope__')                  # wrap -> func -> scope
             cg.call_function(2)                          # wrapped
             continue
@@ -525,7 +509,7 @@ def gen_child_def_node(cg: CodeGenerator, node: ChildDef, local_names: set[str])
         cg.dup_top()
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
             cg.rot_two()                        # base -> null -> base
         load_helper(cg, 'validate_declarative')
@@ -542,7 +526,7 @@ def gen_child_def_node(cg: CodeGenerator, node: ChildDef, local_names: set[str])
 
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
             cg.rot_two()                        # null -> base
 
@@ -579,7 +563,7 @@ def gen_child_def_node(cg: CodeGenerator, node: ChildDef, local_names: set[str])
     # Build the declarative compiler node
     # Python 3.11 and 3.12 requires a NULL before a function that is not a method
     # Python 3.13 one after
-    if not PY313 and PY311:
+    if not PY313:
         cg.push_null()
         cg.rot_two()                            # null -> class
     store_locals = should_store_locals(node)
@@ -618,7 +602,7 @@ def gen_template_inst_node(cg: CodeGenerator, node: TemplateInst, local_names: s
         cg.dup_top()
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
             cg.rot_two()  # null -> template
         load_helper(cg, 'validate_template')
@@ -631,10 +615,9 @@ def gen_template_inst_node(cg: CodeGenerator, node: TemplateInst, local_names: s
 
     # Load the arguments for the instantiation call.
     arguments = node.arguments
-    if PY311:
-        cg.push_null()    # template -> null
-        if not PY313:
-            cg.rot_two()  # null -> template
+    cg.push_null()    # template -> null
+    if not PY313:
+        cg.rot_two()  # null -> template
 
     for arg in arguments.args:
         safe_eval_ast(cg, arg.ast, node.name, arg.lineno, local_names)
@@ -661,7 +644,7 @@ def gen_template_inst_node(cg: CodeGenerator, node: TemplateInst, local_names: s
             cg.dup_top()
             # Python 3.11 and 3.12 requires a NULL before a function that is not a method
             # Python 3.13 one after
-            if not PY313 and PY311:
+            if not PY313:
                 cg.push_null()
                 cg.rot_two()  # null -> template_inst
             load_helper(cg, 'validate_unpack_size')
@@ -677,7 +660,7 @@ def gen_template_inst_node(cg: CodeGenerator, node: TemplateInst, local_names: s
     # Load and call the helper to create the compiler node
     # Python 3.11 and 3.12 requires a NULL before a function that is not a method
     # Python 3.13 one after
-    if not PY313 and PY311:
+    if not PY313:
         cg.push_null()
         cg.rot_two()  # null -> tmpl
     load_helper(cg, 'template_inst_node')
@@ -759,7 +742,7 @@ def gen_template_inst_binding(cg: CodeGenerator, node: TemplateInstBinding, inde
         cg.set_lineno(node.lineno)
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         load_helper(cg, 'run_operator')
         if PY313:
@@ -804,7 +787,7 @@ def gen_operator_binding(cg: CodeGenerator, node, index: int, name: str) -> None
 
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         load_helper(cg, 'run_operator')
         if PY313:
@@ -843,7 +826,7 @@ def gen_alias_expr(cg: CodeGenerator, node: AliasExpr, index: int) -> None:
         cg.set_lineno(node.lineno)
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         load_helper(cg, 'add_alias')
         if PY313:
@@ -881,7 +864,7 @@ def gen_storage_expr(cg: CodeGenerator, node: StorageExpr, index: int, local_nam
         cg.set_lineno(node.lineno)
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         load_helper(cg, 'add_storage')
         if PY313:
@@ -925,25 +908,18 @@ def _insert_decl_function(cg, funcdef):
 
     # the stack now looks like the following:
     #   ...
-    #   ...
-    #   LOAD_CONST      (<code object>)
-    #   LOAD_CONST      (qualified name)
-    #   MAKE_FUCTION    (flag)              // TOS
-
-    # On Python 3.11 the stack is
-    #   ...
     #   LOAD_CONST      (<code object>)
     #   MAKE_FUCTION    (flag)              // TOS
-    code_offset = -1 if PY311 else -2
 
     # Look for the MAKE_FUNCTION instruction
     # 3.13 make the exact position variable due to the possible existence of
     # a SET_FUNCTION_ATTRIBUTE
-    code_index = -1
     for index, i in enumerate(outer_ops):
         if i.name == "MAKE_FUNCTION":
             break
-    code_index = index + code_offset
+    else:
+        index = 0
+    code_index = index - 1
     assert code_index >= 0
 
     # extract the inner code object which represents the actual
@@ -986,7 +962,7 @@ def gen_decl_funcdef(cg: CodeGenerator, node: FuncDef, index: int) -> None:
         cg.set_lineno(node.lineno)
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         load_helper(cg, 'add_decl_function')
         if PY313:

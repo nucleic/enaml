@@ -8,7 +8,7 @@
 from . import block_compiler as block
 from . import compiler_common as cmn
 from .enaml_ast import EnamlDef
-from ..compat import PY311, PY313
+from ..compat import PY313
 
 
 class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
@@ -83,7 +83,7 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
 
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
 
         # Preload the helper to generate the enamldef
@@ -101,7 +101,7 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
             cg.dup_top()                            # helper -> name -> base -> base
             # Python 3.11 and 3.12 requires a NULL before a function that is not a method
             # Python 3.13 one after
-            if not PY313 and PY311:
+            if not PY313:
                 cg.push_null()  # base -> null
                 cg.rot_two()    # null -> base
             cmn.load_helper(cg, 'validate_declarative')
@@ -127,7 +127,7 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
         # Build the compiler node
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
             cg.rot_two()
         should_store = cmn.should_store_locals(node)
@@ -273,7 +273,7 @@ class EnamlDefCompiler(cmn.CompilerBase):
         )
 
         # Prepare the code block for execution.
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         cmn.fetch_helpers(cg)
         cmn.load_helper(cg, 'make_object')
@@ -285,7 +285,7 @@ class EnamlDefCompiler(cmn.CompilerBase):
         # Load and invoke the first pass code object.
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         cg.load_const(first_code)
         cg.make_function()
@@ -299,7 +299,7 @@ class EnamlDefCompiler(cmn.CompilerBase):
         # Load and invoke the second pass code object.
         # Python 3.11 and 3.12 requires a NULL before a function that is not a method
         # Python 3.13 one after
-        if not PY313 and PY311:
+        if not PY313:
             cg.push_null()
         cg.load_const(second_code)
         cg.make_function()
