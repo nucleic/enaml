@@ -61,3 +61,35 @@ def test_validate_declarative_2():
 
 
 # XXX add test regarding handling of with statement
+
+
+def test_compile_lamba_with_default():
+    source = dedent("""\
+    from enaml.widgets.api import Window
+
+    enamldef Main(Window):
+        attr f = lambda v="x": v
+    """)
+    Main = compile_source(source, 'Main')
+    window = Main()
+    assert window.f() == "x"
+    assert window.f("y") == "y"
+
+
+def test_compile_lamba_with_default_in_dict_comp():
+    source = dedent("""\
+    from enaml.widgets.api import Window
+
+    enamldef Main(Window):
+        attr mode: str = "a"
+        attr keymap = {
+            k: lambda v=k: setattr(self, "mode", v)
+            for k in ("a", "b")
+        }
+    """)
+    Main = compile_source(source, 'Main')
+    window = Main()
+    assert window.mode == "a"
+    window.keymap['b']()
+    assert window.mode == "b"
+

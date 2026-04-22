@@ -61,9 +61,6 @@ _FUNC_DEF_NODES = (ast.Lambda,
                    ast.DictComp,
                    ast.SetComp)
 
-#: Opcode used to create a function
-_MAKE_FUNC = ("MAKE_FUNCTION",)
-
 
 def unhandled_pragma(name, filename, lineno):
     """ Emit a warning for an unhandled pragma.
@@ -445,7 +442,11 @@ def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
     fetch_helpers(cg)
 
     # Scan all ops to detect function call after GET_ITER
-    for instr in instrs:
+    idx = 0
+    num_instrs = len(instrs)
+    while idx < num_instrs:
+        instr = instrs[idx]
+        idx += 1
         if not isinstance(instr, bc.Instr):
             cg.code_ops.append(instr)
             continue
@@ -462,8 +463,17 @@ def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
             run_in_dynamic_scope(inner, global_vars)
             inner.update_flags()
             i_arg = inner.to_code()
-        elif any(i_name == make_fun_op for make_fun_op in _MAKE_FUNC):
+        elif i_name == "MAKE_FUNCTION":
             cg.code_ops.append(bc.Instr(i_name, i_arg))  # func
+
+            if PY313 and idx < num_instrs:
+                # If the next instruction is SET_FUNCTION_ATTRIBUTE it needs
+                # executed before wrapping the function in order to setup defaults on the stack.
+                i_next = instrs[idx]
+                if isinstance(i_next, bc.Instr) and i_next.name == "SET_FUNCTION_ATTRIBUTE":
+                    cg.code_ops.append(bc.Instr(i_next.name, i_next.arg, location=instr.location))
+                    idx += 1 # Skip the instruction
+
             load_helper(cg, 'wrap_func')                 # func -> wrap
             cg.rot_two()                                 # wrap -> func
             # Python 3.11 and 3.12 requires a NULL before a function that is not a method
