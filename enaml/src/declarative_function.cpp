@@ -22,6 +22,13 @@ namespace enaml
 {
 
 
+static PyObject* builtins_str;
+static PyObject* d_storage_str;
+static PyObject* get_str;
+static PyObject* globals_str;
+static PyObject* super_str;
+
+
 // POD struct - all member fields are considered private
 struct DFunc
 {
@@ -85,11 +92,10 @@ PyObject*
 _Invoke( PyObject* func, PyObject* key, PyObject* self, PyObject* args,
          PyObject* kwargs )
 {
-    cppy::ptr pfunc( cppy::incref( func ) );
-    cppy::ptr f_globals( pfunc.getattr( "__globals__" ) );
+    cppy::ptr f_globals( PyObject_GetAttr( func,  globals_str ) );
     if( !f_globals )
-        return cppy::attribute_error( pfunc.get(), "__globals__" );
-    cppy::ptr f_builtins( cppy::xincref( PyDict_GetItemString( f_globals.get(), "__builtins__" ) ) );
+        return cppy::attribute_error( func, "__globals__" );
+    cppy::ptr f_builtins( cppy::xincref( PyDict_GetItem( f_globals.get(), builtins_str ) ) );
     if( !f_builtins ){
         PyErr_Format(
             PyExc_KeyError,
@@ -98,34 +104,33 @@ _Invoke( PyObject* func, PyObject* key, PyObject* self, PyObject* args,
         );
         return 0;
     }
-    cppy::ptr pself( cppy::incref( self ) );
-    cppy::ptr d_storage( pself.getattr( "_d_storage" ) );
+    cppy::ptr d_storage( PyObject_GetAttr(self, d_storage_str ) );
     if( !d_storage )
-        return cppy::attribute_error( pself.get(), "_d_storage" );
-
+        return cppy::attribute_error( self, "_d_storage" );
     cppy::ptr empty( PyDict_New() );
-    cppy::ptr f_locals( PyObject_CallMethod( d_storage.get(), "get", "OO", key, empty.get() ) );
-    cppy::ptr scope(
-        PyObject_CallFunctionObjArgs( DynamicScope, self, f_locals.get(),
-                                      f_globals.get(),
-                                      f_builtins.get(), 0 )
-        );
-    if( PyMapping_SetItemString( scope.get(), "super", cppy::incref( super_disallowed ) ) == -1 )
+    if ( !empty )
+        return 0;
+    PyObject* d_storage_get_args[] = { d_storage.get(), key, empty.get() };
+    cppy::ptr f_locals( PyObject_VectorcallMethod( get_str, d_storage_get_args, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, 0 ) );
+    if ( !f_locals )
+        return 0;
+    PyObject* dynamicscope_args[] = { self, f_locals.get(), f_globals.get(), f_builtins.get() };
+    cppy::ptr scope( PyObject_VectorcallDict( DynamicScope, dynamicscope_args, 4 | PY_VECTORCALL_ARGUMENTS_OFFSET, 0 ) );
+    if ( !scope )
+        return 0;
+    if( PyObject_SetItem( scope.get(), super_str, super_disallowed ) == -1 )
         return cppy::system_error( "Failed to set key super in dynamic scope" );
-
-    cppy::ptr pkw( cppy::xincref( kwargs ) );
+    cppy::ptr pkw( kwargs ? cppy::incref(kwargs) : PyDict_New() );
     if( !pkw )
-        pkw.set( PyDict_New() );
-    return PyObject_CallFunctionObjArgs( call_func, func, args, pkw.get(), scope.get(), 0 );
+        return 0;
+    PyObject* call_func_args[] = {func, args, pkw.get(), scope.get()};
+    return PyObject_VectorcallDict( call_func, call_func_args, 4 | PY_VECTORCALL_ARGUMENTS_OFFSET, 0 );
 }
 
 
 PyObject*
 DFunc_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
-    PyObject* self = PyType_GenericNew( type, args, kwargs );
-    if( !self )
-        return 0;
     PyObject* im_func;
     PyObject* im_key;
     static char *kwlist[] = { "im_func", "im_key", 0 };
@@ -133,6 +138,9 @@ DFunc_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
         return 0;
     if( !PyFunction_Check( im_func ) )
         return cppy::type_error( im_func, "function" );
+    PyObject* self = PyType_GenericNew( type, args, kwargs );
+    if( !self )
+        return 0;
     DFunc* df = reinterpret_cast<DFunc*>( self );
     df->im_func = cppy::incref( im_func );
     df->im_key = cppy::incref( im_key );
@@ -153,10 +161,7 @@ DFunc_traverse( DFunc* self, visitproc visit, void* arg )
 {
     Py_VISIT( self->im_func );
     Py_VISIT( self->im_key );
-#if PY_VERSION_HEX >= 0x03090000
-    // This was not needed before Python 3.9 (Python issue 35810 and 40217)
     Py_VISIT(Py_TYPE(self));
-#endif
     return 0;
 }
 
@@ -164,8 +169,11 @@ DFunc_traverse( DFunc* self, visitproc visit, void* arg )
 void
 DFunc_dealloc( DFunc* self )
 {
+    PyTypeObject *tp = Py_TYPE(self);
+    PyObject_GC_UnTrack( self );
     DFunc_clear( self );
-    Py_TYPE(self)->tp_free( pyobject_cast( self ) );
+    tp->tp_free( pyobject_cast( self ) );
+    Py_DECREF(tp);
 }
 
 
@@ -176,10 +184,20 @@ DFunc_repr( DFunc* self )
     ostr << "<declarative function ";
     cppy::ptr mod( PyObject_GetAttrString( self->im_func, "__module__" ) );
     if( mod && PyUnicode_Check( mod.get() ) )
-        ostr << PyUnicode_AsUTF8( mod.get() ) << ".";
+    {
+        const char* s = PyUnicode_AsUTF8( mod.get() );
+        if ( !s )
+            return 0;
+        ostr << s << ".";
+    }
     cppy::ptr name( PyObject_GetAttrString( self->im_func, "__name__" ) );
     if( name && PyUnicode_Check( name.get() ) )
-        ostr << PyUnicode_AsUTF8( name.get() );
+    {
+        const char* s = PyUnicode_AsUTF8( name.get() );
+        if ( !s )
+            return 0;
+        ostr << s;
+    }
     ostr << ">";
     return PyUnicode_FromString( ostr.str().c_str() );
 }
@@ -197,8 +215,7 @@ DFunc__get__( DFunc* self, PyObject* im_self, PyObject* type )
 PyObject*
 DFunc__call__( DFunc* self, PyObject* args, PyObject* kwargs )
 {
-    cppy::ptr argsptr( cppy::incref( args ) );
-    Py_ssize_t args_size = PyTuple_GET_SIZE( argsptr.get() );
+    Py_ssize_t args_size = PyTuple_GET_SIZE( args );
     if( args_size == 0 )
     {
         std::ostringstream ostr;
@@ -206,12 +223,12 @@ DFunc__call__( DFunc* self, PyObject* args, PyObject* kwargs )
         ostr << args_size << " given)";
         return cppy::type_error( ostr.str().c_str() );
     }
-    cppy::ptr pself( cppy::incref( PyTuple_GET_ITEM( argsptr.get(), 0 ) ) );
-    cppy::ptr pargs( PyTuple_GetSlice( argsptr.get(), 1, args_size ) );
+    PyObject* owner = PyTuple_GET_ITEM( args, 0 );
+    cppy::ptr pargs( PyTuple_GetSlice( args, 1, args_size ) );
     if( !pargs )
         return cppy::system_error( "DeclarativeFunction.__call__ failed to "
                                    "slice arguments." );
-    return _Invoke( self->im_func, self->im_key, pself.get(), pargs.get(), kwargs );
+    return _Invoke( self->im_func, self->im_key, owner, pargs.get(), kwargs );
 }
 
 
@@ -312,10 +329,7 @@ BoundDMethod_traverse( BoundDMethod* self, visitproc visit, void* arg )
     Py_VISIT( self->im_func );
     Py_VISIT( self->im_self );
     Py_VISIT( self->im_key );
-#if PY_VERSION_HEX >= 0x03090000
-    // This was not needed before Python 3.9 (Python issue 35810 and 40217)
     Py_VISIT(Py_TYPE(self));
-#endif
     return 0;
 }
 
@@ -328,7 +342,11 @@ BoundDMethod_dealloc( BoundDMethod* self )
     if( numfree < FREELIST_MAX )
         freelist[ numfree++ ] = self;
     else
-        Py_TYPE( self )->tp_free( pyobject_cast( self ) );
+    {
+        PyTypeObject *tp = Py_TYPE(self);
+        tp->tp_free( pyobject_cast( self ) );
+        Py_DECREF(tp);
+    }
 }
 
 
@@ -340,13 +358,28 @@ BoundDMethod_repr( BoundDMethod* self )
     cppy::ptr cls( PyObject_GetAttrString(
         pyobject_cast( Py_TYPE( self->im_self ) ), "__name__" ) );
     if( cls && PyUnicode_Check( cls.get() ) )
-        ostr << PyUnicode_AsUTF8( cls.get() ) << ".";
+    {
+        const char* s = PyUnicode_AsUTF8( cls.get() );
+        if ( !s )
+            return 0;
+        ostr << s << ".";
+    }
     cppy::ptr name( PyObject_GetAttrString( self->im_func, "__name__" ) );
     if( name && PyUnicode_Check( name.get() ) )
-        ostr << PyUnicode_AsUTF8( name.get() );
+    {
+        const char* s = PyUnicode_AsUTF8( name.get() );
+        if ( !s )
+            return 0;
+        ostr << s;
+    }
     cppy::ptr obj( PyObject_Repr( self->im_self ) );
     if( obj && PyUnicode_Check( obj.get() ) )
-        ostr << " of " << PyUnicode_AsUTF8( obj.get() );
+    {
+        const char* s = PyUnicode_AsUTF8( obj.get() );
+        if ( !s )
+            return 0;
+        ostr << " of " << s;
+    }
     ostr << ">";
     return PyUnicode_FromString( ostr.str().c_str() );
 }
@@ -485,6 +518,7 @@ BoundDMethod::New( PyObject* im_func, PyObject* im_self, PyObject* im_key )
     {
         pymethod = pyobject_cast( freelist[ --numfree ] );
         _Py_NewReference( pymethod );
+        PyObject_GC_Track( pymethod );
     }
     else
     {
@@ -547,6 +581,26 @@ declarative_function_modexec( PyObject *mod )
     {
         return -1;  // LCOV_EXCL_LINE (failed type creation)
     }
+
+    d_storage_str = PyUnicode_InternFromString("_d_storage");
+    if ( !d_storage_str )
+        return -1;  // LCOV_EXCL_LINE (failed to create string)
+
+    globals_str = PyUnicode_InternFromString("__globals__");
+    if ( !globals_str )
+        return -1;  // LCOV_EXCL_LINE (failed to create string)
+
+    builtins_str = PyUnicode_InternFromString("__builtins__");
+    if ( !builtins_str )
+        return -1;  // LCOV_EXCL_LINE (failed to create string)
+
+    super_str = PyUnicode_InternFromString("super");
+    if ( !super_str )
+        return -1;  // LCOV_EXCL_LINE (failed to create string)
+
+    get_str = PyUnicode_InternFromString("get");
+    if ( !get_str )
+        return -1;  // LCOV_EXCL_LINE (failed to create string)
 
     // DFunc
     cppy::ptr dfunc( pyobject_cast( DFunc::TypeObject ) );
