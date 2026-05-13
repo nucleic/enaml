@@ -154,8 +154,8 @@ def add_storage(node, name, store_type, kind):
     else:
         raise RuntimeError("invalid kind '%s'" % kind)
 
-    patch_d_member(new)
     add_member(klass, name, new)
+    patch_d_member(new)
 
 
 def declarative_node(klass, identifier, scope_key, store_locals):
