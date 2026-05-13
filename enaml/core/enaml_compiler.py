@@ -215,13 +215,9 @@ class EnamlCompiler(cmn.CompilerBase):
     def visit_EnamlDef(self, node):
         # Invoke the enamldef code and store result in the namespace.
         cg = self.code_generator
-        if not PY313:
-            cg.push_null()
         code = EnamlDefCompiler.compile(node, cg.filename)
         cg.load_const(code)
         cg.make_function()
-        if PY313:
-            cg.push_null()
         cg.call_function()
         cg.store_global(node.typename)
 
@@ -271,7 +267,7 @@ class EnamlCompiler(cmn.CompilerBase):
             # Generate the template code and function
             code = TemplateCompiler.compile(node, cg.filename)
             cg.load_const(code)                                      # tuple -> code
-            cg.make_function(0x01)                                   # tuple -> func
+            cg.make_method(0x01)                                     # tuple -> func
 
             # Load and call the helper which will build the template
             cmn.load_helper(cg, 'make_template', from_globals=True)  # tuple -> func -> helper

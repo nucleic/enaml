@@ -61,9 +61,6 @@ _FUNC_DEF_NODES = (ast.Lambda,
                    ast.DictComp,
                    ast.SetComp)
 
-#: Opcode used to create a function
-_MAKE_FUNC = ("MAKE_FUNCTION",)
-
 
 def unhandled_pragma(name, filename, lineno):
     """ Emit a warning for an unhandled pragma.
@@ -445,7 +442,11 @@ def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
     fetch_helpers(cg)
 
     # Scan all ops to detect function call after GET_ITER
-    for instr in instrs:
+    idx = 0
+    num_instrs = len(instrs)
+    while idx < num_instrs:
+        instr = instrs[idx]
+        idx += 1
         if not isinstance(instr, bc.Instr):
             cg.code_ops.append(instr)
             continue
@@ -462,8 +463,17 @@ def run_in_dynamic_scope(code: bc.Bytecode, global_vars: set[str]) -> None:
             run_in_dynamic_scope(inner, global_vars)
             inner.update_flags()
             i_arg = inner.to_code()
-        elif any(i_name == make_fun_op for make_fun_op in _MAKE_FUNC):
+        elif i_name == "MAKE_FUNCTION":
             cg.code_ops.append(bc.Instr(i_name, i_arg))  # func
+
+            if PY313 and idx < num_instrs:
+                # If the next instruction is SET_FUNCTION_ATTRIBUTE it needs
+                # executed before wrapping the function in order to setup defaults on the stack.
+                i_next = instrs[idx]
+                if isinstance(i_next, bc.Instr) and i_next.name == "SET_FUNCTION_ATTRIBUTE":
+                    cg.code_ops.append(bc.Instr(i_next.name, i_next.arg, location=instr.location))
+                    idx += 1 # Skip the instruction
+
             load_helper(cg, 'wrap_func')                 # func -> wrap
             cg.rot_two()                                 # wrap -> func
             # Python 3.11 and 3.12 requires a NULL before a function that is not a method
@@ -553,7 +563,7 @@ def gen_child_def_node(cg: CodeGenerator, node: ChildDef, local_names: set[str])
 
         class_code = class_cg.to_code()
         cg.load_const(class_code)
-        cg.make_function()
+        cg.make_method()
 
         cg.rot_two()                            # builtins.__build_class_ -> class_func -> base
         cg.load_const(node.typename)
@@ -906,20 +916,25 @@ def _insert_decl_function(cg, funcdef):
     # Python 3.12 uses RETURN_CONST
     outer_ops = bc.Bytecode.from_code(code)[0:(-2 if not PY314 and PY312 else -3)]
 
-    # the stack now looks like the following:
+    # On 3.14 if the function has annotations it looks like
+    #   ...
+    #   LOAD_CONST      (<code object __annotate__>)
+    #   MAKE_FUNCTION   (flag)              // TOS
+    #   LOAD_CONST      (<code object>)
+    #   MAKE_FUNCTION   (flag)              // TOS
+
+    # Otherwise the stack now looks like the following:
     #   ...
     #   LOAD_CONST      (<code object>)
-    #   MAKE_FUCTION    (flag)              // TOS
+    #   MAKE_FUNCTION   (flag)              // TOS
 
     # Look for the MAKE_FUNCTION instruction
     # 3.13 make the exact position variable due to the possible existence of
     # a SET_FUNCTION_ATTRIBUTE
+    code_index = 0
     for index, i in enumerate(outer_ops):
         if i.name == "MAKE_FUNCTION":
-            break
-    else:
-        index = 0
-    code_index = index - 1
+            code_index = index - 1
     assert code_index >= 0
 
     # extract the inner code object which represents the actual

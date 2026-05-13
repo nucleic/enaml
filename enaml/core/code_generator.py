@@ -297,8 +297,8 @@ class CodeGenerator(Atom):
             bc.Instr("LOAD_BUILD_CLASS"),  # TOS -> builtins.__build_class__
         )
 
-    def make_function(self, flags=0, name=None):
-        """Make a function from a code object on the TOS."""
+    def make_method(self, flags=0):
+        """Make a method from a code object on the TOS."""
         if PY313:
             if flags:
                 self.code_ops.extend(
@@ -315,6 +315,18 @@ class CodeGenerator(Atom):
             self.code_ops.append(  # TOS -> qual_name -> code -> defaults
                 bc.Instr("MAKE_FUNCTION", flags),  # TOS -> func
             )
+
+    def make_function(self, flags=0):
+        """Make a function from a code object on the TOS."""
+        if PY313:
+            # Python 3.13 requires a NULL after a function that is not a method
+            self.make_method(flags)
+            self.push_null()
+        else:
+            # Python 3.11 and 3.12 requires a NULL before a function that is not a method
+            self.push_null()  # code -> null
+            self.rot_two()   # null -> code
+            self.make_method(flags)
 
     def push_null(self):
         """Push NULL on the TOS."""
