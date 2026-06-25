@@ -28,36 +28,38 @@ enamldef Main(Window):
         HGroup:
             CheckBox:
                 text = "Group 1 Exclusive"
-                checked := btn_group1.exclusive
+                checked := btn_group1.exclusive  
+                
+                clicked :: print('Group 1  toggled')
+                         
             CheckBox:
                 text = "Group 2 Exclusive"
                 checked := btn_group2.exclusive
+                
+                clicked :: print('Group 2 toggled')        
         HGroup:
-            ButtonGroup: btn_group1:
-                pass
-            ButtonGroup: btn_group2:
-                pass
+            Container:
+                ButtonGroup: btn_group1:
+                    pass                                  
+            Container:
+                ButtonGroup: btn_group2:
+                    pass
             GroupBox:
-                title = "Group 1"
+                title = "ROCK"
                 RadioButton:
-                    text = "Button Group 1"
-                    group = btn_group1
+                    text = "Whenever I may roam"    
                 RadioButton:
-                    text = "Button Group 2"
-                    group = btn_group2
+                    text = "Pearl Black"                
             GroupBox:
-                title = "Group 2"
+                title = "POP"
                 RadioButton:
-                    text = "Button Group 1"
-                    group = btn_group1
+                    text = "Happier than ever"                
                 RadioButton:
-                    text = "Button Group 2"
-                    group = btn_group2
+                    text = "Driver License"              
             GroupBox:
-                title = "Group 3"
+                title = "JAZZ"
                 RadioButton:
-                    text = "Button Group 1"
-                    group = btn_group1
+                    text = "Rehab"
                 RadioButton:
-                    text = "Button Group 2"
-                    group = btn_group2
+                    text = "Back to Black"
+                    
