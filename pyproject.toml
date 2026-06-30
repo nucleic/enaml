@@ -60,8 +60,8 @@ enaml-run = "enaml.runner:main"
 enaml-compileall = "enaml.compile_all:main"
 
 [build-system]
-requires = ["setuptools>=77.0", "wheel", "setuptools_scm[toml]>=3.4.3", "cppy>=1.2.0"]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.0,<2.0", "setuptools>=77.0", "wheel", "setuptools_scm[toml]>=3.4.3", "cppy>=1.2.0"]
+build-backend = "maturin"
 
 [tool.setuptools]
 include-package-data = false
@@ -96,4 +96,8 @@ write_to_template = """
 
 __version__ = "{version}"
 """
+
+[tool.maturin]
+module-name = "enaml._rust"
+python-packages = ["enaml"]
 

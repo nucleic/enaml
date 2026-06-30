@@ -24,7 +24,8 @@
 .gitignore~
 *.orig
 
-
 lextab*.py
 parsetab*.py
 version.py
+
+/target

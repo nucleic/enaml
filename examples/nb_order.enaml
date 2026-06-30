@@ -1,0 +1,29 @@
+from enaml.widgets.api import MainWindow, Container, PushButton, Notebook, Label, Page
+from enaml.core.api import Looper
+import random
+
+enamldef Main(MainWindow): mw:
+
+	attr tabs = ["Tab 1", "Tab 2", "Tab 3", "Tab 4"]
+
+	Container:
+		PushButton:
+			text = "Shuffle"
+			clicked::
+				mw.tabs = random.sample(mw.tabs, len(mw.tabs))
+
+		Looper:
+			iterable << mw.tabs
+			Label:
+				text << loop.item
+
+		Notebook:
+			Looper:
+				iterable << mw.tabs
+				Page:
+					closable = False
+					title << loop.item
+					name << loop.item
+					Container:
+						Label:
+							text << loop.item

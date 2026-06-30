@@ -1,0 +1,22 @@
+from enaml.widgets.api import MainWindow, Container, PushButton, Label
+from enaml.core.api import Conditional
+
+enamldef Main(MainWindow): mw:
+
+	attr string_or_int = "abc"
+
+	Container:
+		PushButton:
+			text = "Switch"
+			clicked::
+				mw.string_or_int = 99 if isinstance(mw.string_or_int, str) else "abc"
+
+		Conditional:
+			condition << isinstance(mw.string_or_int, str)
+			Label:
+				text << mw.string_or_int[1]
+
+		Conditional:
+			condition << isinstance(mw.string_or_int, int)
+			Label:
+				text << str(mw.string_or_int / 3)
