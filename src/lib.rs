@@ -7,21 +7,22 @@
 // --------------------------------------------------------------------------------------
 use pyo3::prelude::*;
 
-mod colorext;
-mod fontext;
-mod funchelper;
 mod alias;
-mod subscription_observer;
+mod colorext;
 mod declarative_function;
 mod dynamicscope;
+mod fontext;
+mod funchelper;
+mod subscription_observer;
 mod winutil;
 
-use colorext::Color;
-use fontext::Font;
 use alias::Alias;
-use subscription_observer::SubscriptionObserver;
-use declarative_function::{DeclarativeFunction, BoundDeclarativeMethod};
+use colorext::Color;
+use declarative_function::{BoundDeclarativeMethod, DeclarativeFunction};
 use dynamicscope::{DynamicScope, UserKeyError};
+use fontext::Font;
+use funchelper::call_func;
+use subscription_observer::SubscriptionObserver;
 use winutil::WinEnum;
 
 /// Python module entry point for enaml Rust extensions
@@ -50,6 +51,9 @@ fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<DynamicScope>()?;
     m.add("UserKeyError", m.py().get_type::<UserKeyError>())?;
 
+    // funchelper function for call with dynamic scope
+    m.add_function(wrap_pyfunction!(call_func, m)?)?;
+
     // WinUtil classes and functions
     m.add_class::<WinEnum>()?;
     m.add_function(wrap_pyfunction!(winutil::load_icon, m)?)?;
@@ -67,4 +71,3 @@ fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__name__", "enaml._rust")?;
     Ok(())
 }
-

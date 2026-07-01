@@ -1,10 +1,10 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2013-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 from collections import deque
 import re
 
@@ -12,7 +12,7 @@ from atom.api import Atom, Str, Value, List, Event
 
 
 def flag_generator():
-    """ A generator which yields success bit flags.
+    """A generator which yields success bit flags.
 
     This should be used when creating flag values for a subclass of
     Object in order to not trample on superclass flags.
@@ -22,6 +22,8 @@ def flag_generator():
     while True:
         yield flag
         flag <<= 1
+
+
 flag_generator = flag_generator()
 
 
@@ -30,26 +32,28 @@ DESTROYED_FLAG = next(flag_generator)
 
 
 def flag_property(flag):
-    """ A factory function which creates a flag accessor property.
+    """A factory function which creates a flag accessor property."""
 
-    """
     def getter(self):
         return (self._flags & flag) != 0
+
     def setter(self, value):
         if value:
             self._flags |= flag
         else:
             self._flags &= ~flag
+
     return property(getter, setter)
 
 
-class Object(Atom):
-    """ The most base class of the Enaml object hierarchy.
+class Object(Atom, enable_weakrefs=True):
+    """The most base class of the Enaml object hierarchy.
 
     An Enaml Object provides supports parent-children relationships and
     provides methods for navigating, searching, and destroying the tree.
 
     """
+
     #: An optional name to give to this object to assist in finding it
     #: in the tree (see . the 'find' method). There is no guarantee of
     #: uniqueness for an object `name`. It is left to the developer to
@@ -77,12 +81,12 @@ class Object(Atom):
 
     #: Private storage values. These should *never* be manipulated by
     #: user code. For performance reasons, these are not type checked.
-    _parent = Value()   # Object or None
+    _parent = Value()  # Object or None
     _children = List()  # list of Object
-    _flags = Value(0)   # object flags
+    _flags = Value(0)  # object flags
 
     def __init__(self, parent=None, **kwargs):
-        """ Initialize an Object.
+        """Initialize an Object.
 
         Parameters
         ----------
@@ -100,7 +104,7 @@ class Object(Atom):
             self.set_parent(parent)
 
     def destroy(self):
-        """ Destroy this object and all of its children recursively.
+        """Destroy this object and all of its children recursively.
 
         This will emit the `destroyed` event before any change to the
         object tree is made. After this returns, the object should be
@@ -120,11 +124,11 @@ class Object(Atom):
             else:
                 self.set_parent(None)
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Parenting API
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def set_parent(self, parent):
-        """ Set the parent for this object.
+        """Set the parent for this object.
 
         If the parent is not None, the child will be appended to the end
         of the parent's children. If the parent is already the parent of
@@ -147,9 +151,9 @@ class Object(Atom):
         if parent is old_parent:
             return
         if parent is self:
-            raise ValueError('cannot use `self` as Object parent')
+            raise ValueError("cannot use `self` as Object parent")
         if parent is not None and not isinstance(parent, Object):
-            raise TypeError('parent must be an Object or None')
+            raise TypeError("parent must be an Object or None")
         self._parent = parent
         self.parent_changed(old_parent, parent)
         if old_parent is not None:
@@ -160,7 +164,7 @@ class Object(Atom):
             parent.child_added(self)
 
     def insert_children(self, before, insert):
-        """ Insert children into this object at the given location.
+        """Insert children into this object at the given location.
 
         The children will be automatically parented and inserted into
         the object's children. If any children are already children of
@@ -187,11 +191,11 @@ class Object(Atom):
         insert_list = list(insert)
         insert_set = set(insert_list)
         if self in insert_set:
-            raise ValueError('cannot use `self` as Object child')
+            raise ValueError("cannot use `self` as Object child")
         if len(insert_list) != len(insert_set):
-            raise ValueError('cannot insert duplicate children')
+            raise ValueError("cannot insert duplicate children")
         if not all(isinstance(child, Object) for child in insert_list):
-            raise TypeError('children must be an Object instances')
+            raise TypeError("children must be an Object instances")
 
         if isinstance(before, int):
             try:
@@ -230,7 +234,7 @@ class Object(Atom):
                 child_moved(child)
 
     def parent_changed(self, old, new):
-        """ A method invoked when the parent of the object changes.
+        """A method invoked when the parent of the object changes.
 
         This method is called when the parent on the object has changed,
         but before the children of the new parent have been updated.
@@ -248,7 +252,7 @@ class Object(Atom):
         pass
 
     def child_added(self, child):
-        """ A method invoked when a child is added to the object.
+        """A method invoked when a child is added to the object.
 
         Sublasses may reimplement this method as required.
 
@@ -261,7 +265,7 @@ class Object(Atom):
         pass
 
     def child_moved(self, child):
-        """ A method invoked when a child is moved in the object.
+        """A method invoked when a child is moved in the object.
 
         Sublasses may reimplement this method as required.
 
@@ -274,7 +278,7 @@ class Object(Atom):
         pass
 
     def child_removed(self, child):
-        """ A method invoked when a child is removed from the object.
+        """A method invoked when a child is removed from the object.
 
         Sublasses may reimplement this method as required.
 
@@ -286,11 +290,11 @@ class Object(Atom):
         """
         pass
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Object Tree API
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def root_object(self):
-        """ Get the root object for this hierarchy.
+        """Get the root object for this hierarchy.
 
         Returns
         -------
@@ -305,7 +309,7 @@ class Object(Atom):
         return obj
 
     def traverse(self, depth_first=False):
-        """ Yield all of the objects in the tree, from this object down.
+        """Yield all of the objects in the tree, from this object down.
 
         Parameters
         ----------
@@ -328,7 +332,7 @@ class Object(Atom):
             stack_extend(obj._children)
 
     def traverse_ancestors(self, root=None):
-        """ Yield all of the objects in the tree, from this object up.
+        """Yield all of the objects in the tree, from this object up.
 
         Parameters
         ----------
@@ -342,7 +346,7 @@ class Object(Atom):
             parent = parent._parent
 
     def find(self, name, regex=False):
-        """ Find the first object in the subtree with the given name.
+        """Find the first object in the subtree with the given name.
 
         This method will traverse the tree of objects, breadth first,
         from this object downward, looking for an object with the given
@@ -376,7 +380,7 @@ class Object(Atom):
                 return obj
 
     def find_all(self, name, regex=False):
-        """ Find all objects in the subtree with the given name.
+        """Find all objects in the subtree with the given name.
 
         This method will traverse the tree of objects, breadth first,
         from this object downward, looking for a objects with the given

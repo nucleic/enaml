@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # --------------------------------------------------------------------------------------
 """Benchmark fixtures and configuration for enaml extensions."""
+
 import pytest
 
 
@@ -14,6 +15,7 @@ def color_module():
     """Fixture providing the enaml.colorext module."""
     try:
         import enaml.colorext as colorext
+
         return colorext
     except ImportError:
         pytest.skip("enaml.colorext not available")
@@ -24,6 +26,7 @@ def font_module():
     """Fixture providing the enaml.fontext module."""
     try:
         import enaml.fontext as fontext
+
         return fontext
     except ImportError:
         pytest.skip("enaml.fontext not available")
@@ -32,7 +35,7 @@ def font_module():
 @pytest.fixture
 def sample_color(color_module):
     """Fixture providing a sample Color object."""
-    if hasattr(color_module, 'Color'):
+    if hasattr(color_module, "Color"):
         return color_module.Color(255, 128, 64, 255)
     pytest.skip("Color class not available")
 
@@ -40,6 +43,6 @@ def sample_color(color_module):
 @pytest.fixture
 def sample_font(font_module):
     """Fixture providing a sample Font object."""
-    if hasattr(font_module, 'Font'):
+    if hasattr(font_module, "Font"):
         return font_module.Font()
     pytest.skip("Font class not available")

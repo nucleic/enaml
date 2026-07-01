@@ -5,10 +5,9 @@
 //
 // The full license is in the file LICENSE, distributed with this software.
 // --------------------------------------------------------------------------------------
+use pyo3::exceptions::{PyAttributeError, PyKeyError, PyTypeError};
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyAny, PyTuple, PyString};
-use pyo3::exceptions::{PyKeyError, PyTypeError, PyAttributeError};
-use std::collections::HashSet;
+use pyo3::types::{PyAny, PyDict, PyString, PyTuple};
 
 /// User key error exception for missing scope keys
 #[pyclass(extends = PyKeyError)]
@@ -56,7 +55,7 @@ impl Nonlocals {
             Ok(value) => {
                 // Convert value to Py first
                 let value_py: Py<PyAny> = value.clone().into();
-                
+
                 // Call tracer.dynamic_load if tracer is callable
                 let tracer = self.tracer.bind(py);
                 if tracer.is_callable() {
@@ -286,11 +285,7 @@ impl DynamicScope {
         Ok(())
     }
 
-    pub fn __delitem__(
-        &self,
-        py: Python<'_>,
-        key: &Bound<'_, PyAny>,
-    ) -> PyResult<()> {
+    pub fn __delitem__(&self, py: Python<'_>, key: &Bound<'_, PyAny>) -> PyResult<()> {
         // Validate key is a string
         if !key.is_instance_of::<PyString>() {
             return Err(PyTypeError::new_err("expected string key"));
@@ -486,7 +481,10 @@ impl DynamicScope {
         let mut values = Vec::new();
 
         // Convert to list and index
-        if let Ok(keys_as_list) = keys_list.bind(py).extract::<Bound<'_, pyo3::types::PyList>>() {
+        if let Ok(keys_as_list) = keys_list
+            .bind(py)
+            .extract::<Bound<'_, pyo3::types::PyList>>()
+        {
             for i in 0..keys_as_list.len() {
                 if let Ok(k) = keys_as_list.get_item(i) {
                     if let Ok(v) = self.__getitem__(py, &k) {
@@ -504,7 +502,10 @@ impl DynamicScope {
         let mut items = Vec::new();
 
         // Convert to list and index
-        if let Ok(keys_as_list) = keys_list.bind(py).extract::<Bound<'_, pyo3::types::PyList>>() {
+        if let Ok(keys_as_list) = keys_list
+            .bind(py)
+            .extract::<Bound<'_, pyo3::types::PyList>>()
+        {
             for i in 0..keys_as_list.len() {
                 if let Ok(k) = keys_as_list.get_item(i) {
                     if let Ok(v) = self.__getitem__(py, &k) {

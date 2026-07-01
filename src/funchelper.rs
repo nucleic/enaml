@@ -22,7 +22,6 @@ use pyo3::types::{PyDict, PyTuple};
 /// TODO: This is a placeholder for future implementation of custom locals support.
 #[pyfunction]
 #[pyo3(signature = (func, func_args, func_kwargs, func_locals = None))]
-#[allow(dead_code)]
 pub fn call_func(
     func: &Bound<'_, PyAny>,
     func_args: &Bound<'_, PyTuple>,
@@ -33,7 +32,7 @@ pub fn call_func(
     // If custom locals provided, we would need bytecode manipulation
     // For now, just do a regular call without custom locals support
     let _unused = func_locals;
-    
+
     let result = func.call(func_args, Some(func_kwargs))?.into();
     Ok(result)
 }
