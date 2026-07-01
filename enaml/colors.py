@@ -16,6 +16,13 @@ from atom.api import Coerced
 
 from .colorext import Color
 
+
+# Helper function for unpickling Color objects
+def _reconstruct_color(red, green, blue, alpha):
+    """Reconstruct a Color object from pickle."""
+    return Color(red, green, blue, alpha)
+
+
 #: Regex sub-expressions used for building more complex expression.
 _int = r'\s*((?:\+|\-)?[0-9]+)\s*'
 _real = r'\s*((?:\+|\-)?[0-9]*(?:\.[0-9]+)?)\s*'

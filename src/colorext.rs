@@ -68,4 +68,13 @@ impl Color {
             self.alpha()
         )
     }
+
+    fn __reduce__(&self, py: Python<'_>) -> PyResult<(Py<PyAny>, (u32, u32, u32, u32))> {
+        // Return (_reconstruct_color, (red, green, blue, alpha))
+        // _reconstruct_color is imported from enaml.colors module
+        let colors_module = py.import("enaml.colors")?;
+        let reconstruct = colors_module.getattr("_reconstruct_color")?;
+        let args = (self.red(), self.green(), self.blue(), self.alpha());
+        Ok((reconstruct.into(), args))
+    }
 }

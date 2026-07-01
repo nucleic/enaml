@@ -14,6 +14,12 @@ from atom.api import Coerced
 from .fontext import Font, FontStyle, FontCaps, FontStretch
 
 
+# Helper function for unpickling Font objects
+def _reconstruct_font(family, pointsize, pixelsize, weight, style, stretch, caps):
+    """Reconstruct a Font object from pickle."""
+    return Font(family, pointsize, pixelsize, weight, style, stretch, caps)
+
+
 #: A mapping from CSS font style keyword to style enum
 _STYLES = {
     'normal': FontStyle.Normal,
@@ -185,7 +191,9 @@ def parse_font(font):
     variant = _VARIANTS[variant] if variant else _VARIANTS['normal']
     stretch = _STRETCH[stretch] if stretch else _STRETCH['normal']
 
-    return Font(family, size, weight, style, variant, stretch)
+    # Convert enum objects to their integer values for Rust constructor
+    # Font(family, pointsize, pixelsize=-1, weight=400, style=0, stretch=4, caps=0)
+    return Font(family, size, -1, weight, int(style), int(stretch), int(variant))
 
 
 def coerce_font(font):

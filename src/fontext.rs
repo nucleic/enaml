@@ -50,6 +50,9 @@ pub enum FontCaps {
 /// Font descriptor for Enaml UI elements
 #[pyclass]
 pub struct Font {
+    #[pyo3(get, set)]
+    _tkdata: Option<Py<PyAny>>,
+    
     #[pyo3(get)]
     family: String,
     
@@ -62,14 +65,9 @@ pub struct Font {
     #[pyo3(get)]
     weight: i32,
     
-    #[pyo3(get)]
-    style: i32,
-    
-    #[pyo3(get)]
-    stretch: i32,
-    
-    #[pyo3(get)]
-    caps: i32,
+    _style: i32,
+    _stretch: i32,
+    _caps: i32,
 }
 
 #[pymethods]
@@ -86,20 +84,75 @@ impl Font {
         caps: i32,
     ) -> Self {
         Font {
+            _tkdata: None,
             family,
             pointsize,
             pixelsize,
             weight,
-            style,
-            stretch,
-            caps,
+            _style: style,
+            _stretch: stretch,
+            _caps: caps,
+        }
+    }
+
+    #[getter]
+    fn style(&self) -> FontStyle {
+        match self._style {
+            0 => FontStyle::Normal,
+            1 => FontStyle::Italic,
+            2 => FontStyle::Oblique,
+            _ => FontStyle::Normal,
+        }
+    }
+
+    #[getter]
+    fn stretch(&self) -> FontStretch {
+        match self._stretch {
+            0 => FontStretch::UltraCondensed,
+            1 => FontStretch::ExtraCondensed,
+            2 => FontStretch::Condensed,
+            3 => FontStretch::SemiCondensed,
+            4 => FontStretch::Unstretched,
+            5 => FontStretch::SemiExpanded,
+            6 => FontStretch::Expanded,
+            7 => FontStretch::ExtraExpanded,
+            8 => FontStretch::UltraExpanded,
+            _ => FontStretch::Unstretched,
+        }
+    }
+
+    #[getter]
+    fn caps(&self) -> FontCaps {
+        match self._caps {
+            0 => FontCaps::MixedCase,
+            1 => FontCaps::AllUppercase,
+            2 => FontCaps::AllLowercase,
+            3 => FontCaps::SmallCaps,
+            4 => FontCaps::Capitalize,
+            _ => FontCaps::MixedCase,
         }
     }
 
     pub fn __repr__(&self) -> String {
         format!(
             "Font(family='{}', pointsize={}, pixelsize={}, weight={}, style={}, stretch={}, caps={})",
-            self.family, self.pointsize, self.pixelsize, self.weight, self.style, self.stretch, self.caps
+            self.family, self.pointsize, self.pixelsize, self.weight, self._style, self._stretch, self._caps
         )
+    }
+
+    fn __reduce__(&self, py: Python<'_>) -> PyResult<(Py<PyAny>, (String, i32, i32, i32, i32, i32, i32))> {
+        // Return (_reconstruct_font, (family, pointsize, pixelsize, weight, style, stretch, caps))
+        let fonts_module = py.import("enaml.fonts")?;
+        let reconstruct = fonts_module.getattr("_reconstruct_font")?;
+        let args = (
+            self.family.clone(),
+            self.pointsize,
+            self.pixelsize,
+            self.weight,
+            self._style,
+            self._stretch,
+            self._caps,
+        );
+        Ok((reconstruct.into(), args))
     }
 }
