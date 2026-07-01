@@ -6,19 +6,25 @@
 // The full license is in the file LICENSE, distributed with this software.
 // --------------------------------------------------------------------------------------
 use pyo3::prelude::*;
-use pyo3::types::{PyType, PyTuple, PyDict};
+use pyo3::types::{PyType, PyTuple, PyDict, IntoPyDict};
 
 /// WeakMethod is a descriptor that stores weak references to bound methods.
 /// When the underlying object is garbage collected, the weak reference becomes invalid.
 #[pyclass]
 pub struct WeakMethod {
     weak_ref: Py<PyAny>,
+    callback: Option<Py<PyAny>>,
 }
 
 #[pymethods]
 impl WeakMethod {
     #[new]
-    fn new(py: Python<'_>, method: &Bound<'_, PyAny>) -> PyResult<Self> {
+    #[pyo3(signature = (method, callback = None))]
+    fn new(
+        py: Python<'_>,
+        method: &Bound<'_, PyAny>,
+        callback: Option<&Bound<'_, PyAny>>,
+    ) -> PyResult<Self> {
         // Validate that input is a bound method
         let inspect = py.import("inspect")?;
         let is_method = inspect.call_method1("ismethod", (method,))?;
@@ -49,19 +55,22 @@ impl WeakMethod {
         
         // Import weakref module and get WeakMethod
         let weakref = py.import("weakref")?;
+        let weakmethod_cls = weakref.getattr("WeakMethod")?;
         
-        // Get or create the weak reference
-        // For bound methods, we use a WeakMethod (Python 3.4+) which handles them properly
-        let weak_ref = if let Ok(weakmethod_cls) = weakref.getattr("WeakMethod") {
-            weakmethod_cls.call1((method,))?
+        // Create weak reference with optional callback
+        // weakref.WeakMethod() signature: WeakMethod(method, callback=None)
+        // Pass callback as positional argument if provided
+        let weak_ref = if let Some(cb) = callback {
+            weakmethod_cls.call((method, cb), None)?
         } else {
-            // Fallback for older Python versions
-            let ref_cls = weakref.getattr("ref")?;
-            ref_cls.call1((method,))?
+            weakmethod_cls.call1((method,))?
         };
+
+        let callback_py = callback.map(|c| c.into());
 
         Ok(WeakMethod {
             weak_ref: weak_ref.unbind(),
+            callback: callback_py,
         })
     }
 
@@ -79,8 +88,8 @@ impl WeakMethod {
         Ok(method)
     }
 
-    #[pyo3(name = "_call_with_args")]
-    fn _call_with_args(&self, py: Python<'_>, args: &Bound<'_, PyTuple>, kwargs: Option<&Bound<'_, PyDict>>) -> PyResult<Py<PyAny>> {
+    #[pyo3(signature = (*args, **kwargs))]
+    fn __call__(&self, py: Python<'_>, args: &Bound<'_, PyTuple>, kwargs: Option<&Bound<'_, PyDict>>) -> PyResult<Py<PyAny>> {
         // Dereference the weak reference to get the method (or None)
         let method_ref = self.weak_ref.bind(py);
         let method = method_ref.call0()?;
@@ -98,7 +107,26 @@ impl WeakMethod {
         format!("<WeakMethod object>")
     }
 
-    fn __reduce__(&self, _py: Python<'_>) -> PyResult<Bound<'_, PyAny>> {
+    fn __eq__(&self, py: Python<'_>, other: &Bound<'_, PyAny>) -> PyResult<bool> {
+        // Check if other is also a WeakMethod
+        if let Ok(other_wm) = other.extract::<PyRef<WeakMethod>>() {
+            // Compare the underlying weak references by dereferencing them
+            let self_method = self.weak_ref.bind(py).call0()?;
+            let other_method = other_wm.weak_ref.bind(py).call0()?;
+            
+            // Both must dereference to the same method (or both be None)
+            if self_method.is_none() && other_method.is_none() {
+                return Ok(true);
+            }
+            
+            // Compare by identity
+            Ok(self_method.is(&other_method))
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn __reduce__(&self, _py: Python<'_>) -> PyResult<Py<PyAny>> {
         // WeakMethod objects cannot be pickled because they hold weak references
         Err(pyo3::exceptions::PyTypeError::new_err(
             "cannot pickle 'WeakMethod' object",
