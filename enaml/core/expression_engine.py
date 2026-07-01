@@ -6,7 +6,6 @@
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import Atom, List, Typed
-from atom.datastructures.api import sortedmap
 
 
 class ReadHandler(Atom):
@@ -119,7 +118,7 @@ class ExpressionEngine(Atom):
 
     """
     #: A private mapping of string attribute name to HandlerSet.
-    _handlers = Typed(sortedmap, ())
+    _handlers = Typed(dict, {})
 
     #: A private set of guard tuples for preventing feedback loops.
     _guards = Typed(set, ())
@@ -252,7 +251,7 @@ class ExpressionEngine(Atom):
 
         """
         new = ExpressionEngine()
-        handlers = sortedmap()
+        handlers = {}
         for key, value in self._handlers.items():
             handlers[key] = value.copy()
         new._handlers = handlers

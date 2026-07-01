@@ -97,7 +97,7 @@ class Looper(Pattern):
     #: Private data storage which maps the user iterable data to the
     #: list of items created for that iteration. This allows the looper
     #: to only create and destroy the items which have changed.
-    _iter_data = Typed(sortedmap, ())
+    _iter_data = Typed(dict, {})
 
     #--------------------------------------------------------------------------
     # Lifetime API
@@ -146,7 +146,7 @@ class Looper(Pattern):
         old_iter_data = self._iter_data
         iterable = self.iterable
         pattern_nodes = self.pattern_nodes
-        new_iter_data = sortedmap()
+        new_iter_data = {}
         new_items = []
 
         if iterable is not None and len(pattern_nodes) > 0:

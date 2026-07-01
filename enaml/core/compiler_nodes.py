@@ -95,7 +95,7 @@ class CompilerNode(Atom):
 
     #: A mapping of id->node for the nodes in the block. This mapping
     #: is shared among all nodes in the same block.
-    id_nodes = Typed(sortedmap)
+    id_nodes = Typed(dict)
 
     def update_id_nodes(self, mapping):
         """ Recursively update the id nodes for this node.
@@ -269,7 +269,7 @@ class EnamlDefNode(DeclarativeNode):
         """ Update the id nodes for this node.
 
         """
-        mapping = sortedmap()
+        mapping = {}
         if self.identifier:
             mapping[self.identifier] = self
         super(DeclarativeNode, self).update_id_nodes(mapping)
@@ -289,7 +289,7 @@ class TemplateNode(CompilerNode):
     """
     #: The params and consts for the template instantiation. This is
     #: provided by the compiler, and should be considered read-only.
-    scope = Typed(sortedmap, ())
+    scope = Typed(dict, {})
 
     def __call__(self, parent):
         """ Instantiate the type hierarchy.
@@ -318,7 +318,7 @@ class TemplateNode(CompilerNode):
         """ Update the id nodes for this node.
 
         """
-        super(TemplateNode, self).update_id_nodes(sortedmap())
+        super(TemplateNode, self).update_id_nodes({})
 
     def size(self):
         """ Return the size of the instantiated node.

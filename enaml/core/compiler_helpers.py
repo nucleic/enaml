@@ -8,7 +8,6 @@
 from functools import update_wrapper
 
 from atom.api import Event, Instance, Member, add_member
-from atom.datastructures.api import sortedmap
 
 from .alias import Alias
 from .compiler_nodes import (
@@ -308,11 +307,11 @@ def add_template_scope(node, names, values):
 
     Returns
     -------
-    result : sortedmap
+    result : dict
         The scope mapping for the given scope tuple.
 
     """
-    scope = sortedmap()
+    scope = {}
     for name, value in zip(names, values):
         scope[name] = value
     node.scope = scope

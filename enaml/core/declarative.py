@@ -111,7 +111,7 @@ class Declarative(Object, metaclass=DeclarativeMeta):
 
     #: Storage space for the declarative runtime. This value should not
     #: be manipulated by user code.
-    _d_storage = Typed(sortedmap, ())
+    _d_storage = Typed(dict, {})
 
     #: Storage space for the declarative engine. This value should not
     #: be manipulated by user code.
