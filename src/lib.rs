@@ -9,8 +9,6 @@ use pyo3::prelude::*;
 
 mod colorext;
 mod fontext;
-mod weakmethod;
-mod callableref;
 mod funchelper;
 mod alias;
 mod subscription_observer;
@@ -20,8 +18,6 @@ mod winutil;
 
 use colorext::Color;
 use fontext::Font;
-use weakmethod::WeakMethod;
-use callableref::CallableRef;
 use alias::Alias;
 use subscription_observer::SubscriptionObserver;
 use declarative_function::{DeclarativeFunction, BoundDeclarativeMethod};
@@ -39,12 +35,6 @@ fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<fontext::FontStyle>()?;
     m.add_class::<fontext::FontStretch>()?;
     m.add_class::<fontext::FontCaps>()?;
-
-    // WeakMethod class
-    m.add_class::<WeakMethod>()?;
-
-    // CallableRef class
-    m.add_class::<CallableRef>()?;
 
     // Alias descriptor class
     m.add_class::<Alias>()?;

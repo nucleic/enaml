@@ -31,7 +31,7 @@ impl Color {
                 (alpha.max(0).min(255)) as u32,
             )
         };
-        
+
         let argb = (a << 24) | (r << 16) | (g << 8) | b;
         Color {
             _tkdata: None,

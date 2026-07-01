@@ -1,13 +1,11 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2013-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
-""" A utility module for dealing with CSS3 font strings.
-
-"""
+# ------------------------------------------------------------------------------
+"""A utility module for dealing with CSS3 font strings."""
 
 from atom.api import Coerced
 
@@ -22,30 +20,30 @@ def _reconstruct_font(family, pointsize, pixelsize, weight, style, stretch, caps
 
 #: A mapping from CSS font style keyword to style enum
 _STYLES = {
-    'normal': FontStyle.Normal,
-    'italic': FontStyle.Italic,
-    'oblique': FontStyle.Oblique,
+    "normal": FontStyle.Normal,
+    "italic": FontStyle.Italic,
+    "oblique": FontStyle.Oblique,
 }
 
 
 #: A mapping from CSS font strecth keyword to style enum
 _STRETCH = {
-    'ultra-condensed': FontStretch.UltraCondensed,
-    'extra-condensed': FontStretch.ExtraCondensed,
-    'condensed': FontStretch.Condensed,
-    'semi-condensed': FontStretch.SemiCondensed,
-    'normal': FontStretch.Unstretched,
-    'semi-expanded': FontStretch.SemiExpanded,
-    'expanded': FontStretch.Expanded,
-    'extra-expanded': FontStretch.ExtraExpanded,
-    'ultra-expanded': FontStretch.UltraExpanded,
+    "ultra-condensed": FontStretch.UltraCondensed,
+    "extra-condensed": FontStretch.ExtraCondensed,
+    "condensed": FontStretch.Condensed,
+    "semi-condensed": FontStretch.SemiCondensed,
+    "normal": FontStretch.Unstretched,
+    "semi-expanded": FontStretch.SemiExpanded,
+    "expanded": FontStretch.Expanded,
+    "extra-expanded": FontStretch.ExtraExpanded,
+    "ultra-expanded": FontStretch.UltraExpanded,
 }
 
 
 #: A mapping from CSS font variant keyword to caps enum
 _VARIANTS = {
-    'normal': FontCaps.MixedCase,
-    'small-caps':  FontCaps.SmallCaps,
+    "normal": FontCaps.MixedCase,
+    "small-caps": FontCaps.SmallCaps,
 }
 
 
@@ -53,46 +51,46 @@ _VARIANTS = {
 #: pulled from the Qt stylesheet implementation of font parsing. Enaml
 #: does not support the 'bolder' and 'lighter' keywords.
 _WEIGHTS = {
-    '100': 12,
-    '200': 25,
-    '300': 37,
-    '400': 50,
-    '500': 62,
-    '600': 75,
-    '700': 87,
-    '800': 99,
-    '900': 99,
-    'normal': 50,
-    'bold': 75,
+    "100": 12,
+    "200": 25,
+    "300": 37,
+    "400": 50,
+    "500": 62,
+    "600": 75,
+    "700": 87,
+    "800": 99,
+    "900": 99,
+    "normal": 50,
+    "bold": 75,
 }
 
 
 #: A mapping from CSS font size keywords to font point sizes. These are
 #: based on a standard 12 point font size.
 _SIZES = {
-    'xx-small': 7,
-    'x-small': 8,
-    'small': 9,
-    'medium': 12,
-    'large': 14,
-    'x-large': 18,
-    'xx-large': 24,
+    "xx-small": 7,
+    "x-small": 8,
+    "small": 9,
+    "medium": 12,
+    "large": 14,
+    "x-large": 18,
+    "xx-large": 24,
 }
 
 
 #: A mapping from CSS font units to functions which convert to points.
 _UNITS = {
-    'in': lambda size: int(size * 72.0),
-    'cm': lambda size: int(size * 72.0 / 2.54),
-    'mm': lambda size: int(size * 72.0 / 254.0),
-    'pt': lambda size: int(size),
-    'pc': lambda size: int(size * 12.0),
-    'px': lambda size: int(size * 0.75),
+    "in": lambda size: int(size * 72.0),
+    "cm": lambda size: int(size * 72.0 / 2.54),
+    "mm": lambda size: int(size * 72.0 / 254.0),
+    "pt": lambda size: int(size),
+    "pc": lambda size: int(size * 12.0),
+    "px": lambda size: int(size * 0.75),
 }
 
 
 def parse_font(font):
-    """ Parse a CSS3 shorthand font string into an Enaml Font object.
+    """Parse a CSS3 shorthand font string into an Enaml Font object.
 
     Returns
     -------
@@ -107,16 +105,16 @@ def parse_font(font):
     for char in font:
         if quotechar is not None:
             if char == quotechar:
-                tokens.append(''.join(token))
+                tokens.append("".join(token))
                 token = []
                 quotechar = None
             else:
                 token.append(char)
         elif char == '"' or char == "'":
             quotechar = char
-        elif char in ' \t':
+        elif char in " \t":
             if token:
-                tokens.append(''.join(token))
+                tokens.append("".join(token))
                 token = []
         else:
             token.append(char)
@@ -126,14 +124,18 @@ def parse_font(font):
         return
 
     if token:
-        tokens.append(''.join(token))
+        tokens.append("".join(token))
 
     sizes = []
     families = []
     optionals = []
     for token in tokens:
-        if (token in _STYLES or token in _VARIANTS or
-                token in _WEIGHTS or token in _STRETCH):
+        if (
+            token in _STYLES
+            or token in _VARIANTS
+            or token in _WEIGHTS
+            or token in _STRETCH
+        ):
             optionals.append(token)
         elif token in _SIZES or token[-2:] in _UNITS:
             sizes.append(token)
@@ -153,7 +155,7 @@ def parse_font(font):
     stretch = None
 
     for opt in optionals:
-        if opt == 'normal':
+        if opt == "normal":
             continue
         elif opt in _STYLES:
             if style is not None:
@@ -186,10 +188,10 @@ def parse_font(font):
         size = _UNITS[units](sizenum)
 
     family = str(families[0])
-    weight = _WEIGHTS[weight] if weight else _WEIGHTS['normal']
-    style = _STYLES[style] if style else _STYLES['normal']
-    variant = _VARIANTS[variant] if variant else _VARIANTS['normal']
-    stretch = _STRETCH[stretch] if stretch else _STRETCH['normal']
+    weight = _WEIGHTS[weight] if weight else _WEIGHTS["normal"]
+    style = _STYLES[style] if style else _STYLES["normal"]
+    variant = _VARIANTS[variant] if variant else _VARIANTS["normal"]
+    stretch = _STRETCH[stretch] if stretch else _STRETCH["normal"]
 
     # Convert enum objects to their integer values for Rust constructor
     # Font(family, pointsize, pixelsize=-1, weight=400, style=0, stretch=4, caps=0)
@@ -197,15 +199,13 @@ def parse_font(font):
 
 
 def coerce_font(font):
-    """ The coercing function for the FontMember.
-
-    """
+    """The coercing function for the FontMember."""
     if isinstance(font, str):
         return parse_font(font)
 
 
 class FontMember(Coerced):
-    """ An Atom member class which coerces a value to a font.
+    """An Atom member class which coerces a value to a font.
 
     A font member can be set to a Font, a string, or None. A string
     font will be parsed into a Font object. If the parsing fails,
@@ -217,10 +217,11 @@ class FontMember(Coerced):
     style variant weight stretch size family
 
     """
+
     __slots__ = ()
 
     def __init__(self, default=None, factory=None):
-        """ Initialize a FontMember.
+        """Initialize a FontMember.
 
         default : Font, string, or None, optional
             The default font to use for the member.

@@ -30,16 +30,6 @@ def font_module():
 
 
 @pytest.fixture
-def weakmethod_module():
-    """Fixture providing the enaml.weakmethod module."""
-    try:
-        import enaml.weakmethod as weakmethod
-        return weakmethod
-    except ImportError:
-        pytest.skip("enaml.weakmethod not available")
-
-
-@pytest.fixture
 def sample_color(color_module):
     """Fixture providing a sample Color object."""
     if hasattr(color_module, 'Color'):

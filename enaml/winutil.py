@@ -1,10 +1,10 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2013-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 """Windows utility module - re-exports from Rust extension."""
 
 from enaml._rust import (
@@ -35,16 +35,16 @@ OIC_INFORMATION = create_oic_information()
 OIC_SHIELD = create_oic_shield()
 
 __all__ = [
-    'WinEnum',
-    'load_icon',
-    'OIC_SAMPLE',
-    'OIC_HAND',
-    'OIC_QUES',
-    'OIC_BANG',
-    'OIC_NOTE',
-    'OIC_WINLOGO',
-    'OIC_WARNING',
-    'OIC_ERROR',
-    'OIC_INFORMATION',
-    'OIC_SHIELD',
+    "WinEnum",
+    "load_icon",
+    "OIC_SAMPLE",
+    "OIC_HAND",
+    "OIC_QUES",
+    "OIC_BANG",
+    "OIC_NOTE",
+    "OIC_WINLOGO",
+    "OIC_WARNING",
+    "OIC_ERROR",
+    "OIC_INFORMATION",
+    "OIC_SHIELD",
 ]

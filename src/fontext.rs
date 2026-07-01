@@ -45,26 +45,24 @@ pub enum FontCaps {
     Capitalize = 4,
 }
 
-
-
 /// Font descriptor for Enaml UI elements
 #[pyclass]
 pub struct Font {
     #[pyo3(get, set)]
     _tkdata: Option<Py<PyAny>>,
-    
+
     #[pyo3(get)]
     family: String,
-    
+
     #[pyo3(get)]
     pointsize: i32,
-    
+
     #[pyo3(get)]
     pixelsize: i32,
-    
+
     #[pyo3(get)]
     weight: i32,
-    
+
     _style: i32,
     _stretch: i32,
     _caps: i32,
@@ -140,7 +138,10 @@ impl Font {
         )
     }
 
-    fn __reduce__(&self, py: Python<'_>) -> PyResult<(Py<PyAny>, (String, i32, i32, i32, i32, i32, i32))> {
+    fn __reduce__(
+        &self,
+        py: Python<'_>,
+    ) -> PyResult<(Py<PyAny>, (String, i32, i32, i32, i32, i32, i32))> {
         // Return (_reconstruct_font, (family, pointsize, pixelsize, weight, style, stretch, caps))
         let fonts_module = py.import("enaml.fonts")?;
         let reconstruct = fonts_module.getattr("_reconstruct_font")?;
