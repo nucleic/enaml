@@ -1,28 +1,24 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2018-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 import gc
 import sys
-from collections import Counter
+from collections import Counter, UserDict
 
 import pytest
 
-from atom.datastructures.api import sortedmap
 from enaml.core.dynamicscope import UserKeyError, DynamicScope
 
 
 @pytest.fixture
 def dynamicscope():
-    """Dynamic used for testing.
-
-    """
+    """Dynamic used for testing."""
 
     class NonDataDescriptor(object):
-
         def __init__(self, should_raise=False):
             self.should_raise = should_raise
 
@@ -35,7 +31,6 @@ def dynamicscope():
                 raise KeyError()
 
     class ReadOnlyDescriptor(object):
-
         def __get__(self, instance, objtype=None):
             return 1
 
@@ -43,7 +38,6 @@ def dynamicscope():
             raise AttributeError
 
     class WriteOnlyDescriptor(object):
-
         def __set__(self, instance, value, objtype=None):
             instance.value = 1
 
@@ -77,7 +71,6 @@ def dynamicscope():
         write_only = WriteOnlyDescriptor()
 
     class TopOwner(Owner):
-
         @property
         def top(self):
             return self._top
@@ -87,9 +80,8 @@ def dynamicscope():
             self._top = 1
 
     class Tracer(object):
-        """Tracer for testing.
+        """Tracer for testing."""
 
-        """
         def __init__(self):
             self.traced = []
 
@@ -100,24 +92,21 @@ def dynamicscope():
     owner.attribute1 = 2
     owner._parent = TopOwner()
     owner._parent.attribute2 = 1
-    locs = sortedmap()
-    locs['a'] = 1
-    globs = {'b': 2}
-    builtins = {'c': 3}
-    change = {'d': 4}
+    locs = UserDict({"a": 1})
+    globs = {"b": 2}
+    builtins = {"c": 3}
+    change = {"d": 4}
     tracer = Tracer()
     dynamicscope = DynamicScope(owner, locs, globs, builtins, change, tracer)
-    dynamicscope['e'] = 5  # Add an entry in the f_writes
+    dynamicscope["e"] = 5  # Add an entry in the f_writes
 
     return dynamicscope, (owner, locs, globs, builtins, change, tracer)
 
 
 def test_dynamic_scope_creation():
-    """Test handling bad arguments when creating dnamic scope.
-
-    """
+    """Test handling bad arguments when creating dnamic scope."""
     owner = object()
-    locs = sortedmap()
+    locs = UserDict()
     globs = {}
     builtins = {}
     change = {}
@@ -125,81 +114,103 @@ def test_dynamic_scope_creation():
 
     dynamicscope = DynamicScope(owner, locs, globs, builtins, change, tracer)
     referents = gc.get_referents(dynamicscope)
-    supposed_referents = (
-        [owner, change, tracer, locs, globs, builtins] +
-        ([type(dynamicscope)])
-    )
+    supposed_referents = [owner, change, tracer, locs, globs, builtins]
     assert len(referents) == len(supposed_referents)
     for r in referents:
         assert r in supposed_referents
 
     with pytest.raises(TypeError) as excinfo:
         DynamicScope(owner, None, globs, builtins)
-    assert 'mapping' in excinfo.exconly()
+    assert "Mapping" in excinfo.exconly()
 
     with pytest.raises(TypeError) as excinfo:
         DynamicScope(owner, locs, None, builtins)
-    assert 'dict' in excinfo.exconly()
+    assert "Mapping" in excinfo.exconly()
 
     with pytest.raises(TypeError) as excinfo:
         DynamicScope(owner, locs, globs, None)
-    assert 'dict' in excinfo.exconly()
+    assert "Mapping" in excinfo.exconly()
 
     del dynamicscope
     gc.collect()
 
 
-def test_dynamicscope_contains(dynamicscope):
-    """Test the contains method.
+def test_dynamic_scope_constructor_defaults():
+    """Test that optional constructor arguments default to None."""
+    owner = object()
+    scope = DynamicScope(owner, {}, {}, {})
+    assert scope["self"] is owner
+    assert scope["change"] is None
+    assert scope["_[tracer]"] is None
 
-    """
+
+def test_dynamic_scope_accepts_mapping_namespaces():
+    """Test that non-dict mapping objects are accepted for namespace storage."""
+    owner = object()
+    locals_map = UserDict()
+    globals_map = UserDict()
+    builtins_map = UserDict()
+    globals_map["a"] = 1
+    builtins_map["b"] = 2
+
+    scope = DynamicScope(owner, locals_map, globals_map, builtins_map)
+
+    assert scope["a"] == 1
+    assert scope["b"] == 2
+
+
+def test_dynamicscope_contains(dynamicscope):
+    """Test the contains method."""
     dynamicscope, _ = dynamicscope
-    for key in ('a', 'b', 'c', 'e',
-                'self', 'change', 'nonlocals', '__scope__', '_[tracer]'):
+    for key in (
+        "a",
+        "b",
+        "c",
+        "e",
+        "self",
+        "change",
+        "nonlocals",
+        "__scope__",
+        "_[tracer]",
+    ):
         assert key in dynamicscope
 
-    assert 'z' not in dynamicscope
+    assert "z" not in dynamicscope
 
     with pytest.raises(TypeError):
         1 in dynamicscope
 
 
 def test_dynamicscope_getitem(dynamicscope):
-    """Test the getitem method.
-
-    """
+    """Test the getitem method."""
     dynamicscope, args = dynamicscope
-    nlocals = dynamicscope['nonlocals']
-    for key, value in zip(['a', 'b', 'c', 'e', 'self', 'change',
-                           'nonlocals', '__scope__', '_[tracer]'],
-                          [1, 2, 3, 5,
-                           args[0], args[-2],
-                           nlocals, dynamicscope, args[-1]]):
+    nlocals = dynamicscope["nonlocals"]
+    for key, value in zip(
+        ["a", "b", "c", "e", "self", "change", "nonlocals", "__scope__", "_[tracer]"],
+        [1, 2, 3, 5, args[0], args[-2], nlocals, dynamicscope, args[-1]],
+    ):
         assert dynamicscope[key] == value
 
     with pytest.raises(KeyError):
-        dynamicscope['z']
+        dynamicscope["z"]
 
     with pytest.raises(TypeError) as excinfo:
         dynamicscope[1]
-    assert 'str' in excinfo.exconly()
+    assert "str" in excinfo.exconly()
 
 
 def test_dynamicscope_get(dynamicscope):
-    """Test the get method.
-
-    """
+    """Test the get method."""
     dynamicscope, args = dynamicscope
-    nlocals = dynamicscope['nonlocals']
-    for key, value in zip(['a', 'b', 'c', 'e', 'self', 'change',
-                           'nonlocals', '__scope__', '_[tracer]'],
-                          [1, 2, 3, 5,
-                           args[0], args[-2],
-                           nlocals, dynamicscope, args[-1]]):
+    nlocals = dynamicscope["nonlocals"]
+    for key, value in zip(
+        ["a", "b", "c", "e", "self", "change", "nonlocals", "__scope__", "_[tracer]"],
+        [1, 2, 3, 5, args[0], args[-2], nlocals, dynamicscope, args[-1]],
+    ):
         assert dynamicscope.get(key) == value
 
-    assert dynamicscope.get('z') == None
-    assert dynamicscope.get('z', 'abc') == 'abc'
+    assert dynamicscope.get("z") == None
+    assert dynamicscope.get("z", "abc") == "abc"
 
     with pytest.raises(TypeError) as excinfo:
         dynamicscope.get(1)
@@ -212,39 +223,34 @@ def test_dynamicscope_get(dynamicscope):
 
 
 def test_dynamicscope_set(dynamicscope):
-    """Test the set method.
-
-    """
+    """Test the set method."""
     dynamicscope, _ = dynamicscope
-    for key, value in zip(['a', 'b', 'c', 'e'],
-                          [1, 2, 3, 5]):
+    for key, value in zip(["a", "b", "c", "e"], [1, 2, 3, 5]):
         dynamicscope[key] += 1
         assert dynamicscope[key] == value + 1
 
     with pytest.raises(TypeError) as excinfo:
         dynamicscope[1] = 1
-    assert 'str' in excinfo.exconly()
+    assert "str" in excinfo.exconly()
 
 
 def test_dynamicscope_del(dynamicscope):
-    """Test the del method.
-
-    """
+    """Test the del method."""
     dynamicscope, args = dynamicscope
-    del dynamicscope['e']
-    assert 'e' not in dynamicscope
+    del dynamicscope["e"]
+    assert "e" not in dynamicscope
 
     with pytest.raises(KeyError):
-        del dynamicscope['z']
+        del dynamicscope["z"]
 
     dynamicscope = DynamicScope(*args)
     # Test the absence of f_writes
     with pytest.raises(KeyError):
-        del dynamicscope['z']
+        del dynamicscope["z"]
 
     with pytest.raises(TypeError) as excinfo:
         del dynamicscope[1]
-    assert 'str' in excinfo.exconly()
+    assert "str" in excinfo.exconly()
 
 
 def test_dynamicscope_mapping(dynamicscope):
@@ -271,7 +277,7 @@ def test_dynamicscope_mapping(dynamicscope):
         "prop2",
         "write_only",
         "should_raise",
-        "top"
+        "top",
     }
     # There is a bunch of __...__ we don't care about'
     assert not keys.difference(set(dynamicscope.keys()))
@@ -298,33 +304,26 @@ def test_dynamicscope_mapping(dynamicscope):
     keys.add("x")
     assert dict(dynamicscope.items())["x"] == "y"
 
+
 @pytest.fixture
 def nonlocals(dynamicscope):
-    """Access the nonlocals of a dynamic scope.
-
-    """
-    return dynamicscope[0]['nonlocals']
+    """Access the nonlocals of a dynamic scope."""
+    return dynamicscope[0]["nonlocals"]
 
 
 def test_dynamicscope_lifecycle(dynamicscope, nonlocals):
-    """Test the repr, traverse, clear etc...
-
-    """
+    """Test the repr, traverse, clear etc..."""
     owner, tracer = dynamicscope[1][0], dynamicscope[1][-1]
-    assert 'Nonlocals[' in repr(nonlocals)
-    assert (Counter(gc.get_referents(nonlocals)) ==
-        Counter([owner, tracer] + ([type(nonlocals)]))
-    )
+    assert "Nonlocals[" in repr(nonlocals)
+    assert Counter(gc.get_referents(nonlocals)) == Counter([owner, tracer])
 
     del dynamicscope
     gc.collect()
 
 
 def test_nonlocals_contains(nonlocals):
-    """Test nonlocals contains.
-
-    """
-    for key in ('attribute1', 'attribute2', 'owner', 'prop2', 'key_raise'):
+    """Test nonlocals contains."""
+    for key in ("attribute1", "attribute2", "owner", "prop2", "key_raise"):
         assert key in nonlocals
 
     with pytest.raises(TypeError):
@@ -332,19 +331,17 @@ def test_nonlocals_contains(nonlocals):
 
 
 def test_nonlocals_get(dynamicscope, nonlocals):
-    """Test accessing attribute through getattr and getitem
-
-    """
+    """Test accessing attribute through getattr and getitem"""
     tracer = dynamicscope[1][-1]
 
     assert nonlocals.attribute1 == 2
-    assert tracer.traced[-1][1] == 'attribute1'
+    assert tracer.traced[-1][1] == "attribute1"
     assert nonlocals.attribute2 == 1
-    assert tracer.traced[-1][1] == 'attribute2'
+    assert tracer.traced[-1][1] == "attribute2"
     assert nonlocals.owner
-    assert tracer.traced[-1][1] == 'owner'
+    assert tracer.traced[-1][1] == "owner"
     assert nonlocals.prop2 == 0
-    assert tracer.traced[-1][1] == 'prop2'
+    assert tracer.traced[-1][1] == "prop2"
 
     with pytest.raises(AttributeError):
         nonlocals.unknown
@@ -352,10 +349,10 @@ def test_nonlocals_get(dynamicscope, nonlocals):
     with pytest.raises(UserKeyError):
         nonlocals.key_raise
 
-    assert nonlocals['attribute1'] == 2
-    assert nonlocals['attribute2'] == 1
-    assert nonlocals['owner']
-    assert nonlocals['prop2'] == 0
+    assert nonlocals["attribute1"] == 2
+    assert nonlocals["attribute2"] == 1
+    assert nonlocals["owner"]
+    assert nonlocals["prop2"] == 0
 
     with pytest.raises(AttributeError):
         nonlocals.unknown
@@ -371,21 +368,19 @@ def test_nonlocals_get(dynamicscope, nonlocals):
 
     # Test non-readable descriptor
     nonlocals.write_only
-    assert tracer.traced[-1][1] == 'write_only'
+    assert tracer.traced[-1][1] == "write_only"
 
 
 def test_nonlocals_set(nonlocals):
-    """Test setting attribute through setatttr and setitem.
-
-    """
+    """Test setting attribute through setatttr and setitem."""
     nonlocals.attribute1 = 3
     assert nonlocals.attribute1 == 3
-    nonlocals['attribute1'] = 4
+    nonlocals["attribute1"] = 4
     assert nonlocals.attribute1 == 4
 
     nonlocals.prop2 = 3
     assert nonlocals.prop2 == 3
-    nonlocals['prop2'] = 4
+    nonlocals["prop2"] = 4
     assert nonlocals.prop2 == 4
 
     nonlocals.top = 1
@@ -416,9 +411,7 @@ def test_nonlocals_set(nonlocals):
 
 
 def test_nonlocals_call(dynamicscope, nonlocals):
-    """Test calling a nonlocals to go up one level.
-
-    """
+    """Test calling a nonlocals to go up one level."""
     owner = dynamicscope[1][0]
     par_nonlocals = nonlocals(1)
     assert par_nonlocals.owner is owner._parent
@@ -426,4 +419,3 @@ def test_nonlocals_call(dynamicscope, nonlocals):
 
     with pytest.raises(ValueError):
         nonlocals(level=2)
-

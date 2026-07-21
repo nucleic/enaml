@@ -19,7 +19,7 @@ mod winutil;
 use alias::Alias;
 use colorext::Color;
 use declarative_function::{BoundDeclarativeMethod, DeclarativeFunction};
-use dynamicscope::{DynamicScope, UserKeyError};
+use dynamicscope::{DynamicScope, Nonlocals, UserKeyError};
 use fontext::Font;
 use funchelper::call_func;
 use subscription_observer::SubscriptionObserver;
@@ -49,6 +49,7 @@ fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // DynamicScope class
     m.add_class::<DynamicScope>()?;
+    m.add_class::<Nonlocals>()?;
     m.add("UserKeyError", m.py().get_type::<UserKeyError>())?;
 
     // funchelper function for call with dynamic scope

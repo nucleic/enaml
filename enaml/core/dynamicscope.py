@@ -5,8 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # --------------------------------------------------------------------------------------
-"""Public interface to the rust accelerated declarative function implementation."""
+"""Compatibility exports for the rust-backed dynamic scope implementation."""
 
-from enaml._rust import DynamicScope, UserKeyError
+from enaml._rust import DynamicScope, Nonlocals, UserKeyError
 
-__all__ = ["DynamicScope", "UserKeyError"]
+__all__ = ["DynamicScope", "Nonlocals", "UserKeyError"]
