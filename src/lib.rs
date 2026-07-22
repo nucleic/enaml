@@ -6,6 +6,7 @@
 // The full license is in the file LICENSE, distributed with this software.
 // --------------------------------------------------------------------------------------
 use pyo3::prelude::*;
+use pyo3::types::PyMapping;
 
 mod alias;
 mod colorext;
@@ -49,6 +50,7 @@ fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // DynamicScope class
     m.add_class::<DynamicScope>()?;
+    PyMapping::register::<DynamicScope>(m.py())?;
     m.add_class::<Nonlocals>()?;
     m.add("UserKeyError", m.py().get_type::<UserKeyError>())?;
 

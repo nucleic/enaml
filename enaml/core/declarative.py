@@ -1,12 +1,11 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2013-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 from atom.api import ChangeType, Event, Typed, Str, observe as default_observe
-from atom.datastructures.api import sortedmap
 
 from .declarative_meta import DeclarativeMeta
 from .expression_engine import ExpressionEngine
@@ -17,7 +16,7 @@ OBSERVE_CHANGE_TYPES = ChangeType.ANY & ~ChangeType.CREATE
 
 
 def observe(*names, change_types=OBSERVE_CHANGE_TYPES):
-    """ An observe decorator which ignores the created event by default.
+    """An observe decorator which ignores the created event by default.
 
     Parameters
     ----------
@@ -32,7 +31,7 @@ def observe(*names, change_types=OBSERVE_CHANGE_TYPES):
 
 
 def d_(member, readable=True, writable=True, final=True):
-    """ Mark an Atom member as bindable from Enaml syntax.
+    """Mark an Atom member as bindable from Enaml syntax.
 
     Parameters
     ----------
@@ -58,15 +57,15 @@ def d_(member, readable=True, writable=True, final=True):
     metadata = member.metadata
     if metadata is None:
         metadata = member.metadata = {}
-    metadata['d_member'] = True
-    metadata['d_readable'] = readable
-    metadata['d_writable'] = writable
-    metadata['d_final'] = final
+    metadata["d_member"] = True
+    metadata["d_readable"] = readable
+    metadata["d_writable"] = writable
+    metadata["d_final"] = final
     return member
 
 
 def d_func(func):
-    """ Mark a method as overridable from Enaml syntax.
+    """Mark a method as overridable from Enaml syntax.
 
     Parameters
     ----------
@@ -88,7 +87,7 @@ INITIALIZED_FLAG = next(flag_generator)
 
 
 class Declarative(Object, metaclass=DeclarativeMeta):
-    """ The most base class of the Enaml declarative objects.
+    """The most base class of the Enaml declarative objects.
 
     This class provides the core functionality required of declarative
     Enaml types. It can be used directly in a declarative Enaml object
@@ -118,7 +117,7 @@ class Declarative(Object, metaclass=DeclarativeMeta):
     _d_engine = Typed(ExpressionEngine)
 
     def initialize(self):
-        """ Initialize this object all of its children recursively.
+        """Initialize this object all of its children recursively.
 
         This is called to give the objects in the tree the opportunity
         to initialize additional state which depends upon the object
@@ -137,16 +136,14 @@ class Declarative(Object, metaclass=DeclarativeMeta):
         self.initialized()
 
     def destroy(self):
-        """ An overridden destructor method for declarative cleanup.
-
-        """
+        """An overridden destructor method for declarative cleanup."""
         self.is_initialized = False
         del self._d_storage
         del self._d_engine
         super(Declarative, self).destroy()
 
     def child_added(self, child):
-        """ An overridden child added event handler.
+        """An overridden child added event handler.
 
         This handler will automatically initialize a declarative child
         if this object itself has already been initialized.

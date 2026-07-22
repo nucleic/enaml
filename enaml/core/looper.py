@@ -1,15 +1,14 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2013-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 from abc import ABCMeta
 from collections.abc import Iterable, Iterator
 
 from atom.api import Atom, Int, Coerced, List, Typed, Value
-from atom.datastructures.api import sortedmap
 
 from .compiler_nodes import new_scope
 from .declarative import d_
@@ -17,9 +16,7 @@ from .pattern import Pattern
 
 
 def coerce_iterable(iterable):
-    """ Coerce iterators to a tuple or return the iterable as is.
-
-    """
+    """Coerce iterators to a tuple or return the iterable as is."""
     if isinstance(iterable, Iterator):
         return tuple(iterable)
     elif isinstance(iterable, Iterable):
@@ -28,9 +25,8 @@ def coerce_iterable(iterable):
 
 
 class LooperIterableMeta(ABCMeta):
-    """ Metaclass which checks if an instance is Iterable but not an Iterator.
+    """Metaclass which checks if an instance is Iterable but not an Iterator."""
 
-    """
     def __instancecheck__(self, instance):
         if isinstance(instance, Iterator):
             return False
@@ -38,15 +34,12 @@ class LooperIterableMeta(ABCMeta):
 
 
 class LooperIterable(Iterable, metaclass=LooperIterableMeta):
-    """ An Iterable that is not an Iterator
-
-    """
+    """An Iterable that is not an Iterator"""
 
 
 class Iteration(Atom):
-    """ A container to hold data for items in the Looper.
+    """A container to hold data for items in the Looper."""
 
-    """
     #: Index within the Looper's iterable
     index = Int()
 
@@ -58,7 +51,7 @@ class Iteration(Atom):
 
 
 class Looper(Pattern):
-    """ A pattern object that repeats its children over an iterable.
+    """A pattern object that repeats its children over an iterable.
 
     The children of a `Looper` are used as a template when creating new
     objects for each item in the given `iterable`. Each iteration of the
@@ -82,6 +75,7 @@ class Looper(Pattern):
     `loop_index` variable may become invalid when items are moved.
 
     """
+
     #: The iterable to use when creating the items for the looper.
     #: The items in the iterable must be unique. This allows the
     #: Looper to optimize the creation and destruction of widgets.
@@ -99,11 +93,11 @@ class Looper(Pattern):
     #: to only create and destroy the items which have changed.
     _iter_data = Typed(dict, {})
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Lifetime API
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def destroy(self):
-        """ A reimplemented destructor.
+        """A reimplemented destructor.
 
         The looper will release the owned items on destruction.
 
@@ -113,30 +107,28 @@ class Looper(Pattern):
         del self.items
         del self._iter_data
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Observers
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def _observe_iterable(self, change):
-        """ A private observer for the `iterable` attribute.
+        """A private observer for the `iterable` attribute.
 
         If the iterable changes while the looper is active, the loop
         items will be refreshed.
 
         """
-        if change['type'] == 'update' and self.is_initialized:
+        if change["type"] == "update" and self.is_initialized:
             self.refresh_items()
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Pattern API
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def pattern_items(self):
-        """ Get a list of items created by the pattern.
-
-        """
+        """Get a list of items created by the pattern."""
         return sum(self.items, [])
 
     def refresh_items(self):
-        """ Refresh the items of the pattern.
+        """Refresh the items of the pattern.
 
         This method destroys the old items and creates and initializes
         the new items.
@@ -166,9 +158,9 @@ class Looper(Pattern):
                 for nodes, key, f_locals in pattern_nodes:
                     with new_scope(key, f_locals) as f_locals:
                         # Retain for compatibility reasons
-                        f_locals['loop_index'] = loop_index
-                        f_locals['loop_item'] = loop_item
-                        f_locals['loop'] = iter_data
+                        f_locals["loop_index"] = loop_index
+                        f_locals["loop_item"] = loop_item
+                        f_locals["loop"] = iter_data
                         for node in nodes:
                             child = node(None)
                             if isinstance(child, list):
@@ -191,7 +183,7 @@ class Looper(Pattern):
 
 
 def recursive_expand(items, expanded):
-    """ Recursively expand the list of items created by the looper.
+    """Recursively expand the list of items created by the looper.
 
     This allows the final list to be inserted into the parent and
     maintain the proper ordering of children.

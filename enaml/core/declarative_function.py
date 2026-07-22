@@ -7,6 +7,6 @@
 # --------------------------------------------------------------------------------------
 """Public interface to the rust accelerated declarative function implementation."""
 
-from enaml._rust import DeclarativeFunction
+from enaml._rust import DeclarativeFunction, BoundDeclarativeMethod
 
-__all__ = ["DeclarativeFunction"]
+__all__ = ["DeclarativeFunction", "BoundDeclarativeMethod"]

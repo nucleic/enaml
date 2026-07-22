@@ -7,8 +7,9 @@
 // --------------------------------------------------------------------------------------
 use core::ffi::c_int;
 use pyo3::ffi;
+use pyo3::intern;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyFunction, PyTuple};
+use pyo3::types::{PyDict, PyFunction, PyMapping, PyTuple};
 
 /// Call a function with optional locals mapping.
 ///
@@ -21,28 +22,18 @@ pub fn call_func(
     func: &Bound<'_, PyFunction>,
     func_args: &Bound<'_, PyTuple>,
     func_kwargs: &Bound<'_, PyDict>,
-    func_locals: Option<&Bound<'_, PyDict>>,
+    func_locals: Option<&Bound<'_, PyMapping>>,
 ) -> PyResult<Py<PyAny>> {
-    let code = func.getattr("__code__")?;
-    let globals = func.getattr("__globals__")?;
-    let defaults = func.getattr("__defaults__")?;
-    let closure = func.getattr("__closure__")?;
-
-    let arg_count = func_args.len();
-    let mut arg_values = Vec::with_capacity(arg_count);
-    for item in func_args.iter() {
-        arg_values.push(item.as_ptr());
-    }
+    let code = func.getattr(intern!(py, "__code__"))?;
+    let globals = func.getattr(intern!(py, "__globals__"))?;
+    let defaults = func.getattr(intern!(py, "__defaults__"))?;
+    let kwdefaults = func.getattr(intern!(py, "__kwdefaults__"))?;
+    let closure = func.getattr(intern!(py, "__closure__"))?;
 
     let mut kw_values = Vec::new();
-    let mut pos = 0;
-    let mut key_ptr: *mut ffi::PyObject = std::ptr::null_mut();
-    let mut value_ptr: *mut ffi::PyObject = std::ptr::null_mut();
-    unsafe {
-        while ffi::PyDict_Next(func_kwargs.as_ptr(), &mut pos, &mut key_ptr, &mut value_ptr) != 0 {
-            kw_values.push(key_ptr);
-            kw_values.push(value_ptr);
-        }
+    for (key, val) in func_kwargs.iter() {
+        kw_values.push(key.as_ptr());
+        kw_values.push(val.as_ptr());
     }
 
     let defaults_ptr = if defaults.is_none() {
@@ -59,6 +50,15 @@ pub fn call_func(
         defaults.cast::<PyTuple>()?.len()
     };
 
+    let args_ptr = unsafe {
+        // Cannot fails since we know we have a tuple,
+        // so we provide an empty string for the error message.
+        pyo3::ffi::PySequence_Fast_ITEMS(pyo3::ffi::PySequence_Fast(
+            func_args.as_ptr(),
+            c"".as_ptr(),
+        ))
+    };
+
     let locals_ptr = match func_locals {
         Some(locals) => locals.as_ptr(),
         None => std::ptr::null_mut(),
@@ -68,12 +68,6 @@ pub fn call_func(
         std::ptr::null_mut()
     } else {
         closure.as_ptr()
-    };
-
-    let args_ptr = if arg_values.is_empty() {
-        std::ptr::null_mut()
-    } else {
-        arg_values.as_ptr() as *const *mut ffi::PyObject
     };
 
     let kwds_ptr = if kw_values.is_empty() {
@@ -90,12 +84,12 @@ pub fn call_func(
             globals.as_ptr(),
             locals_ptr,
             args_ptr,
-            arg_count as c_int,
+            func_args.len() as c_int,
             kwds_ptr,
             kwdc,
             defaults_ptr,
             default_count as c_int,
-            std::ptr::null_mut(),
+            kwdefaults.as_ptr(),
             closure_ptr,
         );
 

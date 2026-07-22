@@ -8,6 +8,7 @@
 import gc
 import sys
 from collections import Counter, UserDict
+from collections.abc import Mapping
 
 import pytest
 
@@ -258,6 +259,8 @@ def test_dynamicscope_mapping(dynamicscope):
     dynamicscope, extra = dynamicscope
     owner = extra[0]
     change = extra[4]
+
+    assert isinstance(dynamicscope, Mapping)
 
     assert "attribute1" in list(dynamicscope)
 
