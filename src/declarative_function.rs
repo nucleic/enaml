@@ -6,12 +6,13 @@
 // The full license is in the file LICENSE, distributed with this software.
 // --------------------------------------------------------------------------------------
 use pyo3::prelude::*;
-use pyo3::types::PyTuple;
+use pyo3::types::iter::BoundTupleIterator;
+use pyo3::types::{PyDict, PyTuple};
 
 /// Declarative function descriptor for Enaml DSL.
 ///
 /// Wraps a function with a scope key for use in declarative blocks.
-#[pyclass]
+#[pyclass(immutable_type, module = "enaml._rust")]
 pub struct DeclarativeFunction {
     #[pyo3(get)]
     func: Py<PyAny>,
@@ -41,55 +42,46 @@ impl DeclarativeFunction {
         true
     }
 
-    pub fn __get__(
-        slf: PyRef<'_, Self>,
-        obj: Option<Py<PyAny>>,
-        _owner: Option<Py<PyAny>>,
-    ) -> PyResult<Py<PyAny>> {
+    pub fn __get__<'py>(
+        slf: PyRef<'py, Self>,
+        obj: Option<&Bound<'py, PyAny>>,
+        _owner: Option<&Bound<'py, PyAny>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
         let py = slf.py();
         if let Some(obj) = obj {
             // Return a BoundDeclarativeMethod
-            Ok(Py::new(
+            Ok(Bound::new(
                 py,
-                BoundDeclarativeMethod::new(slf.func.clone_ref(py), obj.clone_ref(py), slf.key.clone_ref(py)),
+                BoundDeclarativeMethod::new(
+                    slf.func.clone_ref(py),
+                    obj.clone().unbind(),
+                    slf.key.clone_ref(py),
+                ),
             )?
-            .into())
+            .into_any())
         } else {
             // Return the descriptor itself by extracting from the existing PyRef
-            Ok(Py::new(py, DeclarativeFunction {
-                func: slf.func.clone_ref(py),
-                key: slf.key.clone_ref(py),
-            })?
-            .into())
+            Ok(Bound::new(
+                py,
+                DeclarativeFunction {
+                    func: slf.func.clone_ref(py),
+                    key: slf.key.clone_ref(py),
+                },
+            )?
+            .into_any())
         }
     }
 
-    pub fn __call__(
+    pub fn __call__<'py>(
         &self,
-        py: Python<'_>,
-        args: &Bound<'_, PyTuple>,
-        kwargs: Option<&Bound<'_, PyAny>>,
-    ) -> PyResult<Py<PyAny>> {
+        py: Python<'py>,
+        args: &Bound<'py, PyTuple>,
+        kwargs: Option<&Bound<'py, PyDict>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
         // Call the wrapped function with the provided arguments
         let func = self.func.bind(py);
-        // Try to use kwargs as PyDict, otherwise try to cast
-        let kwargs_dict = if let Some(k) = kwargs {
-            // Try to extract to PyDict
-            if let Ok(d) = k.extract::<Bound<'_, pyo3::types::PyDict>>() {
-                Some(d.clone())
-            } else {
-                None
-            }
-        } else {
-            None
-        };
-        
-        let result = if let Some(d) = &kwargs_dict {
-            func.call(args, Some(d))?
-        } else {
-            func.call(args, None)?
-        };
-        Ok(result.into())
+
+        Ok(func.call(args, kwargs)?)
     }
 
     pub fn __repr__(&self) -> String {
@@ -100,7 +92,7 @@ impl DeclarativeFunction {
 /// Bound declarative method for Enaml DSL.
 ///
 /// Represents a declarative function bound to an instance.
-#[pyclass]
+#[pyclass(immutable_type, module = "enaml._rust")]
 pub struct BoundDeclarativeMethod {
     #[pyo3(get)]
     func: Py<PyAny>,
@@ -108,6 +100,39 @@ pub struct BoundDeclarativeMethod {
     obj: Py<PyAny>,
     #[pyo3(get)]
     key: Py<PyAny>,
+}
+
+struct TuplePrepender<'py> {
+    py: Python<'py>,
+    self_bound: Bound<'py, PyAny>,
+    args: Bound<'py, PyTuple>,
+    chain: std::iter::Chain<std::iter::Once<Bound<'py, PyAny>>, BoundTupleIterator<'py>>,
+}
+
+impl<'py> TuplePrepender<'py> {
+    fn new(py: Python<'py>, self_bound: Bound<'py, PyAny>, args: Bound<'py, PyTuple>) -> Self {
+        let chain = std::iter::once(self_bound.clone()).chain(args.iter());
+        TuplePrepender {
+            py,
+            self_bound,
+            args,
+            chain,
+        }
+    }
+}
+
+impl<'py> Iterator for TuplePrepender<'py> {
+    type Item = Bound<'py, PyAny>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.chain.next()
+    }
+}
+
+impl ExactSizeIterator for TuplePrepender<'_> {
+    fn len(&self) -> usize {
+        1 + self.args.len()
+    }
 }
 
 #[pymethods]
@@ -132,44 +157,27 @@ impl BoundDeclarativeMethod {
         self.key.clone_ref(py)
     }
 
-    pub fn __call__(
-        &self,
-        py: Python<'_>,
-        args: &Bound<'_, PyTuple>,
-        kwargs: Option<&Bound<'_, PyAny>>,
-    ) -> PyResult<Py<PyAny>> {
+    pub fn __call__<'py>(
+        slf: PyRef<'py, Self>,
+        py: Python<'py>,
+        args: Bound<'py, PyTuple>,
+        kwargs: Option<&'py Bound<'py, PyDict>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
         // Prepend self to the arguments by creating a new tuple
-        let self_bound = self.obj.bind(py);
-        let mut new_args_vec = vec![self_bound.into()];
-        for arg in args.iter() {
-            new_args_vec.push(arg);
-        }
-        let new_tuple = PyTuple::new(py, new_args_vec)?;
-        
+        let self_bound = slf.obj.bind(py).clone();
+        let new_tuple = PyTuple::new(py, TuplePrepender::new(py, self_bound, args))?;
+
         // Call the wrapped function with self as first argument
-        let func = self.func.bind(py);
-        // Try to use kwargs as PyDict, otherwise None
-        let kwargs_dict = if let Some(k) = kwargs {
-            // Try to extract to PyDict
-            if let Ok(d) = k.extract::<Bound<'_, pyo3::types::PyDict>>() {
-                Some(d.clone())
-            } else {
-                None
-            }
-        } else {
-            None
-        };
-        
-        let result = if let Some(d) = &kwargs_dict {
-            func.call(&new_tuple, Some(d))?
-        } else {
-            func.call(&new_tuple, None)?
-        };
-        Ok(result.into())
+        let func = slf.func.bind(py);
+
+        func.call(&new_tuple, kwargs)
     }
 
     pub fn __repr__(&self) -> String {
-        format!("<bound declarative method object at {:p}>", self as *const _)
+        format!(
+            "<bound declarative method object at {:p}>",
+            self as *const _
+        )
     }
 
     pub fn __eq__(&self, py: Python<'_>, other: &Bound<'_, PyAny>) -> PyResult<bool> {

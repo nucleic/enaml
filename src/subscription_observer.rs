@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------
-// Copyright (c) 2013-2025, Nucleic Development Team.
+// Copyright (c) 2013-2026, Nucleic Development Team.
 //
 // Distributed under the terms of the Modified BSD License.
 //
@@ -12,7 +12,7 @@ use pyo3::{pyclass, pymethods, types::PyAnyMethods, Bound, Py, PyAny, PyResult, 
 ///
 /// Observes object subscriptions and triggers reactive updates when subscribed
 /// attributes change. Stores a weak reference to the observed object and the attribute name.
-#[pyclass(module = "enaml._rust")]
+#[pyclass(immutable_type, module = "enaml._rust")]
 pub struct SubscriptionObserver {
     weak_ref: Py<PyAny>,
     attribute: Py<PyAny>,

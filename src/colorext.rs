@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------
-// Copyright (c) 2013-2025, Nucleic Development Team.
+// Copyright (c) 2013-2026, Nucleic Development Team.
 //
 // Distributed under the terms of the Modified BSD License.
 //
@@ -8,7 +8,7 @@
 use pyo3::prelude::*;
 
 /// Color class wrapping ARGB value in Qt's #AARRGGBB byte order
-#[pyclass]
+#[pyclass(immutable_type, module = "enaml._rust")]
 pub struct Color {
     #[pyo3(get, set)]
     _tkdata: Option<Py<PyAny>>,

@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------
-// Copyright (c) 2013-2025, Nucleic Development Team.
+// Copyright (c) 2013-2026, Nucleic Development Team.
 //
 // Distributed under the terms of the Modified BSD License.
 //
@@ -9,7 +9,7 @@ use pyo3::prelude::*;
 
 // --------------------------------------------------------------------------------------
 // FontStyle - represents text style (normal, italic, oblique)
-#[pyclass(skip_from_py_object)]
+#[pyclass(immutable_type, skip_from_py_object, module = "enaml._rust")]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FontStyle {
     Normal = 0,
@@ -19,7 +19,7 @@ pub enum FontStyle {
 
 // --------------------------------------------------------------------------------------
 // FontStretch - represents font width variations
-#[pyclass(skip_from_py_object)]
+#[pyclass(immutable_type, skip_from_py_object, module = "enaml._rust")]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FontStretch {
     UltraCondensed = 0,
@@ -35,7 +35,7 @@ pub enum FontStretch {
 
 // --------------------------------------------------------------------------------------
 // FontCaps - represents font capitalization variants
-#[pyclass(skip_from_py_object)]
+#[pyclass(immutable_type, skip_from_py_object, module = "enaml._rust")]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FontCaps {
     MixedCase = 0,
@@ -46,7 +46,7 @@ pub enum FontCaps {
 }
 
 /// Font descriptor for Enaml UI elements
-#[pyclass]
+#[pyclass(immutable_type, module = "enaml._rust")]
 pub struct Font {
     #[pyo3(get, set)]
     _tkdata: Option<Py<PyAny>>,

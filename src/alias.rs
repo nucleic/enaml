@@ -16,7 +16,7 @@ use pyo3::types::{PyAny, PyBool, PyString, PyTuple};
 /// - chain: A tuple of attribute names to traverse to reach the final attribute
 /// - key: The scope key for looking up in storage
 /// - canset: Whether the alias can be set
-#[pyclass]
+#[pyclass(immutable_type, module = "enaml._rust")]
 pub struct Alias {
     #[pyo3(get)]
     target: Py<PyString>,
@@ -30,36 +30,7 @@ pub struct Alias {
     canset: bool,
 }
 
-#[pymethods]
 impl Alias {
-    #[new]
-    pub fn new(
-        target: &Bound<'_, PyString>,
-        chain: &Bound<'_, PyTuple>,
-        key: &Bound<'_, PyAny>,
-    ) -> PyResult<Self> {
-        Ok(Alias {
-            target: target.clone().unbind(),
-            chain: chain.clone().unbind(),
-            key: key.clone().unbind(),
-            canset: false,
-        })
-    }
-
-    #[getter]
-    pub fn get_canset(&self) -> bool {
-        self.canset
-    }
-
-    #[setter]
-    pub fn set_canset(&mut self, value: &Bound<'_, PyAny>) -> PyResult<()> {
-        if !value.is_instance_of::<PyBool>() {
-            return Err(PyTypeError::new_err("canset must be a bool"));
-        }
-        self.canset = value.extract::<bool>()?;
-        Ok(())
-    }
-
     fn resolve_target<'py>(
         &self,
         py: Python<'py>,
@@ -111,6 +82,51 @@ impl Alias {
         } else {
             Ok(target)
         }
+    }
+}
+
+#[pymethods]
+impl Alias {
+    #[new]
+    pub fn new(
+        target: &Bound<'_, PyString>,
+        chain: &Bound<'_, PyTuple>,
+        key: &Bound<'_, PyAny>,
+    ) -> PyResult<Self> {
+        for item in chain.iter() {
+            item.cast::<PyString>().map_err(|_| {
+                let chain_repr = chain
+                    .repr()
+                    .map(|repr| repr.to_string())
+                    .unwrap_or_else(|_| "<unavailable>".to_string());
+
+                PyTypeError::new_err(format!(
+                    "chain must be a tuple of strings, got {}",
+                    chain_repr
+                ))
+            })?;
+        }
+
+        Ok(Alias {
+            target: target.clone().unbind(),
+            chain: chain.clone().unbind(),
+            key: key.clone().unbind(),
+            canset: false,
+        })
+    }
+
+    #[getter]
+    pub fn get_canset(&self) -> bool {
+        self.canset
+    }
+
+    #[setter]
+    pub fn set_canset(&mut self, value: &Bound<'_, PyAny>) -> PyResult<()> {
+        if !value.is_instance_of::<PyBool>() {
+            return Err(PyTypeError::new_err("canset must be a bool"));
+        }
+        self.canset = value.extract::<bool>()?;
+        Ok(())
     }
 
     /// Descriptor get method
