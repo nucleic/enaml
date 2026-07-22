@@ -7,6 +7,9 @@ publish = false
 [dependencies]
 pyo3 = { version = "0.29", features = ["extension-module"] }
 
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging"] }
+
 [lib]
 name = "_rust"
 crate-type = ["cdylib"]
