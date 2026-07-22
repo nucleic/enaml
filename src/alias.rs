@@ -19,7 +19,7 @@ use pyo3::types::{PyAny, PyBool, PyString, PyTuple};
 #[pyclass]
 pub struct Alias {
     #[pyo3(get)]
-    target: String,
+    target: Py<PyString>,
 
     #[pyo3(get)]
     chain: Py<PyTuple>,
@@ -34,17 +34,14 @@ pub struct Alias {
 impl Alias {
     #[new]
     pub fn new(
-        target: &Bound<'_, PyAny>,
-        chain: &Bound<'_, PyAny>,
+        target: &Bound<'_, PyString>,
+        chain: &Bound<'_, PyTuple>,
         key: &Bound<'_, PyAny>,
     ) -> PyResult<Self> {
-        let target = target.extract::<String>()?;
-        let chain = chain.extract::<Py<PyTuple>>()?;
-        let key = key.clone().unbind();
         Ok(Alias {
-            target,
-            chain,
-            key,
+            target: target.clone().unbind(),
+            chain: chain.clone().unbind(),
+            key: key.clone().unbind(),
             canset: false,
         })
     }
@@ -63,37 +60,35 @@ impl Alias {
         Ok(())
     }
 
-    fn resolve_target(
+    fn resolve_target<'py>(
         &self,
-        py: Python<'_>,
-        obj: &Bound<'_, PyAny>,
-    ) -> PyResult<(Py<PyAny>, Option<String>)> {
+        py: Python<'py>,
+        obj: &Bound<'py, PyAny>,
+    ) -> PyResult<(Bound<'py, PyAny>, Option<Bound<'py, PyString>>)> {
         let storage = obj.getattr("_d_storage")?;
         let scope = storage.call_method1("get", (self.key.bind(py), py.None()))?;
         if scope.is_none() {
             return Err(PyRuntimeError::new_err("failed to load alias"));
         }
 
-        let target_obj = scope.call_method1("get", (PyString::new(py, &self.target), py.None()))?;
+        let mut target_obj = scope.call_method1("get", (self.target.bind(py), py.None()))?;
         if target_obj.is_none() {
             return Err(PyRuntimeError::new_err("failed to load alias"));
         }
 
-        let mut current = target_obj.unbind();
         let chain = self.chain.bind(py);
         if chain.len() == 0 {
-            return Ok((current, None));
+            return Ok((target_obj, None));
         }
 
         for index in 0..chain.len() {
-            let item = chain.get_item(index)?;
-            let attr_name = item.extract::<String>()?;
+            let attr_name = chain.get_item(index)?.cast::<PyString>()?.clone();
             if index == chain.len() - 1 {
-                return Ok((current, Some(attr_name)));
+                return Ok((target_obj, Some(attr_name)));
             }
 
-            match current.bind(py).getattr(attr_name.as_str()) {
-                Ok(value) => current = value.unbind(),
+            match target_obj.getattr(attr_name) {
+                Ok(value) => target_obj = value,
                 Err(err) if err.is_instance_of::<PyAttributeError>(py) => {
                     return Err(err);
                 }
@@ -101,28 +96,32 @@ impl Alias {
             }
         }
 
-        Ok((current, None))
+        Ok((target_obj, None))
     }
 
-    fn resolve_value(&self, py: Python<'_>, obj: &Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
+    fn resolve_value<'py>(
+        &self,
+        py: Python<'py>,
+        obj: &Bound<'py, PyAny>,
+    ) -> PyResult<Bound<'py, PyAny>> {
         let (target, attr_name) = self.resolve_target(py, obj)?;
         if let Some(attr_name) = attr_name {
-            let value = target.bind(py).getattr(attr_name.as_str())?;
-            Ok(value.unbind())
+            let value = target.getattr(attr_name)?;
+            Ok(value)
         } else {
             Ok(target)
         }
     }
 
     /// Descriptor get method
-    pub fn __get__(
-        slf: PyRef<'_, Self>,
+    pub fn __get__<'py>(
+        slf: PyRef<'py, Self>,
         instance: Option<Py<PyAny>>,
         _owner: Option<Py<PyAny>>,
-    ) -> PyResult<Py<PyAny>> {
+    ) -> PyResult<Bound<'py, PyAny>> {
         let py = slf.py();
         if instance.is_none() {
-            return Ok(slf.into_pyobject(py)?.into_any().unbind().into());
+            return Ok(slf.into_pyobject(py)?.into_any());
         }
 
         let binding = instance.unwrap();
@@ -149,7 +148,7 @@ impl Alias {
 
         let (target, attr_name) = self.resolve_target(py, obj)?;
         if let Some(attr_name) = attr_name {
-            target.bind(py).setattr(attr_name.as_str(), value)?;
+            target.setattr(attr_name, value)?;
             Ok(())
         } else {
             Err(PyAttributeError::new_err("can't set attribute"))
@@ -157,35 +156,22 @@ impl Alias {
     }
 
     /// Get target object and attribute name
-    pub fn resolve<'py>(&self, py: Python<'py>, obj: Bound<'py, PyAny>) -> PyResult<Py<PyAny>> {
+    pub fn resolve<'py>(
+        &self,
+        py: Python<'py>,
+        obj: Bound<'py, PyAny>,
+    ) -> PyResult<Bound<'py, PyAny>> {
         let (target, attr_name) = self.resolve_target(py, &obj)?;
         let tuple_value = match attr_name {
-            Some(attr_name) if self.canset => {
-                let attr_name_obj = PyString::new(py, &attr_name).into_any();
-                PyTuple::new(py, [target.clone_ref(py), attr_name_obj.into()])?.unbind()
-            }
-            Some(attr_name) => match target.bind(py).getattr(attr_name.as_str()) {
-                Ok(value) => PyTuple::new(
-                    py,
-                    [
-                        value.unbind(),
-                        py.None().into_pyobject(py)?.into_any().unbind(),
-                    ],
-                )?
-                .unbind(),
+            Some(attr_name) if self.canset => PyTuple::new(py, [target, attr_name.into_any()])?,
+            Some(attr_name) => match target.getattr(attr_name) {
+                Ok(value) => PyTuple::new(py, [value, py.None().into_pyobject(py)?.into_any()])?,
                 Err(err) if err.is_instance_of::<PyAttributeError>(py) => return Err(err),
                 Err(err) => return Err(err),
             },
-            None => PyTuple::new(
-                py,
-                [
-                    target.clone_ref(py),
-                    py.None().into_pyobject(py)?.into_any().unbind(),
-                ],
-            )?
-            .unbind(),
+            None => PyTuple::new(py, [target, py.None().into_pyobject(py)?.into_any()])?,
         };
 
-        Ok(tuple_value.into())
+        Ok(tuple_value.into_any())
     }
 }
