@@ -10,7 +10,7 @@
 This is a library of Enaml components deriving from the builtin Field.
 
 """
-from enaml.validator import RegexValidator, IntValidator, FloatValidator
+from enaml.validator import RegexValidator, IntValidator, FloatValidator, ComplexValidator
 from enaml.widgets.field import Field
 
 
@@ -56,5 +56,21 @@ enamldef FloatField(Field):
     text << converter(value)
     text :: self.value = float(text)
     validator << FloatValidator(
+        minimum=minimum, maximum=maximum, allow_exponent=allow_exponent
+    )
+
+
+enamldef ComplexField(Field):
+    """ A Field that only accept complex floating point values.
+
+    """
+    attr minimum = None
+    attr maximum = None
+    attr allow_exponent : bool = True
+    attr value : complex = 0.0 + 0.0*1j
+    attr converter = unicode
+    text << converter(value)
+    text :: self.value = complex(text)
+    validator << ComplexValidator(
         minimum=minimum, maximum=maximum, allow_exponent=allow_exponent
     )
