@@ -1570,7 +1570,7 @@ fstring_replacement_field:
         ast.FormattedValue(
             value=a,
             conversion=(
-                conversion.decode()[0]
+                conversion
                 if conversion else
                 (b'r'[0] if debug_expr else -1)
             ),

@@ -5168,7 +5168,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . FormattedValue ( value = a , conversion = ( conversion . decode ( ) [0] if conversion else ( b'r' [0] if debug_expr else - 1 ) ) , format_spec = format , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ast . FormattedValue ( value = a , conversion = ( conversion if conversion else ( b'r' [0] if debug_expr else - 1 ) ) , format_spec = format , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             self.call_invalid_rules

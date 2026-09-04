@@ -70,3 +70,48 @@ def test_reporting_errors_f_strings(source):
         parse(source)
 
     assert "backslash" in e.value.args[0]
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 12),
+    reason="f-string conversion specifiers are parsed via the FSTRING_START/MIDDLE/END "
+    "tokens introduced in Python 3.12 (PEP 701); on older versions an f-string is a "
+    "single STRING token and never reaches check_fstring_conversion.",
+)
+@pytest.mark.parametrize("conversion", ["s", "r", "a"])
+def test_f_string_conversion(conversion):
+    """Test that f-string conversion specifiers (!s, !r, !a) parse correctly.
+
+    Regression test for a bug where using a conversion specifier crashed the
+    parser with ``AttributeError: 'TokenInfo' object has no attribute
+    'lineno'`` in ``check_fstring_conversion`` -- ``tokenize.TokenInfo``
+    exposes ``.start``/``.end`` (row, col) tuples, not the ``.lineno``/
+    ``.col_offset`` attributes that method used to check for.
+    """
+    src = f"a = f'{{x!{conversion}}}'"
+    py_ast = ast.parse(src)
+    enaml_ast = parse(src).body[0].ast
+    validate_ast(py_ast.body[0], enaml_ast.body[0], True)
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 12),
+    reason="f-string conversion specifiers are parsed via the FSTRING_START/MIDDLE/END "
+    "tokens introduced in Python 3.12 (PEP 701); on older versions an f-string is a "
+    "single STRING token and never reaches check_fstring_conversion.",
+)
+def test_f_string_conversion_not_adjacent_to_mark():
+    """Test that a non-adjacent conversion mark raises a proper SyntaxError.
+
+    When the conversion character does not immediately follow the ``!``
+    (e.g. whitespace in between), the parser should raise a normal
+    ``SyntaxError`` with an explanatory message rather than crashing with an
+    ``AttributeError``.
+    """
+    with pytest.raises(SyntaxError) as e:
+        parse("a = f'{x! r}'")
+
+    assert (
+        "conversion type must come right after the exclamanation mark"
+        in e.value.args[0]
+    )

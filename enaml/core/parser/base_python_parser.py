@@ -220,7 +220,7 @@ class BasePythonParser(Parser):
 
     def check_fstring_conversion(
         self, mark: tokenize.TokenInfo, name: tokenize.TokenInfo
-    ) -> tokenize.TokenInfo:
+    ) -> int:
         if mark.end != name.start:
             self.raise_syntax_error_known_range(
                 "f-string: conversion type must come right after the exclamanation mark",
@@ -235,7 +235,7 @@ class BasePythonParser(Parser):
                 name,
             )
 
-        return name
+        return ord(s)
 
     def _concat_strings_in_constant(self, parts) -> ast.Constant:
         s = ast.literal_eval(parts[0].string)
