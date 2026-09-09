@@ -108,3 +108,35 @@ def test_f_string_debug_expr(source):
     py_ast = ast.parse(source)
     enaml_ast = parse(source).body[0].ast
     validate_ast(py_ast.body[0], enaml_ast.body[0], True)
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 12),
+    reason="Nested format spec replacement fields are parsed via the "
+    "FSTRING_START/MIDDLE/END tokens introduced in Python 3.12 (PEP 701); on "
+    "older versions an f-string is a single STRING token and never reaches "
+    "fstring_full_format_spec.",
+)
+@pytest.mark.parametrize(
+    "source",
+    [
+        "a = f'{x:{y}}'",
+        "a = f'{x:{y}{z}}'",
+        "a = f'{x:{y}:z}'",
+        "a = f'{x:{y}{z}{q}}'",
+    ],
+)
+def test_f_string_nested_format_spec(source):
+    """Test that a format spec ending in a nested replacement field parses correctly.
+
+    Regression test for a bug where the tokenizer's degenerate empty
+    FSTRING_MIDDLE token -- emitted for the zero-length run of literal text
+    between a nested replacement field and whatever follows it (another
+    field, or the closing ``}``) -- was kept as a spurious trailing
+    ``ast.Constant('')`` in the format spec's ``JoinedStr.values``.
+    ``f'{x:{y}}'`` compiled without error but its format_spec had an extra
+    empty-string element CPython's own parser never produces.
+    """
+    py_ast = ast.parse(source)
+    enaml_ast = parse(source).body[0].ast
+    validate_ast(py_ast.body[0], enaml_ast.body[0], True)

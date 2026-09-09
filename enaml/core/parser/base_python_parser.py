@@ -302,8 +302,20 @@ class BasePythonParser(Parser):
         return result
 
     def build_fstring_format_values(self, parts: List[Any]) -> list:
+        # The tokenizer emits an FSTRING_MIDDLE token with an empty string
+        # for the (zero-length) run of literal text between two adjacent
+        # replacement fields, or between a replacement field and the ':'/'}'
+        # that ends the format spec -- e.g. f'{x:{y}}' tokenizes the format
+        # spec as [replacement field for y, FSTRING_MIDDLE '']. CPython
+        # drops these degenerate empty-text nodes when building the format
+        # spec's JoinedStr; keeping them regardless of position (not just
+        # when they are the sole element) matches that.
         flat = self.flatten_fstring_parts(parts)
-        return flat if flat and (len(flat) > 1 or flat[0].value) else []
+        return [
+            part
+            for part in flat
+            if not (isinstance(part, ast.Constant) and part.value == "")
+        ]
 
     def _concat_strings_in_constant(self, parts) -> ast.Constant:
         s = ast.literal_eval(parts[0].string)
