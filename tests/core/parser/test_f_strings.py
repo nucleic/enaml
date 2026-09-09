@@ -70,3 +70,41 @@ def test_reporting_errors_f_strings(source):
         parse(source)
 
     assert "backslash" in e.value.args[0]
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 12),
+    reason="f-string debug expressions are parsed via the FSTRING_START/MIDDLE/END "
+    "tokens introduced in Python 3.12 (PEP 701); on older versions an f-string is a "
+    "single STRING token and never reaches fstring_replacement_field.",
+)
+@pytest.mark.parametrize(
+    "source",
+    [
+        "a = f'{x=}'",
+        "a = f'{ x = }'",
+        "a = f'{x+1=}'",
+        "a = f'{x=:>3}'",
+        "a = f'{x=:}'",
+        "a = f'''\n{x=}\n'''",
+    ],
+)
+def test_f_string_debug_expr(source):
+    """Test that self-documenting f-string debug expressions (f'{x=}') parse correctly.
+
+    Regression test for a bug where the parser silently dropped the literal
+    "x=" text CPython injects as a leading ``ast.Constant`` for a debug
+    expression -- ``f'{x=}'`` compiled without error but produced a
+    ``JoinedStr`` missing that prefix, so the rendered string silently lost
+    its "x=" label.
+
+    Also covers a related bug in the same conversion-default logic: the
+    implicit ``!r`` conversion for a bare debug expression was applied even
+    when an explicit format spec was present. It should only default to
+    ``!r`` when there is no format spec at all (``f'{x=:>3}'`` uses ``>3``
+    formatting with no conversion, matching CPython), and never once an
+    explicit conversion is given.
+    """
+    py_ast = ast.parse(source)
+    enaml_ast = parse(source).body[0].ast
+    validate_ast(py_ast.body[0], enaml_ast.body[0], True)

@@ -5149,16 +5149,16 @@ class EnamlParser(Parser):
 
     @memoize
     def fstring_replacement_field(self) -> Optional[Any]:
-        # fstring_replacement_field: '{' (yield_expr | star_expressions) "="? fstring_conversion? fstring_full_format_spec? '}' | invalid_replacement_field
+        # fstring_replacement_field: '{' (yield_expr | star_expressions) fstring_debug_expr? fstring_conversion? fstring_full_format_spec? '}' | invalid_replacement_field
         mark = self._mark()
         tok = self._tokenizer.peek()
         start_lineno, start_col_offset = tok.start
         if (
-            (self.expect('{'))
+            (lbrace := self.expect('{'))
             and
             (a := self._tmp_145())
             and
-            (debug_expr := self.expect("="),)
+            (debug_expr := self.fstring_debug_expr(),)
             and
             (conversion := self.fstring_conversion(),)
             and
@@ -5168,7 +5168,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . FormattedValue ( value = a , conversion = ( conversion . decode ( ) [0] if conversion else ( b'r' [0] if debug_expr else - 1 ) ) , format_spec = format , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . make_fstring_replacement_field ( lbrace , debug_expr , ast . FormattedValue ( value = a , conversion = ( conversion . decode ( ) [0] if conversion else ( b'r' [0] if debug_expr and format is None else - 1 ) ) , format_spec = format , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , );
         self._reset(mark)
         if (
             self.call_invalid_rules
@@ -5176,6 +5176,17 @@ class EnamlParser(Parser):
             (self.invalid_replacement_field())
         ):
             return None  # pragma: no cover;
+        self._reset(mark)
+        return None;
+
+    @memoize
+    def fstring_debug_expr(self) -> Optional[Any]:
+        # fstring_debug_expr: '='
+        mark = self._mark()
+        if (
+            (self.expect('='))
+        ):
+            return self . _tokenizer . peek ( );
         self._reset(mark)
         return None;
 
@@ -5205,7 +5216,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . JoinedStr ( values = spec if spec and ( len ( spec ) > 1 or spec [0] . value ) else [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
+            return ast . JoinedStr ( values = self . build_fstring_format_values ( spec ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         return None;
 
@@ -5244,7 +5255,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . JoinedStr ( values = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ast . JoinedStr ( values = self . flatten_fstring_parts ( b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         return None;
 
