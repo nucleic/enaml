@@ -1566,25 +1566,31 @@ fstring_mid:
     | fstring_replacement_field
     | t=FSTRING_MIDDLE { ast.Constant(value=t.string, LOCATIONS) }
 fstring_replacement_field:
-    | '{' a=(yield_expr | star_expressions) debug_expr="="? conversion=[fstring_conversion] format=[fstring_full_format_spec] rbrace='}' {
-        ast.FormattedValue(
-            value=a,
-            conversion=(
-                conversion
-                if conversion else
-                (b'r'[0] if debug_expr else -1)
+    | lbrace='{' a=(yield_expr | star_expressions) debug_expr=fstring_debug_expr? conversion=[fstring_conversion] format=[fstring_full_format_spec] rbrace='}' {
+        self.make_fstring_replacement_field(
+            lbrace,
+            debug_expr,
+            ast.FormattedValue(
+                value=a,
+                conversion=(
+                    conversion
+                    if conversion else
+                    (b'r'[0] if debug_expr and format is None else -1)
+                ),
+                format_spec=format,
+                LOCATIONS
             ),
-            format_spec=format,
-            LOCATIONS
         )
      }
     | invalid_replacement_field
+fstring_debug_expr:
+    | '=' { self._tokenizer.peek() }
 fstring_conversion[int]:
     | conv_token="!" conv=NAME { self.check_fstring_conversion(conv_token, conv) }
 fstring_full_format_spec:
     | ':' spec=fstring_format_spec* {
         ast.JoinedStr(
-            values=spec if spec and (len(spec) > 1 or spec[0].value) else [],
+            values=self.build_fstring_format_values(spec),
             LOCATIONS,
         )
      }
@@ -1593,7 +1599,7 @@ fstring_format_spec:
     | fstring_replacement_field
 fstring:
     | a=FSTRING_START b=fstring_mid* c=FSTRING_END {
-        ast.JoinedStr(values=b, LOCATIONS)
+        ast.JoinedStr(values=self.flatten_fstring_parts(b), LOCATIONS)
      }
 
 strings (memo): a=(fstring|STRING)+ {

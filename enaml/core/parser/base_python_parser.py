@@ -237,6 +237,86 @@ class BasePythonParser(Parser):
 
         return ord(s)
 
+    def make_fstring_replacement_field(
+        self,
+        lbrace: tokenize.TokenInfo,
+        debug_boundary: Optional[tokenize.TokenInfo],
+        value: ast.FormattedValue,
+    ) -> Union[ast.FormattedValue, List[ast.AST]]:
+        """Prepend the source-text literal CPython emits for a self-documenting
+        f-string debug expression, e.g. the ``'x='`` in ``f'{x=}'``.
+
+        ``debug_boundary`` is None when the field has no ``=`` debug marker,
+        in which case ``value`` (the ``FormattedValue`` itself) is returned
+        unchanged. Otherwise it is the token immediately following the ``=``,
+        peeked (not consumed) at match time -- the conversion ``!``, the
+        format spec ``:``, or the closing ``}`` -- and this returns a
+        two-element list of ``[prefix_constant, value]`` for the caller to
+        splice into the enclosing ``JoinedStr.values``.
+        """
+        if debug_boundary is None:
+            return value
+        return [self._fstring_debug_prefix(lbrace, debug_boundary), value]
+
+    def _fstring_debug_prefix(
+        self, lbrace: tokenize.TokenInfo, boundary: tokenize.TokenInfo
+    ) -> ast.Constant:
+        # CPython's debug-expression text is the raw source between the '{'
+        # and whatever follows the '=' (the conversion mark, the format
+        # spec's ':', or the closing '}'), taken verbatim -- including any
+        # interior whitespace, e.g. f'{ x = }' -> ' x = '.
+        start_lineno, start_col_offset = lbrace.end
+        end_lineno, end_col_offset = boundary.start
+        lines = self._tokenizer.get_lines(list(range(start_lineno, end_lineno + 1)))
+        if start_lineno == end_lineno:
+            text = lines[0][start_col_offset:end_col_offset]
+        else:
+            text = "".join(
+                [lines[0][start_col_offset:]]
+                + lines[1:-1]
+                + [lines[-1][:end_col_offset]]
+            )
+        return ast.Constant(
+            value=text,
+            lineno=start_lineno,
+            col_offset=start_col_offset,
+            end_lineno=end_lineno,
+            end_col_offset=end_col_offset,
+        )
+
+    def flatten_fstring_parts(self, parts: List[Any]) -> List[ast.AST]:
+        """Flatten the result of an ``fstring_mid*``/``fstring_format_spec*``
+        loop.
+
+        Each element is either a single ast node, or -- when
+        ``make_fstring_replacement_field`` injected a debug-expression prefix
+        -- a two-element ``[prefix_constant, value]`` list. Flatten to a
+        single flat list of nodes, suitable as a ``JoinedStr.values``.
+        """
+        result: List[ast.AST] = []
+        for part in parts:
+            if isinstance(part, list):
+                result.extend(part)
+            else:
+                result.append(part)
+        return result
+
+    def build_fstring_format_values(self, parts: List[Any]) -> list:
+        # The tokenizer emits an FSTRING_MIDDLE token with an empty string
+        # for the (zero-length) run of literal text between two adjacent
+        # replacement fields, or between a replacement field and the ':'/'}'
+        # that ends the format spec -- e.g. f'{x:{y}}' tokenizes the format
+        # spec as [replacement field for y, FSTRING_MIDDLE '']. CPython
+        # drops these degenerate empty-text nodes when building the format
+        # spec's JoinedStr; keeping them regardless of position (not just
+        # when they are the sole element) matches that.
+        flat = self.flatten_fstring_parts(parts)
+        return [
+            part
+            for part in flat
+            if not (isinstance(part, ast.Constant) and part.value == "")
+        ]
+
     def _concat_strings_in_constant(self, parts) -> ast.Constant:
         s = ast.literal_eval(parts[0].string)
         for ss in parts[1:]:
