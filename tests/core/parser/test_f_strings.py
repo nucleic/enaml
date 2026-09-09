@@ -72,12 +72,6 @@ def test_reporting_errors_f_strings(source):
     assert "backslash" in e.value.args[0]
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 12),
-    reason="f-string conversion specifiers are parsed via the FSTRING_START/MIDDLE/END "
-    "tokens introduced in Python 3.12 (PEP 701); on older versions an f-string is a "
-    "single STRING token and never reaches check_fstring_conversion.",
-)
 @pytest.mark.parametrize("conversion", ["s", "r", "a"])
 def test_f_string_conversion(conversion):
     """Test that f-string conversion specifiers (!s, !r, !a) parse correctly.
