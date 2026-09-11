@@ -1,13 +1,12 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2020-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
-"""Test winutil icon loading on windows.
+# ------------------------------------------------------------------------------
+"""Test winutil icon loading on windows."""
 
-"""
 import sys
 import pytest
 

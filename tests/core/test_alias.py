@@ -1,10 +1,10 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2013-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 import gc
 import sys
 
@@ -17,25 +17,33 @@ from utils import compile_source
 
 
 def test_alias_init_deinit():
-    """Test alias constructor """
+    """Test alias constructor"""
     rc = sys.getrefcount(Alias)
-    alias = Alias('fd', ('text', ), object())
-    del alias
+    for _ in range(1000):
+        alias = Alias("fd", ("text",), object())
+        del alias
     gc.collect()
     assert sys.getrefcount(Alias) == rc
 
     with pytest.raises(TypeError):
         # 1st arg must be a str
-        alias = Alias(None, ('text', ), object())
+        alias = Alias(None, ("text",), object())
 
     with pytest.raises(TypeError):
         # 2nd arg must be a tuple
-        alias = Alias("fd", "text", object())
+        Alias("fd", "text", object())
+
+
+def test_alias_chain_elements_must_be_strings():
+    with pytest.raises(TypeError, match="chain must be a tuple of strings"):
+        Alias("fd", ("text", 1), object())
+
+    with pytest.raises(TypeError, match="chain must be a tuple of strings"):
+        Alias("fd", ("text", None), object())
+
 
 def test_alias_attributes():
-    """Test accessing an alias attributes.
-
-    """
+    """Test accessing an alias attributes."""
     source = dedent("""\
     from enaml.widgets.api import *
 
@@ -47,10 +55,11 @@ def test_alias_attributes():
             name = 'content'
 
     """)
-    win = compile_source(source, 'Main')
-    for alias_name, target, chain, canset in [('fd', 'fd', (), False),
-                                              ('fd_txt', 'fd', ('text',), True)
-                                              ]:
+    win = compile_source(source, "Main")
+    for alias_name, target, chain, canset in [
+        ("fd", "fd", (), False),
+        ("fd_txt", "fd", ("text",), True),
+    ]:
         alias = getattr(win, alias_name)
         assert alias.target == target
         assert alias.chain == chain
@@ -62,9 +71,7 @@ def test_alias_attributes():
 
 
 def test_alias_resolve():
-    """Test resolving an alias.
-
-    """
+    """Test resolving an alias."""
     source = dedent("""\
     from enaml.widgets.api import *
 
@@ -77,33 +84,31 @@ def test_alias_resolve():
                 name = 'content'
 
     """)
-    win = compile_source(source, 'Main')()
+    win = compile_source(source, "Main")()
     key = list(win._d_storage.keys())[0]
-    alias = Alias('ct', (), key)
+    alias = Alias("ct", (), key)
     assert alias.resolve(win) == (win.ct, None)
 
-    alias = Alias('ct', ('fd',), key)
+    alias = Alias("ct", ("fd",), key)
     assert alias.resolve(win) == (win.ct.fd, None)
 
-    alias = Alias('ct', ('fd', 'text'), key)
-    assert alias.resolve(win) == ('', None)
+    alias = Alias("ct", ("fd", "text"), key)
+    assert alias.resolve(win) == ("", None)
 
     alias.canset = True
-    assert alias.resolve(win) == (win.ct.fd, 'text')
+    assert alias.resolve(win) == (win.ct.fd, "text")
 
-    alias = Alias('unknown', (), key)
+    alias = Alias("unknown", (), key)
     with pytest.raises(RuntimeError):
         alias.resolve(win)
 
-    alias = Alias('ct', ('fd', 'unknown'), key)
+    alias = Alias("ct", ("fd", "unknown"), key)
     with pytest.raises(AttributeError):
         alias.resolve(win)
 
 
 def test_simple_alias_get_error():
-    """Test handling an error getting a simple alias.
-
-    """
+    """Test handling an error getting a simple alias."""
     source = dedent("""\
     from enaml.widgets.api import *
 
@@ -116,20 +121,18 @@ def test_simple_alias_get_error():
                 name = 'content'
 
     """)
-    win_cls = compile_source(source, 'Main')
+    win_cls = compile_source(source, "Main")
     key = list(win_cls()._d_storage.keys())[0]
-    win_cls.alias = Alias('unknown', (), key)
+    win_cls.alias = Alias("unknown", (), key)
     win = win_cls()
 
     with pytest.raises(RuntimeError) as excinfo:
         win.alias
-    assert 'failed to load alias' in excinfo.exconly()
+    assert "failed to load alias" in excinfo.exconly()
 
 
 def test_chained_alias_get_error():
-    """Test handling an error getting a chained alias.
-
-    """
+    """Test handling an error getting a chained alias."""
     source = dedent("""\
     from enaml.widgets.api import *
 
@@ -142,10 +145,10 @@ def test_chained_alias_get_error():
                 name = 'content'
 
     """)
-    win_cls = compile_source(source, 'Main')
+    win_cls = compile_source(source, "Main")
     key = list(win_cls()._d_storage.keys())[0]
-    win_cls.alias = Alias('ct', ('unknown',), key)
-    win_cls.alias2 = Alias('unknown', ('unknown',), key)
+    win_cls.alias = Alias("ct", ("unknown",), key)
+    win_cls.alias2 = Alias("unknown", ("unknown",), key)
     win = win_cls()
 
     with pytest.raises(AttributeError):
@@ -155,9 +158,7 @@ def test_chained_alias_get_error():
 
 
 def test_alias_set_canset_false():
-    """Test handling an error setting a simple alias.
-
-    """
+    """Test handling an error setting a simple alias."""
     source = dedent("""\
     from enaml.widgets.api import *
 
@@ -170,9 +171,9 @@ def test_alias_set_canset_false():
                 name = 'content'
 
     """)
-    win_cls = compile_source(source, 'Main')
+    win_cls = compile_source(source, "Main")
     key = list(win_cls()._d_storage.keys())[0]
-    win_cls.alias = Alias('unknown', (), key)
+    win_cls.alias = Alias("unknown", (), key)
     win = win_cls()
 
     with pytest.raises(AttributeError):
@@ -180,9 +181,7 @@ def test_alias_set_canset_false():
 
 
 def test_simple_alias_set_error():
-    """Test handling an error setting a simple alias.
-
-    """
+    """Test handling an error setting a simple alias."""
     source = dedent("""\
     from enaml.widgets.api import *
 
@@ -195,21 +194,19 @@ def test_simple_alias_set_error():
                 name = 'content'
 
     """)
-    win_cls = compile_source(source, 'Main')
+    win_cls = compile_source(source, "Main")
     key = list(win_cls()._d_storage.keys())[0]
-    win_cls.alias = Alias('unknown', (), key)
+    win_cls.alias = Alias("unknown", (), key)
     win_cls.alias.canset = True
     win = win_cls()
 
     with pytest.raises(RuntimeError) as excinfo:
         win.alias = 1
-    assert 'failed to load alias' in excinfo.exconly()
+    assert "failed to load alias" in excinfo.exconly()
 
 
 def test_chained_alias_set_error():
-    """Test handling an error setting a chained alias.
-
-    """
+    """Test handling an error setting a chained alias."""
     source = dedent("""\
     from enaml.widgets.api import *
 
@@ -222,11 +219,11 @@ def test_chained_alias_set_error():
                 name = 'content'
 
     """)
-    win_cls = compile_source(source, 'Main')
+    win_cls = compile_source(source, "Main")
     key = list(win_cls()._d_storage.keys())[0]
-    win_cls.alias = Alias('ct', ('fd', 'unknown'), key)
+    win_cls.alias = Alias("ct", ("fd", "unknown"), key)
     win_cls.alias.canset = True
-    win_cls.alias2 = Alias('unknown', ('unknown',), key)
+    win_cls.alias2 = Alias("unknown", ("unknown",), key)
     win_cls.alias2.canset = True
     win = win_cls()
 
@@ -236,9 +233,9 @@ def test_chained_alias_set_error():
         win.alias2 = 1
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Alias Syntax
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_syntax_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -253,7 +250,7 @@ def test_syntax_1():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    compile_source(source, "Main")
 
 
 def test_syntax_2():
@@ -270,7 +267,7 @@ def test_syntax_2():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    compile_source(source, "Main")
 
 
 def test_syntax_3():
@@ -287,12 +284,12 @@ def test_syntax_3():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    compile_source(source, "Main")
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Bad Alias Syntax
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_bad_syntax_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -308,7 +305,7 @@ def test_bad_syntax_1():
 
     """)
     with pytest.raises(SyntaxError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_syntax_2():
@@ -326,7 +323,7 @@ def test_bad_syntax_2():
 
     """)
     with pytest.raises(SyntaxError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_syntax_3():
@@ -344,12 +341,12 @@ def test_bad_syntax_3():
 
     """)
     with pytest.raises(SyntaxError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Alias References
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_ref_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -364,9 +361,9 @@ def test_ref_1():
             name = 'content'
 
     """)
-    main = compile_source(source, 'Main')()
-    button = main.find('button')
-    content = main.find('content')
+    main = compile_source(source, "Main")()
+    button = main.find("button")
+    content = main.find("content")
     assert content.pb is button
 
 
@@ -384,9 +381,9 @@ def test_ref_2():
             name = 'content'
 
     """)
-    main = compile_source(source, 'Main')()
-    button = main.find('button')
-    content = main.find('content')
+    main = compile_source(source, "Main")()
+    button = main.find("button")
+    content = main.find("content")
     assert content.pb is button
 
 
@@ -404,9 +401,9 @@ def test_ref_3():
             name = 'content'
 
     """)
-    main = compile_source(source, 'Main')()
-    button = main.find('button')
-    content = main.find('content')
+    main = compile_source(source, "Main")()
+    button = main.find("button")
+    content = main.find("content")
     assert content.foo is button
 
 
@@ -424,9 +421,9 @@ def test_ref_4():
             name = 'content'
 
     """)
-    main = compile_source(source, 'Main')()
-    content = main.find('content')
-    assert content.pb == 'spam'
+    main = compile_source(source, "Main")()
+    content = main.find("content")
+    assert content.pb == "spam"
 
 
 def test_ref_5():
@@ -448,9 +445,9 @@ def test_ref_5():
             name = 'content'
 
     """)
-    main = compile_source(source, 'Main')()
-    slider = main.find('slider')
-    content = main.find('content')
+    main = compile_source(source, "Main")()
+    slider = main.find("slider")
+    content = main.find("content")
     assert content.other.slider is slider
 
 
@@ -473,8 +470,8 @@ def test_ref_6():
             name = 'content'
 
     """)
-    main = compile_source(source, 'Main')()
-    content = main.find('content')
+    main = compile_source(source, "Main")()
+    content = main.find("content")
     assert content.other.value == 50
 
 
@@ -497,8 +494,8 @@ def test_ref_7():
             name = 'content'
 
     """)
-    main = compile_source(source, 'Main')()
-    content = main.find('content')
+    main = compile_source(source, "Main")()
+    content = main.find("content")
     assert content.value == 50
 
 
@@ -521,14 +518,14 @@ def test_ref_8():
             name = 'content'
 
     """)
-    main = compile_source(source, 'Main')()
-    content = main.find('content')
+    main = compile_source(source, "Main")()
+    content = main.find("content")
     assert content.value == 50
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Bad Alias Reference
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_bad_ref_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -544,7 +541,7 @@ def test_bad_ref_1():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_ref_2():
@@ -562,7 +559,7 @@ def test_bad_ref_2():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_ref_3():
@@ -580,7 +577,7 @@ def test_bad_ref_3():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_ref_4():
@@ -598,7 +595,7 @@ def test_bad_ref_4():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bar_ref_5():
@@ -621,7 +618,7 @@ def test_bar_ref_5():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_ref_6():
@@ -644,12 +641,12 @@ def test_bad_ref_6():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Alias Binding
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_bind_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -664,9 +661,9 @@ def test_bind_1():
             pb = 'foo'
 
     """)
-    main = compile_source(source, 'Main')()
-    button = main.find('button')
-    assert button.text == 'foo'
+    main = compile_source(source, "Main")()
+    button = main.find("button")
+    assert button.text == "foo"
 
 
 def test_bind_2():
@@ -688,8 +685,8 @@ def test_bind_2():
             value = 50
 
     """)
-    main = compile_source(source, 'Main')()
-    slider = main.find('slider')
+    main = compile_source(source, "Main")()
+    slider = main.find("slider")
     assert slider.value == 50
 
 
@@ -713,14 +710,14 @@ def test_bind_3():
             value = 42
 
     """)
-    main = compile_source(source, 'Main')()
-    slider = main.find('slider')
+    main = compile_source(source, "Main")()
+    slider = main.find("slider")
     assert slider.value == 42
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Bad Alias Binding
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_bad_bind_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -736,7 +733,7 @@ def test_bad_bind_1():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_bind_2():
@@ -754,12 +751,12 @@ def test_bad_bind_2():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Extended Alias Binding
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_ex_bind_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -774,9 +771,9 @@ def test_ex_bind_1():
             pb.text = 'foo'
 
     """)
-    main = compile_source(source, 'Main')()
-    button = main.find('button')
-    assert button.text == 'foo'
+    main = compile_source(source, "Main")()
+    button = main.find("button")
+    assert button.text == "foo"
 
 
 def test_ex_bind_2():
@@ -798,8 +795,8 @@ def test_ex_bind_2():
             value.value = 50
 
     """)
-    main = compile_source(source, 'Main')()
-    slider = main.find('slider')
+    main = compile_source(source, "Main")()
+    slider = main.find("slider")
     assert slider.value == 50
 
 
@@ -822,14 +819,14 @@ def test_ex_bind_3():
             value.slider.value = 42
 
     """)
-    main = compile_source(source, 'Main')()
-    slider = main.find('slider')
+    main = compile_source(source, "Main")()
+    slider = main.find("slider")
     assert slider.value == 42
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Bad Alias Binding
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_bad_ex_bind_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -845,7 +842,7 @@ def test_bad_ex_bind_1():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_ex_bind_2():
@@ -863,7 +860,7 @@ def test_bad_ex_bind_2():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_ex_bind_3():
@@ -886,12 +883,12 @@ def test_bad_ex_bind_3():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Alias Ordering
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_ordering():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -906,12 +903,12 @@ def test_ordering():
             pass
 
     """)
-    compile_source(source, 'Main')
+    compile_source(source, "Main")
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Bad Alias Ordering
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_bar_ordering():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -927,12 +924,12 @@ def test_bar_ordering():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Bad Alias Override
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_bad_override_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -948,7 +945,7 @@ def test_bad_override_1():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_override_2():
@@ -971,7 +968,7 @@ def test_bad_override_2():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")
 
 
 def test_bad_override_3():
@@ -992,4 +989,4 @@ def test_bad_override_3():
 
     """)
     with pytest.raises(TypeError):
-        compile_source(source, 'Main')
+        compile_source(source, "Main")

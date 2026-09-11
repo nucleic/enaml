@@ -15,13 +15,12 @@ use std::mem::size_of;
 use windows_sys::Win32::Foundation::{HINSTANCE, HWND};
 #[cfg(windows)]
 use windows_sys::Win32::Graphics::Gdi::{
-    CreateCompatibleDC, CreateDIBSection, DeleteDC, DeleteObject, GetDC, ReleaseDC,
-    SelectObject, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HBITMAP, HBRUSH,
-    HDC, HGDIOBJ,
+    CreateCompatibleDC, CreateDIBSection, DeleteDC, DeleteObject, GetDC, ReleaseDC, SelectObject,
+    BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HBITMAP, HBRUSH, HDC, HGDIOBJ,
 };
 #[cfg(windows)]
 use windows_sys::Win32::UI::WindowsAndMessaging::{
-    DI_NORMAL, DrawIconEx, GetIconInfo, HICON, ICONINFO, IMAGE_ICON, LR_SHARED, LoadImageW,
+    DrawIconEx, GetIconInfo, LoadImageW, DI_NORMAL, HICON, ICONINFO, IMAGE_ICON, LR_SHARED,
 };
 
 #[cfg(windows)]
@@ -95,8 +94,16 @@ pub fn load_icon(
             return Ok((vec![], (-1, -1)));
         }
 
-        let width = if icon_info.xHotspot > 0 { icon_info.xHotspot as i32 } else { 32 };
-        let height = if icon_info.yHotspot > 0 { icon_info.yHotspot as i32 } else { 32 };
+        let width = if icon_info.xHotspot > 0 {
+            icon_info.xHotspot as i32
+        } else {
+            32
+        };
+        let height = if icon_info.yHotspot > 0 {
+            icon_info.yHotspot as i32
+        } else {
+            32
+        };
         if width <= 0 || height <= 0 {
             unsafe {
                 if !icon_info.hbmMask.is_null() {

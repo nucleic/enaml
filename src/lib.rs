@@ -23,7 +23,7 @@ use declarative_function::{BoundDeclarativeMethod, DeclarativeFunction};
 use dynamicscope::{DynamicScope, Nonlocals, UserKeyError};
 use fontext::Font;
 use funchelper::call_func;
-use subscription_observer::SubscriptionObserver;
+use subscription_observer::{CallableRef, SubscriptionObserver};
 use winutil::WinEnum;
 
 /// Python module entry point for enaml Rust extensions
@@ -41,7 +41,8 @@ fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Alias descriptor class
     m.add_class::<Alias>()?;
 
-    // SubscriptionObserver class
+    // SubscriptionObserver classes
+    m.add_class::<CallableRef>()?;
     m.add_class::<SubscriptionObserver>()?;
 
     // DeclarativeFunction classes

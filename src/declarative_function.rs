@@ -5,26 +5,40 @@
 //
 // The full license is in the file LICENSE, distributed with this software.
 // --------------------------------------------------------------------------------------
+use crate::funchelper;
+use pyo3::class::{PyTraverseError, PyVisit};
+use pyo3::exceptions::{PyKeyError, PyTypeError};
 use pyo3::prelude::*;
-use pyo3::types::iter::BoundTupleIterator;
-use pyo3::types::{PyDict, PyTuple};
+use pyo3::types::{PyDict, PyFunction, PyMapping, PyTuple, PyType};
 
 /// Declarative function descriptor for Enaml DSL.
 ///
 /// Wraps a function with a scope key for use in declarative blocks.
-#[pyclass(immutable_type, module = "enaml._rust")]
+#[pyclass(module = "enaml._rust")]
 pub struct DeclarativeFunction {
     #[pyo3(get)]
     func: Py<PyAny>,
     #[pyo3(get)]
     key: Py<PyAny>,
+    type_obj: Py<PyType>,
 }
 
 #[pymethods]
 impl DeclarativeFunction {
     #[new]
-    pub fn new(func: Py<PyAny>, key: Py<PyAny>) -> PyResult<Self> {
-        Ok(DeclarativeFunction { func, key })
+    pub fn new(py: Python<'_>, func: Py<PyAny>, key: Py<PyAny>) -> PyResult<Self> {
+        let func_obj = func.bind(py);
+        if func_obj.cast::<PyFunction>().is_ok() {
+            Ok(DeclarativeFunction {
+                func,
+                key,
+                type_obj: py.get_type::<Self>().unbind(),
+            })
+        } else {
+            Err(pyo3::exceptions::PyTypeError::new_err(
+                "DeclarativeFunction requires a function",
+            ))
+        }
     }
 
     #[getter]
@@ -53,10 +67,11 @@ impl DeclarativeFunction {
             Ok(Bound::new(
                 py,
                 BoundDeclarativeMethod::new(
+                    py,
                     slf.func.clone_ref(py),
                     obj.clone().unbind(),
                     slf.key.clone_ref(py),
-                ),
+                )?,
             )?
             .into_any())
         } else {
@@ -66,22 +81,52 @@ impl DeclarativeFunction {
                 DeclarativeFunction {
                     func: slf.func.clone_ref(py),
                     key: slf.key.clone_ref(py),
+                    type_obj: slf.type_obj.clone_ref(py),
                 },
             )?
             .into_any())
         }
     }
 
+    pub fn __traverse__(&self, visit: PyVisit<'_>) -> Result<(), PyTraverseError> {
+        visit.call(&self.func)?;
+        visit.call(&self.key)?;
+        visit.call(&self.type_obj)?;
+        Ok(())
+    }
+
+    #[pyo3(signature = (obj, *args, **kwargs))]
     pub fn __call__<'py>(
         &self,
         py: Python<'py>,
+        obj: &Bound<'py, PyAny>,
         args: &Bound<'py, PyTuple>,
         kwargs: Option<&Bound<'py, PyDict>>,
-    ) -> PyResult<Bound<'py, PyAny>> {
-        // Call the wrapped function with the provided arguments
-        let func = self.func.bind(py);
+    ) -> PyResult<Py<PyAny>> {
+        let func = self.func.bind(py).cast::<PyFunction>()?;
+        let scope = build_scope_locals(py, obj, &self.key.bind(py))?;
+        let empty_kwargs = PyDict::new(py);
+        let kwargs_arg = kwargs.unwrap_or(&empty_kwargs);
 
-        Ok(func.call(args, kwargs)?)
+        let globals = func.getattr("__globals__")?;
+        let globals_dict = globals.cast::<PyDict>()?;
+        if globals_dict.get_item("__builtins__")?.is_none() {
+            return Err(PyKeyError::new_err("__builtins__"));
+        }
+
+        let scope_mapping = scope.cast::<PyMapping>()?;
+        let result = funchelper::call_func(py, func, args, kwargs_arg, Some(scope_mapping));
+        match result {
+            Ok(value) => Ok(value),
+            Err(err) => {
+                let msg = err.to_string();
+                if msg.contains("super()") {
+                    Err(PyTypeError::new_err("super()"))
+                } else {
+                    Err(err)
+                }
+            }
+        }
     }
 
     pub fn __repr__(&self) -> String {
@@ -92,7 +137,7 @@ impl DeclarativeFunction {
 /// Bound declarative method for Enaml DSL.
 ///
 /// Represents a declarative function bound to an instance.
-#[pyclass(immutable_type, module = "enaml._rust")]
+#[pyclass(module = "enaml._rust")]
 pub struct BoundDeclarativeMethod {
     #[pyo3(get)]
     func: Py<PyAny>,
@@ -100,46 +145,37 @@ pub struct BoundDeclarativeMethod {
     obj: Py<PyAny>,
     #[pyo3(get)]
     key: Py<PyAny>,
+    type_obj: Py<PyType>,
 }
 
-struct TuplePrepender<'py> {
+fn build_scope_locals<'py>(
     py: Python<'py>,
-    self_bound: Bound<'py, PyAny>,
-    args: Bound<'py, PyTuple>,
-    chain: std::iter::Chain<std::iter::Once<Bound<'py, PyAny>>, BoundTupleIterator<'py>>,
-}
-
-impl<'py> TuplePrepender<'py> {
-    fn new(py: Python<'py>, self_bound: Bound<'py, PyAny>, args: Bound<'py, PyTuple>) -> Self {
-        let chain = std::iter::once(self_bound.clone()).chain(args.iter());
-        TuplePrepender {
-            py,
-            self_bound,
-            args,
-            chain,
+    instance: &Bound<'py, PyAny>,
+    scope_key: &Bound<'py, PyAny>,
+) -> PyResult<Bound<'py, PyDict>> {
+    let storage = instance.getattr("_d_storage")?;
+    let locals = PyDict::new(py);
+    if let Ok(scope) = storage.get_item(scope_key) {
+        if let Ok(scope_dict) = scope.cast::<PyDict>() {
+            for (name, value) in scope_dict.iter() {
+                locals.set_item(name, value)?;
+            }
         }
     }
-}
-
-impl<'py> Iterator for TuplePrepender<'py> {
-    type Item = Bound<'py, PyAny>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.chain.next()
-    }
-}
-
-impl ExactSizeIterator for TuplePrepender<'_> {
-    fn len(&self) -> usize {
-        1 + self.args.len()
-    }
+    locals.set_item("self", instance.clone())?;
+    Ok(locals)
 }
 
 #[pymethods]
 impl BoundDeclarativeMethod {
     #[new]
-    pub fn new(func: Py<PyAny>, obj: Py<PyAny>, key: Py<PyAny>) -> Self {
-        BoundDeclarativeMethod { func, obj, key }
+    pub fn new(py: Python<'_>, func: Py<PyAny>, obj: Py<PyAny>, key: Py<PyAny>) -> PyResult<Self> {
+        Ok(BoundDeclarativeMethod {
+            func,
+            obj,
+            key,
+            type_obj: py.get_type::<Self>().unbind(),
+        })
     }
 
     #[getter]
@@ -157,20 +193,46 @@ impl BoundDeclarativeMethod {
         self.key.clone_ref(py)
     }
 
+    pub fn __traverse__(&self, visit: PyVisit<'_>) -> Result<(), PyTraverseError> {
+        visit.call(&self.func)?;
+        visit.call(&self.obj)?;
+        visit.call(&self.key)?;
+        visit.call(&self.type_obj)?;
+        Ok(())
+    }
+
+    #[pyo3(signature = (*args, **kwargs))]
     pub fn __call__<'py>(
         slf: PyRef<'py, Self>,
         py: Python<'py>,
-        args: Bound<'py, PyTuple>,
-        kwargs: Option<&'py Bound<'py, PyDict>>,
-    ) -> PyResult<Bound<'py, PyAny>> {
-        // Prepend self to the arguments by creating a new tuple
-        let self_bound = slf.obj.bind(py).clone();
-        let new_tuple = PyTuple::new(py, TuplePrepender::new(py, self_bound, args))?;
+        args: &Bound<'py, PyTuple>,
+        kwargs: Option<&Bound<'py, PyDict>>,
+    ) -> PyResult<Py<PyAny>> {
+        let self_bound = slf.obj.bind(py);
+        let scope = build_scope_locals(py, self_bound, &slf.key.bind(py))?;
+        let empty_kwargs = PyDict::new(py);
+        let kwargs_arg = kwargs.unwrap_or(&empty_kwargs);
 
-        // Call the wrapped function with self as first argument
-        let func = slf.func.bind(py);
+        let func = slf.func.bind(py).cast::<PyFunction>()?;
+        let globals = func.getattr("__globals__")?;
+        let globals_dict = globals.cast::<PyDict>()?;
+        if globals_dict.get_item("__builtins__")?.is_none() {
+            return Err(PyKeyError::new_err("__builtins__"));
+        }
 
-        func.call(&new_tuple, kwargs)
+        let scope_mapping = scope.cast::<PyMapping>()?;
+        let result = funchelper::call_func(py, func, args, kwargs_arg, Some(scope_mapping));
+        match result {
+            Ok(value) => Ok(value),
+            Err(err) => {
+                let msg = err.to_string();
+                if msg.contains("super()") {
+                    Err(PyTypeError::new_err("super()"))
+                } else {
+                    Err(err)
+                }
+            }
+        }
     }
 
     pub fn __repr__(&self) -> String {
