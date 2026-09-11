@@ -9,6 +9,7 @@
 #include <sstream>
 #include <vector>
 #include <cppy/cppy.h>
+#include "weakref_compat.h"
 
 
 #ifdef __clang__
@@ -398,7 +399,12 @@ _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
     }
 
     cppy::ptr objref( cppy::incref( self->objref ) );
-    cppy::ptr obj( cppy::incref( PyWeakref_GET_OBJECT( objref.get() ) ) );
+    PyObject* obj_raw = weakref_get_object( objref.get() );
+    if( !obj_raw )
+    {
+        return nullptr;
+    }
+    cppy::ptr obj( cppy::incref( obj_raw ) );
     if( obj.is_none() )
     {
         Py_RETURN_NONE;
@@ -633,7 +639,12 @@ PyObject*
 BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
 {
     cppy::ptr objref( cppy::incref( self->objref ) );
-    cppy::ptr obj( cppy::incref( PyWeakref_GET_OBJECT( objref.get() ) ) );
+    PyObject* obj_raw = weakref_get_object( objref.get() );
+    if( !obj_raw )
+    {
+        return nullptr;
+    }
+    cppy::ptr obj( cppy::incref( obj_raw ) );
     if( obj.is_none() )
     {
         Py_RETURN_NONE;
@@ -720,7 +731,12 @@ PyObject*
 BoundSignal_connect( BoundSignal* self, PyObject* slot )
 {
     cppy::ptr objref( cppy::incref( self->objref ) );
-    cppy::ptr obj( cppy::incref( PyWeakref_GET_OBJECT( objref.get() ) ) );
+    PyObject* obj_raw = weakref_get_object( objref.get() );
+    if( !obj_raw )
+    {
+        return nullptr;
+    }
+    cppy::ptr obj( cppy::incref( obj_raw ) );
     if( obj.is_none() )
     {
         Py_RETURN_NONE;

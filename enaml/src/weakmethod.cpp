@@ -9,6 +9,7 @@
 #include <sstream>
 #include <cppy/cppy.h>
 #include <structmember.h>  // Included to access offsetof
+#include "weakref_compat.h"
 
 
 namespace enaml
@@ -222,7 +223,12 @@ PyObject*
 WeakMethod_call( WeakMethod* self, PyObject* args, PyObject* kwargs )
 {
     cppy::ptr selfref( cppy::incref( self->selfref ) );
-    cppy::ptr mself( cppy::incref( PyWeakref_GET_OBJECT( selfref.get() ) ) );
+    PyObject* mself_raw = weakref_get_object( selfref.get() );
+    if( !mself_raw )
+    {
+        return nullptr;
+    }
+    cppy::ptr mself( cppy::incref( mself_raw ) );
     if( mself.is_none() )
     {
         Py_RETURN_NONE;
