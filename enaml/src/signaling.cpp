@@ -404,7 +404,7 @@ _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
     {
         return nullptr;
     }
-    cppy::ptr obj( cppy::incref( obj_raw ) );
+    cppy::ptr obj( obj_raw );
     if( obj.is_none() )
     {
         Py_RETURN_NONE;
@@ -644,7 +644,7 @@ BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
     {
         return nullptr;
     }
-    cppy::ptr obj( cppy::incref( obj_raw ) );
+    cppy::ptr obj( obj_raw );
     if( obj.is_none() )
     {
         Py_RETURN_NONE;
@@ -736,7 +736,7 @@ BoundSignal_connect( BoundSignal* self, PyObject* slot )
     {
         return nullptr;
     }
-    cppy::ptr obj( cppy::incref( obj_raw ) );
+    cppy::ptr obj( obj_raw );
     if( obj.is_none() )
     {
         Py_RETURN_NONE;
