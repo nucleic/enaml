@@ -228,7 +228,7 @@ WeakMethod_call( WeakMethod* self, PyObject* args, PyObject* kwargs )
     {
         return nullptr;
     }
-    cppy::ptr mself( cppy::incref( mself_raw ) );
+    cppy::ptr mself( mself_raw );
     if( mself.is_none() )
     {
         Py_RETURN_NONE;

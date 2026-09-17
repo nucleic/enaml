@@ -104,7 +104,7 @@ CallableRef_call( CallableRef* self, PyObject* args, PyObject* kwargs )
     {
         return nullptr;
     }
-    cppy::ptr objptr( cppy::incref( obj_raw ) );
+    cppy::ptr objptr( obj_raw );
     if( objptr.is_none() )
     {
         Py_RETURN_NONE;
