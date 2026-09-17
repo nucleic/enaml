@@ -480,7 +480,7 @@ simple_stmt (memo):
     | &"type" type_alias
     | e=star_expressions { ast.Expr(value=e, LOCATIONS) }
     | &'return' return_stmt
-    | &('import' | 'from') import_stmt
+    | &('import' | 'from' | "lazy") import_stmt
     | &'raise' raise_stmt
     | 'pass' { ast.Pass(LOCATIONS) }
     | &'del' del_stmt
@@ -597,14 +597,31 @@ import_stmt[ast.Import]:
 # Import statements
 # -----------------
 
-import_name[ast.Import]: 'import' a=dotted_as_names { ast.Import(names=a, LOCATIONS) }
+import_name[ast.Import]: lazy="lazy"? 'import' a=dotted_as_names {
+    ast.Import(names=a, is_lazy=1 if lazy else 0, LOCATIONS)
+    if sys.version_info >= (3, 15) else
+    self.check_version((3, 15), "Lazy imports are", ast.Import(names=a, LOCATIONS))
+    if lazy else
+    ast.Import(names=a, LOCATIONS)
+ }
 
 # note below: the ('.' | '...') is necessary because '...' is tokenized as ELLIPSIS
 import_from[ast.ImportFrom]:
-    | 'from' a=('.' | '...')* b=dotted_name 'import' c=import_from_targets {
+    | invalid_import_from
+    | lazy="lazy"? 'from' a=('.' | '...')* b=dotted_name 'import' c=import_from_targets {
+        ast.ImportFrom(module=b, names=c, level=self.extract_import_level(a), is_lazy=1 if lazy else 0, LOCATIONS)
+        if sys.version_info >= (3, 15) else
+        self.check_version((3, 15), "Lazy imports are",
+            ast.ImportFrom(module=b, names=c, level=self.extract_import_level(a), LOCATIONS))
+        if lazy else
         ast.ImportFrom(module=b, names=c, level=self.extract_import_level(a), LOCATIONS)
      }
-    | 'from' a=('.' | '...')+ 'import' b=import_from_targets {
+    | lazy="lazy"? 'from' a=('.' | '...')+ 'import' b=import_from_targets {
+        ast.ImportFrom(names=b, level=self.extract_import_level(a), is_lazy=1 if lazy else 0, LOCATIONS)
+        if sys.version_info >= (3, 15) else
+        self.check_version((3, 15), "Lazy imports are",
+            ast.ImportFrom(names=b, level=self.extract_import_level(a), LOCATIONS))
+        if lazy else
         ast.ImportFrom(names=b, level=self.extract_import_level(a), LOCATIONS)
         if sys.version_info >= (3, 9) else
         ast.ImportFrom(module=None, names=b, level=self.extract_import_level(a), LOCATIONS)
@@ -931,16 +948,25 @@ try_stmt[ast.Try]:
 
 except_block[ast.ExceptHandler]:
     | invalid_except_stmt_indent
+    | invalid_except_stmt
     | 'except' e=expression t=['as' z=NAME { z.string }] ':' b=block {
         ast.ExceptHandler(type=e, name=t, body=b, LOCATIONS) }
     | 'except' ':' b=block { ast.ExceptHandler(type=None, name=None, body=b, LOCATIONS) }
-    | invalid_except_stmt
+    | 'except' e=expressions ':' b=block {
+        ast.ExceptHandler(type=e, name=None, body=b, LOCATIONS)
+        if self.py_version >= (3, 14)
+        else None }
 except_star_block[ast.ExceptHandler]:
     | invalid_except_star_stmt_indent
+    | invalid_except_stmt
     | 'except' '*' e=expression t=['as' z=NAME { z.string }] ':' b=block {
         ast.ExceptHandler(type=e, name=t, body=b, LOCATIONS)
      }
-    | invalid_except_stmt
+    | 'except' '*' e=expressions ':' b=block {
+        ast.ExceptHandler(type=e, name=None, body=b, LOCATIONS)
+        if self.py_version >= (3, 14)
+        else None
+     }
 finally_block[list]:
     | invalid_finally_stmt
     | 'finally' &&':' a=block { a }
@@ -1067,7 +1093,7 @@ pattern_capture_target[str]:
     | !"_" name=NAME !('.' | '(' | '=') { name.string }
 
 wildcard_pattern["ast.MatchAs"]:
-    | "_" { ast.MatchAs(pattern=None, target=None, LOCATIONS) }
+    | "_" { ast.MatchAs(pattern=None, name=None, LOCATIONS) }
 
 value_pattern["ast.MatchValue"]:
     | attr=attr !('.' | '(' | '=') { ast.MatchValue(value=attr, LOCATIONS) }
@@ -1564,19 +1590,10 @@ lambda_param[ast.arg]: a=NAME {
 
 fstring_mid:
     | fstring_replacement_field
-    | t=FSTRING_MIDDLE { ast.Constant(value=t.string, LOCATIONS) }
+    | t=FSTRING_MIDDLE { ast.Constant(value=self._decode_fstring_literal(t.string), LOCATIONS) }
 fstring_replacement_field:
-    | '{' a=(yield_expr | star_expressions) debug_expr="="? conversion=[fstring_conversion] format=[fstring_full_format_spec] rbrace='}' {
-        ast.FormattedValue(
-            value=a,
-            conversion=(
-                conversion.decode()[0]
-                if conversion else
-                (b'r'[0] if debug_expr else -1)
-            ),
-            format_spec=format,
-            LOCATIONS
-        )
+    | lbrace='{' a=annotated_rhs debug_expr='='? conversion=[fstring_conversion] format=[fstring_full_format_spec] rbrace='}' {
+        self.fstring_debug_value(a, lbrace, debug_expr, conversion, format, rbrace)
      }
     | invalid_replacement_field
 fstring_conversion[int]:
@@ -1584,16 +1601,16 @@ fstring_conversion[int]:
 fstring_full_format_spec:
     | ':' spec=fstring_format_spec* {
         ast.JoinedStr(
-            values=spec if spec and (len(spec) > 1 or spec[0].value) else [],
+            values=self._flatten_joinedstr_values(spec),
             LOCATIONS,
         )
      }
 fstring_format_spec:
-    | t=FSTRING_MIDDLE { ast.Constant(value=t.string, LOCATIONS) }
+    | t=FSTRING_MIDDLE { ast.Constant(value=self._decode_fstring_literal(t.string), LOCATIONS) }
     | fstring_replacement_field
 fstring:
     | a=FSTRING_START b=fstring_mid* c=FSTRING_END {
-        ast.JoinedStr(values=b, LOCATIONS)
+        ast.JoinedStr(values=self._flatten_joinedstr_values(b), LOCATIONS)
      }
 
 strings (memo): a=(fstring|STRING)+ {
@@ -2099,6 +2116,12 @@ invalid_import:
             "Did you mean to use 'from ... import ...' instead?", a
         )
      }
+invalid_import_from:
+    | 'from' ('.' | '...')* dotted_name a="lazy" 'import' import_from_targets {
+        self.raise_syntax_error_known_location(
+            "use 'lazy from ... ' instead of 'from ... lazy import'", a
+        )
+     }
 invalid_import_from_targets[NoReturn]:
     | import_from_as_names ',' NEWLINE {
         self.raise_syntax_error("trailing comma not allowed without surrounding parentheses")
@@ -2140,7 +2163,27 @@ invalid_try_stmt[NoReturn]:
      }
 invalid_except_stmt[None]:
     | 'except' '*'? a=expression ',' expressions ['as' NAME ] ':' {
-        self.raise_syntax_error_starting_from("multiple exception types must be parenthesized", a)
+        self.raise_syntax_error_known_range(
+            "multiple exception types must be parenthesized when using 'as'"
+            if self.py_version >= (3, 14)
+            else "multiple exception types must be parenthesized",
+            a,
+            a,
+        )
+     }
+    | 'except' '*'? a=expression ',' b=expressions ':' {
+        self.raise_syntax_error_known_range(
+            "multiple exception types must be parenthesized",
+            a,
+            b,
+        )
+        if self.py_version < (3, 14)
+        else None
+     }
+    | 'except' '*'? expression a=',' {
+        self.raise_syntax_error_known_location("invalid syntax", a)
+        if self.py_version < (3, 14)
+        else None
      }
     | a='except' '*'? expression ['as' NAME ] NEWLINE { self.raise_syntax_error("expected ':'") }
     | a='except' '*'? NEWLINE { self.raise_syntax_error("expected ':'") }
@@ -2198,8 +2241,11 @@ invalid_as_pattern[NoReturn]:
     | or_pattern 'as' a="_" {
         self.raise_syntax_error_known_location("cannot use '_' as a target", a)
      }
-    | or_pattern 'as' !NAME a=expression {
-        self.raise_syntax_error_known_location("invalid pattern target", a)
+    | or_pattern 'as' a=expression {
+        self.raise_syntax_error_known_location(
+            f"cannot use {self.get_expr_name(a)} as pattern target", a)
+        if self.py_version >= (3, 14)
+        else self.raise_syntax_error_known_location("invalid pattern target", a)
      }
 invalid_class_pattern[NoReturn]:
     | name_or_attr '(' a=invalid_class_argument_pattern  {

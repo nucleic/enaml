@@ -135,6 +135,116 @@ class BasePythonParser(Parser):
         )
         raise IndentationError(msg, args)
 
+    def _advance_location(self, start: tuple[int, int], text: str) -> tuple[int, int]:
+        line, col = start
+        for ch in text:
+            if ch in ("\n", "\r"):
+                line += 1
+                col = 0
+            else:
+                col += 1
+        return line, col
+
+    def _source_offset(self, start: tuple[int, int], end: tuple[int, int]) -> int:
+        line, col = start
+        offset = 0
+        while line < end[0]:
+            offset += len(self._tokenizer.get_lines([line])[0]) - col
+            line += 1
+            col = 0
+        offset += end[1] - col
+        return offset
+
+    def _decode_fstring_literal(self, text: str) -> str:
+        """Decode escape sequences in a literal f-string segment."""
+        return text.encode("utf-8").decode("unicode_escape")
+
+    def fstring_debug_prefix(
+        self,
+        lbrace: tokenize.TokenInfo,
+        debug_expr: tokenize.TokenInfo,
+        rbrace: tokenize.TokenInfo,
+    ) -> str:
+        """Reconstruct the literal prefix emitted before a debug f-string value."""
+        start = lbrace.end
+        stop = rbrace.start
+        lines = self._tokenizer.get_lines(list(range(start[0], stop[0] + 1)))
+
+        if start[0] == stop[0]:
+            inside = lines[0][start[1] : stop[1]]
+        else:
+            pieces = []
+            for i, line_no in enumerate(range(start[0], stop[0] + 1)):
+                line = lines[i]
+                if line_no == start[0]:
+                    pieces.append(line[start[1] :])
+                elif line_no == stop[0]:
+                    pieces.append(line[: stop[1]])
+                else:
+                    pieces.append(line)
+            inside = "".join(pieces)
+
+        eq_offset = self._source_offset(lbrace.end, debug_expr.start)
+        for idx in range(eq_offset + 1, len(inside)):
+            if inside[idx] in ("!", ":"):
+                prefix = inside[:idx]
+                return self._decode_fstring_literal(prefix)
+        return self._decode_fstring_literal(inside)
+
+    def fstring_debug_value(
+        self,
+        value: ast.AST,
+        lbrace: tokenize.TokenInfo,
+        debug_expr: Optional[tokenize.TokenInfo],
+        conversion: Optional[int],
+        format_spec: Optional[ast.AST],
+        rbrace: tokenize.TokenInfo,
+    ) -> ast.AST:
+        """Build the AST for a debug f-string replacement field."""
+        if debug_expr is None:
+            return ast.FormattedValue(
+                value=value,
+                conversion=(conversion if conversion is not None else -1),
+                format_spec=format_spec,
+                lineno=lbrace.start[0],
+                col_offset=lbrace.start[1],
+                end_lineno=rbrace.end[0],
+                end_col_offset=rbrace.end[1],
+            )
+
+        prefix = self.fstring_debug_prefix(lbrace, debug_expr, rbrace)
+        prefix_start = lbrace.end
+        prefix_end = self._advance_location(prefix_start, prefix)
+        formatted = ast.FormattedValue(
+            value=value,
+            conversion=(
+                conversion
+                if conversion is not None
+                else (ord("r") if format_spec is None else -1)
+            ),
+            format_spec=format_spec,
+            lineno=lbrace.start[0],
+            col_offset=lbrace.start[1],
+            end_lineno=rbrace.end[0],
+            end_col_offset=rbrace.end[1],
+        )
+        return ast.JoinedStr(
+            values=[
+                ast.Constant(
+                    value=prefix,
+                    lineno=prefix_start[0],
+                    col_offset=prefix_start[1],
+                    end_lineno=prefix_end[0],
+                    end_col_offset=prefix_end[1],
+                ),
+                formatted,
+            ],
+            lineno=lbrace.start[0],
+            col_offset=lbrace.start[1],
+            end_lineno=rbrace.end[0],
+            end_col_offset=rbrace.end[1],
+        )
+
     def get_expr_name(self, node) -> str:
         """Get a descriptive name for an expression."""
         # See https://github.com/python/cpython/blob/master/Parser/pegen.c#L161
@@ -220,8 +330,8 @@ class BasePythonParser(Parser):
 
     def check_fstring_conversion(
         self, mark: tokenize.TokenInfo, name: tokenize.TokenInfo
-    ) -> tokenize.TokenInfo:
-        if mark.lineno != name.lineno or mark.col_offset != name.col_offset:
+    ) -> int:
+        if mark.end != name.start:
             self.raise_syntax_error_known_range(
                 "f-string: conversion type must come right after the exclamanation mark",
                 mark,
@@ -235,7 +345,7 @@ class BasePythonParser(Parser):
                 name,
             )
 
-        return name
+        return ord(s)
 
     def _concat_strings_in_constant(self, parts) -> ast.Constant:
         s = ast.literal_eval(parts[0].string)
@@ -251,6 +361,22 @@ class BasePythonParser(Parser):
         if parts[0].string.startswith("u"):
             args["kind"] = "u"
         return ast.Constant(**args)
+
+    def _flatten_joinedstr_values(self, values):
+        """Unwrap nested JoinedStr nodes while preserving value order.
+
+        Empty Constant nodes are filtered out.
+
+        """
+        flattened = []
+        for value in values:
+            if isinstance(value, ast.JoinedStr):
+                flattened.extend(self._flatten_joinedstr_values(value.values))
+            elif isinstance(value, ast.Constant) and value.value == "":
+                continue
+            else:
+                flattened.append(value)
+        return flattened
 
     def concatenate_strings(self, parts):
         """Concatenate multiple tokens and ast.JoinedStr"""
@@ -271,7 +397,7 @@ class BasePythonParser(Parser):
                 if ss:
                     values.append(self._concat_strings_in_constant(ss))
                     ss.clear()
-                values.extend(p.values)
+                values.extend(self._flatten_joinedstr_values(p.values))
             else:
                 ss.append(p)
 
