@@ -40,9 +40,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . create_enaml_module ( itertools . chain . from_iterable ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return self . create_enaml_module ( itertools . chain . from_iterable ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def enaml_item(self) -> Optional[List [ast . AST]]:
@@ -51,19 +51,19 @@ class EnamlParser(Parser):
         if (
             (statement := self.statement())
         ):
-            return statement
+            return statement;
         self._reset(mark)
         if (
             (a := self.enamldef())
         ):
-            return [a]
+            return [a];
         self._reset(mark)
         if (
             (a := self.template())
         ):
-            return [a]
+            return [a];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def enamldef(self) -> Optional[enaml_ast . EnamlDef]:
@@ -92,9 +92,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . validate_enamldef ( enaml_ast . EnamlDef ( typename = a . string , base = b . string , identifier = c . string if c else '' , docstring = d [0] , body = [x for x in d [1] if not isinstance ( x , ast . Pass )] , pragmas = p , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . validate_enamldef ( enaml_ast . EnamlDef ( typename = a . string , base = b . string , identifier = c . string if c else '' , docstring = d [0] , body = [x for x in d [1] if not isinstance ( x , ast . Pass )] , pragmas = p , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def enamldef_body(self) -> Optional[Tuple [str , list]]:
@@ -113,7 +113,7 @@ class EnamlParser(Parser):
             and
             (self.expect('DEDENT'))
         ):
-            return a . string , b
+            return a . string , b;
         self._reset(mark)
         if (
             (self.expect('NEWLINE'))
@@ -124,21 +124,21 @@ class EnamlParser(Parser):
             and
             (self.expect('DEDENT'))
         ):
-            return "" , b
+            return "" , b;
         self._reset(mark)
         if (
             (a := self.enamldef_simple_item())
         ):
-            return "" , [a]
+            return "" , [a];
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_block())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def enamldef_item(self) -> Optional[Any]:
@@ -147,24 +147,24 @@ class EnamlParser(Parser):
         if (
             (enamldef_simple_item := self.enamldef_simple_item())
         ):
-            return enamldef_simple_item
+            return enamldef_simple_item;
         self._reset(mark)
         if (
             (decl_funcdef := self.decl_funcdef())
         ):
-            return decl_funcdef
+            return decl_funcdef;
         self._reset(mark)
         if (
             (child_def := self.child_def())
         ):
-            return child_def
+            return child_def;
         self._reset(mark)
         if (
             (template_inst := self.template_inst())
         ):
-            return template_inst
+            return template_inst;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def enamldef_simple_item(self) -> Optional[Any]:
@@ -175,17 +175,17 @@ class EnamlParser(Parser):
         if (
             (binding := self.binding())
         ):
-            return binding
+            return binding;
         self._reset(mark)
         if (
             (ex_binding := self.ex_binding())
         ):
-            return ex_binding
+            return ex_binding;
         self._reset(mark)
         if (
             (storage_alias_const_expr := self.storage_alias_const_expr())
         ):
-            return storage_alias_const_expr
+            return storage_alias_const_expr;
         self._reset(mark)
         if (
             (self.expect('pass'))
@@ -194,9 +194,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def pragmas(self) -> Optional[List [enaml_ast . Pragma]]:
@@ -205,9 +205,9 @@ class EnamlParser(Parser):
         if (
             (_loop1_6 := self._loop1_6())
         ):
-            return _loop1_6
+            return _loop1_6;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def pragma(self) -> Optional[enaml_ast . Pragma]:
@@ -226,9 +226,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . Pragma ( command = a . string , arguments = args or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . Pragma ( command = a . string , arguments = args or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def pragma_arg(self) -> Optional[enaml_ast . PragmaArg]:
@@ -237,19 +237,19 @@ class EnamlParser(Parser):
         if (
             (a := self.name())
         ):
-            return enaml_ast . PragmaArg ( kind = "token" , value = a . string )
+            return enaml_ast . PragmaArg ( kind = "token" , value = a . string );
         self._reset(mark)
         if (
             (a := self.number())
         ):
-            return enaml_ast . PragmaArg ( kind = "number" , value = a )
+            return enaml_ast . PragmaArg ( kind = "number" , value = a );
         self._reset(mark)
         if (
             (a := self.string())
         ):
-            return enaml_ast . PragmaArg ( kind = "string" , value = a )
+            return enaml_ast . PragmaArg ( kind = "string" , value = a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def storage_alias_const_expr(self) -> Optional[Any]:
@@ -258,19 +258,19 @@ class EnamlParser(Parser):
         if (
             (alias_expr := self.alias_expr())
         ):
-            return alias_expr
+            return alias_expr;
         self._reset(mark)
         if (
             (const_expr := self.const_expr())
         ):
-            return const_expr
+            return const_expr;
         self._reset(mark)
         if (
             (storage_expr := self.storage_expr())
         ):
-            return storage_expr
+            return storage_expr;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def alias_expr(self) -> Optional[enaml_ast . AliasExpr]:
@@ -289,9 +289,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . AliasExpr ( name = a . string , target = b [0] . string if b else a . string , chain = tuple ( p . string for p in b [1 :] ) if b else ( ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . AliasExpr ( name = a . string , target = b [0] . string if b else a . string , chain = tuple ( p . string for p in b [1 :] ) if b else ( ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def const_expr(self) -> Optional[enaml_ast . ConstExpr]:
@@ -312,9 +312,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . ConstExpr ( name = a . string , typename = b , expr = d . value , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . ConstExpr ( name = a . string , typename = b , expr = d . value , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def storage_expr(self) -> Optional[enaml_ast . StorageExpr]:
@@ -333,7 +333,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . StorageExpr ( name = b . string , kind = a . string , typename = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . StorageExpr ( name = b . string , kind = a . string , typename = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self._tmp_12())
@@ -346,9 +346,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . StorageExpr ( name = b . string , kind = a . string , typename = c , expr = e , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . StorageExpr ( name = b . string , kind = a . string , typename = c , expr = e , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def child_def(self) -> Optional[enaml_ast . ChildDef]:
@@ -365,7 +365,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . ChildDef ( typename = a . string , identifier = "" , body = [x for x in c if not isinstance ( x , ast . Pass )] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . ChildDef ( typename = a . string , identifier = "" , body = [x for x in c if not isinstance ( x , ast . Pass )] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.name())
@@ -380,9 +380,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . ChildDef ( typename = a . string , identifier = b . string , body = [x for x in c if not isinstance ( x , ast . Pass )] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . ChildDef ( typename = a . string , identifier = b . string , body = [x for x in c if not isinstance ( x , ast . Pass )] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def child_def_body(self) -> Optional[list]:
@@ -397,21 +397,21 @@ class EnamlParser(Parser):
             and
             (self.expect('DEDENT'))
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             (a := self.child_def_simple_item())
         ):
-            return [a]
+            return [a];
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_block())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def child_def_item(self) -> Optional[Any]:
@@ -420,24 +420,24 @@ class EnamlParser(Parser):
         if (
             (child_def_simple_item := self.child_def_simple_item())
         ):
-            return child_def_simple_item
+            return child_def_simple_item;
         self._reset(mark)
         if (
             (decl_funcdef := self.decl_funcdef())
         ):
-            return decl_funcdef
+            return decl_funcdef;
         self._reset(mark)
         if (
             (child_def := self.child_def())
         ):
-            return child_def
+            return child_def;
         self._reset(mark)
         if (
             (template_inst := self.template_inst())
         ):
-            return template_inst
+            return template_inst;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def child_def_simple_item(self) -> Optional[Any]:
@@ -448,22 +448,22 @@ class EnamlParser(Parser):
         if (
             (binding := self.binding())
         ):
-            return binding
+            return binding;
         self._reset(mark)
         if (
             (ex_binding := self.ex_binding())
         ):
-            return ex_binding
+            return ex_binding;
         self._reset(mark)
         if (
             (alias_expr := self.alias_expr())
         ):
-            return alias_expr
+            return alias_expr;
         self._reset(mark)
         if (
             (storage_expr := self.storage_expr())
         ):
-            return storage_expr
+            return storage_expr;
         self._reset(mark)
         if (
             (self.expect('pass'))
@@ -472,9 +472,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def binding(self) -> Optional[enaml_ast . Binding]:
@@ -489,9 +489,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . Binding ( name = a . string , expr = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . Binding ( name = a . string , expr = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def ex_binding(self) -> Optional[enaml_ast . ExBinding]:
@@ -506,9 +506,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . ExBinding ( chain = tuple ( p . string for p in a ) , expr = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . ExBinding ( chain = tuple ( p . string for p in a ) , expr = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def operator_expr(self) -> Optional[Any]:
@@ -525,7 +525,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . OperatorExpr ( operator = a . string , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . OperatorExpr ( operator = a . string , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self._tmp_18())
@@ -536,7 +536,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . OperatorExpr ( operator = a . string , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if isinstance ( b . ast . body , self . INVERTABLE ) else self . raise_syntax_error_known_location ( "can't assign to expression of this form" , b )
+            return enaml_ast . OperatorExpr ( operator = a . string , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if isinstance ( b . ast . body , self . INVERTABLE ) else self . raise_syntax_error_known_location ( "can't assign to expression of this form" , b );
         self._reset(mark)
         if (
             (a := self.expect(':'))
@@ -547,7 +547,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . OperatorExpr ( operator = '::' , value = self . create_python_func_for_operator ( c , self . NOTIFICATION_DISALLOWED , '%s not allowed in a notification block' ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if a . end == b . start else self . raise_syntax_error_known_range ( "invalid syntax. Did you mean '::' ?" , a , b )
+            return enaml_ast . OperatorExpr ( operator = '::' , value = self . create_python_func_for_operator ( c , self . NOTIFICATION_DISALLOWED , '%s not allowed in a notification block' ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if a . end == b . start else self . raise_syntax_error_known_range ( "invalid syntax. Did you mean '::' ?" , a , b );
         self._reset(mark)
         if (
             (self.expect('<<'))
@@ -556,9 +556,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . OperatorExpr ( operator = '<<' , value = self . create_python_func_for_operator ( a , self . SUBSCRIPTION_DISALLOWED , '%s not allowed in a subscription block' ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . OperatorExpr ( operator = '<<' , value = self . create_python_func_for_operator ( a , self . SUBSCRIPTION_DISALLOWED , '%s not allowed in a subscription block' ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def py_expr(self) -> Optional[enaml_ast . PythonExpression]:
@@ -571,9 +571,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . PythonExpression ( ast = ast . Expression ( body = a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . PythonExpression ( ast = ast . Expression ( body = a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def decl_funcdef(self) -> Optional[Any]:
@@ -588,14 +588,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . AsyncFuncDef ( funcdef = ( ast . AsyncFunctionDef ( name = a . funcdef . name , args = a . funcdef . args , returns = a . funcdef . returns , body = a . funcdef . body , decorator_list = a . funcdef . decorator_list , type_params = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) if sys . version_info >= ( 3 , 12 ) else ast . AsyncFunctionDef ( name = a . funcdef . name , args = a . funcdef . args , returns = a . funcdef . returns , body = a . funcdef . body , decorator_list = a . funcdef . decorator_list , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) ) , is_override = a . is_override , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . AsyncFuncDef ( funcdef = ( ast . AsyncFunctionDef ( name = a . funcdef . name , args = a . funcdef . args , returns = a . funcdef . returns , body = a . funcdef . body , decorator_list = a . funcdef . decorator_list , type_params = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) if sys . version_info >= ( 3 , 12 ) else ast . AsyncFunctionDef ( name = a . funcdef . name , args = a . funcdef . args , returns = a . funcdef . returns , body = a . funcdef . body , decorator_list = a . funcdef . decorator_list , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) ) , is_override = a . is_override , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (sync_decl_fundef := self.sync_decl_fundef())
         ):
-            return sync_decl_fundef
+            return sync_decl_fundef;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def sync_decl_fundef(self) -> Optional[Any]:
@@ -622,7 +622,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . FuncDef ( funcdef = ( ast . FunctionDef ( name = a . string , args = b or self . make_arguments ( None , [] , None , [] , None ) , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , type_params = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else ast . FunctionDef ( name = a . string , args = b or self . make_arguments ( None , [] , None , [] , None ) , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) ) , is_override = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . FuncDef ( funcdef = ( ast . FunctionDef ( name = a . string , args = b or self . make_arguments ( None , [] , None , [] , None ) , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , type_params = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else ast . FunctionDef ( name = a . string , args = b or self . make_arguments ( None , [] , None , [] , None ) , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) ) , is_override = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.name())
@@ -645,9 +645,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . FuncDef ( funcdef = ( ast . FunctionDef ( name = a . string , args = b or self . make_arguments ( None , [] , None , [] , None ) , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , type_params = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else ast . FunctionDef ( name = a . string , args = b or self . make_arguments ( None , [] , None , [] , None ) , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) ) , is_override = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if x . end == y . start else self . raise_syntax_error_known_range ( "invalid syntax. Did you mean '=>' ?" , x , y )
+            return enaml_ast . FuncDef ( funcdef = ( ast . FunctionDef ( name = a . string , args = b or self . make_arguments ( None , [] , None , [] , None ) , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , type_params = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else ast . FunctionDef ( name = a . string , args = b or self . make_arguments ( None , [] , None , [] , None ) , returns = r , body = self . validate_decl_func_body ( c ) , decorator_list = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) ) , is_override = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if x . end == y . start else self . raise_syntax_error_known_range ( "invalid syntax. Did you mean '=>' ?" , x , y );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template(self) -> Optional[enaml_ast . Template]:
@@ -674,9 +674,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . validate_template ( enaml_ast . Template ( name = b . string , parameters = ( c or enaml_ast . TemplateParameters ( positional = [] , keywords = [] , starparam = "" ) ) , docstring = d [0] , body = [i for i in d [1] if not isinstance ( i , ast . Pass )] , pragmas = a or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . validate_template ( enaml_ast . Template ( name = b . string , parameters = ( c or enaml_ast . TemplateParameters ( positional = [] , keywords = [] , starparam = "" ) ) , docstring = d [0] , body = [i for i in d [1] if not isinstance ( i , ast . Pass )] , pragmas = a or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_body(self) -> Optional[Tuple [str , list]]:
@@ -691,7 +691,7 @@ class EnamlParser(Parser):
             and
             (self.expect('DEDENT'))
         ):
-            return "" , a
+            return "" , a;
         self._reset(mark)
         if (
             (self.expect('NEWLINE'))
@@ -706,21 +706,21 @@ class EnamlParser(Parser):
             and
             (self.expect('DEDENT'))
         ):
-            return d . string , a
+            return d . string , a;
         self._reset(mark)
         if (
             (a := self.template_simple_item())
         ):
-            return "" , [a]
+            return "" , [a];
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_block())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_item(self) -> Optional[Any]:
@@ -729,19 +729,19 @@ class EnamlParser(Parser):
         if (
             (template_simple_item := self.template_simple_item())
         ):
-            return template_simple_item
+            return template_simple_item;
         self._reset(mark)
         if (
             (child_def := self.child_def())
         ):
-            return child_def
+            return child_def;
         self._reset(mark)
         if (
             (template_inst := self.template_inst())
         ):
-            return template_inst
+            return template_inst;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_simple_item(self) -> Optional[Any]:
@@ -752,7 +752,7 @@ class EnamlParser(Parser):
         if (
             (const_expr := self.const_expr())
         ):
-            return const_expr
+            return const_expr;
         self._reset(mark)
         if (
             (self.expect('pass'))
@@ -761,9 +761,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_params(self) -> Optional[Any]:
@@ -774,16 +774,16 @@ class EnamlParser(Parser):
             and
             (b := self._tmp_25(),)
         ):
-            return enaml_ast . TemplateParameters ( ** self . validate_template_paramlist ( a , b . string if b else "" ) )
+            return enaml_ast . TemplateParameters ( ** self . validate_template_paramlist ( a , b . string if b else "" ) );
         self._reset(mark)
         if (
             (self.expect('*'))
             and
             (b := self.name())
         ):
-            return enaml_ast . TemplateParameters ( ** self . validate_template_paramlist ( [] , b . string ) )
+            return enaml_ast . TemplateParameters ( ** self . validate_template_paramlist ( [] , b . string ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_param(self) -> Optional[Any]:
@@ -800,7 +800,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . PositionalParameter ( name = a . string , specialization = enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return enaml_ast . PositionalParameter ( name = a . string , specialization = enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         if (
             (a := self.name())
@@ -811,16 +811,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . KeywordParameter ( name = a . string , default = enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return enaml_ast . KeywordParameter ( name = a . string , default = enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         if (
             (a := self.name())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . PositionalParameter ( name = a . string , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . PositionalParameter ( name = a . string , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_inst(self) -> Optional[Any]:
@@ -847,9 +847,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . validate_template_inst ( enaml_ast . TemplateInst ( name = b . string , arguments = ( c or enaml_ast . TemplateArguments ( args = [] , stararg = None ) ) , identifiers = d , pragmas = a or [] , body = [i for i in e if not isinstance ( i , ast . Pass )] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) )
+            return self . validate_template_inst ( enaml_ast . TemplateInst ( name = b . string , arguments = ( c or enaml_ast . TemplateArguments ( args = [] , stararg = None ) ) , identifiers = d , pragmas = a or [] , body = [i for i in e if not isinstance ( i , ast . Pass )] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_args(self) -> Optional[Any]:
@@ -864,7 +864,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . TemplateArguments ( args = a , stararg = ( enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) if b else None ) , )
+            return enaml_ast . TemplateArguments ( args = a , stararg = ( enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) if b else None ) , );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -873,9 +873,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . TemplateArguments ( args = [] , stararg = enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) , )
+            return enaml_ast . TemplateArguments ( args = [] , stararg = enaml_ast . PythonExpression ( ast = ast . Expression ( body = b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) , );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_argument(self) -> Optional[Any]:
@@ -888,7 +888,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . PythonExpression ( ast = ast . Expression ( body = a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return enaml_ast . PythonExpression ( ast = ast . Expression ( body = a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         if (
             (a := self.expression())
@@ -897,9 +897,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . PythonExpression ( ast . GeneratorExp ( elt = a , generators = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return enaml_ast . PythonExpression ( ast . GeneratorExp ( elt = a , generators = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_ids(self) -> Optional[Any]:
@@ -914,7 +914,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . TemplateIdentifiers ( names = [p . string for p in a] , starname = b . string if b else "" , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . TemplateIdentifiers ( names = [p . string for p in a] , starname = b . string if b else "" , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -923,9 +923,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . TemplateIdentifiers ( names = [] , starname = b . string , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return enaml_ast . TemplateIdentifiers ( names = [] , starname = b . string , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_inst_body(self) -> Optional[Any]:
@@ -940,21 +940,21 @@ class EnamlParser(Parser):
             and
             (self.expect('DEDENT'))
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             (a := self.template_inst_item())
         ):
-            return [a]
+            return [a];
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_block())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def template_inst_item(self) -> Optional[Any]:
@@ -971,7 +971,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return enaml_ast . TemplateInstBinding ( name = a . string , chain = tuple ( p . string for p in b ) if b else ( ) , expr = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return enaml_ast . TemplateInstBinding ( name = a . string , chain = tuple ( p . string for p in b ) if b else ( ) , expr = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         if (
             (self.expect('pass'))
@@ -980,9 +980,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def statements(self) -> Optional[list]:
@@ -991,9 +991,9 @@ class EnamlParser(Parser):
         if (
             (a := self._loop1_35())
         ):
-            return list ( itertools . chain . from_iterable ( a ) )
+            return list ( itertools . chain . from_iterable ( a ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def statement(self) -> Optional[list]:
@@ -1002,14 +1002,14 @@ class EnamlParser(Parser):
         if (
             (a := self.compound_stmt())
         ):
-            return [a]
+            return [a];
         self._reset(mark)
         if (
             (a := self.simple_stmts())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def statement_newline(self) -> Optional[list]:
@@ -1022,26 +1022,26 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return [a]
+            return [a];
         self._reset(mark)
         if (
             (simple_stmts := self.simple_stmts())
         ):
-            return simple_stmts
+            return simple_stmts;
         self._reset(mark)
         if (
             (self.expect('NEWLINE'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return [ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )]
+            return [ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )];
         self._reset(mark)
         if (
             (self.expect('ENDMARKER'))
         ):
-            return None
+            return None;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def simple_stmts(self) -> Optional[list]:
@@ -1054,7 +1054,7 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return [a]
+            return [a];
         self._reset(mark)
         if (
             (a := self._gather_36())
@@ -1063,9 +1063,9 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def simple_stmt(self) -> Optional[Any]:
@@ -1076,100 +1076,100 @@ class EnamlParser(Parser):
         if (
             (assignment := self.assignment())
         ):
-            return assignment
+            return assignment;
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, "type"))
             and
             (type_alias := self.type_alias())
         ):
-            return type_alias
+            return type_alias;
         self._reset(mark)
         if (
             (e := self.star_expressions())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Expr ( value = e , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Expr ( value = e , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, 'return'))
             and
             (return_stmt := self.return_stmt())
         ):
-            return return_stmt
+            return return_stmt;
         self._reset(mark)
         if (
             (self.positive_lookahead(self._tmp_38, ))
             and
             (import_stmt := self.import_stmt())
         ):
-            return import_stmt
+            return import_stmt;
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, 'raise'))
             and
             (raise_stmt := self.raise_stmt())
         ):
-            return raise_stmt
+            return raise_stmt;
         self._reset(mark)
         if (
             (self.expect('pass'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Pass ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, 'del'))
             and
             (del_stmt := self.del_stmt())
         ):
-            return del_stmt
+            return del_stmt;
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, 'yield'))
             and
             (yield_stmt := self.yield_stmt())
         ):
-            return yield_stmt
+            return yield_stmt;
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, 'assert'))
             and
             (assert_stmt := self.assert_stmt())
         ):
-            return assert_stmt
+            return assert_stmt;
         self._reset(mark)
         if (
             (self.expect('break'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Break ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Break ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('continue'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Continue ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Continue ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, 'global'))
             and
             (global_stmt := self.global_stmt())
         ):
-            return global_stmt
+            return global_stmt;
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, 'nonlocal'))
             and
             (nonlocal_stmt := self.nonlocal_stmt())
         ):
-            return nonlocal_stmt
+            return nonlocal_stmt;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def compound_stmt(self) -> Optional[Any]:
@@ -1180,56 +1180,56 @@ class EnamlParser(Parser):
             and
             (function_def := self.function_def())
         ):
-            return function_def
+            return function_def;
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, 'if'))
             and
             (if_stmt := self.if_stmt())
         ):
-            return if_stmt
+            return if_stmt;
         self._reset(mark)
         if (
             (self.positive_lookahead(self._tmp_40, ))
             and
             (class_def := self.class_def())
         ):
-            return class_def
+            return class_def;
         self._reset(mark)
         if (
             (self.positive_lookahead(self._tmp_41, ))
             and
             (with_stmt := self.with_stmt())
         ):
-            return with_stmt
+            return with_stmt;
         self._reset(mark)
         if (
             (self.positive_lookahead(self._tmp_42, ))
             and
             (for_stmt := self.for_stmt())
         ):
-            return for_stmt
+            return for_stmt;
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, 'try'))
             and
             (try_stmt := self.try_stmt())
         ):
-            return try_stmt
+            return try_stmt;
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, 'while'))
             and
             (while_stmt := self.while_stmt())
         ):
-            return while_stmt
+            return while_stmt;
         self._reset(mark)
         if (
             (match_stmt := self.match_stmt())
         ):
-            return match_stmt
+            return match_stmt;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def assignment(self) -> Optional[Any]:
@@ -1248,7 +1248,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 6 ) , "Variable annotation syntax is" , ast . AnnAssign ( target = ast . Name ( id = a . string , ctx = Store , lineno = a . start [0] , col_offset = a . start [1] , end_lineno = a . end [0] , end_col_offset = a . end [1] , ) , annotation = b , value = c , simple = 1 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) )
+            return self . check_version ( ( 3 , 6 ) , "Variable annotation syntax is" , ast . AnnAssign ( target = ast . Name ( id = a . string , ctx = Store , lineno = a . start [0] , col_offset = a . start [1] , end_lineno = a . end [0] , end_col_offset = a . end [1] , ) , annotation = b , value = c , simple = 1 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) );
         self._reset(mark)
         if (
             (a := self._tmp_44())
@@ -1261,7 +1261,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 6 ) , "Variable annotation syntax is" , ast . AnnAssign ( target = a , annotation = b , value = c , simple = 0 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) )
+            return self . check_version ( ( 3 , 6 ) , "Variable annotation syntax is" , ast . AnnAssign ( target = a , annotation = b , value = c , simple = 0 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) );
         self._reset(mark)
         if (
             (a := self._loop1_46())
@@ -1274,7 +1274,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Assign ( targets = a , value = b , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Assign ( targets = a , value = b , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         cut = False
         if (
@@ -1288,18 +1288,18 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . AugAssign ( target = a , op = b , value = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . AugAssign ( target = a , op = b , value = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if cut:
-            return None
+            return None;
         if (
             self.call_invalid_rules
             and
             (self.invalid_assignment())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def annotated_rhs(self) -> Optional[Any]:
@@ -1308,14 +1308,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def augassign(self) -> Optional[Any]:
@@ -1324,69 +1324,69 @@ class EnamlParser(Parser):
         if (
             (self.expect('+='))
         ):
-            return ast . Add ( )
+            return ast . Add ( );
         self._reset(mark)
         if (
             (self.expect('-='))
         ):
-            return ast . Sub ( )
+            return ast . Sub ( );
         self._reset(mark)
         if (
             (self.expect('*='))
         ):
-            return ast . Mult ( )
+            return ast . Mult ( );
         self._reset(mark)
         if (
             (self.expect('@='))
         ):
-            return self . check_version ( ( 3 , 5 ) , "The '@' operator is" , ast . MatMult ( ) )
+            return self . check_version ( ( 3 , 5 ) , "The '@' operator is" , ast . MatMult ( ) );
         self._reset(mark)
         if (
             (self.expect('/='))
         ):
-            return ast . Div ( )
+            return ast . Div ( );
         self._reset(mark)
         if (
             (self.expect('%='))
         ):
-            return ast . Mod ( )
+            return ast . Mod ( );
         self._reset(mark)
         if (
             (self.expect('&='))
         ):
-            return ast . BitAnd ( )
+            return ast . BitAnd ( );
         self._reset(mark)
         if (
             (self.expect('|='))
         ):
-            return ast . BitOr ( )
+            return ast . BitOr ( );
         self._reset(mark)
         if (
             (self.expect('^='))
         ):
-            return ast . BitXor ( )
+            return ast . BitXor ( );
         self._reset(mark)
         if (
             (self.expect('<<='))
         ):
-            return ast . LShift ( )
+            return ast . LShift ( );
         self._reset(mark)
         if (
             (self.expect('>>='))
         ):
-            return ast . RShift ( )
+            return ast . RShift ( );
         self._reset(mark)
         if (
             (self.expect('**='))
         ):
-            return ast . Pow ( )
+            return ast . Pow ( );
         self._reset(mark)
         if (
             (self.expect('//='))
         ):
-            return ast . FloorDiv ( )
+            return ast . FloorDiv ( );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def return_stmt(self) -> Optional[ast . Return]:
@@ -1401,9 +1401,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Return ( value = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Return ( value = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def raise_stmt(self) -> Optional[ast . Raise]:
@@ -1420,16 +1420,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Raise ( exc = a , cause = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Raise ( exc = a , cause = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('raise'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Raise ( exc = None , cause = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Raise ( exc = None , cause = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def global_stmt(self) -> Optional[ast . Global]:
@@ -1444,9 +1444,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Global ( names = [n . string for n in a] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Global ( names = [n . string for n in a] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def nonlocal_stmt(self) -> Optional[ast . Nonlocal]:
@@ -1461,9 +1461,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Nonlocal ( names = [n . string for n in a] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Nonlocal ( names = [n . string for n in a] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def del_stmt(self) -> Optional[ast . Delete]:
@@ -1480,16 +1480,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Delete ( targets = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Delete ( targets = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_del_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def yield_stmt(self) -> Optional[ast . Expr]:
@@ -1502,9 +1502,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Expr ( value = y , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Expr ( value = y , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def assert_stmt(self) -> Optional[ast . Assert]:
@@ -1521,9 +1521,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Assert ( test = a , msg = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Assert ( test = a , msg = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def import_stmt(self) -> Optional[ast . Import]:
@@ -1534,19 +1534,19 @@ class EnamlParser(Parser):
             and
             (self.invalid_import())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (import_name := self.import_name())
         ):
-            return import_name
+            return import_name;
         self._reset(mark)
         if (
             (import_from := self.import_from())
         ):
-            return import_from
+            return import_from;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def import_name(self) -> Optional[ast . Import]:
@@ -1563,9 +1563,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Import ( names = a , is_lazy = 1 if lazy else 0 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 15 ) else self . check_version ( ( 3 , 15 ) , "Lazy imports are" , ast . Import ( names = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) ) if lazy else ast . Import ( names = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Import ( names = a , is_lazy = 1 if lazy else 0 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 15 ) else self . check_version ( ( 3 , 15 ) , "Lazy imports are" , ast . Import ( names = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) ) if lazy else ast . Import ( names = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def import_from(self) -> Optional[ast . ImportFrom]:
@@ -1578,7 +1578,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_import_from())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (lazy := self.expect("lazy"),)
@@ -1595,7 +1595,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . ImportFrom ( module = b , names = c , level = self . extract_import_level ( a ) , is_lazy = 1 if lazy else 0 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 15 ) else self . check_version ( ( 3 , 15 ) , "Lazy imports are" , ast . ImportFrom ( module = b , names = c , level = self . extract_import_level ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) ) if lazy else ast . ImportFrom ( module = b , names = c , level = self . extract_import_level ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . ImportFrom ( module = b , names = c , level = self . extract_import_level ( a ) , is_lazy = 1 if lazy else 0 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 15 ) else self . check_version ( ( 3 , 15 ) , "Lazy imports are" , ast . ImportFrom ( module = b , names = c , level = self . extract_import_level ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) ) if lazy else ast . ImportFrom ( module = b , names = c , level = self . extract_import_level ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (lazy := self.expect("lazy"),)
@@ -1610,9 +1610,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . ImportFrom ( names = b , level = self . extract_import_level ( a ) , is_lazy = 1 if lazy else 0 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 15 ) else self . check_version ( ( 3 , 15 ) , "Lazy imports are" , ast . ImportFrom ( names = b , level = self . extract_import_level ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) ) if lazy else ast . ImportFrom ( names = b , level = self . extract_import_level ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . ImportFrom ( module = None , names = b , level = self . extract_import_level ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . ImportFrom ( names = b , level = self . extract_import_level ( a ) , is_lazy = 1 if lazy else 0 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 15 ) else self . check_version ( ( 3 , 15 ) , "Lazy imports are" , ast . ImportFrom ( names = b , level = self . extract_import_level ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) ) if lazy else ast . ImportFrom ( names = b , level = self . extract_import_level ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . ImportFrom ( module = None , names = b , level = self . extract_import_level ( a ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def import_from_targets(self) -> Optional[List [ast . alias]]:
@@ -1629,30 +1629,30 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             (import_from_as_names := self.import_from_as_names())
             and
             (self.negative_lookahead(self.expect, ','))
         ):
-            return import_from_as_names
+            return import_from_as_names;
         self._reset(mark)
         if (
             (self.expect('*'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return [ast . alias ( name = "*" , asname = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )]
+            return [ast . alias ( name = "*" , asname = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )];
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_import_from_targets())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def import_from_as_names(self) -> Optional[List [ast . alias]]:
@@ -1661,9 +1661,9 @@ class EnamlParser(Parser):
         if (
             (a := self._gather_58())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def import_from_as_name(self) -> Optional[ast . alias]:
@@ -1678,9 +1678,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . alias ( name = a . string , asname = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . alias ( name = a . string , asname = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def dotted_as_names(self) -> Optional[List [ast . alias]]:
@@ -1689,9 +1689,9 @@ class EnamlParser(Parser):
         if (
             (a := self._gather_61())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def dotted_as_name(self) -> Optional[ast . alias]:
@@ -1706,9 +1706,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . alias ( name = a , asname = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . alias ( name = a , asname = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def dotted_name(self) -> Optional[str]:
@@ -1721,14 +1721,14 @@ class EnamlParser(Parser):
             and
             (b := self.name())
         ):
-            return a + "." + b . string
+            return a + "." + b . string;
         self._reset(mark)
         if (
             (a := self.name())
         ):
-            return a . string
+            return a . string;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def block(self) -> Optional[list]:
@@ -1743,21 +1743,21 @@ class EnamlParser(Parser):
             and
             (self.expect('DEDENT'))
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             (simple_stmts := self.simple_stmts())
         ):
-            return simple_stmts
+            return simple_stmts;
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_block())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def decorators(self) -> Optional[Any]:
@@ -1766,9 +1766,9 @@ class EnamlParser(Parser):
         if (
             (_loop1_64 := self._loop1_64())
         ):
-            return _loop1_64
+            return _loop1_64;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def decorator(self) -> Optional[Any]:
@@ -1777,14 +1777,14 @@ class EnamlParser(Parser):
         if (
             (a := self._tmp_65())
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             (a := self._tmp_66())
         ):
-            return self . check_version ( ( 3 , 9 ) , "Generic decorator are" , a )
+            return self . check_version ( ( 3 , 9 ) , "Generic decorator are" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def dec_maybe_call(self) -> Optional[Any]:
@@ -1803,14 +1803,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Call ( func = dn , args = z [0] if z else [] , keywords = z [1] if z else [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Call ( func = dn , args = z [0] if z else [] , keywords = z [1] if z else [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (dec_primary := self.dec_primary())
         ):
-            return dec_primary
+            return dec_primary;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def dec_primary(self) -> Optional[Any]:
@@ -1827,16 +1827,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Attribute ( value = a , attr = b . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Attribute ( value = a , attr = b . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.name())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = a . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Name ( id = a . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def class_def(self) -> Optional[ast . ClassDef]:
@@ -1847,14 +1847,14 @@ class EnamlParser(Parser):
             and
             (b := self.class_def_raw())
         ):
-            return self . set_decorators ( b , a )
+            return self . set_decorators ( b , a );
         self._reset(mark)
         if (
             (class_def_raw := self.class_def_raw())
         ):
-            return class_def_raw
+            return class_def_raw;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def class_def_raw(self) -> Optional[ast . ClassDef]:
@@ -1867,7 +1867,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_class_def_raw())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('class'))
@@ -1884,9 +1884,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ( ast . ClassDef ( a . string , bases = b [0] if b else [] , keywords = b [1] if b else [] , body = c , decorator_list = [] , type_params = t or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) if sys . version_info >= ( 3 , 12 ) else ast . ClassDef ( a . string , bases = b [0] if b else [] , keywords = b [1] if b else [] , body = c , decorator_list = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) )
+            return ( ast . ClassDef ( a . string , bases = b [0] if b else [] , keywords = b [1] if b else [] , body = c , decorator_list = [] , type_params = t or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) if sys . version_info >= ( 3 , 12 ) else ast . ClassDef ( a . string , bases = b [0] if b else [] , keywords = b [1] if b else [] , body = c , decorator_list = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def function_def(self) -> Optional[Union [ast . FunctionDef , ast . AsyncFunctionDef]]:
@@ -1897,14 +1897,14 @@ class EnamlParser(Parser):
             and
             (f := self.function_def_raw())
         ):
-            return self . set_decorators ( f , d )
+            return self . set_decorators ( f , d );
         self._reset(mark)
         if (
             (f := self.function_def_raw())
         ):
-            return self . set_decorators ( f , [] )
+            return self . set_decorators ( f , [] );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def function_def_raw(self) -> Optional[Union [ast . FunctionDef , ast . AsyncFunctionDef]]:
@@ -1917,7 +1917,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_def_raw())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('def'))
@@ -1942,7 +1942,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ( ast . FunctionDef ( name = n . string , args = params or self . make_arguments ( None , [] , None , [] , None ) , returns = a , body = b , type_comment = tc , type_params = t or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) if sys . version_info >= ( 3 , 12 ) else ast . FunctionDef ( name = n . string , args = params or self . make_arguments ( None , [] , None , [] , None ) , returns = a , body = b , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) )
+            return ( ast . FunctionDef ( name = n . string , args = params or self . make_arguments ( None , [] , None , [] , None ) , returns = a , body = b , type_comment = tc , type_params = t or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) if sys . version_info >= ( 3 , 12 ) else ast . FunctionDef ( name = n . string , args = params or self . make_arguments ( None , [] , None , [] , None ) , returns = a , body = b , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) );
         self._reset(mark)
         if (
             (self.expect('async'))
@@ -1969,9 +1969,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ( self . check_version ( ( 3 , 5 ) , "Async functions are" , ast . AsyncFunctionDef ( name = n . string , args = params or self . make_arguments ( None , [] , None , [] , None ) , returns = a , body = b , type_comment = tc , type_params = t or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) ) if sys . version_info >= ( 3 , 12 ) else self . check_version ( ( 3 , 5 ) , "Async functions are" , ast . AsyncFunctionDef ( name = n . string , args = params or self . make_arguments ( None , [] , None , [] , None ) , returns = a , body = b , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) ) )
+            return ( self . check_version ( ( 3 , 5 ) , "Async functions are" , ast . AsyncFunctionDef ( name = n . string , args = params or self . make_arguments ( None , [] , None , [] , None ) , returns = a , body = b , type_comment = tc , type_params = t or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) ) if sys . version_info >= ( 3 , 12 ) else self . check_version ( ( 3 , 5 ) , "Async functions are" , ast . AsyncFunctionDef ( name = n . string , args = params or self . make_arguments ( None , [] , None , [] , None ) , returns = a , body = b , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def params(self) -> Optional[Any]:
@@ -1982,14 +1982,14 @@ class EnamlParser(Parser):
             and
             (self.invalid_parameters())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (parameters := self.parameters())
         ):
-            return parameters
+            return parameters;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def parameters(self) -> Optional[ast . arguments]:
@@ -2004,7 +2004,7 @@ class EnamlParser(Parser):
             and
             (d := self.star_etc(),)
         ):
-            return self . check_version ( ( 3 , 8 ) , "Positional only arguments are" , self . make_arguments ( a , [] , b , c , d ) )
+            return self . check_version ( ( 3 , 8 ) , "Positional only arguments are" , self . make_arguments ( a , [] , b , c , d ) );
         self._reset(mark)
         if (
             (a := self.slash_with_default())
@@ -2013,7 +2013,7 @@ class EnamlParser(Parser):
             and
             (c := self.star_etc(),)
         ):
-            return self . check_version ( ( 3 , 8 ) , "Positional only arguments are" , self . make_arguments ( None , a , None , b , c ) , )
+            return self . check_version ( ( 3 , 8 ) , "Positional only arguments are" , self . make_arguments ( None , a , None , b , c ) , );
         self._reset(mark)
         if (
             (a := self._loop1_73())
@@ -2022,21 +2022,21 @@ class EnamlParser(Parser):
             and
             (c := self.star_etc(),)
         ):
-            return self . make_arguments ( None , [] , a , b , c )
+            return self . make_arguments ( None , [] , a , b , c );
         self._reset(mark)
         if (
             (a := self._loop1_75())
             and
             (b := self.star_etc(),)
         ):
-            return self . make_arguments ( None , [] , None , a , b )
+            return self . make_arguments ( None , [] , None , a , b );
         self._reset(mark)
         if (
             (a := self.star_etc())
         ):
-            return self . make_arguments ( None , [] , None , None , a )
+            return self . make_arguments ( None , [] , None , None , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def slash_no_default(self) -> Optional[List [Tuple [ast . arg , None]]]:
@@ -2049,7 +2049,7 @@ class EnamlParser(Parser):
             and
             (self.expect(','))
         ):
-            return [( p , None ) for p in a]
+            return [( p , None ) for p in a];
         self._reset(mark)
         if (
             (a := self._loop1_77())
@@ -2058,9 +2058,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ')'))
         ):
-            return [( p , None ) for p in a]
+            return [( p , None ) for p in a];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def slash_with_default(self) -> Optional[List [Tuple [ast . arg , Any]]]:
@@ -2075,7 +2075,7 @@ class EnamlParser(Parser):
             and
             (self.expect(','))
         ):
-            return ( [( p , None ) for p in a] if a else [] ) + b
+            return ( [( p , None ) for p in a] if a else [] ) + b;
         self._reset(mark)
         if (
             (a := self._loop0_80(),)
@@ -2086,9 +2086,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ')'))
         ):
-            return ( [( p , None ) for p in a] if a else [] ) + b
+            return ( [( p , None ) for p in a] if a else [] ) + b;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_etc(self) -> Optional[Tuple [Optional [ast . arg] , List [Tuple [ast . arg , Any]] , Optional [ast . arg]]]:
@@ -2099,7 +2099,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_star_etc())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -2110,7 +2110,7 @@ class EnamlParser(Parser):
             and
             (c := self.kwds(),)
         ):
-            return ( a , b , c )
+            return ( a , b , c );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -2121,7 +2121,7 @@ class EnamlParser(Parser):
             and
             (c := self.kwds(),)
         ):
-            return ( a , b , c )
+            return ( a , b , c );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -2132,14 +2132,14 @@ class EnamlParser(Parser):
             and
             (c := self.kwds(),)
         ):
-            return ( None , b , c )
+            return ( None , b , c );
         self._reset(mark)
         if (
             (a := self.kwds())
         ):
-            return ( None , [] , a )
+            return ( None , [] , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def kwds(self) -> Optional[ast . arg]:
@@ -2150,16 +2150,16 @@ class EnamlParser(Parser):
             and
             (self.invalid_kwds())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('**'))
             and
             (a := self.param_no_default())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def param_no_default(self) -> Optional[ast . arg]:
@@ -2172,7 +2172,7 @@ class EnamlParser(Parser):
             and
             (tc := self.type_comment(),)
         ):
-            return self . set_arg_type_comment ( a , tc )
+            return self . set_arg_type_comment ( a , tc );
         self._reset(mark)
         if (
             (a := self.param())
@@ -2181,9 +2181,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ')'))
         ):
-            return self . set_arg_type_comment ( a , tc )
+            return self . set_arg_type_comment ( a , tc );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def param_no_default_star_annotation(self) -> Optional[ast . arg]:
@@ -2196,7 +2196,7 @@ class EnamlParser(Parser):
             and
             (tc := self.type_comment(),)
         ):
-            return self . set_arg_type_comment ( a , tc )
+            return self . set_arg_type_comment ( a , tc );
         self._reset(mark)
         if (
             (a := self.param_star_annotation())
@@ -2205,9 +2205,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ')'))
         ):
-            return self . set_arg_type_comment ( a , tc )
+            return self . set_arg_type_comment ( a , tc );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def param_with_default(self) -> Optional[Tuple [ast . arg , Any]]:
@@ -2222,7 +2222,7 @@ class EnamlParser(Parser):
             and
             (tc := self.type_comment(),)
         ):
-            return ( self . set_arg_type_comment ( a , tc ) , c )
+            return ( self . set_arg_type_comment ( a , tc ) , c );
         self._reset(mark)
         if (
             (a := self.param())
@@ -2233,9 +2233,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ')'))
         ):
-            return ( self . set_arg_type_comment ( a , tc ) , c )
+            return ( self . set_arg_type_comment ( a , tc ) , c );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def param_maybe_default(self) -> Optional[Tuple [ast . arg , Any]]:
@@ -2250,7 +2250,7 @@ class EnamlParser(Parser):
             and
             (tc := self.type_comment(),)
         ):
-            return ( self . set_arg_type_comment ( a , tc ) , c )
+            return ( self . set_arg_type_comment ( a , tc ) , c );
         self._reset(mark)
         if (
             (a := self.param())
@@ -2261,9 +2261,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ')'))
         ):
-            return ( self . set_arg_type_comment ( a , tc ) , c )
+            return ( self . set_arg_type_comment ( a , tc ) , c );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def param(self) -> Optional[Any]:
@@ -2278,9 +2278,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . arg ( arg = a . string , annotation = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . arg ( arg = a . string , annotation = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def param_star_annotation(self) -> Optional[Any]:
@@ -2295,9 +2295,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . arg ( arg = a . string , annotations = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . arg ( arg = a . string , annotations = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def annotation(self) -> Optional[Any]:
@@ -2308,9 +2308,9 @@ class EnamlParser(Parser):
             and
             (a := self.expression())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_annotation(self) -> Optional[Any]:
@@ -2321,9 +2321,9 @@ class EnamlParser(Parser):
             and
             (a := self.star_expression())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def default(self) -> Optional[Any]:
@@ -2334,16 +2334,16 @@ class EnamlParser(Parser):
             and
             (a := self.expression())
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_default())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def if_stmt(self) -> Optional[ast . If]:
@@ -2356,7 +2356,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_if_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('if'))
@@ -2371,7 +2371,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . If ( test = a , body = b , orelse = c or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . If ( test = a , body = b , orelse = c or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('if'))
@@ -2386,9 +2386,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . If ( test = a , body = b , orelse = c or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . If ( test = a , body = b , orelse = c or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def elif_stmt(self) -> Optional[List [ast . If]]:
@@ -2401,7 +2401,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_elif_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('elif'))
@@ -2416,7 +2416,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return [ast . If ( test = a , body = b , orelse = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )]
+            return [ast . If ( test = a , body = b , orelse = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )];
         self._reset(mark)
         if (
             (self.expect('elif'))
@@ -2431,9 +2431,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return [ast . If ( test = a , body = b , orelse = c or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )]
+            return [ast . If ( test = a , body = b , orelse = c or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def else_block(self) -> Optional[list]:
@@ -2444,7 +2444,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_else_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('else'))
@@ -2453,9 +2453,9 @@ class EnamlParser(Parser):
             and
             (b := self.block())
         ):
-            return b
+            return b;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def while_stmt(self) -> Optional[ast . While]:
@@ -2468,7 +2468,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_while_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('while'))
@@ -2483,9 +2483,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . While ( test = a , body = b , orelse = c or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . While ( test = a , body = b , orelse = c or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def for_stmt(self) -> Optional[Union [ast . For , ast . AsyncFor]]:
@@ -2498,7 +2498,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_for_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         cut = False
         if (
@@ -2522,10 +2522,10 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . For ( target = t , iter = ex , body = b , orelse = el or [] , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . For ( target = t , iter = ex , body = b , orelse = el or [] , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if cut:
-            return None
+            return None;
         cut = False
         if (
             (self.expect('async'))
@@ -2550,18 +2550,18 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 5 ) , "Async for loops are" , ast . AsyncFor ( target = t , iter = ex , body = b , orelse = el or [] , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . check_version ( ( 3 , 5 ) , "Async for loops are" , ast . AsyncFor ( target = t , iter = ex , body = b , orelse = el or [] , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         if cut:
-            return None
+            return None;
         if (
             self.call_invalid_rules
             and
             (self.invalid_for_target())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def with_stmt(self) -> Optional[Union [ast . With , ast . AsyncWith]]:
@@ -2574,7 +2574,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_with_stmt_indent())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('with'))
@@ -2593,7 +2593,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 9 ) , "Parenthesized with items" , ast . With ( items = a , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . check_version ( ( 3 , 9 ) , "Parenthesized with items" , ast . With ( items = a , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         if (
             (self.expect('with'))
@@ -2608,7 +2608,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . With ( items = a , body = b , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . With ( items = a , body = b , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('async'))
@@ -2629,7 +2629,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 9 ) , "Parenthesized with items" , ast . AsyncWith ( items = a , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . check_version ( ( 3 , 9 ) , "Parenthesized with items" , ast . AsyncWith ( items = a , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         if (
             (self.expect('async'))
@@ -2646,16 +2646,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 5 ) , "Async with statements are" , ast . AsyncWith ( items = a , body = b , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . check_version ( ( 3 , 5 ) , "Async with statements are" , ast . AsyncWith ( items = a , body = b , type_comment = tc , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_with_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def with_item(self) -> Optional[ast . withitem]:
@@ -2670,21 +2670,21 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self._tmp_93, ))
         ):
-            return ast . withitem ( context_expr = e , optional_vars = t )
+            return ast . withitem ( context_expr = e , optional_vars = t );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_with_item())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (e := self.expression())
         ):
-            return ast . withitem ( context_expr = e , optional_vars = None )
+            return ast . withitem ( context_expr = e , optional_vars = None );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def try_stmt(self) -> Optional[ast . Try]:
@@ -2697,7 +2697,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_try_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('try'))
@@ -2710,7 +2710,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Try ( body = b , handlers = [] , orelse = [] , finalbody = f , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Try ( body = b , handlers = [] , orelse = [] , finalbody = f , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('try'))
@@ -2727,7 +2727,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Try ( body = b , handlers = ex , orelse = el or [] , finalbody = f or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Try ( body = b , handlers = ex , orelse = el or [] , finalbody = f or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('try'))
@@ -2744,9 +2744,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 11 ) , "Exception groups are" , ( ast . TryStar ( body = b , handlers = ex , orelse = el or [] , finalbody = f or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 11 ) else None ) )
+            return self . check_version ( ( 3 , 11 ) , "Exception groups are" , ( ast . TryStar ( body = b , handlers = ex , orelse = el or [] , finalbody = f or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 11 ) else None ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def except_block(self) -> Optional[ast . ExceptHandler]:
@@ -2759,14 +2759,14 @@ class EnamlParser(Parser):
             and
             (self.invalid_except_stmt_indent())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_except_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('except'))
@@ -2781,7 +2781,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . ExceptHandler ( type = e , name = t , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . ExceptHandler ( type = e , name = t , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('except'))
@@ -2792,7 +2792,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . ExceptHandler ( type = None , name = None , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . ExceptHandler ( type = None , name = None , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('except'))
@@ -2805,9 +2805,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . ExceptHandler ( type = e , name = None , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if self . py_version >= ( 3 , 14 ) else None
+            return ast . ExceptHandler ( type = e , name = None , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if self . py_version >= ( 3 , 14 ) else None;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def except_star_block(self) -> Optional[ast . ExceptHandler]:
@@ -2820,14 +2820,14 @@ class EnamlParser(Parser):
             and
             (self.invalid_except_star_stmt_indent())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_except_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('except'))
@@ -2844,7 +2844,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . ExceptHandler ( type = e , name = t , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . ExceptHandler ( type = e , name = t , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('except'))
@@ -2859,9 +2859,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . ExceptHandler ( type = e , name = None , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if self . py_version >= ( 3 , 14 ) else None
+            return ast . ExceptHandler ( type = e , name = None , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if self . py_version >= ( 3 , 14 ) else None;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def finally_block(self) -> Optional[list]:
@@ -2872,7 +2872,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_finally_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('finally'))
@@ -2881,9 +2881,9 @@ class EnamlParser(Parser):
             and
             (a := self.block())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def match_stmt(self) -> Optional["ast.Match"]:
@@ -2908,16 +2908,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Match ( subject = subject , cases = cases , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Match ( subject = subject , cases = cases , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_match_stmt())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def subject_expr(self) -> Optional[Any]:
@@ -2934,14 +2934,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 10 ) , "Pattern matching is" , ast . Tuple ( elts = [value] + ( values or [] ) , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . check_version ( ( 3 , 10 ) , "Pattern matching is" , ast . Tuple ( elts = [value] + ( values or [] ) , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         if (
             (e := self.named_expression())
         ):
-            return self . check_version ( ( 3 , 10 ) , "Pattern matching is" , e )
+            return self . check_version ( ( 3 , 10 ) , "Pattern matching is" , e );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def case_block(self) -> Optional["ast.match_case"]:
@@ -2952,7 +2952,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_case_block())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect("case"))
@@ -2965,9 +2965,9 @@ class EnamlParser(Parser):
             and
             (body := self.block())
         ):
-            return ast . match_case ( pattern = pattern , guard = guard , body = body )
+            return ast . match_case ( pattern = pattern , guard = guard , body = body );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def guard(self) -> Optional[Any]:
@@ -2978,9 +2978,9 @@ class EnamlParser(Parser):
             and
             (guard := self.named_expression())
         ):
-            return guard
+            return guard;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def patterns(self) -> Optional[Any]:
@@ -2993,14 +2993,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchSequence ( patterns = patterns , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchSequence ( patterns = patterns , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (pattern := self.pattern())
         ):
-            return pattern
+            return pattern;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def pattern(self) -> Optional[Any]:
@@ -3009,14 +3009,14 @@ class EnamlParser(Parser):
         if (
             (as_pattern := self.as_pattern())
         ):
-            return as_pattern
+            return as_pattern;
         self._reset(mark)
         if (
             (or_pattern := self.or_pattern())
         ):
-            return or_pattern
+            return or_pattern;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def as_pattern(self) -> Optional["ast.MatchAs"]:
@@ -3033,16 +3033,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchAs ( pattern = pattern , name = target , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchAs ( pattern = pattern , name = target , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_as_pattern())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def or_pattern(self) -> Optional["ast.MatchOr"]:
@@ -3055,9 +3055,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchOr ( patterns = patterns , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if len ( patterns ) > 1 else patterns [0]
+            return ast . MatchOr ( patterns = patterns , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if len ( patterns ) > 1 else patterns [0];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def closed_pattern(self) -> Optional[Any]:
@@ -3066,44 +3066,44 @@ class EnamlParser(Parser):
         if (
             (literal_pattern := self.literal_pattern())
         ):
-            return literal_pattern
+            return literal_pattern;
         self._reset(mark)
         if (
             (capture_pattern := self.capture_pattern())
         ):
-            return capture_pattern
+            return capture_pattern;
         self._reset(mark)
         if (
             (wildcard_pattern := self.wildcard_pattern())
         ):
-            return wildcard_pattern
+            return wildcard_pattern;
         self._reset(mark)
         if (
             (value_pattern := self.value_pattern())
         ):
-            return value_pattern
+            return value_pattern;
         self._reset(mark)
         if (
             (group_pattern := self.group_pattern())
         ):
-            return group_pattern
+            return group_pattern;
         self._reset(mark)
         if (
             (sequence_pattern := self.sequence_pattern())
         ):
-            return sequence_pattern
+            return sequence_pattern;
         self._reset(mark)
         if (
             (mapping_pattern := self.mapping_pattern())
         ):
-            return mapping_pattern
+            return mapping_pattern;
         self._reset(mark)
         if (
             (class_pattern := self.class_pattern())
         ):
-            return class_pattern
+            return class_pattern;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def literal_pattern(self) -> Optional[Any]:
@@ -3118,44 +3118,44 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchValue ( value = value , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchValue ( value = value , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (value := self.complex_number())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchValue ( value = value , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchValue ( value = value , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (value := self.strings())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchValue ( value = value , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchValue ( value = value , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('None'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchSingleton ( value = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchSingleton ( value = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('True'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchSingleton ( value = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchSingleton ( value = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('False'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchSingleton ( value = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchSingleton ( value = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def literal_expr(self) -> Optional[Any]:
@@ -3168,40 +3168,40 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self._tmp_102, ))
         ):
-            return signed_number
+            return signed_number;
         self._reset(mark)
         if (
             (complex_number := self.complex_number())
         ):
-            return complex_number
+            return complex_number;
         self._reset(mark)
         if (
             (strings := self.strings())
         ):
-            return strings
+            return strings;
         self._reset(mark)
         if (
             (self.expect('None'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('True'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('False'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def complex_number(self) -> Optional[Any]:
@@ -3218,7 +3218,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = real , op = ast . Add ( ) , right = imag , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = real , op = ast . Add ( ) , right = imag , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (real := self.signed_real_number())
@@ -3229,9 +3229,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = real , op = ast . Sub ( ) , right = imag , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = real , op = ast . Sub ( ) , right = imag , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def signed_number(self) -> Optional[Any]:
@@ -3244,7 +3244,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = ast . literal_eval ( a . string ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = ast . literal_eval ( a . string ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('-'))
@@ -3253,9 +3253,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . UnaryOp ( op = ast . USub ( ) , operand = ast . Constant ( value = ast . literal_eval ( a . string ) , lineno = a . start [0] , col_offset = a . start [1] , end_lineno = a . end [0] , end_col_offset = a . end [1] ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return ast . UnaryOp ( op = ast . USub ( ) , operand = ast . Constant ( value = ast . literal_eval ( a . string ) , lineno = a . start [0] , col_offset = a . start [1] , end_lineno = a . end [0] , end_col_offset = a . end [1] ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def signed_real_number(self) -> Optional[Any]:
@@ -3266,7 +3266,7 @@ class EnamlParser(Parser):
         if (
             (real_number := self.real_number())
         ):
-            return real_number
+            return real_number;
         self._reset(mark)
         if (
             (self.expect('-'))
@@ -3275,9 +3275,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . UnaryOp ( op = ast . USub ( ) , operand = real , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . UnaryOp ( op = ast . USub ( ) , operand = real , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def real_number(self) -> Optional[ast . Constant]:
@@ -3290,9 +3290,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = self . ensure_real ( real ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = self . ensure_real ( real ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def imaginary_number(self) -> Optional[ast . Constant]:
@@ -3305,9 +3305,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = self . ensure_imaginary ( imag ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = self . ensure_imaginary ( imag ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def capture_pattern(self) -> Optional[Any]:
@@ -3320,9 +3320,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchAs ( pattern = None , name = target , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchAs ( pattern = None , name = target , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def pattern_capture_target(self) -> Optional[str]:
@@ -3335,9 +3335,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self._tmp_103, ))
         ):
-            return name . string
+            return name . string;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def wildcard_pattern(self) -> Optional["ast.MatchAs"]:
@@ -3350,9 +3350,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchAs ( pattern = None , name = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchAs ( pattern = None , name = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def value_pattern(self) -> Optional["ast.MatchValue"]:
@@ -3367,9 +3367,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchValue ( value = attr , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchValue ( value = attr , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def attr(self) -> Optional[ast . Attribute]:
@@ -3386,9 +3386,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Attribute ( value = value , attr = attr . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Attribute ( value = value , attr = attr . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @logger
     def name_or_attr(self) -> Optional[Any]:
@@ -3399,16 +3399,16 @@ class EnamlParser(Parser):
         if (
             (attr := self.attr())
         ):
-            return attr
+            return attr;
         self._reset(mark)
         if (
             (name := self.name())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = name . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Name ( id = name . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def group_pattern(self) -> Optional[Any]:
@@ -3421,9 +3421,9 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return pattern
+            return pattern;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def sequence_pattern(self) -> Optional["ast.MatchSequence"]:
@@ -3440,7 +3440,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchSequence ( patterns = patterns or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchSequence ( patterns = patterns or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('('))
@@ -3451,9 +3451,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchSequence ( patterns = patterns or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchSequence ( patterns = patterns or [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def open_sequence_pattern(self) -> Optional[Any]:
@@ -3466,9 +3466,9 @@ class EnamlParser(Parser):
             and
             (patterns := self.maybe_sequence_pattern(),)
         ):
-            return [pattern] + ( patterns or [] )
+            return [pattern] + ( patterns or [] );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def maybe_sequence_pattern(self) -> Optional[Any]:
@@ -3479,9 +3479,9 @@ class EnamlParser(Parser):
             and
             (self.expect(','),)
         ):
-            return patterns
+            return patterns;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def maybe_star_pattern(self) -> Optional[Any]:
@@ -3490,14 +3490,14 @@ class EnamlParser(Parser):
         if (
             (star_pattern := self.star_pattern())
         ):
-            return star_pattern
+            return star_pattern;
         self._reset(mark)
         if (
             (pattern := self.pattern())
         ):
-            return pattern
+            return pattern;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_pattern(self) -> Optional[Any]:
@@ -3512,7 +3512,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchStar ( name = target , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchStar ( name = target , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -3521,9 +3521,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchStar ( target = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchStar ( target = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def mapping_pattern(self) -> Optional[Any]:
@@ -3538,7 +3538,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchMapping ( keys = [] , patterns = [] , rest = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchMapping ( keys = [] , patterns = [] , rest = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('{'))
@@ -3551,7 +3551,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchMapping ( keys = [] , patterns = [] , rest = rest , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchMapping ( keys = [] , patterns = [] , rest = rest , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('{'))
@@ -3568,7 +3568,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchMapping ( keys = [k for k , _ in items] , patterns = [p for _ , p in items] , rest = rest , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return ast . MatchMapping ( keys = [k for k , _ in items] , patterns = [p for _ , p in items] , rest = rest , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         if (
             (self.expect('{'))
@@ -3581,9 +3581,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchMapping ( keys = [k for k , _ in items] , patterns = [p for _ , p in items] , rest = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return ast . MatchMapping ( keys = [k for k , _ in items] , patterns = [p for _ , p in items] , rest = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def items_pattern(self) -> Optional[Any]:
@@ -3592,9 +3592,9 @@ class EnamlParser(Parser):
         if (
             (_gather_107 := self._gather_107())
         ):
-            return _gather_107
+            return _gather_107;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def key_value_pattern(self) -> Optional[Any]:
@@ -3607,9 +3607,9 @@ class EnamlParser(Parser):
             and
             (pattern := self.pattern())
         ):
-            return ( key , pattern )
+            return ( key , pattern );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def double_star_pattern(self) -> Optional[Any]:
@@ -3620,9 +3620,9 @@ class EnamlParser(Parser):
             and
             (target := self.pattern_capture_target())
         ):
-            return target
+            return target;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def class_pattern(self) -> Optional["ast.MatchClass"]:
@@ -3639,7 +3639,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchClass ( cls = cls , patterns = [] , kwd_attrs = [] , kwd_patterns = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchClass ( cls = cls , patterns = [] , kwd_attrs = [] , kwd_patterns = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (cls := self.name_or_attr())
@@ -3654,7 +3654,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchClass ( cls = cls , patterns = patterns , kwd_attrs = [] , kwd_patterns = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . MatchClass ( cls = cls , patterns = patterns , kwd_attrs = [] , kwd_patterns = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (cls := self.name_or_attr())
@@ -3669,7 +3669,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchClass ( cls = cls , patterns = [] , kwd_attrs = [k for k , _ in keywords] , kwd_patterns = [p for _ , p in keywords] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return ast . MatchClass ( cls = cls , patterns = [] , kwd_attrs = [k for k , _ in keywords] , kwd_patterns = [p for _ , p in keywords] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         if (
             (cls := self.name_or_attr())
@@ -3688,16 +3688,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . MatchClass ( cls = cls , patterns = patterns , kwd_attrs = [k for k , _ in keywords] , kwd_patterns = [p for _ , p in keywords] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return ast . MatchClass ( cls = cls , patterns = patterns , kwd_attrs = [k for k , _ in keywords] , kwd_patterns = [p for _ , p in keywords] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_class_pattern())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def positional_patterns(self) -> Optional[Any]:
@@ -3706,9 +3706,9 @@ class EnamlParser(Parser):
         if (
             (args := self._gather_110())
         ):
-            return args
+            return args;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def keyword_patterns(self) -> Optional[Any]:
@@ -3717,9 +3717,9 @@ class EnamlParser(Parser):
         if (
             (_gather_112 := self._gather_112())
         ):
-            return _gather_112
+            return _gather_112;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def keyword_pattern(self) -> Optional[Any]:
@@ -3732,9 +3732,9 @@ class EnamlParser(Parser):
             and
             (value := self.pattern())
         ):
-            return ( arg . string , value )
+            return ( arg . string , value );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def type_alias(self) -> Optional["ast.TypeAlias"]:
@@ -3755,9 +3755,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 12 ) , "Type statement is" , ( ast . TypeAlias ( name = ast . Name ( id = n . string , ctx = Store , lineno = n . start [0] , col_offset = n . start [1] , end_lineno = n . end [0] , end_col_offset = n . end [1] , ) , type_params = t or [] , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else None ) )
+            return self . check_version ( ( 3 , 12 ) , "Type statement is" , ( ast . TypeAlias ( name = ast . Name ( id = n . string , ctx = Store , lineno = n . start [0] , col_offset = n . start [1] , end_lineno = n . end [0] , end_col_offset = n . end [1] , ) , type_params = t or [] , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else None ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def type_params(self) -> Optional[list]:
@@ -3770,9 +3770,9 @@ class EnamlParser(Parser):
             and
             (self.expect(']'))
         ):
-            return self . check_version ( ( 3 , 12 ) , "Type parameter lists are" , t )
+            return self . check_version ( ( 3 , 12 ) , "Type parameter lists are" , t );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def type_param_seq(self) -> Optional[Any]:
@@ -3783,9 +3783,9 @@ class EnamlParser(Parser):
             and
             (self.expect(','),)
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def type_param(self) -> Optional[Any]:
@@ -3800,7 +3800,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . TypeVar ( name = a . string , bound = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else object ( )
+            return ast . TypeVar ( name = a . string , bound = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else object ( );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -3811,7 +3811,7 @@ class EnamlParser(Parser):
             and
             (e := self.expression())
         ):
-            return self . raise_syntax_error_starting_from ( "cannot use constraints with TypeVarTuple" if isinstance ( e , ast . Tuple ) else "cannot use bound with TypeVarTuple" , colon )
+            return self . raise_syntax_error_starting_from ( "cannot use constraints with TypeVarTuple" if isinstance ( e , ast . Tuple ) else "cannot use bound with TypeVarTuple" , colon );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -3820,7 +3820,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . TypeVarTuple ( name = a . string , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else object ( )
+            return ast . TypeVarTuple ( name = a . string , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else object ( );
         self._reset(mark)
         if (
             (self.expect('**'))
@@ -3831,7 +3831,7 @@ class EnamlParser(Parser):
             and
             (e := self.expression())
         ):
-            return self . raise_syntax_error_starting_from ( "cannot use constraints with ParamSpec" if isinstance ( e , ast . Tuple ) else "cannot use bound with ParamSpec" , colon )
+            return self . raise_syntax_error_starting_from ( "cannot use constraints with ParamSpec" if isinstance ( e , ast . Tuple ) else "cannot use bound with ParamSpec" , colon );
         self._reset(mark)
         if (
             (self.expect('**'))
@@ -3840,9 +3840,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . ParamSpec ( name = a . string , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else object ( )
+            return ast . ParamSpec ( name = a . string , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 12 ) else object ( );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def type_param_bound(self) -> Optional[Any]:
@@ -3853,9 +3853,9 @@ class EnamlParser(Parser):
             and
             (e := self.expression())
         ):
-            return e
+            return e;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def expressions(self) -> Optional[Any]:
@@ -3872,7 +3872,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Tuple ( elts = [a] + b , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Tuple ( elts = [a] + b , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.expression())
@@ -3881,14 +3881,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Tuple ( elts = [a] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Tuple ( elts = [a] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (expression := self.expression())
         ):
-            return expression
+            return expression;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def expression(self) -> Optional[Any]:
@@ -3901,14 +3901,14 @@ class EnamlParser(Parser):
             and
             (self.invalid_expression())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_legacy_expression())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (a := self.disjunction())
@@ -3923,19 +3923,19 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . IfExp ( body = a , test = b , orelse = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . IfExp ( body = a , test = b , orelse = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (disjunction := self.disjunction())
         ):
-            return disjunction
+            return disjunction;
         self._reset(mark)
         if (
             (lambdef := self.lambdef())
         ):
-            return lambdef
+            return lambdef;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def yield_expr(self) -> Optional[Any]:
@@ -3952,7 +3952,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . YieldFrom ( value = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . YieldFrom ( value = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('yield'))
@@ -3961,9 +3961,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Yield ( value = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Yield ( value = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_expressions(self) -> Optional[Any]:
@@ -3980,7 +3980,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Tuple ( elts = [a] + b , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Tuple ( elts = [a] + b , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.star_expression())
@@ -3989,14 +3989,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Tuple ( elts = [a] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Tuple ( elts = [a] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (star_expression := self.star_expression())
         ):
-            return star_expression
+            return star_expression;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_expression(self) -> Optional[Any]:
@@ -4011,14 +4011,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Starred ( value = a , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Starred ( value = a , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (expression := self.expression())
         ):
-            return expression
+            return expression;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_named_expressions(self) -> Optional[Any]:
@@ -4029,9 +4029,9 @@ class EnamlParser(Parser):
             and
             (self.expect(','),)
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_named_expression(self) -> Optional[Any]:
@@ -4046,14 +4046,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Starred ( value = a , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Starred ( value = a , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (named_expression := self.named_expression())
         ):
-            return named_expression
+            return named_expression;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def assignment_expression(self) -> Optional[Any]:
@@ -4073,11 +4073,11 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 8 ) , "The ':=' operator is" , ast . NamedExpr ( target = ast . Name ( id = a . string , ctx = Store , lineno = a . start [0] , col_offset = a . start [1] , end_lineno = a . end [0] , end_col_offset = a . end [1] ) , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) )
+            return self . check_version ( ( 3 , 8 ) , "The ':=' operator is" , ast . NamedExpr ( target = ast . Name ( id = a . string , ctx = Store , lineno = a . start [0] , col_offset = a . start [1] , end_lineno = a . end [0] , end_col_offset = a . end [1] ) , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) );
         self._reset(mark)
         if cut:
-            return None
-        return None
+            return None;
+        return None;
 
     @memoize
     def named_expression(self) -> Optional[Any]:
@@ -4086,23 +4086,23 @@ class EnamlParser(Parser):
         if (
             (assignment_expression := self.assignment_expression())
         ):
-            return assignment_expression
+            return assignment_expression;
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_named_expression())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (a := self.expression())
             and
             (self.negative_lookahead(self.expect, ':='))
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def disjunction(self) -> Optional[Any]:
@@ -4117,14 +4117,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BoolOp ( op = ast . Or ( ) , values = [a] + b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BoolOp ( op = ast . Or ( ) , values = [a] + b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (conjunction := self.conjunction())
         ):
-            return conjunction
+            return conjunction;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def conjunction(self) -> Optional[Any]:
@@ -4139,14 +4139,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BoolOp ( op = ast . And ( ) , values = [a] + b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BoolOp ( op = ast . And ( ) , values = [a] + b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (inversion := self.inversion())
         ):
-            return inversion
+            return inversion;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def inversion(self) -> Optional[Any]:
@@ -4161,14 +4161,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . UnaryOp ( op = ast . Not ( ) , operand = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . UnaryOp ( op = ast . Not ( ) , operand = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (comparison := self.comparison())
         ):
-            return comparison
+            return comparison;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def comparison(self) -> Optional[Any]:
@@ -4183,14 +4183,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Compare ( left = a , ops = self . get_comparison_ops ( b ) , comparators = self . get_comparators ( b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Compare ( left = a , ops = self . get_comparison_ops ( b ) , comparators = self . get_comparators ( b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (bitwise_or := self.bitwise_or())
         ):
-            return bitwise_or
+            return bitwise_or;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def compare_op_bitwise_or_pair(self) -> Optional[Any]:
@@ -4199,54 +4199,54 @@ class EnamlParser(Parser):
         if (
             (eq_bitwise_or := self.eq_bitwise_or())
         ):
-            return eq_bitwise_or
+            return eq_bitwise_or;
         self._reset(mark)
         if (
             (noteq_bitwise_or := self.noteq_bitwise_or())
         ):
-            return noteq_bitwise_or
+            return noteq_bitwise_or;
         self._reset(mark)
         if (
             (lte_bitwise_or := self.lte_bitwise_or())
         ):
-            return lte_bitwise_or
+            return lte_bitwise_or;
         self._reset(mark)
         if (
             (lt_bitwise_or := self.lt_bitwise_or())
         ):
-            return lt_bitwise_or
+            return lt_bitwise_or;
         self._reset(mark)
         if (
             (gte_bitwise_or := self.gte_bitwise_or())
         ):
-            return gte_bitwise_or
+            return gte_bitwise_or;
         self._reset(mark)
         if (
             (gt_bitwise_or := self.gt_bitwise_or())
         ):
-            return gt_bitwise_or
+            return gt_bitwise_or;
         self._reset(mark)
         if (
             (notin_bitwise_or := self.notin_bitwise_or())
         ):
-            return notin_bitwise_or
+            return notin_bitwise_or;
         self._reset(mark)
         if (
             (in_bitwise_or := self.in_bitwise_or())
         ):
-            return in_bitwise_or
+            return in_bitwise_or;
         self._reset(mark)
         if (
             (isnot_bitwise_or := self.isnot_bitwise_or())
         ):
-            return isnot_bitwise_or
+            return isnot_bitwise_or;
         self._reset(mark)
         if (
             (is_bitwise_or := self.is_bitwise_or())
         ):
-            return is_bitwise_or
+            return is_bitwise_or;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def eq_bitwise_or(self) -> Optional[Any]:
@@ -4257,9 +4257,9 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( ast . Eq ( ) , a )
+            return ( ast . Eq ( ) , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def noteq_bitwise_or(self) -> Optional[tuple]:
@@ -4270,9 +4270,9 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( ast . NotEq ( ) , a )
+            return ( ast . NotEq ( ) , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lte_bitwise_or(self) -> Optional[Any]:
@@ -4283,9 +4283,9 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( ast . LtE ( ) , a )
+            return ( ast . LtE ( ) , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lt_bitwise_or(self) -> Optional[Any]:
@@ -4296,9 +4296,9 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( ast . Lt ( ) , a )
+            return ( ast . Lt ( ) , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def gte_bitwise_or(self) -> Optional[Any]:
@@ -4309,9 +4309,9 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( ast . GtE ( ) , a )
+            return ( ast . GtE ( ) , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def gt_bitwise_or(self) -> Optional[Any]:
@@ -4322,9 +4322,9 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( ast . Gt ( ) , a )
+            return ( ast . Gt ( ) , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def notin_bitwise_or(self) -> Optional[Any]:
@@ -4337,9 +4337,9 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( ast . NotIn ( ) , a )
+            return ( ast . NotIn ( ) , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def in_bitwise_or(self) -> Optional[Any]:
@@ -4350,9 +4350,9 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( ast . In ( ) , a )
+            return ( ast . In ( ) , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def isnot_bitwise_or(self) -> Optional[Any]:
@@ -4365,9 +4365,9 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( ast . IsNot ( ) , a )
+            return ( ast . IsNot ( ) , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def is_bitwise_or(self) -> Optional[Any]:
@@ -4378,9 +4378,9 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( ast . Is ( ) , a )
+            return ( ast . Is ( ) , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def bitwise_or(self) -> Optional[Any]:
@@ -4397,14 +4397,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . BitOr ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . BitOr ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (bitwise_xor := self.bitwise_xor())
         ):
-            return bitwise_xor
+            return bitwise_xor;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def bitwise_xor(self) -> Optional[Any]:
@@ -4421,14 +4421,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . BitXor ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . BitXor ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (bitwise_and := self.bitwise_and())
         ):
-            return bitwise_and
+            return bitwise_and;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def bitwise_and(self) -> Optional[Any]:
@@ -4445,14 +4445,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . BitAnd ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . BitAnd ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (shift_expr := self.shift_expr())
         ):
-            return shift_expr
+            return shift_expr;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def shift_expr(self) -> Optional[Any]:
@@ -4469,7 +4469,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . LShift ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . LShift ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.shift_expr())
@@ -4480,14 +4480,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . RShift ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . RShift ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (sum := self.sum())
         ):
-            return sum
+            return sum;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def sum(self) -> Optional[Any]:
@@ -4504,7 +4504,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . Add ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . Add ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.sum())
@@ -4515,14 +4515,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . Sub ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . Sub ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (term := self.term())
         ):
-            return term
+            return term;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def term(self) -> Optional[Any]:
@@ -4539,7 +4539,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . Mult ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . Mult ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.term())
@@ -4550,7 +4550,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . Div ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . Div ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.term())
@@ -4561,7 +4561,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . FloorDiv ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . FloorDiv ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.term())
@@ -4572,7 +4572,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . Mod ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . Mod ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.term())
@@ -4583,14 +4583,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 5 ) , "The '@' operator is" , ast . BinOp ( left = a , op = ast . MatMult ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . check_version ( ( 3 , 5 ) , "The '@' operator is" , ast . BinOp ( left = a , op = ast . MatMult ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         if (
             (factor := self.factor())
         ):
-            return factor
+            return factor;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def factor(self) -> Optional[Any]:
@@ -4605,7 +4605,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . UnaryOp ( op = ast . UAdd ( ) , operand = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . UnaryOp ( op = ast . UAdd ( ) , operand = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('-'))
@@ -4614,7 +4614,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . UnaryOp ( op = ast . USub ( ) , operand = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . UnaryOp ( op = ast . USub ( ) , operand = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('~'))
@@ -4623,14 +4623,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . UnaryOp ( op = ast . Invert ( ) , operand = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . UnaryOp ( op = ast . Invert ( ) , operand = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (power := self.power())
         ):
-            return power
+            return power;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def power(self) -> Optional[Any]:
@@ -4647,14 +4647,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . BinOp ( left = a , op = ast . Pow ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . BinOp ( left = a , op = ast . Pow ( ) , right = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (await_primary := self.await_primary())
         ):
-            return await_primary
+            return await_primary;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def await_primary(self) -> Optional[Any]:
@@ -4669,14 +4669,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 5 ) , "Await expressions are" , ast . Await ( a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return self . check_version ( ( 3 , 5 ) , "Await expressions are" , ast . Await ( a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         if (
             (primary := self.primary())
         ):
-            return primary
+            return primary;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def primary(self) -> Optional[Any]:
@@ -4693,7 +4693,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Attribute ( value = a , attr = b . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Attribute ( value = a , attr = b . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.primary())
@@ -4702,7 +4702,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Call ( func = a , args = [b] , keywords = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Call ( func = a , args = [b] , keywords = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.primary())
@@ -4715,7 +4715,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Call ( func = a , args = b [0] if b else [] , keywords = b [1] if b else [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return ast . Call ( func = a , args = b [0] if b else [] , keywords = b [1] if b else [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         if (
             (a := self.primary())
@@ -4728,14 +4728,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Subscript ( value = a , slice = b , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Subscript ( value = a , slice = b , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (atom := self.atom())
         ):
-            return atom
+            return atom;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def slices(self) -> Optional[Any]:
@@ -4748,7 +4748,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, ','))
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             (a := self._gather_123())
@@ -4757,9 +4757,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Tuple ( elts = a , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ( ast . ExtSlice ( dims = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if any ( isinstance ( e , ast . Slice ) for e in a ) else ast . Index ( value = ast . Tuple ( elts = [e . value for e in a] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) )
+            return ast . Tuple ( elts = a , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ( ast . ExtSlice ( dims = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if any ( isinstance ( e , ast . Slice ) for e in a ) else ast . Index ( value = ast . Tuple ( elts = [e . value for e in a] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def slice(self) -> Optional[Any]:
@@ -4778,14 +4778,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Slice ( lower = a , upper = b , step = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Slice ( lower = a , upper = b , step = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.named_expression())
         ):
-            return a if sys . version_info >= ( 3 , 9 ) or isinstance ( a , ast . Slice ) else ast . Index ( value = a , lineno = a . lineno , col_offset = a . col_offset , end_lineno = a . end_lineno , end_col_offset = a . end_col_offset )
+            return a if sys . version_info >= ( 3 , 9 ) or isinstance ( a , ast . Slice ) else ast . Index ( value = a , lineno = a . lineno , col_offset = a . col_offset , end_lineno = a . end_lineno , end_col_offset = a . end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def atom(self) -> Optional[Any]:
@@ -4798,72 +4798,72 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = a . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Name ( id = a . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('True'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = True , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = True , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('False'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = False , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = False , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('None'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = None , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = None , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.positive_lookahead(self._tmp_126, ))
             and
             (strings := self.strings())
         ):
-            return strings
+            return strings;
         self._reset(mark)
         if (
             (a := self.number())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = ast . literal_eval ( a . string ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = ast . literal_eval ( a . string ) , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = ast . literal_eval ( a . string ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = ast . literal_eval ( a . string ) , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, '('))
             and
             (_tmp_127 := self._tmp_127())
         ):
-            return _tmp_127
+            return _tmp_127;
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, '['))
             and
             (_tmp_128 := self._tmp_128())
         ):
-            return _tmp_128
+            return _tmp_128;
         self._reset(mark)
         if (
             (self.positive_lookahead(self.expect, '{'))
             and
             (_tmp_129 := self._tmp_129())
         ):
-            return _tmp_129
+            return _tmp_129;
         self._reset(mark)
         if (
             (self.expect('...'))
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = Ellipsis , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = Ellipsis , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = Ellipsis , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = Ellipsis , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def group(self) -> Optional[Any]:
@@ -4876,16 +4876,16 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_group())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambdef(self) -> Optional[Any]:
@@ -4904,9 +4904,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Lambda ( args = a or self . make_arguments ( None , [] , None , [] , ( None , [] , None ) ) , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Lambda ( args = a or self . make_arguments ( None , [] , None , [] , ( None , [] , None ) ) , body = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambda_params(self) -> Optional[Any]:
@@ -4917,14 +4917,14 @@ class EnamlParser(Parser):
             and
             (self.invalid_lambda_parameters())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (lambda_parameters := self.lambda_parameters())
         ):
-            return lambda_parameters
+            return lambda_parameters;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambda_parameters(self) -> Optional[ast . arguments]:
@@ -4939,7 +4939,7 @@ class EnamlParser(Parser):
             and
             (d := self.lambda_star_etc(),)
         ):
-            return self . make_arguments ( a , [] , b , c , d )
+            return self . make_arguments ( a , [] , b , c , d );
         self._reset(mark)
         if (
             (a := self.lambda_slash_with_default())
@@ -4948,7 +4948,7 @@ class EnamlParser(Parser):
             and
             (c := self.lambda_star_etc(),)
         ):
-            return self . make_arguments ( None , a , None , b , c )
+            return self . make_arguments ( None , a , None , b , c );
         self._reset(mark)
         if (
             (a := self._loop1_134())
@@ -4957,21 +4957,21 @@ class EnamlParser(Parser):
             and
             (c := self.lambda_star_etc(),)
         ):
-            return self . make_arguments ( None , [] , a , b , c )
+            return self . make_arguments ( None , [] , a , b , c );
         self._reset(mark)
         if (
             (a := self._loop1_136())
             and
             (b := self.lambda_star_etc(),)
         ):
-            return self . make_arguments ( None , [] , None , a , b )
+            return self . make_arguments ( None , [] , None , a , b );
         self._reset(mark)
         if (
             (a := self.lambda_star_etc())
         ):
-            return self . make_arguments ( None , [] , None , [] , a )
+            return self . make_arguments ( None , [] , None , [] , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambda_slash_no_default(self) -> Optional[List [Tuple [ast . arg , None]]]:
@@ -4984,7 +4984,7 @@ class EnamlParser(Parser):
             and
             (self.expect(','))
         ):
-            return [( p , None ) for p in a]
+            return [( p , None ) for p in a];
         self._reset(mark)
         if (
             (a := self._loop1_138())
@@ -4993,9 +4993,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ':'))
         ):
-            return [( p , None ) for p in a]
+            return [( p , None ) for p in a];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambda_slash_with_default(self) -> Optional[List [Tuple [ast . arg , Any]]]:
@@ -5010,7 +5010,7 @@ class EnamlParser(Parser):
             and
             (self.expect(','))
         ):
-            return ( [( p , None ) for p in a] if a else [] ) + b
+            return ( [( p , None ) for p in a] if a else [] ) + b;
         self._reset(mark)
         if (
             (a := self._loop0_141(),)
@@ -5021,9 +5021,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ':'))
         ):
-            return ( [( p , None ) for p in a] if a else [] ) + b
+            return ( [( p , None ) for p in a] if a else [] ) + b;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambda_star_etc(self) -> Optional[Tuple [Optional [ast . arg] , List [Tuple [ast . arg , Any]] , Optional [ast . arg]]]:
@@ -5034,7 +5034,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_lambda_star_etc())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -5045,7 +5045,7 @@ class EnamlParser(Parser):
             and
             (c := self.lambda_kwds(),)
         ):
-            return ( a , b , c )
+            return ( a , b , c );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -5056,14 +5056,14 @@ class EnamlParser(Parser):
             and
             (c := self.lambda_kwds(),)
         ):
-            return ( None , b , c )
+            return ( None , b , c );
         self._reset(mark)
         if (
             (a := self.lambda_kwds())
         ):
-            return ( None , [] , a )
+            return ( None , [] , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambda_kwds(self) -> Optional[ast . arg]:
@@ -5074,16 +5074,16 @@ class EnamlParser(Parser):
             and
             (self.invalid_lambda_kwds())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('**'))
             and
             (a := self.lambda_param_no_default())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambda_param_no_default(self) -> Optional[ast . arg]:
@@ -5094,16 +5094,16 @@ class EnamlParser(Parser):
             and
             (self.expect(','))
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             (a := self.lambda_param())
             and
             (self.positive_lookahead(self.expect, ':'))
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambda_param_with_default(self) -> Optional[Tuple [ast . arg , Any]]:
@@ -5116,7 +5116,7 @@ class EnamlParser(Parser):
             and
             (self.expect(','))
         ):
-            return ( a , c )
+            return ( a , c );
         self._reset(mark)
         if (
             (a := self.lambda_param())
@@ -5125,9 +5125,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ':'))
         ):
-            return ( a , c )
+            return ( a , c );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambda_param_maybe_default(self) -> Optional[Tuple [ast . arg , Any]]:
@@ -5140,7 +5140,7 @@ class EnamlParser(Parser):
             and
             (self.expect(','))
         ):
-            return ( a , c )
+            return ( a , c );
         self._reset(mark)
         if (
             (a := self.lambda_param())
@@ -5149,9 +5149,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ':'))
         ):
-            return ( a , c )
+            return ( a , c );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def lambda_param(self) -> Optional[ast . arg]:
@@ -5164,9 +5164,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . arg ( arg = a . string , annotation = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . arg ( arg = a . string , annotation = None , type_comment = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . arg ( arg = a . string , annotation = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . arg ( arg = a . string , annotation = None , type_comment = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def fstring_mid(self) -> Optional[Any]:
@@ -5177,16 +5177,16 @@ class EnamlParser(Parser):
         if (
             (fstring_replacement_field := self.fstring_replacement_field())
         ):
-            return fstring_replacement_field
+            return fstring_replacement_field;
         self._reset(mark)
         if (
             (t := self.fstring_middle())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = self . _decode_fstring_literal ( t . string ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = self . _decode_fstring_literal ( t . string , raw = self . _is_raw_fstring ( ) ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def fstring_replacement_field(self) -> Optional[Any]:
@@ -5205,16 +5205,16 @@ class EnamlParser(Parser):
             and
             (rbrace := self.expect('}'))
         ):
-            return self . fstring_debug_value ( a , lbrace , debug_expr , conversion , format , rbrace )
+            return self . fstring_debug_value ( a , lbrace , debug_expr , conversion , format , rbrace );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_replacement_field())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def fstring_conversion(self) -> Optional[int]:
@@ -5225,9 +5225,9 @@ class EnamlParser(Parser):
             and
             (conv := self.name())
         ):
-            return self . check_fstring_conversion ( conv_token , conv )
+            return self . check_fstring_conversion ( conv_token , conv );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def fstring_full_format_spec(self) -> Optional[Any]:
@@ -5242,9 +5242,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . JoinedStr ( values = self . _flatten_joinedstr_values ( spec ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return ast . JoinedStr ( values = self . _flatten_joinedstr_values ( spec ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def fstring_format_spec(self) -> Optional[Any]:
@@ -5257,14 +5257,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = self . _decode_fstring_literal ( t . string ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Constant ( value = self . _decode_fstring_literal ( t . string , raw = self . _is_raw_fstring ( ) ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (fstring_replacement_field := self.fstring_replacement_field())
         ):
-            return fstring_replacement_field
+            return fstring_replacement_field;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def fstring(self) -> Optional[Any]:
@@ -5281,9 +5281,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . JoinedStr ( values = self . _flatten_joinedstr_values ( b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . JoinedStr ( values = self . _flatten_joinedstr_values ( b ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def strings(self) -> Optional[Any]:
@@ -5292,9 +5292,9 @@ class EnamlParser(Parser):
         if (
             (a := self._loop1_147())
         ):
-            return self . concatenate_strings ( a ) if sys . version_info >= ( 3 , 12 ) else self . generate_ast_for_string ( a )
+            return self . concatenate_strings ( a ) if sys . version_info >= ( 3 , 12 ) else self . generate_ast_for_string ( a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def list(self) -> Optional[ast . List]:
@@ -5311,9 +5311,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . List ( elts = a or [] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . List ( elts = a or [] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def tuple(self) -> Optional[ast . Tuple]:
@@ -5330,9 +5330,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Tuple ( elts = a or [] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Tuple ( elts = a or [] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def set(self) -> Optional[ast . Set]:
@@ -5349,9 +5349,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Set ( elts = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Set ( elts = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def dict(self) -> Optional[ast . Dict]:
@@ -5368,7 +5368,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Dict ( keys = [kv [0] for kv in ( a or [] )] , values = [kv [1] for kv in ( a or [] )] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Dict ( keys = [kv [0] for kv in ( a or [] )] , values = [kv [1] for kv in ( a or [] )] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             self.call_invalid_rules
@@ -5379,9 +5379,9 @@ class EnamlParser(Parser):
             and
             (self.expect('}'))
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def double_starred_kvpairs(self) -> Optional[list]:
@@ -5392,9 +5392,9 @@ class EnamlParser(Parser):
             and
             (self.expect(','),)
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def double_starred_kvpair(self) -> Optional[Any]:
@@ -5405,14 +5405,14 @@ class EnamlParser(Parser):
             and
             (a := self.bitwise_or())
         ):
-            return ( None , a )
+            return ( None , a );
         self._reset(mark)
         if (
             (kvpair := self.kvpair())
         ):
-            return kvpair
+            return kvpair;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def kvpair(self) -> Optional[tuple]:
@@ -5425,9 +5425,9 @@ class EnamlParser(Parser):
             and
             (b := self.expression())
         ):
-            return ( a , b )
+            return ( a , b );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def for_if_clauses(self) -> Optional[List [ast . comprehension]]:
@@ -5436,9 +5436,9 @@ class EnamlParser(Parser):
         if (
             (a := self._loop1_151())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def for_if_clause(self) -> Optional[ast . comprehension]:
@@ -5460,10 +5460,10 @@ class EnamlParser(Parser):
             and
             (c := self._loop0_152(),)
         ):
-            return self . check_version ( ( 3 , 6 ) , "Async comprehensions are" , ast . comprehension ( target = a , iter = b , ifs = c , is_async = 1 ) )
+            return self . check_version ( ( 3 , 6 ) , "Async comprehensions are" , ast . comprehension ( target = a , iter = b , ifs = c , is_async = 1 ) );
         self._reset(mark)
         if cut:
-            return None
+            return None;
         cut = False
         if (
             (self.expect('for'))
@@ -5478,18 +5478,18 @@ class EnamlParser(Parser):
             and
             (c := self._loop0_153(),)
         ):
-            return ast . comprehension ( target = a , iter = b , ifs = c , is_async = 0 )
+            return ast . comprehension ( target = a , iter = b , ifs = c , is_async = 0 );
         self._reset(mark)
         if cut:
-            return None
+            return None;
         if (
             self.call_invalid_rules
             and
             (self.invalid_for_target())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def listcomp(self) -> Optional[ast . ListComp]:
@@ -5508,16 +5508,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . ListComp ( elt = a , generators = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . ListComp ( elt = a , generators = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_comprehension())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def setcomp(self) -> Optional[ast . SetComp]:
@@ -5536,16 +5536,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . SetComp ( elt = a , generators = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . SetComp ( elt = a , generators = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_comprehension())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def genexp(self) -> Optional[ast . GeneratorExp]:
@@ -5564,16 +5564,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . GeneratorExp ( elt = a , generators = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . GeneratorExp ( elt = a , generators = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_comprehension())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def dictcomp(self) -> Optional[ast . DictComp]:
@@ -5592,16 +5592,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . DictComp ( key = a [0] , value = a [1] , generators = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . DictComp ( key = a [0] , value = a [1] , generators = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_dict_comprehension())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def arguments(self) -> Optional[Tuple [list , list]]:
@@ -5614,16 +5614,16 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self.expect, ')'))
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_arguments())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def args(self) -> Optional[Tuple [list , list]]:
@@ -5634,14 +5634,14 @@ class EnamlParser(Parser):
             and
             (b := self._tmp_157(),)
         ):
-            return ( a + ( [e for e in b if isinstance ( e , ast . Starred )] if b else [] ) , ( [e for e in b if not isinstance ( e , ast . Starred )] if b else [] ) )
+            return ( a + ( [e for e in b if isinstance ( e , ast . Starred )] if b else [] ) , ( [e for e in b if not isinstance ( e , ast . Starred )] if b else [] ) );
         self._reset(mark)
         if (
             (a := self.kwargs())
         ):
-            return ( [e for e in a if isinstance ( e , ast . Starred )] , [e for e in a if not isinstance ( e , ast . Starred )] )
+            return ( [e for e in a if isinstance ( e , ast . Starred )] , [e for e in a if not isinstance ( e , ast . Starred )] );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def kwargs(self) -> Optional[list]:
@@ -5654,19 +5654,19 @@ class EnamlParser(Parser):
             and
             (b := self._gather_160())
         ):
-            return a + b
+            return a + b;
         self._reset(mark)
         if (
             (_gather_162 := self._gather_162())
         ):
-            return _gather_162
+            return _gather_162;
         self._reset(mark)
         if (
             (_gather_164 := self._gather_164())
         ):
-            return _gather_164
+            return _gather_164;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def starred_expression(self) -> Optional[Any]:
@@ -5679,7 +5679,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_starred_expression())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -5688,9 +5688,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Starred ( value = a , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Starred ( value = a , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def kwarg_or_starred(self) -> Optional[Any]:
@@ -5703,7 +5703,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_kwarg())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (a := self.name())
@@ -5714,14 +5714,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . keyword ( arg = a . string , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . keyword ( arg = a . string , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.starred_expression())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def kwarg_or_double_starred(self) -> Optional[Any]:
@@ -5734,7 +5734,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_kwarg())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (a := self.name())
@@ -5745,7 +5745,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . keyword ( arg = a . string , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . keyword ( arg = a . string , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('**'))
@@ -5754,9 +5754,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . keyword ( arg = None , value = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . keyword ( arg = None , value = a , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_targets(self) -> Optional[Any]:
@@ -5769,7 +5769,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, ','))
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             (a := self.star_target())
@@ -5780,9 +5780,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Tuple ( elts = [a] + b , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Tuple ( elts = [a] + b , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_targets_list_seq(self) -> Optional[list]:
@@ -5793,9 +5793,9 @@ class EnamlParser(Parser):
             and
             (self.expect(','),)
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_targets_tuple_seq(self) -> Optional[list]:
@@ -5808,16 +5808,16 @@ class EnamlParser(Parser):
             and
             (self.expect(','),)
         ):
-            return [a] + b
+            return [a] + b;
         self._reset(mark)
         if (
             (a := self.star_target())
             and
             (self.expect(','))
         ):
-            return [a]
+            return [a];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_target(self) -> Optional[Any]:
@@ -5832,14 +5832,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Starred ( value = self . set_expr_context ( a , Store ) , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Starred ( value = self . set_expr_context ( a , Store ) , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (target_with_star_atom := self.target_with_star_atom())
         ):
-            return target_with_star_atom
+            return target_with_star_atom;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def target_with_star_atom(self) -> Optional[Any]:
@@ -5858,7 +5858,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Attribute ( value = a , attr = b . string , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Attribute ( value = a , attr = b . string , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.t_primary())
@@ -5873,14 +5873,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Subscript ( value = a , slice = b , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Subscript ( value = a , slice = b , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (star_atom := self.star_atom())
         ):
-            return star_atom
+            return star_atom;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def star_atom(self) -> Optional[Any]:
@@ -5893,7 +5893,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = a . string , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Name ( id = a . string , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('('))
@@ -5902,7 +5902,7 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return self . set_expr_context ( a , Store )
+            return self . set_expr_context ( a , Store );
         self._reset(mark)
         if (
             (self.expect('('))
@@ -5913,7 +5913,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Tuple ( elts = a , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Tuple ( elts = a , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('['))
@@ -5924,9 +5924,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . List ( elts = a , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . List ( elts = a , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def single_target(self) -> Optional[Any]:
@@ -5937,14 +5937,14 @@ class EnamlParser(Parser):
         if (
             (single_subscript_attribute_target := self.single_subscript_attribute_target())
         ):
-            return single_subscript_attribute_target
+            return single_subscript_attribute_target;
         self._reset(mark)
         if (
             (a := self.name())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = a . string , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Name ( id = a . string , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('('))
@@ -5953,9 +5953,9 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def single_subscript_attribute_target(self) -> Optional[Any]:
@@ -5974,7 +5974,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Attribute ( value = a , attr = b . string , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Attribute ( value = a , attr = b . string , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.t_primary())
@@ -5989,9 +5989,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Subscript ( value = a , slice = b , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Subscript ( value = a , slice = b , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize_left_rec
     def t_primary(self) -> Optional[Any]:
@@ -6010,7 +6010,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Attribute ( value = a , attr = b . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Attribute ( value = a , attr = b . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.t_primary())
@@ -6025,7 +6025,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Subscript ( value = a , slice = b , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Subscript ( value = a , slice = b , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.t_primary())
@@ -6036,7 +6036,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Call ( func = a , args = [b] , keywords = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Call ( func = a , args = [b] , keywords = [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.t_primary())
@@ -6051,16 +6051,16 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Call ( func = a , args = b [0] if b else [] , keywords = b [1] if b else [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , )
+            return ast . Call ( func = a , args = b [0] if b else [] , keywords = b [1] if b else [] , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         if (
             (a := self.atom())
             and
             (self.positive_lookahead(self.t_lookahead, ))
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def t_lookahead(self) -> Optional[Any]:
@@ -6069,19 +6069,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('('))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('['))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('.'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def del_targets(self) -> Optional[Any]:
@@ -6092,9 +6092,9 @@ class EnamlParser(Parser):
             and
             (self.expect(','),)
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def del_target(self) -> Optional[Any]:
@@ -6113,7 +6113,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Attribute ( value = a , attr = b . string , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Attribute ( value = a , attr = b . string , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (a := self.t_primary())
@@ -6128,14 +6128,14 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Subscript ( value = a , slice = b , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Subscript ( value = a , slice = b , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (del_t_atom := self.del_t_atom())
         ):
-            return del_t_atom
+            return del_t_atom;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def del_t_atom(self) -> Optional[Any]:
@@ -6148,7 +6148,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = a . string , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Name ( id = a . string , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('('))
@@ -6157,7 +6157,7 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return self . set_expr_context ( a , Del )
+            return self . set_expr_context ( a , Del );
         self._reset(mark)
         if (
             (self.expect('('))
@@ -6168,7 +6168,7 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Tuple ( elts = a , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . Tuple ( elts = a , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (self.expect('['))
@@ -6179,9 +6179,9 @@ class EnamlParser(Parser):
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . List ( elts = a , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . List ( elts = a , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def type_expressions(self) -> Optional[list]:
@@ -6202,7 +6202,7 @@ class EnamlParser(Parser):
             and
             (c := self.expression())
         ):
-            return a + [b , c]
+            return a + [b , c];
         self._reset(mark)
         if (
             (a := self._gather_175())
@@ -6213,7 +6213,7 @@ class EnamlParser(Parser):
             and
             (b := self.expression())
         ):
-            return a + [b]
+            return a + [b];
         self._reset(mark)
         if (
             (a := self._gather_177())
@@ -6224,7 +6224,7 @@ class EnamlParser(Parser):
             and
             (b := self.expression())
         ):
-            return a + [b]
+            return a + [b];
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -6237,28 +6237,28 @@ class EnamlParser(Parser):
             and
             (b := self.expression())
         ):
-            return [a , b]
+            return [a , b];
         self._reset(mark)
         if (
             (self.expect('*'))
             and
             (a := self.expression())
         ):
-            return [a]
+            return [a];
         self._reset(mark)
         if (
             (self.expect('**'))
             and
             (a := self.expression())
         ):
-            return [a]
+            return [a];
         self._reset(mark)
         if (
             (a := self._gather_179())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def func_type_comment(self) -> Optional[Any]:
@@ -6271,21 +6271,21 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self._tmp_181, ))
         ):
-            return t . string
+            return t . string;
         self._reset(mark)
         if (
             self.call_invalid_rules
             and
             (self.invalid_double_type_comments())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (type_comment := self.type_comment())
         ):
-            return type_comment
+            return type_comment;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_arguments(self) -> Optional[NoReturn]:
@@ -6298,7 +6298,7 @@ class EnamlParser(Parser):
             and
             (self.expect('*'))
         ):
-            return self . raise_syntax_error_known_location ( "iterable argument unpacking follows keyword argument unpacking" , a [1] [- 1] if a [1] else a [0] [- 1] , )
+            return self . raise_syntax_error_known_location ( "iterable argument unpacking follows keyword argument unpacking" , a [1] [- 1] if a [1] else a [0] [- 1] , );
         self._reset(mark)
         if (
             (a := self.expression())
@@ -6309,7 +6309,7 @@ class EnamlParser(Parser):
             and
             (self._tmp_182(),)
         ):
-            return self . raise_syntax_error_known_range ( "Generator expression must be parenthesized" , a , ( b [- 1] . ifs [- 1] if b [- 1] . ifs else b [- 1] . iter ) )
+            return self . raise_syntax_error_known_range ( "Generator expression must be parenthesized" , a , ( b [- 1] . ifs [- 1] if b [- 1] . ifs else b [- 1] . iter ) );
         self._reset(mark)
         if (
             (a := self.name())
@@ -6320,7 +6320,7 @@ class EnamlParser(Parser):
             and
             (self.for_if_clauses())
         ):
-            return self . raise_syntax_error_known_range ( "invalid syntax. Maybe you meant '==' or ':=' instead of '='?" , a , b )
+            return self . raise_syntax_error_known_range ( "invalid syntax. Maybe you meant '==' or ':=' instead of '='?" , a , b );
         self._reset(mark)
         if (
             (self._tmp_183(),)
@@ -6331,14 +6331,14 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self._tmp_184, ))
         ):
-            return self . raise_syntax_error_known_range ( "expected argument value expression" , a , b )
+            return self . raise_syntax_error_known_range ( "expected argument value expression" , a , b );
         self._reset(mark)
         if (
             (a := self.args())
             and
             (b := self.for_if_clauses())
         ):
-            return self . raise_syntax_error_known_range ( "Generator expression must be parenthesized" , a [0] [- 1] , ( b [- 1] . ifs [- 1] if b [- 1] . ifs else b [- 1] . iter ) , ) if len ( a [0] ) > 1 else None
+            return self . raise_syntax_error_known_range ( "Generator expression must be parenthesized" , a [0] [- 1] , ( b [- 1] . ifs [- 1] if b [- 1] . ifs else b [- 1] . iter ) , ) if len ( a [0] ) > 1 else None;
         self._reset(mark)
         if (
             (self.args())
@@ -6349,7 +6349,7 @@ class EnamlParser(Parser):
             and
             (b := self.for_if_clauses())
         ):
-            return self . raise_syntax_error_known_range ( "Generator expression must be parenthesized" , a , ( b [- 1] . ifs [- 1] if b [- 1] . ifs else b [- 1] . iter ) , )
+            return self . raise_syntax_error_known_range ( "Generator expression must be parenthesized" , a , ( b [- 1] . ifs [- 1] if b [- 1] . ifs else b [- 1] . iter ) , );
         self._reset(mark)
         if (
             (a := self.args())
@@ -6358,9 +6358,9 @@ class EnamlParser(Parser):
             and
             (self.args())
         ):
-            return self . raise_syntax_error ( "positional argument follows keyword argument unpacking" if a [1] [- 1] . arg is None else "positional argument follows keyword argument" , )
+            return self . raise_syntax_error ( "positional argument follows keyword argument unpacking" if a [1] [- 1] . arg is None else "positional argument follows keyword argument" , );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_kwarg(self) -> Optional[NoReturn]:
@@ -6371,7 +6371,7 @@ class EnamlParser(Parser):
             and
             (b := self.expect('='))
         ):
-            return self . raise_syntax_error_known_range ( f"cannot assign to {a.string}" , a , b )
+            return self . raise_syntax_error_known_range ( f"cannot assign to {a.string}" , a , b );
         self._reset(mark)
         if (
             (a := self.name())
@@ -6382,7 +6382,7 @@ class EnamlParser(Parser):
             and
             (self.for_if_clauses())
         ):
-            return self . raise_syntax_error_known_range ( "invalid syntax. Maybe you meant '==' or ':=' instead of '='?" , a , b )
+            return self . raise_syntax_error_known_range ( "invalid syntax. Maybe you meant '==' or ':=' instead of '='?" , a , b );
         self._reset(mark)
         if (
             (self.negative_lookahead(self._tmp_186, ))
@@ -6391,7 +6391,7 @@ class EnamlParser(Parser):
             and
             (b := self.expect('='))
         ):
-            return self . raise_syntax_error_known_range ( "expression cannot contain assignment, perhaps you meant \"==\"?" , a , b , )
+            return self . raise_syntax_error_known_range ( "expression cannot contain assignment, perhaps you meant \"==\"?" , a , b , );
         self._reset(mark)
         if (
             (a := self.expect('**'))
@@ -6402,9 +6402,9 @@ class EnamlParser(Parser):
             and
             (b := self.expression())
         ):
-            return self . raise_syntax_error_known_range ( "cannot assign to keyword argument unpacking" , a , b )
+            return self . raise_syntax_error_known_range ( "cannot assign to keyword argument unpacking" , a , b );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def expression_without_invalid(self) -> Optional[ast . AST]:
@@ -6428,22 +6428,22 @@ class EnamlParser(Parser):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
             self.call_invalid_rules = _prev_call_invalid
-            return ast . IfExp ( body = b , test = a , orelse = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset )
+            return ast . IfExp ( body = b , test = a , orelse = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         if (
             (disjunction := self.disjunction())
         ):
             self.call_invalid_rules = _prev_call_invalid
-            return disjunction
+            return disjunction;
         self._reset(mark)
         if (
             (lambdef := self.lambdef())
         ):
             self.call_invalid_rules = _prev_call_invalid
-            return lambdef
+            return lambdef;
         self._reset(mark)
         self.call_invalid_rules = _prev_call_invalid
-        return None
+        return None;
 
     @memoize
     def invalid_legacy_expression(self) -> Optional[Any]:
@@ -6456,9 +6456,9 @@ class EnamlParser(Parser):
             and
             (b := self.star_expressions())
         ):
-            return self . raise_syntax_error_known_range ( f"Missing parentheses in call to '{a.string}' . Did you mean {a.string}(...)?" , a , b , ) if a . string in ( "exec" , "print" ) else None
+            return self . raise_syntax_error_known_range ( f"Missing parentheses in call to '{a.string}' . Did you mean {a.string}(...)?" , a , b , ) if a . string in ( "exec" , "print" ) else None;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_expression(self) -> Optional[NoReturn]:
@@ -6471,7 +6471,7 @@ class EnamlParser(Parser):
             and
             (b := self.expression_without_invalid())
         ):
-            return ( self . raise_syntax_error_known_range ( "invalid syntax. Perhaps you forgot a comma?" , a , b ) if not isinstance ( a , ast . Name ) or a . id not in ( "print" , "exec" ) else None )
+            return ( self . raise_syntax_error_known_range ( "invalid syntax. Perhaps you forgot a comma?" , a , b ) if not isinstance ( a , ast . Name ) or a . id not in ( "print" , "exec" ) else None );
         self._reset(mark)
         if (
             (a := self.disjunction())
@@ -6482,7 +6482,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self._tmp_188, ))
         ):
-            return self . raise_syntax_error_known_range ( "expected 'else' after 'if' expression" , a , b )
+            return self . raise_syntax_error_known_range ( "expected 'else' after 'if' expression" , a , b );
         self._reset(mark)
         if (
             (a := self.expect('lambda'))
@@ -6493,9 +6493,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self._tmp_189, ))
         ):
-            return self . raise_syntax_error_known_range ( "f-string: lambda expressions are not allowed without parentheses" , a , b )
+            return self . raise_syntax_error_known_range ( "f-string: lambda expressions are not allowed without parentheses" , a , b );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_named_expression(self) -> Optional[NoReturn]:
@@ -6508,7 +6508,7 @@ class EnamlParser(Parser):
             and
             (self.expression())
         ):
-            return self . raise_syntax_error_known_location ( f"cannot use assignment expressions with {self.get_expr_name(a)}" , a )
+            return self . raise_syntax_error_known_location ( f"cannot use assignment expressions with {self.get_expr_name(a)}" , a );
         self._reset(mark)
         if (
             (a := self.name())
@@ -6519,7 +6519,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self._tmp_190, ))
         ):
-            return ( None if self . in_recursive_rule else self . raise_syntax_error_known_range ( "invalid syntax. Maybe you meant '==' or ':=' instead of '='?" , a , b ) )
+            return ( None if self . in_recursive_rule else self . raise_syntax_error_known_range ( "invalid syntax. Maybe you meant '==' or ':=' instead of '='?" , a , b ) );
         self._reset(mark)
         if (
             (self.negative_lookahead(self._tmp_191, ))
@@ -6532,9 +6532,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self._tmp_192, ))
         ):
-            return ( None if self . in_recursive_rule else self . raise_syntax_error_known_location ( f"cannot assign to {self.get_expr_name(a)} here. Maybe you meant '==' instead of '='?" , a ) )
+            return ( None if self . in_recursive_rule else self . raise_syntax_error_known_location ( f"cannot assign to {self.get_expr_name(a)} here. Maybe you meant '==' instead of '='?" , a ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_assignment(self) -> Optional[NoReturn]:
@@ -6549,7 +6549,7 @@ class EnamlParser(Parser):
             and
             (self.expression())
         ):
-            return self . raise_syntax_error_known_location ( f"only single target (not {self.get_expr_name(a)}) can be annotated" , a )
+            return self . raise_syntax_error_known_location ( f"only single target (not {self.get_expr_name(a)}) can be annotated" , a );
         self._reset(mark)
         if (
             (a := self.star_named_expression())
@@ -6562,7 +6562,7 @@ class EnamlParser(Parser):
             and
             (self.expression())
         ):
-            return self . raise_syntax_error_known_location ( "only single target (not tuple) can be annotated" , a )
+            return self . raise_syntax_error_known_location ( "only single target (not tuple) can be annotated" , a );
         self._reset(mark)
         if (
             (a := self.expression())
@@ -6571,7 +6571,7 @@ class EnamlParser(Parser):
             and
             (self.expression())
         ):
-            return self . raise_syntax_error_known_location ( "illegal target for annotation" , a )
+            return self . raise_syntax_error_known_location ( "illegal target for annotation" , a );
         self._reset(mark)
         if (
             (self._loop0_194(),)
@@ -6580,7 +6580,7 @@ class EnamlParser(Parser):
             and
             (self.expect('='))
         ):
-            return self . raise_syntax_error_invalid_target ( Target . STAR_TARGETS , a )
+            return self . raise_syntax_error_invalid_target ( Target . STAR_TARGETS , a );
         self._reset(mark)
         if (
             (self._loop0_195(),)
@@ -6589,7 +6589,7 @@ class EnamlParser(Parser):
             and
             (self.expect('='))
         ):
-            return self . raise_syntax_error_known_location ( "assignment to yield expression not possible" , a )
+            return self . raise_syntax_error_known_location ( "assignment to yield expression not possible" , a );
         self._reset(mark)
         if (
             (a := self.star_expressions())
@@ -6598,9 +6598,9 @@ class EnamlParser(Parser):
             and
             (self._tmp_196())
         ):
-            return self . raise_syntax_error_known_location ( f"'{self.get_expr_name(a)}' is an illegal expression for augmented assignment" , a )
+            return self . raise_syntax_error_known_location ( f"'{self.get_expr_name(a)}' is an illegal expression for augmented assignment" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_ann_assign_target(self) -> Optional[ast . AST]:
@@ -6609,12 +6609,12 @@ class EnamlParser(Parser):
         if (
             (a := self.list())
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             (a := self.tuple())
         ):
-            return a
+            return a;
         self._reset(mark)
         if (
             self.call_invalid_rules
@@ -6625,9 +6625,9 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_del_stmt(self) -> Optional[NoReturn]:
@@ -6638,9 +6638,9 @@ class EnamlParser(Parser):
             and
             (a := self.star_expressions())
         ):
-            return self . raise_syntax_error_invalid_target ( Target . DEL_TARGETS , a )
+            return self . raise_syntax_error_invalid_target ( Target . DEL_TARGETS , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_block(self) -> Optional[NoReturn]:
@@ -6651,9 +6651,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( "expected an indented block" )
+            return self . raise_indentation_error ( "expected an indented block" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_comprehension(self) -> Optional[NoReturn]:
@@ -6666,7 +6666,7 @@ class EnamlParser(Parser):
             and
             (self.for_if_clauses())
         ):
-            return self . raise_syntax_error_known_location ( "iterable unpacking cannot be used in comprehension" , a )
+            return self . raise_syntax_error_known_location ( "iterable unpacking cannot be used in comprehension" , a );
         self._reset(mark)
         if (
             (self._tmp_198())
@@ -6679,7 +6679,7 @@ class EnamlParser(Parser):
             and
             (self.for_if_clauses())
         ):
-            return self . raise_syntax_error_known_range ( "did you forget parentheses around the comprehension target?" , a , b [- 1] )
+            return self . raise_syntax_error_known_range ( "did you forget parentheses around the comprehension target?" , a , b [- 1] );
         self._reset(mark)
         if (
             (self._tmp_199())
@@ -6690,9 +6690,9 @@ class EnamlParser(Parser):
             and
             (self.for_if_clauses())
         ):
-            return self . raise_syntax_error_known_range ( "did you forget parentheses around the comprehension target?" , a , b )
+            return self . raise_syntax_error_known_range ( "did you forget parentheses around the comprehension target?" , a , b );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_dict_comprehension(self) -> Optional[NoReturn]:
@@ -6709,9 +6709,9 @@ class EnamlParser(Parser):
             and
             (self.expect('}'))
         ):
-            return self . raise_syntax_error_known_location ( "dict unpacking cannot be used in dict comprehension" , a )
+            return self . raise_syntax_error_known_location ( "dict unpacking cannot be used in dict comprehension" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_parameters(self) -> Optional[NoReturn]:
@@ -6722,7 +6722,7 @@ class EnamlParser(Parser):
             and
             (self.expect(','))
         ):
-            return self . raise_syntax_error_known_location ( "at least one argument must precede /" , a )
+            return self . raise_syntax_error_known_location ( "at least one argument must precede /" , a );
         self._reset(mark)
         if (
             (self._tmp_200())
@@ -6731,7 +6731,7 @@ class EnamlParser(Parser):
             and
             (a := self.expect('/'))
         ):
-            return self . raise_syntax_error_known_location ( "/ may appear only once" , a )
+            return self . raise_syntax_error_known_location ( "/ may appear only once" , a );
         self._reset(mark)
         if (
             self.call_invalid_rules
@@ -6744,7 +6744,7 @@ class EnamlParser(Parser):
             and
             (a := self.param_no_default())
         ):
-            return self . raise_syntax_error_known_location ( "parameter without a default follows parameter with a default" , a )
+            return self . raise_syntax_error_known_location ( "parameter without a default follows parameter with a default" , a );
         self._reset(mark)
         if (
             (self._loop0_203(),)
@@ -6757,7 +6757,7 @@ class EnamlParser(Parser):
             and
             (b := self.expect(')'))
         ):
-            return self . raise_syntax_error_known_range ( "Function parameters cannot be parenthesized" , a , b )
+            return self . raise_syntax_error_known_range ( "Function parameters cannot be parenthesized" , a , b );
         self._reset(mark)
         if (
             (self._tmp_205(),)
@@ -6772,7 +6772,7 @@ class EnamlParser(Parser):
             and
             (a := self.expect('/'))
         ):
-            return self . raise_syntax_error_known_location ( "/ must be ahead of *" , a )
+            return self . raise_syntax_error_known_location ( "/ must be ahead of *" , a );
         self._reset(mark)
         if (
             (self._loop1_209())
@@ -6781,9 +6781,9 @@ class EnamlParser(Parser):
             and
             (a := self.expect('*'))
         ):
-            return self . raise_syntax_error_known_location ( "expected comma between / and *" , a )
+            return self . raise_syntax_error_known_location ( "expected comma between / and *" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_default(self) -> Optional[Any]:
@@ -6794,9 +6794,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self._tmp_210, ))
         ):
-            return self . raise_syntax_error_known_location ( "expected default value expression" , a )
+            return self . raise_syntax_error_known_location ( "expected default value expression" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_star_etc(self) -> Optional[Any]:
@@ -6807,7 +6807,7 @@ class EnamlParser(Parser):
             and
             (self._tmp_211())
         ):
-            return self . raise_syntax_error_known_location ( "named arguments must follow bare *" , a )
+            return self . raise_syntax_error_known_location ( "named arguments must follow bare *" , a );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -6816,7 +6816,7 @@ class EnamlParser(Parser):
             and
             (self.type_comment())
         ):
-            return self . raise_syntax_error ( "bare * has associated type comment" )
+            return self . raise_syntax_error ( "bare * has associated type comment" );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -6825,7 +6825,7 @@ class EnamlParser(Parser):
             and
             (a := self.expect('='))
         ):
-            return self . raise_syntax_error_known_location ( "var-positional argument cannot have default value" , a )
+            return self . raise_syntax_error_known_location ( "var-positional argument cannot have default value" , a );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -6838,9 +6838,9 @@ class EnamlParser(Parser):
             and
             (self._tmp_214())
         ):
-            return self . raise_syntax_error_known_location ( "* argument may appear only once" , a )
+            return self . raise_syntax_error_known_location ( "* argument may appear only once" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_kwds(self) -> Optional[Any]:
@@ -6853,7 +6853,7 @@ class EnamlParser(Parser):
             and
             (a := self.expect('='))
         ):
-            return self . raise_syntax_error_known_location ( "var-keyword argument cannot have default value" , a )
+            return self . raise_syntax_error_known_location ( "var-keyword argument cannot have default value" , a );
         self._reset(mark)
         if (
             (self.expect('**'))
@@ -6864,7 +6864,7 @@ class EnamlParser(Parser):
             and
             (a := self.param())
         ):
-            return self . raise_syntax_error_known_location ( "arguments cannot follow var-keyword argument" , a )
+            return self . raise_syntax_error_known_location ( "arguments cannot follow var-keyword argument" , a );
         self._reset(mark)
         if (
             (self.expect('**'))
@@ -6875,9 +6875,9 @@ class EnamlParser(Parser):
             and
             (a := self._tmp_215())
         ):
-            return self . raise_syntax_error_known_location ( "arguments cannot follow var-keyword argument" , a )
+            return self . raise_syntax_error_known_location ( "arguments cannot follow var-keyword argument" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_parameters_helper(self) -> Optional[Any]:
@@ -6886,14 +6886,14 @@ class EnamlParser(Parser):
         if (
             (a := self.slash_with_default())
         ):
-            return [a]
+            return [a];
         self._reset(mark)
         if (
             (a := self._loop1_216())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_lambda_parameters(self) -> Optional[NoReturn]:
@@ -6904,7 +6904,7 @@ class EnamlParser(Parser):
             and
             (self.expect(','))
         ):
-            return self . raise_syntax_error_known_location ( "at least one argument must precede /" , a )
+            return self . raise_syntax_error_known_location ( "at least one argument must precede /" , a );
         self._reset(mark)
         if (
             (self._tmp_217())
@@ -6913,7 +6913,7 @@ class EnamlParser(Parser):
             and
             (a := self.expect('/'))
         ):
-            return self . raise_syntax_error_known_location ( "/ may appear only once" , a )
+            return self . raise_syntax_error_known_location ( "/ may appear only once" , a );
         self._reset(mark)
         if (
             self.call_invalid_rules
@@ -6926,7 +6926,7 @@ class EnamlParser(Parser):
             and
             (a := self.lambda_param_no_default())
         ):
-            return self . raise_syntax_error_known_location ( "parameter without a default follows parameter with a default" , a )
+            return self . raise_syntax_error_known_location ( "parameter without a default follows parameter with a default" , a );
         self._reset(mark)
         if (
             (self._loop0_220(),)
@@ -6939,7 +6939,7 @@ class EnamlParser(Parser):
             and
             (b := self.expect(')'))
         ):
-            return self . raise_syntax_error_known_range ( "Lambda expression parameters cannot be parenthesized" , a , b )
+            return self . raise_syntax_error_known_range ( "Lambda expression parameters cannot be parenthesized" , a , b );
         self._reset(mark)
         if (
             (self._tmp_223(),)
@@ -6954,7 +6954,7 @@ class EnamlParser(Parser):
             and
             (a := self.expect('/'))
         ):
-            return self . raise_syntax_error_known_location ( "/ must be ahead of *" , a )
+            return self . raise_syntax_error_known_location ( "/ must be ahead of *" , a );
         self._reset(mark)
         if (
             (self._loop1_227())
@@ -6963,9 +6963,9 @@ class EnamlParser(Parser):
             and
             (a := self.expect('*'))
         ):
-            return self . raise_syntax_error_known_location ( "expected comma between / and *" , a )
+            return self . raise_syntax_error_known_location ( "expected comma between / and *" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_lambda_parameters_helper(self) -> Optional[NoReturn]:
@@ -6974,14 +6974,14 @@ class EnamlParser(Parser):
         if (
             (a := self.lambda_slash_with_default())
         ):
-            return [a]
+            return [a];
         self._reset(mark)
         if (
             (a := self._loop1_228())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_lambda_star_etc(self) -> Optional[NoReturn]:
@@ -6992,7 +6992,7 @@ class EnamlParser(Parser):
             and
             (self._tmp_229())
         ):
-            return self . raise_syntax_error ( "named arguments must follow bare *" )
+            return self . raise_syntax_error ( "named arguments must follow bare *" );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -7001,7 +7001,7 @@ class EnamlParser(Parser):
             and
             (a := self.expect('='))
         ):
-            return self . raise_syntax_error_known_location ( "var-positional argument cannot have default value" , a )
+            return self . raise_syntax_error_known_location ( "var-positional argument cannot have default value" , a );
         self._reset(mark)
         if (
             (self.expect('*'))
@@ -7014,9 +7014,9 @@ class EnamlParser(Parser):
             and
             (self._tmp_232())
         ):
-            return self . raise_syntax_error_known_location ( "* argument may appear only once" , a )
+            return self . raise_syntax_error_known_location ( "* argument may appear only once" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_lambda_kwds(self) -> Optional[Any]:
@@ -7029,7 +7029,7 @@ class EnamlParser(Parser):
             and
             (a := self.expect('='))
         ):
-            return self . raise_syntax_error_known_location ( "var-keyword argument cannot have default value" , a )
+            return self . raise_syntax_error_known_location ( "var-keyword argument cannot have default value" , a );
         self._reset(mark)
         if (
             (self.expect('**'))
@@ -7040,7 +7040,7 @@ class EnamlParser(Parser):
             and
             (a := self.lambda_param())
         ):
-            return self . raise_syntax_error_known_location ( "arguments cannot follow var-keyword argument" , a )
+            return self . raise_syntax_error_known_location ( "arguments cannot follow var-keyword argument" , a );
         self._reset(mark)
         if (
             (self.expect('**'))
@@ -7051,9 +7051,9 @@ class EnamlParser(Parser):
             and
             (a := self._tmp_233())
         ):
-            return self . raise_syntax_error_known_location ( "arguments cannot follow var-keyword argument" , a )
+            return self . raise_syntax_error_known_location ( "arguments cannot follow var-keyword argument" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_double_type_comments(self) -> Optional[NoReturn]:
@@ -7070,9 +7070,9 @@ class EnamlParser(Parser):
             and
             (self.expect('INDENT'))
         ):
-            return self . raise_syntax_error ( "Cannot have two type comments on def" )
+            return self . raise_syntax_error ( "Cannot have two type comments on def" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_with_item(self) -> Optional[NoReturn]:
@@ -7087,9 +7087,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self._tmp_234, ))
         ):
-            return self . raise_syntax_error_invalid_target ( Target . STAR_TARGETS , a )
+            return self . raise_syntax_error_invalid_target ( Target . STAR_TARGETS , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_for_target(self) -> Optional[NoReturn]:
@@ -7102,9 +7102,9 @@ class EnamlParser(Parser):
             and
             (a := self.star_expressions())
         ):
-            return self . raise_syntax_error_invalid_target ( Target . FOR_TARGETS , a )
+            return self . raise_syntax_error_invalid_target ( Target . FOR_TARGETS , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_group(self) -> Optional[NoReturn]:
@@ -7117,7 +7117,7 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return self . raise_syntax_error_known_location ( "cannot use starred expression here" , a )
+            return self . raise_syntax_error_known_location ( "cannot use starred expression here" , a );
         self._reset(mark)
         if (
             (self.expect('('))
@@ -7128,9 +7128,9 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return self . raise_syntax_error_known_location ( "cannot use double starred expression here" , a )
+            return self . raise_syntax_error_known_location ( "cannot use double starred expression here" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_import(self) -> Optional[Any]:
@@ -7145,9 +7145,9 @@ class EnamlParser(Parser):
             and
             (self.dotted_name())
         ):
-            return self . raise_syntax_error_starting_from ( "Did you mean to use 'from ... import ...' instead?" , a )
+            return self . raise_syntax_error_starting_from ( "Did you mean to use 'from ... import ...' instead?" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_import_from(self) -> Optional[Any]:
@@ -7166,9 +7166,9 @@ class EnamlParser(Parser):
             and
             (self.import_from_targets())
         ):
-            return self . raise_syntax_error_known_location ( "use 'lazy from ... ' instead of 'from ... lazy import'" , a )
+            return self . raise_syntax_error_known_location ( "use 'lazy from ... ' instead of 'from ... lazy import'" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_import_from_targets(self) -> Optional[NoReturn]:
@@ -7181,9 +7181,9 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return self . raise_syntax_error ( "trailing comma not allowed without surrounding parentheses" )
+            return self . raise_syntax_error ( "trailing comma not allowed without surrounding parentheses" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_with_stmt(self) -> Optional[None]:
@@ -7198,7 +7198,7 @@ class EnamlParser(Parser):
             and
             (self.expect_forced(self.expect(':'), "':'"))
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('async'),)
@@ -7215,9 +7215,9 @@ class EnamlParser(Parser):
             and
             (self.expect_forced(self.expect(':'), "':'"))
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_with_stmt_indent(self) -> Optional[NoReturn]:
@@ -7236,7 +7236,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'with' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'with' statement on line {a.start[0]}" );
         self._reset(mark)
         if (
             (self.expect('async'),)
@@ -7257,9 +7257,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'with' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'with' statement on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_try_stmt(self) -> Optional[NoReturn]:
@@ -7274,7 +7274,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'try' statement on line {a.start[0]}" , )
+            return self . raise_indentation_error ( f"expected an indented block after 'try' statement on line {a.start[0]}" , );
         self._reset(mark)
         if (
             (self.expect('try'))
@@ -7285,7 +7285,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self._tmp_246, ))
         ):
-            return self . raise_syntax_error ( "expected 'except' or 'finally' block" )
+            return self . raise_syntax_error ( "expected 'except' or 'finally' block" );
         self._reset(mark)
         if (
             (self.expect('try'))
@@ -7306,7 +7306,7 @@ class EnamlParser(Parser):
             and
             (self.expect(':'))
         ):
-            return self . raise_syntax_error_known_range ( "cannot have both 'except' and 'except*' on the same 'try'" , a , b )
+            return self . raise_syntax_error_known_range ( "cannot have both 'except' and 'except*' on the same 'try'" , a , b );
         self._reset(mark)
         if (
             (self.expect('try'))
@@ -7323,9 +7323,9 @@ class EnamlParser(Parser):
             and
             (self.expect(':'))
         ):
-            return self . raise_syntax_error_known_location ( "cannot have both 'except' and 'except*' on the same 'try'" , a )
+            return self . raise_syntax_error_known_location ( "cannot have both 'except' and 'except*' on the same 'try'" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_except_stmt(self) -> Optional[None]:
@@ -7346,7 +7346,7 @@ class EnamlParser(Parser):
             and
             (self.expect(':'))
         ):
-            return self . raise_syntax_error_known_range ( "multiple exception types must be parenthesized when using 'as'" if self . py_version >= ( 3 , 14 ) else "multiple exception types must be parenthesized" , a , a , )
+            return self . raise_syntax_error_known_range ( "multiple exception types must be parenthesized when using 'as'" if self . py_version >= ( 3 , 14 ) else "multiple exception types must be parenthesized" , a , a , );
         self._reset(mark)
         if (
             (self.expect('except'))
@@ -7361,7 +7361,7 @@ class EnamlParser(Parser):
             and
             (self.expect(':'))
         ):
-            return self . raise_syntax_error_known_range ( "multiple exception types must be parenthesized" , a , b , ) if self . py_version < ( 3 , 14 ) else None
+            return self . raise_syntax_error_known_range ( "multiple exception types must be parenthesized" , a , b , ) if self . py_version < ( 3 , 14 ) else None;
         self._reset(mark)
         if (
             (self.expect('except'))
@@ -7372,7 +7372,7 @@ class EnamlParser(Parser):
             and
             (a := self.expect(','))
         ):
-            return self . raise_syntax_error_known_location ( "invalid syntax" , a ) if self . py_version < ( 3 , 14 ) else None
+            return self . raise_syntax_error_known_location ( "invalid syntax" , a ) if self . py_version < ( 3 , 14 ) else None;
         self._reset(mark)
         if (
             (self.expect('except'))
@@ -7385,7 +7385,7 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return self . raise_syntax_error ( "expected ':'" )
+            return self . raise_syntax_error ( "expected ':'" );
         self._reset(mark)
         if (
             (self.expect('except'))
@@ -7394,7 +7394,7 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return self . raise_syntax_error ( "expected ':'" )
+            return self . raise_syntax_error ( "expected ':'" );
         self._reset(mark)
         if (
             (self.expect('except'))
@@ -7403,9 +7403,9 @@ class EnamlParser(Parser):
             and
             (self._tmp_255())
         ):
-            return self . raise_syntax_error ( "expected one or more exception types" )
+            return self . raise_syntax_error ( "expected one or more exception types" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_finally_stmt(self) -> Optional[NoReturn]:
@@ -7420,9 +7420,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'finally' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'finally' statement on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_except_stmt_indent(self) -> Optional[NoReturn]:
@@ -7441,7 +7441,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'except' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'except' statement on line {a.start[0]}" );
         self._reset(mark)
         if (
             (a := self.expect('except'))
@@ -7452,9 +7452,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'except' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'except' statement on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_except_star_stmt_indent(self) -> Optional[Any]:
@@ -7475,9 +7475,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'except*' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'except*' statement on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_match_stmt(self) -> Optional[NoReturn]:
@@ -7490,7 +7490,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, ':'))
         ):
-            return self . check_version ( ( 3 , 10 ) , "Pattern matching is" , self . raise_syntax_error ( "expected ':'" ) )
+            return self . check_version ( ( 3 , 10 ) , "Pattern matching is" , self . raise_syntax_error ( "expected ':'" ) );
         self._reset(mark)
         if (
             (a := self.expect("match"))
@@ -7503,9 +7503,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . check_version ( ( 3 , 10 ) , "Pattern matching is" , self . raise_indentation_error ( f"expected an indented block after 'match' statement on line {a.start[0]}" ) )
+            return self . check_version ( ( 3 , 10 ) , "Pattern matching is" , self . raise_indentation_error ( f"expected an indented block after 'match' statement on line {a.start[0]}" ) );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_case_block(self) -> Optional[NoReturn]:
@@ -7520,7 +7520,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, ':'))
         ):
-            return self . raise_syntax_error ( "expected ':'" )
+            return self . raise_syntax_error ( "expected ':'" );
         self._reset(mark)
         if (
             (a := self.expect("case"))
@@ -7535,9 +7535,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'case' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'case' statement on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_as_pattern(self) -> Optional[NoReturn]:
@@ -7550,7 +7550,7 @@ class EnamlParser(Parser):
             and
             (a := self.expect("_"))
         ):
-            return self . raise_syntax_error_known_location ( "cannot use '_' as a target" , a )
+            return self . raise_syntax_error_known_location ( "cannot use '_' as a target" , a );
         self._reset(mark)
         if (
             (self.or_pattern())
@@ -7559,9 +7559,9 @@ class EnamlParser(Parser):
             and
             (a := self.expression())
         ):
-            return self . raise_syntax_error_known_location ( f"cannot use {self.get_expr_name(a)} as pattern target" , a ) if self . py_version >= ( 3 , 14 ) else self . raise_syntax_error_known_location ( "invalid pattern target" , a )
+            return self . raise_syntax_error_known_location ( f"cannot use {self.get_expr_name(a)} as pattern target" , a ) if self . py_version >= ( 3 , 14 ) else self . raise_syntax_error_known_location ( "invalid pattern target" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_class_pattern(self) -> Optional[NoReturn]:
@@ -7576,9 +7576,9 @@ class EnamlParser(Parser):
             and
             (a := self.invalid_class_argument_pattern())
         ):
-            return self . raise_syntax_error_known_range ( "positional patterns follow keyword patterns" , a [0] , a [- 1] )
+            return self . raise_syntax_error_known_range ( "positional patterns follow keyword patterns" , a [0] , a [- 1] );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_class_argument_pattern(self) -> Optional[list]:
@@ -7593,9 +7593,9 @@ class EnamlParser(Parser):
             and
             (a := self.positional_patterns())
         ):
-            return a
+            return a;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_if_stmt(self) -> Optional[NoReturn]:
@@ -7608,7 +7608,7 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return self . raise_syntax_error ( "expected ':'" )
+            return self . raise_syntax_error ( "expected ':'" );
         self._reset(mark)
         if (
             (a := self.expect('if'))
@@ -7621,9 +7621,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'if' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'if' statement on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_elif_stmt(self) -> Optional[NoReturn]:
@@ -7636,7 +7636,7 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return self . raise_syntax_error ( "expected ':'" )
+            return self . raise_syntax_error ( "expected ':'" );
         self._reset(mark)
         if (
             (a := self.expect('elif'))
@@ -7649,9 +7649,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'elif' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'elif' statement on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_else_stmt(self) -> Optional[NoReturn]:
@@ -7666,9 +7666,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'else' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'else' statement on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_while_stmt(self) -> Optional[NoReturn]:
@@ -7681,7 +7681,7 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return self . raise_syntax_error ( "expected ':'" )
+            return self . raise_syntax_error ( "expected ':'" );
         self._reset(mark)
         if (
             (a := self.expect('while'))
@@ -7694,9 +7694,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'while' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'while' statement on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_for_stmt(self) -> Optional[NoReturn]:
@@ -7715,7 +7715,7 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return self . raise_syntax_error ( "expected ':'" )
+            return self . raise_syntax_error ( "expected ':'" );
         self._reset(mark)
         if (
             (self.expect('async'),)
@@ -7734,9 +7734,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after 'for' statement on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after 'for' statement on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_def_raw(self) -> Optional[NoReturn]:
@@ -7765,9 +7765,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after function definition on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after function definition on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_class_def_raw(self) -> Optional[NoReturn]:
@@ -7784,7 +7784,7 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return self . raise_syntax_error ( "expected ':'" )
+            return self . raise_syntax_error ( "expected ':'" );
         self._reset(mark)
         if (
             (a := self.expect('class'))
@@ -7801,9 +7801,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, 'INDENT'))
         ):
-            return self . raise_indentation_error ( f"expected an indented block after class definition on line {a.start[0]}" )
+            return self . raise_indentation_error ( f"expected an indented block after class definition on line {a.start[0]}" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_double_starred_kvpairs(self) -> Optional[None]:
@@ -7818,7 +7818,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_kvpair())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expression())
@@ -7829,7 +7829,7 @@ class EnamlParser(Parser):
             and
             (self.bitwise_or())
         ):
-            return self . raise_syntax_error_starting_from ( "cannot use a starred expression in a dictionary value" , a )
+            return self . raise_syntax_error_starting_from ( "cannot use a starred expression in a dictionary value" , a );
         self._reset(mark)
         if (
             (self.expression())
@@ -7838,9 +7838,9 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self._tmp_264, ))
         ):
-            return self . raise_syntax_error_known_location ( "expression expected after dictionary key and ':'" , a )
+            return self . raise_syntax_error_known_location ( "expression expected after dictionary key and ':'" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_kvpair(self) -> Optional[None]:
@@ -7851,7 +7851,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, ':'))
         ):
-            return self . raise_raw_syntax_error ( "':' expected after dictionary key" , ( a . lineno , a . col_offset ) , ( a . end_lineno , a . end_col_offset ) )
+            return self . raise_raw_syntax_error ( "':' expected after dictionary key" , ( a . lineno , a . col_offset ) , ( a . end_lineno , a . end_col_offset ) );
         self._reset(mark)
         if (
             (self.expression())
@@ -7862,7 +7862,7 @@ class EnamlParser(Parser):
             and
             (self.bitwise_or())
         ):
-            return self . raise_syntax_error_starting_from ( "cannot use a starred expression in a dictionary value" , a )
+            return self . raise_syntax_error_starting_from ( "cannot use a starred expression in a dictionary value" , a );
         self._reset(mark)
         if (
             (self.expression())
@@ -7871,16 +7871,16 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self._tmp_265, ))
         ):
-            return self . raise_syntax_error_known_location ( "expression expected after dictionary key and ':'" , a )
+            return self . raise_syntax_error_known_location ( "expression expected after dictionary key and ':'" , a );
         self._reset(mark)
         if (
             (self.expression())
             and
             (a := self.expect(':'))
         ):
-            return self . raise_syntax_error_known_location ( "expression expected after dictionary key and ':'" , a )
+            return self . raise_syntax_error_known_location ( "expression expected after dictionary key and ':'" , a );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_starred_expression(self) -> Optional[Any]:
@@ -7895,9 +7895,9 @@ class EnamlParser(Parser):
             and
             (b := self.expression())
         ):
-            return self . raise_syntax_error_known_range ( "cannot assign to iterable argument unpacking" , a , b )
+            return self . raise_syntax_error_known_range ( "cannot assign to iterable argument unpacking" , a , b );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_replacement_field(self) -> Optional[Any]:
@@ -7908,35 +7908,35 @@ class EnamlParser(Parser):
             and
             (a := self.expect('='))
         ):
-            return self . raise_syntax_error_known_location ( "f-string: valid expression required before '='" , a )
+            return self . raise_syntax_error_known_location ( "f-string: valid expression required before '='" , a );
         self._reset(mark)
         if (
             (self.expect('{'))
             and
             (a := self.expect('!'))
         ):
-            return self . raise_syntax_error_known_location ( "f-string: valid expression required before '!'" , a )
+            return self . raise_syntax_error_known_location ( "f-string: valid expression required before '!'" , a );
         self._reset(mark)
         if (
             (self.expect('{'))
             and
             (a := self.expect(':'))
         ):
-            return self . raise_syntax_error_known_location ( "f-string: valid expression required before ':'" , a )
+            return self . raise_syntax_error_known_location ( "f-string: valid expression required before ':'" , a );
         self._reset(mark)
         if (
             (self.expect('{'))
             and
             (a := self.expect('}'))
         ):
-            return self . raise_syntax_error_known_location ( "f-string: valid expression required before '}'" , a )
+            return self . raise_syntax_error_known_location ( "f-string: valid expression required before '}'" , a );
         self._reset(mark)
         if (
             (self.expect('{'))
             and
             (self.negative_lookahead(self._tmp_266, ))
         ):
-            return self . raise_syntax_error_on_next_token ( "f-string: expecting a valid expression after '{'" )
+            return self . raise_syntax_error_on_next_token ( "f-string: expecting a valid expression after '{'" );
         self._reset(mark)
         if (
             (self.expect('{'))
@@ -7945,7 +7945,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self._tmp_268, ))
         ):
-            return self . raise_syntax_error_on_next_token ( "f-string: expecting '=', or '!', or ':', or '}'" )
+            return self . raise_syntax_error_on_next_token ( "f-string: expecting '=', or '!', or ':', or '}'" );
         self._reset(mark)
         if (
             (self.expect('{'))
@@ -7956,7 +7956,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self._tmp_270, ))
         ):
-            return self . raise_syntax_error_on_next_token ( "f-string: expecting '!', or ':', or '}'" )
+            return self . raise_syntax_error_on_next_token ( "f-string: expecting '!', or ':', or '}'" );
         self._reset(mark)
         if (
             self.call_invalid_rules
@@ -7969,7 +7969,7 @@ class EnamlParser(Parser):
             and
             (self.invalid_conversion_character())
         ):
-            return None  # pragma: no cover
+            return None  # pragma: no cover;
         self._reset(mark)
         if (
             (self.expect('{'))
@@ -7982,7 +7982,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self._tmp_274, ))
         ):
-            return self . raise_syntax_error_on_next_token ( "f-string: expecting ':' or '}'" )
+            return self . raise_syntax_error_on_next_token ( "f-string: expecting ':' or '}'" );
         self._reset(mark)
         if (
             (self.expect('{'))
@@ -7999,7 +7999,7 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, '}'))
         ):
-            return self . raise_syntax_error_on_next_token ( "f-string: expecting '}', or format specs" )
+            return self . raise_syntax_error_on_next_token ( "f-string: expecting '}', or format specs" );
         self._reset(mark)
         if (
             (self.expect('{'))
@@ -8012,9 +8012,9 @@ class EnamlParser(Parser):
             and
             (self.negative_lookahead(self.expect, '}'))
         ):
-            return self . raise_syntax_error_on_next_token ( "f-string: expecting '}'" )
+            return self . raise_syntax_error_on_next_token ( "f-string: expecting '}'" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def invalid_conversion_character(self) -> Optional[Any]:
@@ -8025,16 +8025,16 @@ class EnamlParser(Parser):
             and
             (self.positive_lookahead(self._tmp_280, ))
         ):
-            return self . raise_syntax_error_on_next_token ( "f-string: missing conversion character" )
+            return self . raise_syntax_error_on_next_token ( "f-string: missing conversion character" );
         self._reset(mark)
         if (
             (self.expect('!'))
             and
             (self.negative_lookahead(self.name, ))
         ):
-            return self . raise_syntax_error_on_next_token ( "f-string: invalid conversion character" )
+            return self . raise_syntax_error_on_next_token ( "f-string: invalid conversion character" );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_1(self) -> Optional[Any]:
@@ -8047,7 +8047,7 @@ class EnamlParser(Parser):
             children.append(enaml_item)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_2(self) -> Optional[Any]:
@@ -8060,7 +8060,7 @@ class EnamlParser(Parser):
             children.append(pragma)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_3(self) -> Optional[Any]:
@@ -8071,9 +8071,9 @@ class EnamlParser(Parser):
             and
             (z := self.name())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_4(self) -> Optional[Any]:
@@ -8086,7 +8086,7 @@ class EnamlParser(Parser):
             children.append(enamldef_item)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_5(self) -> Optional[Any]:
@@ -8099,7 +8099,7 @@ class EnamlParser(Parser):
             children.append(enamldef_item)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_6(self) -> Optional[Any]:
@@ -8112,7 +8112,7 @@ class EnamlParser(Parser):
             children.append(pragma)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_7(self) -> Optional[Any]:
@@ -8125,9 +8125,9 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return b
+            return b;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_8(self) -> Optional[Any]:
@@ -8138,9 +8138,9 @@ class EnamlParser(Parser):
             and
             (c := self._gather_283())
         ):
-            return c
+            return c;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_9(self) -> Optional[Any]:
@@ -8151,9 +8151,9 @@ class EnamlParser(Parser):
             and
             (c := self.dec_primary())
         ):
-            return c
+            return c;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_10(self) -> Optional[Any]:
@@ -8162,14 +8162,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect("attr"))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect("event"))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_11(self) -> Optional[Any]:
@@ -8180,9 +8180,9 @@ class EnamlParser(Parser):
             and
             (d := self.dec_primary())
         ):
-            return d
+            return d;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_12(self) -> Optional[Any]:
@@ -8191,14 +8191,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect("attr"))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect("event"))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_13(self) -> Optional[Any]:
@@ -8209,9 +8209,9 @@ class EnamlParser(Parser):
             and
             (d := self.dec_primary())
         ):
-            return d
+            return d;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_14(self) -> Optional[Any]:
@@ -8224,7 +8224,7 @@ class EnamlParser(Parser):
             children.append(child_def_item)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_16(self) -> Optional[Any]:
@@ -8239,7 +8239,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_15(self) -> Optional[Any]:
@@ -8252,9 +8252,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_16())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_17(self) -> Optional[Any]:
@@ -8263,14 +8263,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('='))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('<<'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_18(self) -> Optional[Any]:
@@ -8279,14 +8279,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('>>'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(':='))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_19(self) -> Optional[Any]:
@@ -8297,9 +8297,9 @@ class EnamlParser(Parser):
             and
             (z := self.expression())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_20(self) -> Optional[Any]:
@@ -8310,9 +8310,9 @@ class EnamlParser(Parser):
             and
             (z := self.expression())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_21(self) -> Optional[Any]:
@@ -8325,7 +8325,7 @@ class EnamlParser(Parser):
             children.append(template_item)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_22(self) -> Optional[Any]:
@@ -8338,7 +8338,7 @@ class EnamlParser(Parser):
             children.append(template_item)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_24(self) -> Optional[Any]:
@@ -8353,7 +8353,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_23(self) -> Optional[Any]:
@@ -8366,9 +8366,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_24())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_25(self) -> Optional[Any]:
@@ -8381,9 +8381,9 @@ class EnamlParser(Parser):
             and
             (c := self.name())
         ):
-            return c
+            return c;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_26(self) -> Optional[Any]:
@@ -8394,9 +8394,9 @@ class EnamlParser(Parser):
             and
             (z := self.template_ids())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_28(self) -> Optional[Any]:
@@ -8411,7 +8411,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_27(self) -> Optional[Any]:
@@ -8424,9 +8424,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_28())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_29(self) -> Optional[Any]:
@@ -8439,9 +8439,9 @@ class EnamlParser(Parser):
             and
             (z := self.expression())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_31(self) -> Optional[Any]:
@@ -8456,7 +8456,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_30(self) -> Optional[Any]:
@@ -8469,9 +8469,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_31())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_32(self) -> Optional[Any]:
@@ -8484,9 +8484,9 @@ class EnamlParser(Parser):
             and
             (z := self.name())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_33(self) -> Optional[Any]:
@@ -8499,7 +8499,7 @@ class EnamlParser(Parser):
             children.append(template_inst_item)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_34(self) -> Optional[Any]:
@@ -8510,9 +8510,9 @@ class EnamlParser(Parser):
             and
             (z := self._gather_285())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_35(self) -> Optional[Any]:
@@ -8525,7 +8525,7 @@ class EnamlParser(Parser):
             children.append(statement)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_37(self) -> Optional[Any]:
@@ -8540,7 +8540,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_36(self) -> Optional[Any]:
@@ -8553,9 +8553,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_37())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_38(self) -> Optional[Any]:
@@ -8564,19 +8564,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('import'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('from'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect("lazy"))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_39(self) -> Optional[Any]:
@@ -8585,19 +8585,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('def'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('@'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('async'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_40(self) -> Optional[Any]:
@@ -8606,14 +8606,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('class'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('@'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_41(self) -> Optional[Any]:
@@ -8622,14 +8622,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('with'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('async'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_42(self) -> Optional[Any]:
@@ -8638,14 +8638,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('for'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('async'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_43(self) -> Optional[Any]:
@@ -8656,9 +8656,9 @@ class EnamlParser(Parser):
             and
             (d := self.annotated_rhs())
         ):
-            return d
+            return d;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_44(self) -> Optional[Any]:
@@ -8671,14 +8671,14 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return b
+            return b;
         self._reset(mark)
         if (
             (single_subscript_attribute_target := self.single_subscript_attribute_target())
         ):
-            return single_subscript_attribute_target
+            return single_subscript_attribute_target;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_45(self) -> Optional[Any]:
@@ -8689,9 +8689,9 @@ class EnamlParser(Parser):
             and
             (d := self.annotated_rhs())
         ):
-            return d
+            return d;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_46(self) -> Optional[Any]:
@@ -8704,7 +8704,7 @@ class EnamlParser(Parser):
             children.append(_tmp_287)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_47(self) -> Optional[Any]:
@@ -8713,14 +8713,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_48(self) -> Optional[Any]:
@@ -8729,14 +8729,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_49(self) -> Optional[Any]:
@@ -8747,9 +8747,9 @@ class EnamlParser(Parser):
             and
             (z := self.expression())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_51(self) -> Optional[Any]:
@@ -8764,7 +8764,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_50(self) -> Optional[Any]:
@@ -8777,9 +8777,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_51())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_53(self) -> Optional[Any]:
@@ -8794,7 +8794,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_52(self) -> Optional[Any]:
@@ -8807,9 +8807,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_53())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_54(self) -> Optional[Any]:
@@ -8818,14 +8818,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(';'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (_newline := self.expect('NEWLINE'))
         ):
-            return _newline
+            return _newline;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_55(self) -> Optional[Any]:
@@ -8836,9 +8836,9 @@ class EnamlParser(Parser):
             and
             (z := self.expression())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_56(self) -> Optional[Any]:
@@ -8851,7 +8851,7 @@ class EnamlParser(Parser):
             children.append(_tmp_288)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_57(self) -> Optional[Any]:
@@ -8864,7 +8864,7 @@ class EnamlParser(Parser):
             children.append(_tmp_289)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_59(self) -> Optional[Any]:
@@ -8879,7 +8879,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_58(self) -> Optional[Any]:
@@ -8892,9 +8892,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_59())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_60(self) -> Optional[Any]:
@@ -8905,9 +8905,9 @@ class EnamlParser(Parser):
             and
             (z := self.name())
         ):
-            return z . string
+            return z . string;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_62(self) -> Optional[Any]:
@@ -8922,7 +8922,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_61(self) -> Optional[Any]:
@@ -8935,9 +8935,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_62())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_63(self) -> Optional[Any]:
@@ -8948,9 +8948,9 @@ class EnamlParser(Parser):
             and
             (z := self.name())
         ):
-            return z . string
+            return z . string;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_64(self) -> Optional[Any]:
@@ -8963,7 +8963,7 @@ class EnamlParser(Parser):
             children.append(decorator)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_65(self) -> Optional[Any]:
@@ -8976,9 +8976,9 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return f
+            return f;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_66(self) -> Optional[Any]:
@@ -8991,9 +8991,9 @@ class EnamlParser(Parser):
             and
             (self.expect('NEWLINE'))
         ):
-            return f
+            return f;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_67(self) -> Optional[Any]:
@@ -9006,9 +9006,9 @@ class EnamlParser(Parser):
             and
             (self.expect(')'))
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_68(self) -> Optional[Any]:
@@ -9019,9 +9019,9 @@ class EnamlParser(Parser):
             and
             (z := self.expression())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_69(self) -> Optional[Any]:
@@ -9032,9 +9032,9 @@ class EnamlParser(Parser):
             and
             (z := self.expression())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_70(self) -> Optional[Any]:
@@ -9047,7 +9047,7 @@ class EnamlParser(Parser):
             children.append(param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_71(self) -> Optional[Any]:
@@ -9060,7 +9060,7 @@ class EnamlParser(Parser):
             children.append(param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_72(self) -> Optional[Any]:
@@ -9073,7 +9073,7 @@ class EnamlParser(Parser):
             children.append(param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_73(self) -> Optional[Any]:
@@ -9086,7 +9086,7 @@ class EnamlParser(Parser):
             children.append(param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_74(self) -> Optional[Any]:
@@ -9099,7 +9099,7 @@ class EnamlParser(Parser):
             children.append(param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_75(self) -> Optional[Any]:
@@ -9112,7 +9112,7 @@ class EnamlParser(Parser):
             children.append(param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_76(self) -> Optional[Any]:
@@ -9125,7 +9125,7 @@ class EnamlParser(Parser):
             children.append(param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_77(self) -> Optional[Any]:
@@ -9138,7 +9138,7 @@ class EnamlParser(Parser):
             children.append(param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_78(self) -> Optional[Any]:
@@ -9151,7 +9151,7 @@ class EnamlParser(Parser):
             children.append(param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_79(self) -> Optional[Any]:
@@ -9164,7 +9164,7 @@ class EnamlParser(Parser):
             children.append(param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_80(self) -> Optional[Any]:
@@ -9177,7 +9177,7 @@ class EnamlParser(Parser):
             children.append(param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_81(self) -> Optional[Any]:
@@ -9190,7 +9190,7 @@ class EnamlParser(Parser):
             children.append(param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_82(self) -> Optional[Any]:
@@ -9203,7 +9203,7 @@ class EnamlParser(Parser):
             children.append(param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_83(self) -> Optional[Any]:
@@ -9216,7 +9216,7 @@ class EnamlParser(Parser):
             children.append(param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_84(self) -> Optional[Any]:
@@ -9229,7 +9229,7 @@ class EnamlParser(Parser):
             children.append(param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_86(self) -> Optional[Any]:
@@ -9244,7 +9244,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_85(self) -> Optional[Any]:
@@ -9257,9 +9257,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_86())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_88(self) -> Optional[Any]:
@@ -9274,7 +9274,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_87(self) -> Optional[Any]:
@@ -9287,9 +9287,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_88())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_90(self) -> Optional[Any]:
@@ -9304,7 +9304,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_89(self) -> Optional[Any]:
@@ -9317,9 +9317,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_90())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_92(self) -> Optional[Any]:
@@ -9334,7 +9334,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_91(self) -> Optional[Any]:
@@ -9347,9 +9347,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_92())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_93(self) -> Optional[Any]:
@@ -9358,19 +9358,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(')'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(':'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_94(self) -> Optional[Any]:
@@ -9383,7 +9383,7 @@ class EnamlParser(Parser):
             children.append(except_block)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_95(self) -> Optional[Any]:
@@ -9396,7 +9396,7 @@ class EnamlParser(Parser):
             children.append(except_star_block)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_96(self) -> Optional[Any]:
@@ -9407,9 +9407,9 @@ class EnamlParser(Parser):
             and
             (z := self.name())
         ):
-            return z . string
+            return z . string;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_97(self) -> Optional[Any]:
@@ -9420,9 +9420,9 @@ class EnamlParser(Parser):
             and
             (z := self.name())
         ):
-            return z . string
+            return z . string;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_98(self) -> Optional[Any]:
@@ -9435,7 +9435,7 @@ class EnamlParser(Parser):
             children.append(case_block)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_100(self) -> Optional[Any]:
@@ -9450,7 +9450,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_99(self) -> Optional[Any]:
@@ -9463,9 +9463,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_100())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_101(self) -> Optional[Any]:
@@ -9474,14 +9474,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('+'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('-'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_102(self) -> Optional[Any]:
@@ -9490,14 +9490,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('+'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('-'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_103(self) -> Optional[Any]:
@@ -9506,19 +9506,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('.'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('('))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('='))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_104(self) -> Optional[Any]:
@@ -9527,19 +9527,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('.'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('('))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('='))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_106(self) -> Optional[Any]:
@@ -9554,7 +9554,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_105(self) -> Optional[Any]:
@@ -9567,9 +9567,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_106())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_108(self) -> Optional[Any]:
@@ -9584,7 +9584,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_107(self) -> Optional[Any]:
@@ -9597,9 +9597,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_108())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_109(self) -> Optional[Any]:
@@ -9608,14 +9608,14 @@ class EnamlParser(Parser):
         if (
             (literal_expr := self.literal_expr())
         ):
-            return literal_expr
+            return literal_expr;
         self._reset(mark)
         if (
             (attr := self.attr())
         ):
-            return attr
+            return attr;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_111(self) -> Optional[Any]:
@@ -9630,7 +9630,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_110(self) -> Optional[Any]:
@@ -9643,9 +9643,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_111())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_113(self) -> Optional[Any]:
@@ -9660,7 +9660,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_112(self) -> Optional[Any]:
@@ -9673,9 +9673,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_113())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_115(self) -> Optional[Any]:
@@ -9690,7 +9690,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_114(self) -> Optional[Any]:
@@ -9703,9 +9703,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_115())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_116(self) -> Optional[Any]:
@@ -9718,7 +9718,7 @@ class EnamlParser(Parser):
             children.append(_tmp_290)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_117(self) -> Optional[Any]:
@@ -9731,7 +9731,7 @@ class EnamlParser(Parser):
             children.append(_tmp_291)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_119(self) -> Optional[Any]:
@@ -9746,7 +9746,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_118(self) -> Optional[Any]:
@@ -9759,9 +9759,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_119())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_120(self) -> Optional[Any]:
@@ -9774,7 +9774,7 @@ class EnamlParser(Parser):
             children.append(_tmp_292)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_121(self) -> Optional[Any]:
@@ -9787,7 +9787,7 @@ class EnamlParser(Parser):
             children.append(_tmp_293)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_122(self) -> Optional[Any]:
@@ -9800,7 +9800,7 @@ class EnamlParser(Parser):
             children.append(compare_op_bitwise_or_pair)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_124(self) -> Optional[Any]:
@@ -9815,7 +9815,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_123(self) -> Optional[Any]:
@@ -9828,9 +9828,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_124())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_125(self) -> Optional[Any]:
@@ -9841,9 +9841,9 @@ class EnamlParser(Parser):
             and
             (d := self.expression(),)
         ):
-            return d
+            return d;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_126(self) -> Optional[Any]:
@@ -9852,14 +9852,14 @@ class EnamlParser(Parser):
         if (
             (string := self.string())
         ):
-            return string
+            return string;
         self._reset(mark)
         if (
             (fstring_start := self.fstring_start())
         ):
-            return fstring_start
+            return fstring_start;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_127(self) -> Optional[Any]:
@@ -9868,19 +9868,19 @@ class EnamlParser(Parser):
         if (
             (tuple := self.tuple())
         ):
-            return tuple
+            return tuple;
         self._reset(mark)
         if (
             (group := self.group())
         ):
-            return group
+            return group;
         self._reset(mark)
         if (
             (genexp := self.genexp())
         ):
-            return genexp
+            return genexp;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_128(self) -> Optional[Any]:
@@ -9889,14 +9889,14 @@ class EnamlParser(Parser):
         if (
             (list := self.list())
         ):
-            return list
+            return list;
         self._reset(mark)
         if (
             (listcomp := self.listcomp())
         ):
-            return listcomp
+            return listcomp;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_129(self) -> Optional[Any]:
@@ -9905,24 +9905,24 @@ class EnamlParser(Parser):
         if (
             (dict := self.dict())
         ):
-            return dict
+            return dict;
         self._reset(mark)
         if (
             (set := self.set())
         ):
-            return set
+            return set;
         self._reset(mark)
         if (
             (dictcomp := self.dictcomp())
         ):
-            return dictcomp
+            return dictcomp;
         self._reset(mark)
         if (
             (setcomp := self.setcomp())
         ):
-            return setcomp
+            return setcomp;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_130(self) -> Optional[Any]:
@@ -9931,14 +9931,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (named_expression := self.named_expression())
         ):
-            return named_expression
+            return named_expression;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_131(self) -> Optional[Any]:
@@ -9951,7 +9951,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_132(self) -> Optional[Any]:
@@ -9964,7 +9964,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_133(self) -> Optional[Any]:
@@ -9977,7 +9977,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_134(self) -> Optional[Any]:
@@ -9990,7 +9990,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_135(self) -> Optional[Any]:
@@ -10003,7 +10003,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_136(self) -> Optional[Any]:
@@ -10016,7 +10016,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_137(self) -> Optional[Any]:
@@ -10029,7 +10029,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_138(self) -> Optional[Any]:
@@ -10042,7 +10042,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_139(self) -> Optional[Any]:
@@ -10055,7 +10055,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_140(self) -> Optional[Any]:
@@ -10068,7 +10068,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_141(self) -> Optional[Any]:
@@ -10081,7 +10081,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_142(self) -> Optional[Any]:
@@ -10094,7 +10094,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_143(self) -> Optional[Any]:
@@ -10107,7 +10107,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_144(self) -> Optional[Any]:
@@ -10120,7 +10120,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_145(self) -> Optional[Any]:
@@ -10133,7 +10133,7 @@ class EnamlParser(Parser):
             children.append(fstring_format_spec)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_146(self) -> Optional[Any]:
@@ -10146,7 +10146,7 @@ class EnamlParser(Parser):
             children.append(fstring_mid)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_147(self) -> Optional[Any]:
@@ -10159,7 +10159,7 @@ class EnamlParser(Parser):
             children.append(_tmp_295)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_148(self) -> Optional[Any]:
@@ -10172,9 +10172,9 @@ class EnamlParser(Parser):
             and
             (z := self.star_named_expressions(),)
         ):
-            return [y] + ( z or [] )
+            return [y] + ( z or [] );
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_150(self) -> Optional[Any]:
@@ -10189,7 +10189,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_149(self) -> Optional[Any]:
@@ -10202,9 +10202,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_150())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_151(self) -> Optional[Any]:
@@ -10217,7 +10217,7 @@ class EnamlParser(Parser):
             children.append(for_if_clause)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_152(self) -> Optional[Any]:
@@ -10230,7 +10230,7 @@ class EnamlParser(Parser):
             children.append(_tmp_296)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_153(self) -> Optional[Any]:
@@ -10243,7 +10243,7 @@ class EnamlParser(Parser):
             children.append(_tmp_297)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_154(self) -> Optional[Any]:
@@ -10252,16 +10252,16 @@ class EnamlParser(Parser):
         if (
             (assignment_expression := self.assignment_expression())
         ):
-            return assignment_expression
+            return assignment_expression;
         self._reset(mark)
         if (
             (expression := self.expression())
             and
             (self.negative_lookahead(self.expect, ':='))
         ):
-            return expression
+            return expression;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_156(self) -> Optional[Any]:
@@ -10276,7 +10276,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_155(self) -> Optional[Any]:
@@ -10289,9 +10289,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_156())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_157(self) -> Optional[Any]:
@@ -10302,9 +10302,9 @@ class EnamlParser(Parser):
             and
             (k := self.kwargs())
         ):
-            return k
+            return k;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_159(self) -> Optional[Any]:
@@ -10319,7 +10319,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_158(self) -> Optional[Any]:
@@ -10332,9 +10332,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_159())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_161(self) -> Optional[Any]:
@@ -10349,7 +10349,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_160(self) -> Optional[Any]:
@@ -10362,9 +10362,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_161())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_163(self) -> Optional[Any]:
@@ -10379,7 +10379,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_162(self) -> Optional[Any]:
@@ -10392,9 +10392,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_163())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_165(self) -> Optional[Any]:
@@ -10409,7 +10409,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_164(self) -> Optional[Any]:
@@ -10422,9 +10422,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_165())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_166(self) -> Optional[Any]:
@@ -10437,7 +10437,7 @@ class EnamlParser(Parser):
             children.append(_tmp_299)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_168(self) -> Optional[Any]:
@@ -10452,7 +10452,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_167(self) -> Optional[Any]:
@@ -10465,9 +10465,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_168())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_169(self) -> Optional[Any]:
@@ -10480,7 +10480,7 @@ class EnamlParser(Parser):
             children.append(_tmp_300)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_170(self) -> Optional[Any]:
@@ -10491,9 +10491,9 @@ class EnamlParser(Parser):
             and
             (star_target := self.star_target())
         ):
-            return star_target
+            return star_target;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_172(self) -> Optional[Any]:
@@ -10508,7 +10508,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_171(self) -> Optional[Any]:
@@ -10521,9 +10521,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_172())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_174(self) -> Optional[Any]:
@@ -10538,7 +10538,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_173(self) -> Optional[Any]:
@@ -10551,9 +10551,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_174())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_176(self) -> Optional[Any]:
@@ -10568,7 +10568,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_175(self) -> Optional[Any]:
@@ -10581,9 +10581,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_176())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_178(self) -> Optional[Any]:
@@ -10598,7 +10598,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_177(self) -> Optional[Any]:
@@ -10611,9 +10611,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_178())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_180(self) -> Optional[Any]:
@@ -10628,7 +10628,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_179(self) -> Optional[Any]:
@@ -10641,9 +10641,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_180())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_181(self) -> Optional[Any]:
@@ -10654,9 +10654,9 @@ class EnamlParser(Parser):
             and
             (_indent := self.expect('INDENT'))
         ):
-            return [_newline, _indent]
+            return [_newline, _indent];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_182(self) -> Optional[Any]:
@@ -10665,16 +10665,16 @@ class EnamlParser(Parser):
         if (
             (args := self.args())
         ):
-            return args
+            return args;
         self._reset(mark)
         if (
             (expression := self.expression())
             and
             (for_if_clauses := self.for_if_clauses())
         ):
-            return [expression, for_if_clauses]
+            return [expression, for_if_clauses];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_183(self) -> Optional[Any]:
@@ -10685,9 +10685,9 @@ class EnamlParser(Parser):
             and
             (literal := self.expect(','))
         ):
-            return [args, literal]
+            return [args, literal];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_184(self) -> Optional[Any]:
@@ -10696,14 +10696,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(')'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_185(self) -> Optional[Any]:
@@ -10712,19 +10712,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('True'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('False'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('None'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_186(self) -> Optional[Any]:
@@ -10735,9 +10735,9 @@ class EnamlParser(Parser):
             and
             (literal := self.expect('='))
         ):
-            return [name, literal]
+            return [name, literal];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_187(self) -> Optional[Any]:
@@ -10748,14 +10748,14 @@ class EnamlParser(Parser):
             and
             (string := self.string())
         ):
-            return [name, string]
+            return [name, string];
         self._reset(mark)
         if (
             (soft_keyword := self.soft_keyword())
         ):
-            return soft_keyword
+            return soft_keyword;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_188(self) -> Optional[Any]:
@@ -10764,14 +10764,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('else'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(':'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_189(self) -> Optional[Any]:
@@ -10780,14 +10780,14 @@ class EnamlParser(Parser):
         if (
             (fstring_middle := self.fstring_middle())
         ):
-            return fstring_middle
+            return fstring_middle;
         self._reset(mark)
         if (
             (fstring_replacement_field := self.fstring_replacement_field())
         ):
-            return fstring_replacement_field
+            return fstring_replacement_field;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_190(self) -> Optional[Any]:
@@ -10796,14 +10796,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('='))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(':='))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_191(self) -> Optional[Any]:
@@ -10812,34 +10812,34 @@ class EnamlParser(Parser):
         if (
             (list := self.list())
         ):
-            return list
+            return list;
         self._reset(mark)
         if (
             (tuple := self.tuple())
         ):
-            return tuple
+            return tuple;
         self._reset(mark)
         if (
             (genexp := self.genexp())
         ):
-            return genexp
+            return genexp;
         self._reset(mark)
         if (
             (literal := self.expect('True'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('None'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('False'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_192(self) -> Optional[Any]:
@@ -10848,14 +10848,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('='))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(':='))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_193(self) -> Optional[Any]:
@@ -10868,7 +10868,7 @@ class EnamlParser(Parser):
             children.append(star_named_expressions)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_194(self) -> Optional[Any]:
@@ -10881,7 +10881,7 @@ class EnamlParser(Parser):
             children.append(_tmp_301)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_195(self) -> Optional[Any]:
@@ -10894,7 +10894,7 @@ class EnamlParser(Parser):
             children.append(_tmp_302)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_196(self) -> Optional[Any]:
@@ -10903,14 +10903,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_197(self) -> Optional[Any]:
@@ -10919,19 +10919,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('['))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('('))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('{'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_198(self) -> Optional[Any]:
@@ -10940,14 +10940,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('['))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('{'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_199(self) -> Optional[Any]:
@@ -10956,14 +10956,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('['))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('{'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_200(self) -> Optional[Any]:
@@ -10972,14 +10972,14 @@ class EnamlParser(Parser):
         if (
             (slash_no_default := self.slash_no_default())
         ):
-            return slash_no_default
+            return slash_no_default;
         self._reset(mark)
         if (
             (slash_with_default := self.slash_with_default())
         ):
-            return slash_with_default
+            return slash_with_default;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_201(self) -> Optional[Any]:
@@ -10992,7 +10992,7 @@ class EnamlParser(Parser):
             children.append(param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_202(self) -> Optional[Any]:
@@ -11005,7 +11005,7 @@ class EnamlParser(Parser):
             children.append(param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_203(self) -> Optional[Any]:
@@ -11018,7 +11018,7 @@ class EnamlParser(Parser):
             children.append(param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_204(self) -> Optional[Any]:
@@ -11031,7 +11031,7 @@ class EnamlParser(Parser):
             children.append(param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_205(self) -> Optional[Any]:
@@ -11040,14 +11040,14 @@ class EnamlParser(Parser):
         if (
             (slash_no_default := self.slash_no_default())
         ):
-            return slash_no_default
+            return slash_no_default;
         self._reset(mark)
         if (
             (slash_with_default := self.slash_with_default())
         ):
-            return slash_with_default
+            return slash_with_default;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_206(self) -> Optional[Any]:
@@ -11060,7 +11060,7 @@ class EnamlParser(Parser):
             children.append(param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_207(self) -> Optional[Any]:
@@ -11069,14 +11069,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (param_no_default := self.param_no_default())
         ):
-            return param_no_default
+            return param_no_default;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_208(self) -> Optional[Any]:
@@ -11089,7 +11089,7 @@ class EnamlParser(Parser):
             children.append(param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_209(self) -> Optional[Any]:
@@ -11102,7 +11102,7 @@ class EnamlParser(Parser):
             children.append(param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_210(self) -> Optional[Any]:
@@ -11111,14 +11111,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(')'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_211(self) -> Optional[Any]:
@@ -11127,16 +11127,16 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(')'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(','))
             and
             (_tmp_303 := self._tmp_303())
         ):
-            return [literal, _tmp_303]
+            return [literal, _tmp_303];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_212(self) -> Optional[Any]:
@@ -11145,14 +11145,14 @@ class EnamlParser(Parser):
         if (
             (param_no_default := self.param_no_default())
         ):
-            return param_no_default
+            return param_no_default;
         self._reset(mark)
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_213(self) -> Optional[Any]:
@@ -11165,7 +11165,7 @@ class EnamlParser(Parser):
             children.append(param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_214(self) -> Optional[Any]:
@@ -11174,14 +11174,14 @@ class EnamlParser(Parser):
         if (
             (param_no_default := self.param_no_default())
         ):
-            return param_no_default
+            return param_no_default;
         self._reset(mark)
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_215(self) -> Optional[Any]:
@@ -11190,19 +11190,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('*'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('**'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('/'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop1_216(self) -> Optional[Any]:
@@ -11215,7 +11215,7 @@ class EnamlParser(Parser):
             children.append(param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_217(self) -> Optional[Any]:
@@ -11224,14 +11224,14 @@ class EnamlParser(Parser):
         if (
             (lambda_slash_no_default := self.lambda_slash_no_default())
         ):
-            return lambda_slash_no_default
+            return lambda_slash_no_default;
         self._reset(mark)
         if (
             (lambda_slash_with_default := self.lambda_slash_with_default())
         ):
-            return lambda_slash_with_default
+            return lambda_slash_with_default;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_218(self) -> Optional[Any]:
@@ -11244,7 +11244,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_219(self) -> Optional[Any]:
@@ -11257,7 +11257,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_220(self) -> Optional[Any]:
@@ -11270,7 +11270,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_no_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_222(self) -> Optional[Any]:
@@ -11285,7 +11285,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_221(self) -> Optional[Any]:
@@ -11298,9 +11298,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_222())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_223(self) -> Optional[Any]:
@@ -11309,14 +11309,14 @@ class EnamlParser(Parser):
         if (
             (lambda_slash_no_default := self.lambda_slash_no_default())
         ):
-            return lambda_slash_no_default
+            return lambda_slash_no_default;
         self._reset(mark)
         if (
             (lambda_slash_with_default := self.lambda_slash_with_default())
         ):
-            return lambda_slash_with_default
+            return lambda_slash_with_default;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_224(self) -> Optional[Any]:
@@ -11329,7 +11329,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_225(self) -> Optional[Any]:
@@ -11338,14 +11338,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (lambda_param_no_default := self.lambda_param_no_default())
         ):
-            return lambda_param_no_default
+            return lambda_param_no_default;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_226(self) -> Optional[Any]:
@@ -11358,7 +11358,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_227(self) -> Optional[Any]:
@@ -11371,7 +11371,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_228(self) -> Optional[Any]:
@@ -11384,7 +11384,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_with_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_229(self) -> Optional[Any]:
@@ -11393,16 +11393,16 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(':'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(','))
             and
             (_tmp_304 := self._tmp_304())
         ):
-            return [literal, _tmp_304]
+            return [literal, _tmp_304];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_230(self) -> Optional[Any]:
@@ -11411,14 +11411,14 @@ class EnamlParser(Parser):
         if (
             (lambda_param_no_default := self.lambda_param_no_default())
         ):
-            return lambda_param_no_default
+            return lambda_param_no_default;
         self._reset(mark)
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_231(self) -> Optional[Any]:
@@ -11431,7 +11431,7 @@ class EnamlParser(Parser):
             children.append(lambda_param_maybe_default)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_232(self) -> Optional[Any]:
@@ -11440,14 +11440,14 @@ class EnamlParser(Parser):
         if (
             (lambda_param_no_default := self.lambda_param_no_default())
         ):
-            return lambda_param_no_default
+            return lambda_param_no_default;
         self._reset(mark)
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_233(self) -> Optional[Any]:
@@ -11456,19 +11456,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('*'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('**'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('/'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_234(self) -> Optional[Any]:
@@ -11477,19 +11477,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(')'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(':'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_236(self) -> Optional[Any]:
@@ -11504,7 +11504,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_235(self) -> Optional[Any]:
@@ -11517,9 +11517,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_236())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_237(self) -> Optional[Any]:
@@ -11532,7 +11532,7 @@ class EnamlParser(Parser):
             children.append(_tmp_305)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop0_239(self) -> Optional[Any]:
@@ -11547,7 +11547,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_238(self) -> Optional[Any]:
@@ -11560,9 +11560,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_239())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_241(self) -> Optional[Any]:
@@ -11577,7 +11577,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_240(self) -> Optional[Any]:
@@ -11590,9 +11590,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_241())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_243(self) -> Optional[Any]:
@@ -11607,7 +11607,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_242(self) -> Optional[Any]:
@@ -11620,9 +11620,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_243())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_245(self) -> Optional[Any]:
@@ -11637,7 +11637,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_244(self) -> Optional[Any]:
@@ -11650,9 +11650,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_245())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_246(self) -> Optional[Any]:
@@ -11661,14 +11661,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('except'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('finally'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_247(self) -> Optional[Any]:
@@ -11681,7 +11681,7 @@ class EnamlParser(Parser):
             children.append(block)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_248(self) -> Optional[Any]:
@@ -11694,7 +11694,7 @@ class EnamlParser(Parser):
             children.append(except_block)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_249(self) -> Optional[Any]:
@@ -11705,9 +11705,9 @@ class EnamlParser(Parser):
             and
             (name := self.name())
         ):
-            return [literal, name]
+            return [literal, name];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_250(self) -> Optional[Any]:
@@ -11720,7 +11720,7 @@ class EnamlParser(Parser):
             children.append(block)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _loop1_251(self) -> Optional[Any]:
@@ -11733,7 +11733,7 @@ class EnamlParser(Parser):
             children.append(except_star_block)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_252(self) -> Optional[Any]:
@@ -11744,9 +11744,9 @@ class EnamlParser(Parser):
             and
             (opt := self._tmp_310(),)
         ):
-            return [expression, opt]
+            return [expression, opt];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_253(self) -> Optional[Any]:
@@ -11757,9 +11757,9 @@ class EnamlParser(Parser):
             and
             (name := self.name())
         ):
-            return [literal, name]
+            return [literal, name];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_254(self) -> Optional[Any]:
@@ -11770,9 +11770,9 @@ class EnamlParser(Parser):
             and
             (name := self.name())
         ):
-            return [literal, name]
+            return [literal, name];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_255(self) -> Optional[Any]:
@@ -11781,14 +11781,14 @@ class EnamlParser(Parser):
         if (
             (_newline := self.expect('NEWLINE'))
         ):
-            return _newline
+            return _newline;
         self._reset(mark)
         if (
             (literal := self.expect(':'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_256(self) -> Optional[Any]:
@@ -11799,9 +11799,9 @@ class EnamlParser(Parser):
             and
             (name := self.name())
         ):
-            return [literal, name]
+            return [literal, name];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_257(self) -> Optional[Any]:
@@ -11812,9 +11812,9 @@ class EnamlParser(Parser):
             and
             (name := self.name())
         ):
-            return [literal, name]
+            return [literal, name];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_258(self) -> Optional[Any]:
@@ -11825,9 +11825,9 @@ class EnamlParser(Parser):
             and
             (literal := self.expect(','))
         ):
-            return [positional_patterns, literal]
+            return [positional_patterns, literal];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_259(self) -> Optional[Any]:
@@ -11838,9 +11838,9 @@ class EnamlParser(Parser):
             and
             (expression := self.expression())
         ):
-            return [literal, expression]
+            return [literal, expression];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_260(self) -> Optional[Any]:
@@ -11853,9 +11853,9 @@ class EnamlParser(Parser):
             and
             (literal_1 := self.expect(')'))
         ):
-            return [literal, opt, literal_1]
+            return [literal, opt, literal_1];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_261(self) -> Optional[Any]:
@@ -11868,9 +11868,9 @@ class EnamlParser(Parser):
             and
             (literal_1 := self.expect(')'))
         ):
-            return [literal, opt, literal_1]
+            return [literal, opt, literal_1];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_263(self) -> Optional[Any]:
@@ -11885,7 +11885,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_262(self) -> Optional[Any]:
@@ -11898,9 +11898,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_263())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_264(self) -> Optional[Any]:
@@ -11909,14 +11909,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('}'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_265(self) -> Optional[Any]:
@@ -11925,14 +11925,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('}'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(','))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_266(self) -> Optional[Any]:
@@ -11941,14 +11941,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_267(self) -> Optional[Any]:
@@ -11957,14 +11957,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_268(self) -> Optional[Any]:
@@ -11973,24 +11973,24 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('='))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('!'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(':'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('}'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_269(self) -> Optional[Any]:
@@ -11999,14 +11999,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_270(self) -> Optional[Any]:
@@ -12015,19 +12015,19 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('!'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect(':'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('}'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_271(self) -> Optional[Any]:
@@ -12036,14 +12036,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_272(self) -> Optional[Any]:
@@ -12052,14 +12052,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_273(self) -> Optional[Any]:
@@ -12070,9 +12070,9 @@ class EnamlParser(Parser):
             and
             (name := self.name())
         ):
-            return [literal, name]
+            return [literal, name];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_274(self) -> Optional[Any]:
@@ -12081,14 +12081,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(':'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('}'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_275(self) -> Optional[Any]:
@@ -12097,14 +12097,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_276(self) -> Optional[Any]:
@@ -12115,9 +12115,9 @@ class EnamlParser(Parser):
             and
             (name := self.name())
         ):
-            return [literal, name]
+            return [literal, name];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_277(self) -> Optional[Any]:
@@ -12130,7 +12130,7 @@ class EnamlParser(Parser):
             children.append(fstring_format_spec)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _tmp_278(self) -> Optional[Any]:
@@ -12139,14 +12139,14 @@ class EnamlParser(Parser):
         if (
             (yield_expr := self.yield_expr())
         ):
-            return yield_expr
+            return yield_expr;
         self._reset(mark)
         if (
             (star_expressions := self.star_expressions())
         ):
-            return star_expressions
+            return star_expressions;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_279(self) -> Optional[Any]:
@@ -12157,9 +12157,9 @@ class EnamlParser(Parser):
             and
             (name := self.name())
         ):
-            return [literal, name]
+            return [literal, name];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_280(self) -> Optional[Any]:
@@ -12168,14 +12168,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(':'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('}'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_282(self) -> Optional[Any]:
@@ -12190,7 +12190,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_281(self) -> Optional[Any]:
@@ -12203,9 +12203,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_282())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_284(self) -> Optional[Any]:
@@ -12220,7 +12220,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_283(self) -> Optional[Any]:
@@ -12233,9 +12233,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_284())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _loop0_286(self) -> Optional[Any]:
@@ -12250,7 +12250,7 @@ class EnamlParser(Parser):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
-        return children
+        return children;
 
     @memoize
     def _gather_285(self) -> Optional[Any]:
@@ -12263,9 +12263,9 @@ class EnamlParser(Parser):
             (seq := self._loop0_286())
             is not None
         ):
-            return [elem] + seq
+            return [elem] + seq;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_287(self) -> Optional[Any]:
@@ -12276,9 +12276,9 @@ class EnamlParser(Parser):
             and
             (self.expect('='))
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_288(self) -> Optional[Any]:
@@ -12287,14 +12287,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('.'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('...'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_289(self) -> Optional[Any]:
@@ -12303,14 +12303,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('.'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('...'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_290(self) -> Optional[Any]:
@@ -12321,9 +12321,9 @@ class EnamlParser(Parser):
             and
             (c := self.expression())
         ):
-            return c
+            return c;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_291(self) -> Optional[Any]:
@@ -12334,9 +12334,9 @@ class EnamlParser(Parser):
             and
             (c := self.star_expression())
         ):
-            return c
+            return c;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_292(self) -> Optional[Any]:
@@ -12347,9 +12347,9 @@ class EnamlParser(Parser):
             and
             (c := self.conjunction())
         ):
-            return c
+            return c;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_293(self) -> Optional[Any]:
@@ -12360,9 +12360,9 @@ class EnamlParser(Parser):
             and
             (c := self.inversion())
         ):
-            return c
+            return c;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_294(self) -> Optional[Any]:
@@ -12371,14 +12371,14 @@ class EnamlParser(Parser):
         if (
             (slice := self.slice())
         ):
-            return slice
+            return slice;
         self._reset(mark)
         if (
             (starred_expression := self.starred_expression())
         ):
-            return starred_expression
+            return starred_expression;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_295(self) -> Optional[Any]:
@@ -12387,14 +12387,14 @@ class EnamlParser(Parser):
         if (
             (fstring := self.fstring())
         ):
-            return fstring
+            return fstring;
         self._reset(mark)
         if (
             (string := self.string())
         ):
-            return string
+            return string;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_296(self) -> Optional[Any]:
@@ -12405,9 +12405,9 @@ class EnamlParser(Parser):
             and
             (z := self.disjunction())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_297(self) -> Optional[Any]:
@@ -12418,9 +12418,9 @@ class EnamlParser(Parser):
             and
             (z := self.disjunction())
         ):
-            return z
+            return z;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_298(self) -> Optional[Any]:
@@ -12429,16 +12429,16 @@ class EnamlParser(Parser):
         if (
             (starred_expression := self.starred_expression())
         ):
-            return starred_expression
+            return starred_expression;
         self._reset(mark)
         if (
             (_tmp_311 := self._tmp_311())
             and
             (self.negative_lookahead(self.expect, '='))
         ):
-            return _tmp_311
+            return _tmp_311;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_299(self) -> Optional[Any]:
@@ -12449,9 +12449,9 @@ class EnamlParser(Parser):
             and
             (c := self.star_target())
         ):
-            return c
+            return c;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_300(self) -> Optional[Any]:
@@ -12462,9 +12462,9 @@ class EnamlParser(Parser):
             and
             (c := self.star_target())
         ):
-            return c
+            return c;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_301(self) -> Optional[Any]:
@@ -12475,9 +12475,9 @@ class EnamlParser(Parser):
             and
             (literal := self.expect('='))
         ):
-            return [star_targets, literal]
+            return [star_targets, literal];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_302(self) -> Optional[Any]:
@@ -12488,9 +12488,9 @@ class EnamlParser(Parser):
             and
             (literal := self.expect('='))
         ):
-            return [star_targets, literal]
+            return [star_targets, literal];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_303(self) -> Optional[Any]:
@@ -12499,14 +12499,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(')'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('**'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_304(self) -> Optional[Any]:
@@ -12515,14 +12515,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect(':'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('**'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_305(self) -> Optional[Any]:
@@ -12531,14 +12531,14 @@ class EnamlParser(Parser):
         if (
             (literal := self.expect('.'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
         if (
             (literal := self.expect('...'))
         ):
-            return literal
+            return literal;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_306(self) -> Optional[Any]:
@@ -12549,9 +12549,9 @@ class EnamlParser(Parser):
             and
             (opt := self._tmp_312(),)
         ):
-            return [expression, opt]
+            return [expression, opt];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_307(self) -> Optional[Any]:
@@ -12562,9 +12562,9 @@ class EnamlParser(Parser):
             and
             (opt := self._tmp_313(),)
         ):
-            return [expressions, opt]
+            return [expressions, opt];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_308(self) -> Optional[Any]:
@@ -12575,9 +12575,9 @@ class EnamlParser(Parser):
             and
             (opt := self._tmp_314(),)
         ):
-            return [expression, opt]
+            return [expression, opt];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_309(self) -> Optional[Any]:
@@ -12588,9 +12588,9 @@ class EnamlParser(Parser):
             and
             (opt := self._tmp_315(),)
         ):
-            return [expressions, opt]
+            return [expressions, opt];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_310(self) -> Optional[Any]:
@@ -12601,9 +12601,9 @@ class EnamlParser(Parser):
             and
             (name := self.name())
         ):
-            return [literal, name]
+            return [literal, name];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_311(self) -> Optional[Any]:
@@ -12612,16 +12612,16 @@ class EnamlParser(Parser):
         if (
             (assignment_expression := self.assignment_expression())
         ):
-            return assignment_expression
+            return assignment_expression;
         self._reset(mark)
         if (
             (expression := self.expression())
             and
             (self.negative_lookahead(self.expect, ':='))
         ):
-            return expression
+            return expression;
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_312(self) -> Optional[Any]:
@@ -12632,9 +12632,9 @@ class EnamlParser(Parser):
             and
             (star_target := self.star_target())
         ):
-            return [literal, star_target]
+            return [literal, star_target];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_313(self) -> Optional[Any]:
@@ -12645,9 +12645,9 @@ class EnamlParser(Parser):
             and
             (star_target := self.star_target())
         ):
-            return [literal, star_target]
+            return [literal, star_target];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_314(self) -> Optional[Any]:
@@ -12658,9 +12658,9 @@ class EnamlParser(Parser):
             and
             (star_target := self.star_target())
         ):
-            return [literal, star_target]
+            return [literal, star_target];
         self._reset(mark)
-        return None
+        return None;
 
     @memoize
     def _tmp_315(self) -> Optional[Any]:
@@ -12671,9 +12671,9 @@ class EnamlParser(Parser):
             and
             (star_target := self.star_target())
         ):
-            return [literal, star_target]
+            return [literal, star_target];
         self._reset(mark)
-        return None
+        return None;
 
     KEYWORDS = ('False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield')
     SOFT_KEYWORDS = ('_', 'alias', 'attr', 'case', 'const', 'enamldef', 'event', 'func', 'lazy', 'match', 'pragma', 'template', 'type')
