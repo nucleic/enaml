@@ -22,7 +22,7 @@ from typing import (
     Union,
 )
 
-from pegen.parser import Parser
+from pegen.parser import FSTRING_END, FSTRING_START, Parser, memoize
 from pegen.tokenizer import Tokenizer
 
 # Singleton ast nodes, created once for efficiency
@@ -85,6 +85,26 @@ class BasePythonParser(Parser):
         self.py_version = (
             min(py_version, sys.version_info) if py_version else sys.version_info
         )
+        self._fstring_raw_stack: List[bool] = []
+
+    @memoize
+    def fstring_start(self) -> Optional[tokenize.TokenInfo]:
+        tok = self._tokenizer.peek()
+        if tok.type == FSTRING_START:
+            tok = self._tokenizer.getnext()
+            self._fstring_raw_stack.append("r" in tok.string.lower())
+            return tok
+        return None
+
+    @memoize
+    def fstring_end(self) -> Optional[tokenize.TokenInfo]:
+        tok = self._tokenizer.peek()
+        if tok.type == FSTRING_END:
+            tok = self._tokenizer.getnext()
+            if self._fstring_raw_stack:
+                self._fstring_raw_stack.pop()
+            return tok
+        return None
 
     def parse(self, rule: str, call_invalid_rules: bool = False) -> Optional[ast.AST]:
         self.call_invalid_rules = call_invalid_rules
@@ -155,8 +175,15 @@ class BasePythonParser(Parser):
         offset += end[1] - col
         return offset
 
-    def _decode_fstring_literal(self, text: str) -> str:
-        """Decode escape sequences in a literal f-string segment."""
+    def _is_raw_fstring(self) -> bool:
+        return bool(self._fstring_raw_stack) and self._fstring_raw_stack[-1]
+
+    def _decode_fstring_literal(self, text: str, *, raw: Optional[bool] = None) -> str:
+        """Decode escape sequences in a literal f-string segment unless the f-string is raw."""
+        if raw is None:
+            raw = self._is_raw_fstring()
+        if raw:
+            return text
         return text.encode("utf-8").decode("unicode_escape")
 
     def fstring_debug_prefix(
@@ -188,8 +215,10 @@ class BasePythonParser(Parser):
         for idx in range(eq_offset + 1, len(inside)):
             if inside[idx] in ("!", ":"):
                 prefix = inside[:idx]
-                return self._decode_fstring_literal(prefix)
-        return self._decode_fstring_literal(inside)
+                return self._decode_fstring_literal(
+                    prefix, raw=self._is_raw_fstring()
+                )
+        return self._decode_fstring_literal(inside, raw=self._is_raw_fstring())
 
     def fstring_debug_value(
         self,
