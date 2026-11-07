@@ -25,13 +25,23 @@ from typing import (
 from pegen.parser import (
     FSTRING_END,
     FSTRING_START,
-    TSTRING_END,
-    TSTRING_MIDDLE,
-    TSTRING_START,
     Parser,
     memoize,
 )
 from pegen.tokenizer import Tokenizer
+
+try:
+    from token import (
+        TSTRING_END,
+        TSTRING_MIDDLE,
+        TSTRING_START,
+    )
+except ImportError:
+    # On Python version on which t-string are not supported 
+    # use unmatchable token values
+    TSTRING_END = -1001
+    TSTRING_MIDDLE = -1002
+    TSTRING_START = -1003
 
 # Singleton ast nodes, created once for efficiency
 Load = ast.Load()
