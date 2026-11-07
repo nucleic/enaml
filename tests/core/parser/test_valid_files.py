@@ -1,4 +1,5 @@
 import ast
+import sys
 from pathlib import Path
 
 import pytest
@@ -103,8 +104,15 @@ def _iter_enaml_fixtures():
     )
 
 
+def _should_skip_python_fixture(path):
+    return sys.version_info < (3, 14) and "tstring" in path.stem.lower()
+
+
 @pytest.mark.parametrize("path", _iter_python_snippets())
 def test_valid_python_fixtures_match_stdlib_ast(path):
+    if _should_skip_python_fixture(path):
+        pytest.skip("t-strings require Python 3.14+")
+
     source = path.read_text(encoding="utf-8")
     parsed = _unwrap_python_ast(parse(source))
     python_ast = ast.parse(source)
