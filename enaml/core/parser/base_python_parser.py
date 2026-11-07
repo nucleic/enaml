@@ -128,6 +128,14 @@ class BasePythonParser(Parser):
             return tok
         return None
 
+     @memoize 
+     def tstring_middle(self) -> Optional[tokenize.TokenInfo]: 
+         tok = self._tokenizer.peek() 
+         if tok.type == TSTRING_MIDDLE: 
+             return self._tokenizer.getnext() 
+         return None 
+ 
+
     @memoize
     def fstring_end(self) -> Optional[tokenize.TokenInfo]:
         tok = self._tokenizer.peek()
