@@ -1,0 +1,11 @@
+from enaml.widgets.api import Window, Container, Field
+
+
+enamldef Main(Window):
+    attr name = "demo"
+    attr count = 3
+
+    Container:
+        Field:
+            text = name
+            enabled = count > 0

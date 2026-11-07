@@ -1013,7 +1013,7 @@ pattern:
 
 as_pattern["ast.MatchAs"]:
     | pattern=or_pattern 'as' target=pattern_capture_target {
-        ast.MatchAs(pattern=pattern, name=target, LOCATIONS)
+        self.raise_syntax_error_known_location("cannot use '_' as a target", pattern) if isinstance(pattern, ast.MatchAs) and pattern.pattern is None and pattern.name is None else ast.MatchAs(pattern=pattern, name=target, LOCATIONS)
      }
     | invalid_as_pattern
 
@@ -1498,7 +1498,7 @@ atom:
         if sys.version_info >= (3, 9) else
         ast.Constant(value=None, kind=None, LOCATIONS)
      }
-    | &(STRING|FSTRING_START) strings
+    | &(STRING|FSTRING_START|TSTRING_START) strings
     | a=NUMBER {
         ast.Constant(value=ast.literal_eval(a.string), LOCATIONS)
         if sys.version_info >= (3, 9) else
@@ -1613,9 +1613,37 @@ fstring:
         ast.JoinedStr(values=self._flatten_joinedstr_values(b), LOCATIONS)
      }
 
-strings (memo): a=(fstring|STRING)+ {
-    self.concatenate_strings(a) if sys.version_info >= (3, 12) else self.generate_ast_for_string(a)
- }
+tstring_mid:
+    | tstring_replacement_field
+    | t=TSTRING_MIDDLE { ast.Constant(value=self._decode_tstring_literal(t.string, raw=self._is_raw_tstring()), LOCATIONS) }
+tstring_replacement_field:
+    | lbrace='{' a=annotated_rhs debug_expr='='? conversion=[fstring_conversion] format=[tstring_full_format_spec] rbrace='}' {
+        self.tstring_debug_value(a, lbrace, debug_expr, conversion, format, rbrace)
+     }
+    | invalid_tstring_replacement_field
+tstring_full_format_spec:
+    | ':' spec=tstring_format_spec* {
+        ast.JoinedStr(
+            values=self._flatten_joinedstr_values(spec),
+            LOCATIONS,
+        )
+     }
+tstring_format_spec:
+    | t=TSTRING_MIDDLE { ast.Constant(value=self._decode_tstring_literal(t.string, raw=self._is_raw_tstring()), LOCATIONS) }
+    | fstring_replacement_field
+tstring:
+    | a=TSTRING_START b=tstring_mid* c=TSTRING_END {
+        ast.TemplateStr(values=self._flatten_joinedstr_values(b), LOCATIONS)
+     }
+
+strings (memo):
+    | invalid_string_tstring_concat
+    | a=(fstring|STRING)+ {
+        self.concatenate_strings(a) if sys.version_info >= (3, 12) else self.generate_ast_for_string(a)
+     }
+    | a=tstring+ {
+        self.concatenate_strings(a) if sys.version_info >= (3, 12) else self.generate_ast_for_string(a)
+     }
 
 list[ast.List]:
     | '[' a=[star_named_expressions] ']' { ast.List(elts=a or [], ctx=Load, LOCATIONS) }
@@ -2365,3 +2393,41 @@ invalid_replacement_field:
 invalid_conversion_character:
     | '!' &(':' | '}') { self.raise_syntax_error_on_next_token("f-string: missing conversion character") }
     | '!' !NAME { self.raise_syntax_error_on_next_token("f-string: invalid conversion character") }
+
+invalid_tstring_replacement_field:
+    | '{' a='=' { self.raise_syntax_error_known_location("t-string: valid expression required before '='", a) }
+    | '{' a='!' { self.raise_syntax_error_known_location("t-string: valid expression required before '!'", a) }
+    | '{' a=':' { self.raise_syntax_error_known_location("t-string: valid expression required before ':'", a) }
+    | '{' a='}' { self.raise_syntax_error_known_location("t-string: valid expression required before '}'", a) }
+    | '{' !(yield_expr | star_expressions) {
+        self.raise_syntax_error_on_next_token(
+            "t-string: expecting a valid expression after '{'"
+        )
+     }
+    | '{' (yield_expr | star_expressions) !('=' | '!' | ':' | '}') {
+        self.raise_syntax_error_on_next_token("t-string: expecting '=', or '!', or ':', or '}'") }
+    | '{' (yield_expr | star_expressions) '=' !('!' | ':' | '}') {
+       self.raise_syntax_error_on_next_token("t-string: expecting '!', or ':', or '}'")
+     }
+    | '{' (yield_expr | star_expressions) '='? invalid_tstring_conversion_character
+    | '{' (yield_expr | star_expressions) '='? ['!' NAME] !(':' | '}') {
+        self.raise_syntax_error_on_next_token("t-string: expecting ':' or '}'")
+     }
+    | '{' (yield_expr | star_expressions) '='? ['!' NAME] ':' tstring_format_spec* !'}' {
+        self.raise_syntax_error_on_next_token("t-string: expecting '}', or format specs")
+     }
+    | '{' (yield_expr | star_expressions) '='? ['!' NAME] !'}' {
+        self.raise_syntax_error_on_next_token("t-string: expecting '}'")
+     }
+
+invalid_tstring_conversion_character:
+    | '!' &(':' | '}') { self.raise_syntax_error_on_next_token("t-string: missing conversion character") }
+    | '!' !NAME { self.raise_syntax_error_on_next_token("t-string: invalid conversion character") }
+
+invalid_string_tstring_concat:
+    | a=(fstring|STRING)+ b=tstring {
+        self.raise_syntax_error_known_range("cannot mix t-string literals with string or bytes literals", a[-1], b)
+     }
+    | a=tstring+ b=(fstring|STRING) {
+        self.raise_syntax_error_known_range("cannot mix t-string literals with string or bytes literals", a[-1], b)
+     }

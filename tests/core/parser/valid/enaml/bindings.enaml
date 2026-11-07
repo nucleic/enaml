@@ -1,0 +1,8 @@
+from enaml.widgets.api import Window, Field
+
+
+enamldef Main(Window):
+    attr value = "hello"
+
+    Field:
+        text := value

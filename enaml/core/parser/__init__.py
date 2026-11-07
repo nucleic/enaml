@@ -63,7 +63,19 @@ def parse(
 
 
     """
-    return _parse(
-        io.StringIO(source), filename, py_version, token_stream_factory, verbose
-    )
-
+    try:
+        return _parse(
+            io.StringIO(source), filename, py_version, token_stream_factory, verbose
+        )
+    except tokenize.TokenError as err:
+        message = str(err)
+        details = err.args[1] if len(err.args) > 1 else (1, 0)
+        line_no, col = details
+        lines = source.splitlines()
+        line = lines[line_no - 1] if 0 < line_no <= len(lines) else ""
+        if "line continuation" in message.lower() or "backslash" in message.lower():
+            message = "f-string: bare backslash not allowed"
+        raise SyntaxError(
+            message,
+            (filename, line_no, col + 1, line, line_no, col + 1),
+        ) from None
