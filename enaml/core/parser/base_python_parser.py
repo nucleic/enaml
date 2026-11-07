@@ -1,4 +1,4 @@
-# --------------------------------------------------------------------------------------
+8# --------------------------------------------------------------------------------------
 # Copyright (c) 2021-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
@@ -128,12 +128,12 @@ class BasePythonParser(Parser):
             return tok
         return None
 
-     @memoize 
-     def tstring_middle(self) -> Optional[tokenize.TokenInfo]: 
-         tok = self._tokenizer.peek() 
-         if tok.type == TSTRING_MIDDLE: 
-             return self._tokenizer.getnext() 
-         return None 
+    @memoize 
+    def tstring_middle(self) -> Optional[tokenize.TokenInfo]: 
+        tok = self._tokenizer.peek() 
+        if tok.type == TSTRING_MIDDLE: 
+            return self._tokenizer.getnext() 
+        return None 
  
 
     @memoize
