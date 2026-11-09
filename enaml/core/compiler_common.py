@@ -14,7 +14,7 @@ from types import CodeType
 import bytecode as bc
 from atom.api import Str, Typed
 
-from ..compat import PY312, PY313, PY314
+from ..compat import PY312, PY313, PY314, PY315
 from .code_generator import CodeGenerator
 from .enaml_ast import (
     AliasExpr, ASTVisitor, Binding, ChildDef, EnamlDef, StorageExpr, Template,
@@ -913,8 +913,9 @@ def _insert_decl_function(cg, funcdef):
 
     # convert to a bytecode object and remove the leading and
     # trailing ops: STORE_NAME LOAD_CONST RETURN_VALUE
-    # Python 3.12 uses RETURN_CONST
-    outer_ops = bc.Bytecode.from_code(code)[0:(-2 if not PY314 and PY312 else -3)]
+    # Python 3.12 uses RETURN_CONST and Python 3.15 uses LOAD_COMMON_CONSTANT
+    # for None.
+    outer_ops = bc.Bytecode.from_code(code)[0:(-2 if (PY312 and not PY314 and not PY315) else -3)]
 
     # On 3.14 if the function has annotations it looks like
     #   ...
