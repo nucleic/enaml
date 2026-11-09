@@ -147,7 +147,8 @@ class AbstractEnamlImporter(object, metaclass=ABCMeta):
     #--------------------------------------------------------------------------
     # Abstract API
     #--------------------------------------------------------------------------
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def locate_module(cls, fullname, path=None):
         """ Searches for the given Enaml module and returns an instance
         of AbstractEnamlImporter on success.
