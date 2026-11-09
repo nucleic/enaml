@@ -122,6 +122,64 @@ def test_valid_python_fixtures_match_stdlib_ast(path):
     )
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 15), reason="Lazy imports are only supported in Python 3.15+"
+)
+def test_lazy_imports_ast():
+    source = "import foo\nfrom bar import baz\n"
+    parsed = parse(source)
+    python_ast = ast.parse(source)
+
+    assert len(parsed.body) == 1
+    assert len(parsed.body[0].ast.body) == 2
+    assert parsed.body[0].ast.body[0].is_lazy == 0
+    assert parsed.body[0].ast.body[1].is_lazy == 0
+    assert ast.dump(parsed.body[0].ast.body[0], include_attributes=True) == ast.dump(
+        python_ast.body[0], include_attributes=True
+    )
+    assert ast.dump(parsed.body[0].ast.body[1], include_attributes=True) == ast.dump(
+        python_ast.body[1], include_attributes=True
+    )
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 15), reason="Lazy imports are only supported in Python 3.15+"
+)
+def test_explicit_lazy_imports_ast():
+    source = "lazy import foo\nlazy from bar import baz\n"
+    parsed = parse(source)
+    python_ast = ast.parse(source)
+
+    assert len(parsed.body) == 1
+    assert len(parsed.body[0].ast.body) == 2
+    assert parsed.body[0].ast.body[0].is_lazy == 1
+    assert parsed.body[0].ast.body[1].is_lazy == 1
+    assert ast.dump(parsed.body[0].ast.body[0], include_attributes=True) == ast.dump(
+        python_ast.body[0], include_attributes=True
+    )
+    assert ast.dump(parsed.body[0].ast.body[1], include_attributes=True) == ast.dump(
+        python_ast.body[1], include_attributes=True
+    )
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 15), reason="Lazy imports are only supported in Python 3.15+"
+)
+@pytest.mark.parametrize(
+    "source, message",
+    [
+        (
+            "from pkg lazy import name",
+            "use 'lazy from ... ' instead of 'from ... lazy import'",
+        ),
+        ("from pkg import name lazy", "invalid syntax"),
+    ],
+)
+def test_invalid_lazy_import_syntax(source, message):
+    with pytest.raises(SyntaxError, match=message):
+        parse(source)
+
+
 @pytest.mark.parametrize(
     "path", _iter_enaml_fixtures(), ids=lambda path: str(path.relative_to(VALID_DIR))
 )

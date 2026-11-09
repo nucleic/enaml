@@ -10,12 +10,13 @@
 import ast
 import sys
 import itertools
-from typing import Any, List, NoReturn, Optional, Tuple, TypeVar, Union
+from typing import Any, List, NoReturn, Optional, Tuple, Union
 
 from enaml.core import enaml_ast
-from pegen.parser import Parser, logger, memoize, memoize_left_rec
+from pegen.parser import logger, memoize, memoize_left_rec
 
 from .base_enaml_parser import BaseEnamlParser as Parser
+from .base_python_parser import Target
 
 # Singleton ast nodes, created once for efficiency
 Load = ast.Load()
@@ -1180,7 +1181,7 @@ class EnamlParser(Parser):
 
     @memoize
     def simple_stmt(self) -> Optional[Any]:
-        # simple_stmt: assignment | &"type" type_alias | star_expressions | &'return' return_stmt | &('import' | 'from' | "lazy") import_stmt | &'raise' raise_stmt | 'pass' | &'del' del_stmt | &'yield' yield_stmt | &'assert' assert_stmt | 'break' | 'continue' | &'global' global_stmt | &'nonlocal' nonlocal_stmt
+        # simple_stmt: assignment | &"type" type_alias | &('import' | 'from' | "lazy") import_stmt | star_expressions | &'return' return_stmt | &'raise' raise_stmt | 'pass' | &'del' del_stmt | &'yield' yield_stmt | &'assert' assert_stmt | 'break' | 'continue' | &'global' global_stmt | &'nonlocal' nonlocal_stmt
         mark = self._mark()
         tok = self._tokenizer.peek()
         start_lineno, start_col_offset = tok.start
@@ -1191,6 +1192,13 @@ class EnamlParser(Parser):
             type_alias := self.type_alias()
         ):
             return type_alias
+        self._reset(mark)
+        if (
+            self.positive_lookahead(
+                self._tmp_38,
+            )
+        ) and (import_stmt := self.import_stmt()):
+            return import_stmt
         self._reset(mark)
         if e := self.star_expressions():
             tok = self._tokenizer.get_last_non_whitespace_token()
@@ -1207,13 +1215,6 @@ class EnamlParser(Parser):
             return_stmt := self.return_stmt()
         ):
             return return_stmt
-        self._reset(mark)
-        if (
-            self.positive_lookahead(
-                self._tmp_38,
-            )
-        ) and (import_stmt := self.import_stmt()):
-            return import_stmt
         self._reset(mark)
         if (self.positive_lookahead(self.expect, "raise")) and (
             raise_stmt := self.raise_stmt()
@@ -1690,7 +1691,7 @@ class EnamlParser(Parser):
                     end_lineno=end_lineno,
                     end_col_offset=end_col_offset,
                 )
-                if sys.version_info >= (3, 15)
+                if self.py_version >= (3, 15)
                 else self.check_version(
                     (3, 15),
                     "Lazy imports are",
@@ -1744,7 +1745,7 @@ class EnamlParser(Parser):
                     end_lineno=end_lineno,
                     end_col_offset=end_col_offset,
                 )
-                if sys.version_info >= (3, 15)
+                if self.py_version >= (3, 15)
                 else self.check_version(
                     (3, 15),
                     "Lazy imports are",
@@ -1789,7 +1790,7 @@ class EnamlParser(Parser):
                     end_lineno=end_lineno,
                     end_col_offset=end_col_offset,
                 )
-                if sys.version_info >= (3, 15)
+                if self.py_version >= (3, 15)
                 else self.check_version(
                     (3, 15),
                     "Lazy imports are",
@@ -1811,7 +1812,7 @@ class EnamlParser(Parser):
                     end_lineno=end_lineno,
                     end_col_offset=end_col_offset,
                 )
-                if sys.version_info >= (3, 9)
+                if self.py_version >= (3, 9)
                 else ast.ImportFrom(
                     module=None,
                     names=b,
@@ -2467,7 +2468,7 @@ class EnamlParser(Parser):
             end_lineno, end_col_offset = tok.end
             return ast.arg(
                 arg=a.string,
-                annotations=b,
+                annotation=b,
                 lineno=start_lineno,
                 col_offset=start_col_offset,
                 end_lineno=end_lineno,
@@ -5671,7 +5672,7 @@ class EnamlParser(Parser):
         if tstring_replacement_field := self.tstring_replacement_field():
             return tstring_replacement_field
         self._reset(mark)
-        if t := self.tstring_middle():
+        if t := self.TSTRING_MIDDLE():
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
             return ast.Constant(
@@ -5732,7 +5733,7 @@ class EnamlParser(Parser):
         mark = self._mark()
         tok = self._tokenizer.peek()
         start_lineno, start_col_offset = tok.start
-        if t := self.tstring_middle():
+        if t := self.TSTRING_MIDDLE():
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
             return ast.Constant(
@@ -5757,9 +5758,9 @@ class EnamlParser(Parser):
         tok = self._tokenizer.peek()
         start_lineno, start_col_offset = tok.start
         if (
-            (self.tstring_start())
+            (self.TSTRING_START())
             and (b := self._loop0_148(),)
-            and (self.tstring_end())
+            and (self.TSTRING_END())
         ):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
@@ -6803,19 +6804,19 @@ class EnamlParser(Parser):
 
     @memoize
     def invalid_arguments(self) -> Optional[NoReturn]:
-        # invalid_arguments: args ',' '*' | expression for_if_clauses ',' [args | expression for_if_clauses] | NAME '=' expression for_if_clauses | [(args ',')] NAME '=' &(',' | ')') | args for_if_clauses | args ',' expression for_if_clauses | args ',' args
+        # invalid_arguments: ((','.(starred_expression | (assignment_expression | expression !':=') !'=')+ ',' kwargs) | kwargs) ',' ','.(starred_expression !'=')+ | expression for_if_clauses ',' [args | expression for_if_clauses] | NAME '=' expression for_if_clauses | [(args ',')] NAME '=' &(',' | ')') | args for_if_clauses | args ',' expression for_if_clauses | args ',' args
         mark = self._mark()
-        if (a := self.args()) and (self.expect(",")) and (self.expect("*")):
-            return self.raise_syntax_error_known_location(
+        if (self._tmp_185()) and (a := self.expect(",")) and (self._gather_186()):
+            return self.raise_syntax_error_starting_from(
                 "iterable argument unpacking follows keyword argument unpacking",
-                a[1][-1] if a[1] else a[0][-1],
+                a,
             )
         self._reset(mark)
         if (
             (a := self.expression())
             and (b := self.for_if_clauses())
             and (self.expect(","))
-            and (self._tmp_185(),)
+            and (self._tmp_188(),)
         ):
             return self.raise_syntax_error_known_range(
                 "Generator expression must be parenthesized",
@@ -6834,12 +6835,12 @@ class EnamlParser(Parser):
             )
         self._reset(mark)
         if (
-            (self._tmp_186(),)
+            (self._tmp_189(),)
             and (a := self.name())
             and (b := self.expect("="))
             and (
                 self.positive_lookahead(
-                    self._tmp_187,
+                    self._tmp_190,
                 )
             )
         ):
@@ -6883,7 +6884,7 @@ class EnamlParser(Parser):
     def invalid_kwarg(self) -> Optional[NoReturn]:
         # invalid_kwarg: ('True' | 'False' | 'None') '=' | NAME '=' expression for_if_clauses | !(NAME '=') expression '=' | '**' expression '=' expression
         mark = self._mark()
-        if (a := self._tmp_188()) and (b := self.expect("=")):
+        if (a := self._tmp_191()) and (b := self.expect("=")):
             return self.raise_syntax_error_known_range(
                 f"cannot assign to {a.string}", a, b
             )
@@ -6901,7 +6902,7 @@ class EnamlParser(Parser):
         if (
             (
                 self.negative_lookahead(
-                    self._tmp_189,
+                    self._tmp_192,
                 )
             )
             and (a := self.expression())
@@ -6992,7 +6993,7 @@ class EnamlParser(Parser):
         if (
             (
                 self.negative_lookahead(
-                    self._tmp_190,
+                    self._tmp_193,
                 )
             )
             and (a := self.disjunction())
@@ -7012,7 +7013,7 @@ class EnamlParser(Parser):
             and (b := self.disjunction())
             and (
                 self.negative_lookahead(
-                    self._tmp_191,
+                    self._tmp_194,
                 )
             )
         ):
@@ -7026,7 +7027,7 @@ class EnamlParser(Parser):
             and (b := self.expect(":"))
             and (
                 self.positive_lookahead(
-                    self._tmp_192,
+                    self._tmp_195,
                 )
             )
         ):
@@ -7051,7 +7052,7 @@ class EnamlParser(Parser):
             and (b := self.bitwise_or())
             and (
                 self.negative_lookahead(
-                    self._tmp_193,
+                    self._tmp_196,
                 )
             )
         ):
@@ -7066,7 +7067,7 @@ class EnamlParser(Parser):
         if (
             (
                 self.negative_lookahead(
-                    self._tmp_194,
+                    self._tmp_197,
                 )
             )
             and (a := self.bitwise_or())
@@ -7074,7 +7075,7 @@ class EnamlParser(Parser):
             and (self.bitwise_or())
             and (
                 self.negative_lookahead(
-                    self._tmp_195,
+                    self._tmp_198,
                 )
             )
         ):
@@ -7106,7 +7107,7 @@ class EnamlParser(Parser):
         if (
             (a := self.star_named_expression())
             and (self.expect(","))
-            and (self._loop0_196(),)
+            and (self._loop0_199(),)
             and (self.expect(":"))
             and (self.expression())
         ):
@@ -7120,18 +7121,18 @@ class EnamlParser(Parser):
             )
         self._reset(mark)
         if (
-            (self._loop0_197(),)
+            (self._loop0_200(),)
             and (a := self.star_expressions())
             and (self.expect("="))
         ):
             return self.raise_syntax_error_invalid_target(Target.STAR_TARGETS, a)
         self._reset(mark)
-        if (self._loop0_198(),) and (a := self.yield_expr()) and (self.expect("=")):
+        if (self._loop0_201(),) and (a := self.yield_expr()) and (self.expect("=")):
             return self.raise_syntax_error_known_location(
                 "assignment to yield expression not possible", a
             )
         self._reset(mark)
-        if (a := self.star_expressions()) and (self.augassign()) and (self._tmp_199()):
+        if (a := self.star_expressions()) and (self.augassign()) and (self._tmp_202()):
             return self.raise_syntax_error_known_location(
                 f"'{self.get_expr_name(a)}' is an illegal expression for augmented assignment",
                 a,
@@ -7184,7 +7185,7 @@ class EnamlParser(Parser):
         # invalid_comprehension: ('[' | '(' | '{') starred_expression for_if_clauses | ('[' | '{') star_named_expression ',' star_named_expressions for_if_clauses | ('[' | '{') star_named_expression ',' for_if_clauses
         mark = self._mark()
         if (
-            (self._tmp_200())
+            (self._tmp_203())
             and (a := self.starred_expression())
             and (self.for_if_clauses())
         ):
@@ -7193,7 +7194,7 @@ class EnamlParser(Parser):
             )
         self._reset(mark)
         if (
-            (self._tmp_201())
+            (self._tmp_204())
             and (a := self.star_named_expression())
             and (self.expect(","))
             and (b := self.star_named_expressions())
@@ -7204,7 +7205,7 @@ class EnamlParser(Parser):
             )
         self._reset(mark)
         if (
-            (self._tmp_202())
+            (self._tmp_205())
             and (a := self.star_named_expression())
             and (b := self.expect(","))
             and (self.for_if_clauses())
@@ -7241,13 +7242,13 @@ class EnamlParser(Parser):
                 "at least one argument must precede /", a
             )
         self._reset(mark)
-        if (self._tmp_203()) and (self._loop0_204(),) and (a := self.expect("/")):
+        if (self._tmp_206()) and (self._loop0_207(),) and (a := self.expect("/")):
             return self.raise_syntax_error_known_location("/ may appear only once", a)
         self._reset(mark)
         if (
             self.call_invalid_rules
             and (self.slash_no_default(),)
-            and (self._loop0_205(),)
+            and (self._loop0_208(),)
             and (self.invalid_parameters_helper())
             and (a := self.param_no_default())
         ):
@@ -7256,9 +7257,9 @@ class EnamlParser(Parser):
             )
         self._reset(mark)
         if (
-            (self._loop0_206(),)
+            (self._loop0_209(),)
             and (a := self.expect("("))
-            and (self._loop1_207())
+            and (self._loop1_210())
             and (self.expect(","),)
             and (b := self.expect(")"))
         ):
@@ -7267,16 +7268,16 @@ class EnamlParser(Parser):
             )
         self._reset(mark)
         if (
-            (self._tmp_208(),)
-            and (self._loop0_209(),)
+            (self._tmp_211(),)
+            and (self._loop0_212(),)
             and (self.expect("*"))
-            and (self._tmp_210())
-            and (self._loop0_211(),)
+            and (self._tmp_213())
+            and (self._loop0_214(),)
             and (a := self.expect("/"))
         ):
             return self.raise_syntax_error_known_location("/ must be ahead of *", a)
         self._reset(mark)
-        if (self._loop1_212()) and (self.expect("/")) and (a := self.expect("*")):
+        if (self._loop1_215()) and (self.expect("/")) and (a := self.expect("*")):
             return self.raise_syntax_error_known_location(
                 "expected comma between / and *", a
             )
@@ -7289,7 +7290,7 @@ class EnamlParser(Parser):
         mark = self._mark()
         if (a := self.expect("=")) and (
             self.positive_lookahead(
-                self._tmp_213,
+                self._tmp_216,
             )
         ):
             return self.raise_syntax_error_known_location(
@@ -7302,7 +7303,7 @@ class EnamlParser(Parser):
     def invalid_star_etc(self) -> Optional[Any]:
         # invalid_star_etc: '*' (')' | ',' (')' | '**')) | '*' ',' TYPE_COMMENT | '*' param '=' | '*' (param_no_default | ',') param_maybe_default* '*' (param_no_default | ',')
         mark = self._mark()
-        if (a := self.expect("*")) and (self._tmp_214()):
+        if (a := self.expect("*")) and (self._tmp_217()):
             return self.raise_syntax_error_known_location(
                 "named arguments must follow bare *", a
             )
@@ -7317,10 +7318,10 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("*"))
-            and (self._tmp_215())
-            and (self._loop0_216(),)
+            and (self._tmp_218())
+            and (self._loop0_219(),)
             and (a := self.expect("*"))
-            and (self._tmp_217())
+            and (self._tmp_220())
         ):
             return self.raise_syntax_error_known_location(
                 "* argument may appear only once", a
@@ -7351,7 +7352,7 @@ class EnamlParser(Parser):
             (self.expect("**"))
             and (self.param())
             and (self.expect(","))
-            and (a := self._tmp_218())
+            and (a := self._tmp_221())
         ):
             return self.raise_syntax_error_known_location(
                 "arguments cannot follow var-keyword argument", a
@@ -7366,7 +7367,7 @@ class EnamlParser(Parser):
         if a := self.slash_with_default():
             return [a]
         self._reset(mark)
-        if a := self._loop1_219():
+        if a := self._loop1_222():
             return a
         self._reset(mark)
         return None
@@ -7380,13 +7381,13 @@ class EnamlParser(Parser):
                 "at least one argument must precede /", a
             )
         self._reset(mark)
-        if (self._tmp_220()) and (self._loop0_221(),) and (a := self.expect("/")):
+        if (self._tmp_223()) and (self._loop0_224(),) and (a := self.expect("/")):
             return self.raise_syntax_error_known_location("/ may appear only once", a)
         self._reset(mark)
         if (
             self.call_invalid_rules
             and (self.lambda_slash_no_default(),)
-            and (self._loop0_222(),)
+            and (self._loop0_225(),)
             and (self.invalid_lambda_parameters_helper())
             and (a := self.lambda_param_no_default())
         ):
@@ -7395,9 +7396,9 @@ class EnamlParser(Parser):
             )
         self._reset(mark)
         if (
-            (self._loop0_223(),)
+            (self._loop0_226(),)
             and (a := self.expect("("))
-            and (self._gather_224())
+            and (self._gather_227())
             and (self.expect(","),)
             and (b := self.expect(")"))
         ):
@@ -7406,16 +7407,16 @@ class EnamlParser(Parser):
             )
         self._reset(mark)
         if (
-            (self._tmp_226(),)
-            and (self._loop0_227(),)
+            (self._tmp_229(),)
+            and (self._loop0_230(),)
             and (self.expect("*"))
-            and (self._tmp_228())
-            and (self._loop0_229(),)
+            and (self._tmp_231())
+            and (self._loop0_232(),)
             and (a := self.expect("/"))
         ):
             return self.raise_syntax_error_known_location("/ must be ahead of *", a)
         self._reset(mark)
-        if (self._loop1_230()) and (self.expect("/")) and (a := self.expect("*")):
+        if (self._loop1_233()) and (self.expect("/")) and (a := self.expect("*")):
             return self.raise_syntax_error_known_location(
                 "expected comma between / and *", a
             )
@@ -7429,7 +7430,7 @@ class EnamlParser(Parser):
         if a := self.lambda_slash_with_default():
             return [a]
         self._reset(mark)
-        if a := self._loop1_231():
+        if a := self._loop1_234():
             return a
         self._reset(mark)
         return None
@@ -7438,7 +7439,7 @@ class EnamlParser(Parser):
     def invalid_lambda_star_etc(self) -> Optional[NoReturn]:
         # invalid_lambda_star_etc: '*' (':' | ',' (':' | '**')) | '*' lambda_param '=' | '*' (lambda_param_no_default | ',') lambda_param_maybe_default* '*' (lambda_param_no_default | ',')
         mark = self._mark()
-        if (self.expect("*")) and (self._tmp_232()):
+        if (self.expect("*")) and (self._tmp_235()):
             return self.raise_syntax_error("named arguments must follow bare *")
         self._reset(mark)
         if (self.expect("*")) and (self.lambda_param()) and (a := self.expect("=")):
@@ -7448,10 +7449,10 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("*"))
-            and (self._tmp_233())
-            and (self._loop0_234(),)
+            and (self._tmp_236())
+            and (self._loop0_237(),)
             and (a := self.expect("*"))
-            and (self._tmp_235())
+            and (self._tmp_238())
         ):
             return self.raise_syntax_error_known_location(
                 "* argument may appear only once", a
@@ -7482,7 +7483,7 @@ class EnamlParser(Parser):
             (self.expect("**"))
             and (self.lambda_param())
             and (self.expect(","))
-            and (a := self._tmp_236())
+            and (a := self._tmp_239())
         ):
             return self.raise_syntax_error_known_location(
                 "arguments cannot follow var-keyword argument", a
@@ -7515,7 +7516,7 @@ class EnamlParser(Parser):
             and (a := self.expression())
             and (
                 self.positive_lookahead(
-                    self._tmp_237,
+                    self._tmp_240,
                 )
             )
         ):
@@ -7567,7 +7568,7 @@ class EnamlParser(Parser):
         mark = self._mark()
         if (
             (a := self.expect("import"))
-            and (self._gather_238())
+            and (self._gather_241())
             and (self.expect("from"))
             and (self.dotted_name())
         ):
@@ -7583,7 +7584,7 @@ class EnamlParser(Parser):
         mark = self._mark()
         if (
             (self.expect("from"))
-            and (self._loop0_240(),)
+            and (self._loop0_243(),)
             and (self.dotted_name())
             and (a := self.expect("lazy"))
             and (self.expect("import"))
@@ -7617,7 +7618,7 @@ class EnamlParser(Parser):
         if (
             (self.expect("async"),)
             and (self.expect("with"))
-            and (self._gather_241())
+            and (self._gather_244())
             and (self.expect_forced(self.expect(":"), "':'"))
         ):
             return None  # pragma: no cover
@@ -7626,7 +7627,7 @@ class EnamlParser(Parser):
             (self.expect("async"),)
             and (self.expect("with"))
             and (self.expect("("))
-            and (self._gather_243())
+            and (self._gather_246())
             and (self.expect(","),)
             and (self.expect(")"))
             and (self.expect_forced(self.expect(":"), "':'"))
@@ -7642,7 +7643,7 @@ class EnamlParser(Parser):
         if (
             (self.expect("async"),)
             and (a := self.expect("with"))
-            and (self._gather_245())
+            and (self._gather_248())
             and (self.expect(":"))
             and (self.expect("NEWLINE"))
             and (self.negative_lookahead(self.expect, "INDENT"))
@@ -7655,7 +7656,7 @@ class EnamlParser(Parser):
             (self.expect("async"),)
             and (a := self.expect("with"))
             and (self.expect("("))
-            and (self._gather_247())
+            and (self._gather_250())
             and (self.expect(","),)
             and (self.expect(")"))
             and (self.expect(":"))
@@ -7688,7 +7689,7 @@ class EnamlParser(Parser):
             and (self.block())
             and (
                 self.negative_lookahead(
-                    self._tmp_249,
+                    self._tmp_252,
                 )
             )
         ):
@@ -7697,12 +7698,12 @@ class EnamlParser(Parser):
         if (
             (self.expect("try"))
             and (self.expect(":"))
-            and (self._loop0_250(),)
-            and (self._loop1_251())
+            and (self._loop0_253(),)
+            and (self._loop1_254())
             and (a := self.expect("except"))
             and (b := self.expect("*"))
             and (self.expression())
-            and (self._tmp_252(),)
+            and (self._tmp_255(),)
             and (self.expect(":"))
         ):
             return self.raise_syntax_error_known_range(
@@ -7712,10 +7713,10 @@ class EnamlParser(Parser):
         if (
             (self.expect("try"))
             and (self.expect(":"))
-            and (self._loop0_253(),)
-            and (self._loop1_254())
+            and (self._loop0_256(),)
+            and (self._loop1_257())
             and (a := self.expect("except"))
-            and (self._tmp_255(),)
+            and (self._tmp_258(),)
             and (self.expect(":"))
         ):
             return self.raise_syntax_error_known_location(
@@ -7734,7 +7735,7 @@ class EnamlParser(Parser):
             and (a := self.expression())
             and (self.expect(","))
             and (self.expressions())
-            and (self._tmp_256(),)
+            and (self._tmp_259(),)
             and (self.expect(":"))
         ):
             return self.raise_syntax_error_known_range(
@@ -7779,7 +7780,7 @@ class EnamlParser(Parser):
             (self.expect("except"))
             and (self.expect("*"),)
             and (self.expression())
-            and (self._tmp_257(),)
+            and (self._tmp_260(),)
             and (self.expect("NEWLINE"))
         ):
             return self.raise_syntax_error("expected ':'")
@@ -7787,7 +7788,7 @@ class EnamlParser(Parser):
         if (self.expect("except")) and (self.expect("*"),) and (self.expect("NEWLINE")):
             return self.raise_syntax_error("expected ':'")
         self._reset(mark)
-        if (self.expect("except")) and (self.expect("*")) and (self._tmp_258()):
+        if (self.expect("except")) and (self.expect("*")) and (self._tmp_261()):
             return self.raise_syntax_error("expected one or more exception types")
         self._reset(mark)
         return None
@@ -7815,7 +7816,7 @@ class EnamlParser(Parser):
         if (
             (a := self.expect("except"))
             and (self.expression())
-            and (self._tmp_259(),)
+            and (self._tmp_262(),)
             and (self.expect(":"))
             and (self.expect("NEWLINE"))
             and (self.negative_lookahead(self.expect, "INDENT"))
@@ -7844,7 +7845,7 @@ class EnamlParser(Parser):
             (a := self.expect("except"))
             and (self.expect("*"))
             and (self.expression())
-            and (self._tmp_260(),)
+            and (self._tmp_263(),)
             and (self.expect(":"))
             and (self.expect("NEWLINE"))
             and (self.negative_lookahead(self.expect, "INDENT"))
@@ -7952,7 +7953,7 @@ class EnamlParser(Parser):
         # invalid_class_argument_pattern: [positional_patterns ','] keyword_patterns ',' positional_patterns
         mark = self._mark()
         if (
-            (self._tmp_261(),)
+            (self._tmp_264(),)
             and (self.keyword_patterns())
             and (self.expect(","))
             and (a := self.positional_patterns())
@@ -8091,7 +8092,7 @@ class EnamlParser(Parser):
             and (self.expect("("))
             and (self.params(),)
             and (self.expect(")"))
-            and (self._tmp_262(),)
+            and (self._tmp_265(),)
             and (self.expect(":"))
             and (self.expect("NEWLINE"))
             and (self.negative_lookahead(self.expect, "INDENT"))
@@ -8110,7 +8111,7 @@ class EnamlParser(Parser):
             (self.expect("class"))
             and (self.name())
             and (self.type_params(),)
-            and (self._tmp_263(),)
+            and (self._tmp_266(),)
             and (self.expect("NEWLINE"))
         ):
             return self.raise_syntax_error("expected ':'")
@@ -8119,7 +8120,7 @@ class EnamlParser(Parser):
             (a := self.expect("class"))
             and (self.name())
             and (self.type_params(),)
-            and (self._tmp_264(),)
+            and (self._tmp_267(),)
             and (self.expect(":"))
             and (self.expect("NEWLINE"))
             and (self.negative_lookahead(self.expect, "INDENT"))
@@ -8136,7 +8137,7 @@ class EnamlParser(Parser):
         mark = self._mark()
         if (
             self.call_invalid_rules
-            and (self._gather_265())
+            and (self._gather_268())
             and (self.expect(","))
             and (self.invalid_kvpair())
         ):
@@ -8157,7 +8158,7 @@ class EnamlParser(Parser):
             and (a := self.expect(":"))
             and (
                 self.positive_lookahead(
-                    self._tmp_267,
+                    self._tmp_270,
                 )
             )
         ):
@@ -8193,7 +8194,7 @@ class EnamlParser(Parser):
             and (a := self.expect(":"))
             and (
                 self.positive_lookahead(
-                    self._tmp_268,
+                    self._tmp_271,
                 )
             )
         ):
@@ -8250,7 +8251,7 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (self.expect("{")) and (
             self.negative_lookahead(
-                self._tmp_269,
+                self._tmp_272,
             )
         ):
             return self.raise_syntax_error_on_next_token(
@@ -8259,10 +8260,10 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("{"))
-            and (self._tmp_270())
+            and (self._tmp_273())
             and (
                 self.negative_lookahead(
-                    self._tmp_271,
+                    self._tmp_274,
                 )
             )
         ):
@@ -8272,11 +8273,11 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("{"))
-            and (self._tmp_272())
+            and (self._tmp_275())
             and (self.expect("="))
             and (
                 self.negative_lookahead(
-                    self._tmp_273,
+                    self._tmp_276,
                 )
             )
         ):
@@ -8287,7 +8288,7 @@ class EnamlParser(Parser):
         if (
             self.call_invalid_rules
             and (self.expect("{"))
-            and (self._tmp_274())
+            and (self._tmp_277())
             and (self.expect("="),)
             and (self.invalid_conversion_character())
         ):
@@ -8295,12 +8296,12 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("{"))
-            and (self._tmp_275())
+            and (self._tmp_278())
             and (self.expect("="),)
-            and (self._tmp_276(),)
+            and (self._tmp_279(),)
             and (
                 self.negative_lookahead(
-                    self._tmp_277,
+                    self._tmp_280,
                 )
             )
         ):
@@ -8310,11 +8311,11 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("{"))
-            and (self._tmp_278())
+            and (self._tmp_281())
             and (self.expect("="),)
-            and (self._tmp_279(),)
+            and (self._tmp_282(),)
             and (self.expect(":"))
-            and (self._loop0_280(),)
+            and (self._loop0_283(),)
             and (self.negative_lookahead(self.expect, "}"))
         ):
             return self.raise_syntax_error_on_next_token(
@@ -8323,9 +8324,9 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("{"))
-            and (self._tmp_281())
+            and (self._tmp_284())
             and (self.expect("="),)
-            and (self._tmp_282(),)
+            and (self._tmp_285(),)
             and (self.negative_lookahead(self.expect, "}"))
         ):
             return self.raise_syntax_error_on_next_token("f-string: expecting '}'")
@@ -8338,7 +8339,7 @@ class EnamlParser(Parser):
         mark = self._mark()
         if (self.expect("!")) and (
             self.positive_lookahead(
-                self._tmp_283,
+                self._tmp_286,
             )
         ):
             return self.raise_syntax_error_on_next_token(
@@ -8382,7 +8383,7 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (self.expect("{")) and (
             self.negative_lookahead(
-                self._tmp_284,
+                self._tmp_287,
             )
         ):
             return self.raise_syntax_error_on_next_token(
@@ -8391,10 +8392,10 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("{"))
-            and (self._tmp_285())
+            and (self._tmp_288())
             and (
                 self.negative_lookahead(
-                    self._tmp_286,
+                    self._tmp_289,
                 )
             )
         ):
@@ -8404,11 +8405,11 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("{"))
-            and (self._tmp_287())
+            and (self._tmp_290())
             and (self.expect("="))
             and (
                 self.negative_lookahead(
-                    self._tmp_288,
+                    self._tmp_291,
                 )
             )
         ):
@@ -8419,7 +8420,7 @@ class EnamlParser(Parser):
         if (
             self.call_invalid_rules
             and (self.expect("{"))
-            and (self._tmp_289())
+            and (self._tmp_292())
             and (self.expect("="),)
             and (self.invalid_tstring_conversion_character())
         ):
@@ -8427,12 +8428,12 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("{"))
-            and (self._tmp_290())
+            and (self._tmp_293())
             and (self.expect("="),)
-            and (self._tmp_291(),)
+            and (self._tmp_294(),)
             and (
                 self.negative_lookahead(
-                    self._tmp_292,
+                    self._tmp_295,
                 )
             )
         ):
@@ -8442,11 +8443,11 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("{"))
-            and (self._tmp_293())
+            and (self._tmp_296())
             and (self.expect("="),)
-            and (self._tmp_294(),)
+            and (self._tmp_297(),)
             and (self.expect(":"))
-            and (self._loop0_295(),)
+            and (self._loop0_298(),)
             and (self.negative_lookahead(self.expect, "}"))
         ):
             return self.raise_syntax_error_on_next_token(
@@ -8455,9 +8456,9 @@ class EnamlParser(Parser):
         self._reset(mark)
         if (
             (self.expect("{"))
-            and (self._tmp_296())
+            and (self._tmp_299())
             and (self.expect("="),)
-            and (self._tmp_297(),)
+            and (self._tmp_300(),)
             and (self.negative_lookahead(self.expect, "}"))
         ):
             return self.raise_syntax_error_on_next_token("t-string: expecting '}'")
@@ -8470,7 +8471,7 @@ class EnamlParser(Parser):
         mark = self._mark()
         if (self.expect("!")) and (
             self.positive_lookahead(
-                self._tmp_298,
+                self._tmp_301,
             )
         ):
             return self.raise_syntax_error_on_next_token(
@@ -8492,12 +8493,12 @@ class EnamlParser(Parser):
     def invalid_string_tstring_concat(self) -> Optional[Any]:
         # invalid_string_tstring_concat: ((fstring | STRING))+ tstring | tstring+ (fstring | STRING)
         mark = self._mark()
-        if (a := self._loop1_299()) and (b := self.tstring()):
+        if (a := self._loop1_302()) and (b := self.tstring()):
             return self.raise_syntax_error_known_range(
                 "cannot mix t-string literals with string or bytes literals", a[-1], b
             )
         self._reset(mark)
-        if (a := self._loop1_300()) and (b := self._tmp_301()):
+        if (a := self._loop1_303()) and (b := self._tmp_304()):
             return self.raise_syntax_error_known_range(
                 "cannot mix t-string literals with string or bytes literals", a[-1], b
             )
@@ -8572,7 +8573,7 @@ class EnamlParser(Parser):
     def _tmp_7(self) -> Optional[Any]:
         # _tmp_7: '(' ','.pragma_arg+ ')'
         mark = self._mark()
-        if (self.expect("(")) and (b := self._gather_302()) and (self.expect(")")):
+        if (self.expect("(")) and (b := self._gather_305()) and (self.expect(")")):
             return b
         self._reset(mark)
         return None
@@ -8581,7 +8582,7 @@ class EnamlParser(Parser):
     def _tmp_8(self) -> Optional[Any]:
         # _tmp_8: ':' '.'.NAME+
         mark = self._mark()
-        if (self.expect(":")) and (c := self._gather_304()):
+        if (self.expect(":")) and (c := self._gather_307()):
             return c
         self._reset(mark)
         return None
@@ -8847,7 +8848,7 @@ class EnamlParser(Parser):
     def _tmp_34(self) -> Optional[Any]:
         # _tmp_34: '.' '.'.NAME+
         mark = self._mark()
-        if (self.expect(".")) and (z := self._gather_306()):
+        if (self.expect(".")) and (z := self._gather_309()):
             return z
         self._reset(mark)
         return None
@@ -8989,8 +8990,8 @@ class EnamlParser(Parser):
         # _loop1_46: (star_targets '=')
         mark = self._mark()
         children = []
-        while _tmp_308 := self._tmp_308():
-            children.append(_tmp_308)
+        while _tmp_311 := self._tmp_311():
+            children.append(_tmp_311)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -9094,8 +9095,8 @@ class EnamlParser(Parser):
         # _loop0_56: ('.' | '...')
         mark = self._mark()
         children = []
-        while _tmp_309 := self._tmp_309():
-            children.append(_tmp_309)
+        while _tmp_312 := self._tmp_312():
+            children.append(_tmp_312)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -9105,8 +9106,8 @@ class EnamlParser(Parser):
         # _loop1_57: ('.' | '...')
         mark = self._mark()
         children = []
-        while _tmp_310 := self._tmp_310():
-            children.append(_tmp_310)
+        while _tmp_313 := self._tmp_313():
+            children.append(_tmp_313)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -9759,8 +9760,8 @@ class EnamlParser(Parser):
         # _loop1_116: (',' expression)
         mark = self._mark()
         children = []
-        while _tmp_311 := self._tmp_311():
-            children.append(_tmp_311)
+        while _tmp_314 := self._tmp_314():
+            children.append(_tmp_314)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -9770,8 +9771,8 @@ class EnamlParser(Parser):
         # _loop1_117: (',' star_expression)
         mark = self._mark()
         children = []
-        while _tmp_312 := self._tmp_312():
-            children.append(_tmp_312)
+        while _tmp_315 := self._tmp_315():
+            children.append(_tmp_315)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -9803,8 +9804,8 @@ class EnamlParser(Parser):
         # _loop1_120: ('or' conjunction)
         mark = self._mark()
         children = []
-        while _tmp_313 := self._tmp_313():
-            children.append(_tmp_313)
+        while _tmp_316 := self._tmp_316():
+            children.append(_tmp_316)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -9814,8 +9815,8 @@ class EnamlParser(Parser):
         # _loop1_121: ('and' inversion)
         mark = self._mark()
         children = []
-        while _tmp_314 := self._tmp_314():
-            children.append(_tmp_314)
+        while _tmp_317 := self._tmp_317():
+            children.append(_tmp_317)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -9836,7 +9837,7 @@ class EnamlParser(Parser):
         # _loop0_124: ',' (slice | starred_expression)
         mark = self._mark()
         children = []
-        while (self.expect(",")) and (elem := self._tmp_315()):
+        while (self.expect(",")) and (elem := self._tmp_318()):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
@@ -9846,7 +9847,7 @@ class EnamlParser(Parser):
     def _gather_123(self) -> Optional[Any]:
         # _gather_123: (slice | starred_expression) _loop0_124
         mark = self._mark()
-        if (elem := self._tmp_315()) is not None and (
+        if (elem := self._tmp_318()) is not None and (
             seq := self._loop0_124()
         ) is not None:
             return [elem] + seq
@@ -9872,8 +9873,8 @@ class EnamlParser(Parser):
         if fstring_start := self.fstring_start():
             return fstring_start
         self._reset(mark)
-        if tstring_start := self.tstring_start():
-            return tstring_start
+        if TSTRING_START := self.TSTRING_START():
+            return TSTRING_START
         self._reset(mark)
         return None
 
@@ -10137,8 +10138,8 @@ class EnamlParser(Parser):
         # _loop1_149: (fstring | STRING)
         mark = self._mark()
         children = []
-        while _tmp_316 := self._tmp_316():
-            children.append(_tmp_316)
+        while _tmp_319 := self._tmp_319():
+            children.append(_tmp_319)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -10205,8 +10206,8 @@ class EnamlParser(Parser):
         # _loop0_155: ('if' disjunction)
         mark = self._mark()
         children = []
-        while _tmp_317 := self._tmp_317():
-            children.append(_tmp_317)
+        while _tmp_320 := self._tmp_320():
+            children.append(_tmp_320)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -10216,8 +10217,8 @@ class EnamlParser(Parser):
         # _loop0_156: ('if' disjunction)
         mark = self._mark()
         children = []
-        while _tmp_318 := self._tmp_318():
-            children.append(_tmp_318)
+        while _tmp_321 := self._tmp_321():
+            children.append(_tmp_321)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -10241,7 +10242,7 @@ class EnamlParser(Parser):
         # _loop0_159: ',' (starred_expression | (assignment_expression | expression !':=') !'=')
         mark = self._mark()
         children = []
-        while (self.expect(",")) and (elem := self._tmp_319()):
+        while (self.expect(",")) and (elem := self._tmp_322()):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
@@ -10251,7 +10252,7 @@ class EnamlParser(Parser):
     def _gather_158(self) -> Optional[Any]:
         # _gather_158: (starred_expression | (assignment_expression | expression !':=') !'=') _loop0_159
         mark = self._mark()
-        if (elem := self._tmp_319()) is not None and (
+        if (elem := self._tmp_322()) is not None and (
             seq := self._loop0_159()
         ) is not None:
             return [elem] + seq
@@ -10360,8 +10361,8 @@ class EnamlParser(Parser):
         # _loop0_169: (',' star_target)
         mark = self._mark()
         children = []
-        while _tmp_320 := self._tmp_320():
-            children.append(_tmp_320)
+        while _tmp_323 := self._tmp_323():
+            children.append(_tmp_323)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -10393,8 +10394,8 @@ class EnamlParser(Parser):
         # _loop1_172: (',' star_target)
         mark = self._mark()
         children = []
-        while _tmp_321 := self._tmp_321():
-            children.append(_tmp_321)
+        while _tmp_324 := self._tmp_324():
+            children.append(_tmp_324)
             mark = self._mark()
         self._reset(mark)
         return children
@@ -10531,7 +10532,41 @@ class EnamlParser(Parser):
 
     @memoize
     def _tmp_185(self) -> Optional[Any]:
-        # _tmp_185: args | expression for_if_clauses
+        # _tmp_185: (','.(starred_expression | (assignment_expression | expression !':=') !'=')+ ',' kwargs) | kwargs
+        mark = self._mark()
+        if _tmp_325 := self._tmp_325():
+            return _tmp_325
+        self._reset(mark)
+        if kwargs := self.kwargs():
+            return kwargs
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _loop0_187(self) -> Optional[Any]:
+        # _loop0_187: ',' (starred_expression !'=')
+        mark = self._mark()
+        children = []
+        while (self.expect(",")) and (elem := self._tmp_326()):
+            children.append(elem)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _gather_186(self) -> Optional[Any]:
+        # _gather_186: (starred_expression !'=') _loop0_187
+        mark = self._mark()
+        if (elem := self._tmp_326()) is not None and (
+            seq := self._loop0_187()
+        ) is not None:
+            return [elem] + seq
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_188(self) -> Optional[Any]:
+        # _tmp_188: args | expression for_if_clauses
         mark = self._mark()
         if args := self.args():
             return args
@@ -10544,8 +10579,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_186(self) -> Optional[Any]:
-        # _tmp_186: args ','
+    def _tmp_189(self) -> Optional[Any]:
+        # _tmp_189: args ','
         mark = self._mark()
         if (args := self.args()) and (literal := self.expect(",")):
             return [args, literal]
@@ -10553,8 +10588,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_187(self) -> Optional[Any]:
-        # _tmp_187: ',' | ')'
+    def _tmp_190(self) -> Optional[Any]:
+        # _tmp_190: ',' | ')'
         mark = self._mark()
         if literal := self.expect(","):
             return literal
@@ -10565,8 +10600,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_188(self) -> Optional[Any]:
-        # _tmp_188: 'True' | 'False' | 'None'
+    def _tmp_191(self) -> Optional[Any]:
+        # _tmp_191: 'True' | 'False' | 'None'
         mark = self._mark()
         if literal := self.expect("True"):
             return literal
@@ -10580,8 +10615,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_189(self) -> Optional[Any]:
-        # _tmp_189: NAME '='
+    def _tmp_192(self) -> Optional[Any]:
+        # _tmp_192: NAME '='
         mark = self._mark()
         if (name := self.name()) and (literal := self.expect("=")):
             return [name, literal]
@@ -10589,8 +10624,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_190(self) -> Optional[Any]:
-        # _tmp_190: NAME STRING | SOFT_KEYWORD
+    def _tmp_193(self) -> Optional[Any]:
+        # _tmp_193: NAME STRING | SOFT_KEYWORD
         mark = self._mark()
         if (name := self.name()) and (string := self.string()):
             return [name, string]
@@ -10601,8 +10636,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_191(self) -> Optional[Any]:
-        # _tmp_191: 'else' | ':'
+    def _tmp_194(self) -> Optional[Any]:
+        # _tmp_194: 'else' | ':'
         mark = self._mark()
         if literal := self.expect("else"):
             return literal
@@ -10613,8 +10648,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_192(self) -> Optional[Any]:
-        # _tmp_192: FSTRING_MIDDLE | fstring_replacement_field
+    def _tmp_195(self) -> Optional[Any]:
+        # _tmp_195: FSTRING_MIDDLE | fstring_replacement_field
         mark = self._mark()
         if fstring_middle := self.fstring_middle():
             return fstring_middle
@@ -10625,8 +10660,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_193(self) -> Optional[Any]:
-        # _tmp_193: '=' | ':='
+    def _tmp_196(self) -> Optional[Any]:
+        # _tmp_196: '=' | ':='
         mark = self._mark()
         if literal := self.expect("="):
             return literal
@@ -10637,8 +10672,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_194(self) -> Optional[Any]:
-        # _tmp_194: list | tuple | genexp | 'True' | 'None' | 'False'
+    def _tmp_197(self) -> Optional[Any]:
+        # _tmp_197: list | tuple | genexp | 'True' | 'None' | 'False'
         mark = self._mark()
         if list := self.list():
             return list
@@ -10661,8 +10696,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_195(self) -> Optional[Any]:
-        # _tmp_195: '=' | ':='
+    def _tmp_198(self) -> Optional[Any]:
+        # _tmp_198: '=' | ':='
         mark = self._mark()
         if literal := self.expect("="):
             return literal
@@ -10673,8 +10708,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_196(self) -> Optional[Any]:
-        # _loop0_196: star_named_expressions
+    def _loop0_199(self) -> Optional[Any]:
+        # _loop0_199: star_named_expressions
         mark = self._mark()
         children = []
         while star_named_expressions := self.star_named_expressions():
@@ -10684,30 +10719,30 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _loop0_197(self) -> Optional[Any]:
-        # _loop0_197: (star_targets '=')
+    def _loop0_200(self) -> Optional[Any]:
+        # _loop0_200: (star_targets '=')
         mark = self._mark()
         children = []
-        while _tmp_322 := self._tmp_322():
-            children.append(_tmp_322)
+        while _tmp_327 := self._tmp_327():
+            children.append(_tmp_327)
             mark = self._mark()
         self._reset(mark)
         return children
 
     @memoize
-    def _loop0_198(self) -> Optional[Any]:
-        # _loop0_198: (star_targets '=')
+    def _loop0_201(self) -> Optional[Any]:
+        # _loop0_201: (star_targets '=')
         mark = self._mark()
         children = []
-        while _tmp_323 := self._tmp_323():
-            children.append(_tmp_323)
+        while _tmp_328 := self._tmp_328():
+            children.append(_tmp_328)
             mark = self._mark()
         self._reset(mark)
         return children
 
     @memoize
-    def _tmp_199(self) -> Optional[Any]:
-        # _tmp_199: yield_expr | star_expressions
+    def _tmp_202(self) -> Optional[Any]:
+        # _tmp_202: yield_expr | star_expressions
         mark = self._mark()
         if yield_expr := self.yield_expr():
             return yield_expr
@@ -10718,8 +10753,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_200(self) -> Optional[Any]:
-        # _tmp_200: '[' | '(' | '{'
+    def _tmp_203(self) -> Optional[Any]:
+        # _tmp_203: '[' | '(' | '{'
         mark = self._mark()
         if literal := self.expect("["):
             return literal
@@ -10733,8 +10768,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_201(self) -> Optional[Any]:
-        # _tmp_201: '[' | '{'
+    def _tmp_204(self) -> Optional[Any]:
+        # _tmp_204: '[' | '{'
         mark = self._mark()
         if literal := self.expect("["):
             return literal
@@ -10745,8 +10780,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_202(self) -> Optional[Any]:
-        # _tmp_202: '[' | '{'
+    def _tmp_205(self) -> Optional[Any]:
+        # _tmp_205: '[' | '{'
         mark = self._mark()
         if literal := self.expect("["):
             return literal
@@ -10757,8 +10792,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_203(self) -> Optional[Any]:
-        # _tmp_203: slash_no_default | slash_with_default
+    def _tmp_206(self) -> Optional[Any]:
+        # _tmp_206: slash_no_default | slash_with_default
         mark = self._mark()
         if slash_no_default := self.slash_no_default():
             return slash_no_default
@@ -10769,8 +10804,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_204(self) -> Optional[Any]:
-        # _loop0_204: param_maybe_default
+    def _loop0_207(self) -> Optional[Any]:
+        # _loop0_207: param_maybe_default
         mark = self._mark()
         children = []
         while param_maybe_default := self.param_maybe_default():
@@ -10780,8 +10815,8 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _loop0_205(self) -> Optional[Any]:
-        # _loop0_205: param_no_default
+    def _loop0_208(self) -> Optional[Any]:
+        # _loop0_208: param_no_default
         mark = self._mark()
         children = []
         while param_no_default := self.param_no_default():
@@ -10789,78 +10824,44 @@ class EnamlParser(Parser):
             mark = self._mark()
         self._reset(mark)
         return children
-
-    @memoize
-    def _loop0_206(self) -> Optional[Any]:
-        # _loop0_206: param_no_default
-        mark = self._mark()
-        children = []
-        while param_no_default := self.param_no_default():
-            children.append(param_no_default)
-            mark = self._mark()
-        self._reset(mark)
-        return children
-
-    @memoize
-    def _loop1_207(self) -> Optional[Any]:
-        # _loop1_207: param_no_default
-        mark = self._mark()
-        children = []
-        while param_no_default := self.param_no_default():
-            children.append(param_no_default)
-            mark = self._mark()
-        self._reset(mark)
-        return children
-
-    @memoize
-    def _tmp_208(self) -> Optional[Any]:
-        # _tmp_208: slash_no_default | slash_with_default
-        mark = self._mark()
-        if slash_no_default := self.slash_no_default():
-            return slash_no_default
-        self._reset(mark)
-        if slash_with_default := self.slash_with_default():
-            return slash_with_default
-        self._reset(mark)
-        return None
 
     @memoize
     def _loop0_209(self) -> Optional[Any]:
-        # _loop0_209: param_maybe_default
+        # _loop0_209: param_no_default
         mark = self._mark()
         children = []
-        while param_maybe_default := self.param_maybe_default():
-            children.append(param_maybe_default)
+        while param_no_default := self.param_no_default():
+            children.append(param_no_default)
             mark = self._mark()
         self._reset(mark)
         return children
 
     @memoize
-    def _tmp_210(self) -> Optional[Any]:
-        # _tmp_210: ',' | param_no_default
+    def _loop1_210(self) -> Optional[Any]:
+        # _loop1_210: param_no_default
         mark = self._mark()
-        if literal := self.expect(","):
-            return literal
+        children = []
+        while param_no_default := self.param_no_default():
+            children.append(param_no_default)
+            mark = self._mark()
         self._reset(mark)
-        if param_no_default := self.param_no_default():
-            return param_no_default
+        return children
+
+    @memoize
+    def _tmp_211(self) -> Optional[Any]:
+        # _tmp_211: slash_no_default | slash_with_default
+        mark = self._mark()
+        if slash_no_default := self.slash_no_default():
+            return slash_no_default
+        self._reset(mark)
+        if slash_with_default := self.slash_with_default():
+            return slash_with_default
         self._reset(mark)
         return None
 
     @memoize
-    def _loop0_211(self) -> Optional[Any]:
-        # _loop0_211: param_maybe_default
-        mark = self._mark()
-        children = []
-        while param_maybe_default := self.param_maybe_default():
-            children.append(param_maybe_default)
-            mark = self._mark()
-        self._reset(mark)
-        return children
-
-    @memoize
-    def _loop1_212(self) -> Optional[Any]:
-        # _loop1_212: param_maybe_default
+    def _loop0_212(self) -> Optional[Any]:
+        # _loop0_212: param_maybe_default
         mark = self._mark()
         children = []
         while param_maybe_default := self.param_maybe_default():
@@ -10871,43 +10872,19 @@ class EnamlParser(Parser):
 
     @memoize
     def _tmp_213(self) -> Optional[Any]:
-        # _tmp_213: ')' | ','
+        # _tmp_213: ',' | param_no_default
         mark = self._mark()
-        if literal := self.expect(")"):
-            return literal
-        self._reset(mark)
         if literal := self.expect(","):
             return literal
         self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_214(self) -> Optional[Any]:
-        # _tmp_214: ')' | ',' (')' | '**')
-        mark = self._mark()
-        if literal := self.expect(")"):
-            return literal
-        self._reset(mark)
-        if (literal := self.expect(",")) and (_tmp_324 := self._tmp_324()):
-            return [literal, _tmp_324]
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_215(self) -> Optional[Any]:
-        # _tmp_215: param_no_default | ','
-        mark = self._mark()
         if param_no_default := self.param_no_default():
             return param_no_default
         self._reset(mark)
-        if literal := self.expect(","):
-            return literal
-        self._reset(mark)
         return None
 
     @memoize
-    def _loop0_216(self) -> Optional[Any]:
-        # _loop0_216: param_maybe_default
+    def _loop0_214(self) -> Optional[Any]:
+        # _loop0_214: param_maybe_default
         mark = self._mark()
         children = []
         while param_maybe_default := self.param_maybe_default():
@@ -10917,8 +10894,43 @@ class EnamlParser(Parser):
         return children
 
     @memoize
+    def _loop1_215(self) -> Optional[Any]:
+        # _loop1_215: param_maybe_default
+        mark = self._mark()
+        children = []
+        while param_maybe_default := self.param_maybe_default():
+            children.append(param_maybe_default)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _tmp_216(self) -> Optional[Any]:
+        # _tmp_216: ')' | ','
+        mark = self._mark()
+        if literal := self.expect(")"):
+            return literal
+        self._reset(mark)
+        if literal := self.expect(","):
+            return literal
+        self._reset(mark)
+        return None
+
+    @memoize
     def _tmp_217(self) -> Optional[Any]:
-        # _tmp_217: param_no_default | ','
+        # _tmp_217: ')' | ',' (')' | '**')
+        mark = self._mark()
+        if literal := self.expect(")"):
+            return literal
+        self._reset(mark)
+        if (literal := self.expect(",")) and (_tmp_329 := self._tmp_329()):
+            return [literal, _tmp_329]
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_218(self) -> Optional[Any]:
+        # _tmp_218: param_no_default | ','
         mark = self._mark()
         if param_no_default := self.param_no_default():
             return param_no_default
@@ -10929,8 +10941,31 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_218(self) -> Optional[Any]:
-        # _tmp_218: '*' | '**' | '/'
+    def _loop0_219(self) -> Optional[Any]:
+        # _loop0_219: param_maybe_default
+        mark = self._mark()
+        children = []
+        while param_maybe_default := self.param_maybe_default():
+            children.append(param_maybe_default)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _tmp_220(self) -> Optional[Any]:
+        # _tmp_220: param_no_default | ','
+        mark = self._mark()
+        if param_no_default := self.param_no_default():
+            return param_no_default
+        self._reset(mark)
+        if literal := self.expect(","):
+            return literal
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_221(self) -> Optional[Any]:
+        # _tmp_221: '*' | '**' | '/'
         mark = self._mark()
         if literal := self.expect("*"):
             return literal
@@ -10944,8 +10979,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop1_219(self) -> Optional[Any]:
-        # _loop1_219: param_with_default
+    def _loop1_222(self) -> Optional[Any]:
+        # _loop1_222: param_with_default
         mark = self._mark()
         children = []
         while param_with_default := self.param_with_default():
@@ -10955,8 +10990,8 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _tmp_220(self) -> Optional[Any]:
-        # _tmp_220: lambda_slash_no_default | lambda_slash_with_default
+    def _tmp_223(self) -> Optional[Any]:
+        # _tmp_223: lambda_slash_no_default | lambda_slash_with_default
         mark = self._mark()
         if lambda_slash_no_default := self.lambda_slash_no_default():
             return lambda_slash_no_default
@@ -10967,8 +11002,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_221(self) -> Optional[Any]:
-        # _loop0_221: lambda_param_maybe_default
+    def _loop0_224(self) -> Optional[Any]:
+        # _loop0_224: lambda_param_maybe_default
         mark = self._mark()
         children = []
         while lambda_param_maybe_default := self.lambda_param_maybe_default():
@@ -10978,30 +11013,30 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _loop0_222(self) -> Optional[Any]:
-        # _loop0_222: lambda_param_no_default
-        mark = self._mark()
-        children = []
-        while lambda_param_no_default := self.lambda_param_no_default():
-            children.append(lambda_param_no_default)
-            mark = self._mark()
-        self._reset(mark)
-        return children
-
-    @memoize
-    def _loop0_223(self) -> Optional[Any]:
-        # _loop0_223: lambda_param_no_default
-        mark = self._mark()
-        children = []
-        while lambda_param_no_default := self.lambda_param_no_default():
-            children.append(lambda_param_no_default)
-            mark = self._mark()
-        self._reset(mark)
-        return children
-
-    @memoize
     def _loop0_225(self) -> Optional[Any]:
-        # _loop0_225: ',' lambda_param
+        # _loop0_225: lambda_param_no_default
+        mark = self._mark()
+        children = []
+        while lambda_param_no_default := self.lambda_param_no_default():
+            children.append(lambda_param_no_default)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _loop0_226(self) -> Optional[Any]:
+        # _loop0_226: lambda_param_no_default
+        mark = self._mark()
+        children = []
+        while lambda_param_no_default := self.lambda_param_no_default():
+            children.append(lambda_param_no_default)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _loop0_228(self) -> Optional[Any]:
+        # _loop0_228: ',' lambda_param
         mark = self._mark()
         children = []
         while (self.expect(",")) and (elem := self.lambda_param()):
@@ -11011,19 +11046,19 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _gather_224(self) -> Optional[Any]:
-        # _gather_224: lambda_param _loop0_225
+    def _gather_227(self) -> Optional[Any]:
+        # _gather_227: lambda_param _loop0_228
         mark = self._mark()
         if (elem := self.lambda_param()) is not None and (
-            seq := self._loop0_225()
+            seq := self._loop0_228()
         ) is not None:
             return [elem] + seq
         self._reset(mark)
         return None
 
     @memoize
-    def _tmp_226(self) -> Optional[Any]:
-        # _tmp_226: lambda_slash_no_default | lambda_slash_with_default
+    def _tmp_229(self) -> Optional[Any]:
+        # _tmp_229: lambda_slash_no_default | lambda_slash_with_default
         mark = self._mark()
         if lambda_slash_no_default := self.lambda_slash_no_default():
             return lambda_slash_no_default
@@ -11034,8 +11069,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_227(self) -> Optional[Any]:
-        # _loop0_227: lambda_param_maybe_default
+    def _loop0_230(self) -> Optional[Any]:
+        # _loop0_230: lambda_param_maybe_default
         mark = self._mark()
         children = []
         while lambda_param_maybe_default := self.lambda_param_maybe_default():
@@ -11045,8 +11080,8 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _tmp_228(self) -> Optional[Any]:
-        # _tmp_228: ',' | lambda_param_no_default
+    def _tmp_231(self) -> Optional[Any]:
+        # _tmp_231: ',' | lambda_param_no_default
         mark = self._mark()
         if literal := self.expect(","):
             return literal
@@ -11057,8 +11092,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_229(self) -> Optional[Any]:
-        # _loop0_229: lambda_param_maybe_default
+    def _loop0_232(self) -> Optional[Any]:
+        # _loop0_232: lambda_param_maybe_default
         mark = self._mark()
         children = []
         while lambda_param_maybe_default := self.lambda_param_maybe_default():
@@ -11068,8 +11103,8 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _loop1_230(self) -> Optional[Any]:
-        # _loop1_230: lambda_param_maybe_default
+    def _loop1_233(self) -> Optional[Any]:
+        # _loop1_233: lambda_param_maybe_default
         mark = self._mark()
         children = []
         while lambda_param_maybe_default := self.lambda_param_maybe_default():
@@ -11079,8 +11114,8 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _loop1_231(self) -> Optional[Any]:
-        # _loop1_231: lambda_param_with_default
+    def _loop1_234(self) -> Optional[Any]:
+        # _loop1_234: lambda_param_with_default
         mark = self._mark()
         children = []
         while lambda_param_with_default := self.lambda_param_with_default():
@@ -11090,20 +11125,20 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _tmp_232(self) -> Optional[Any]:
-        # _tmp_232: ':' | ',' (':' | '**')
+    def _tmp_235(self) -> Optional[Any]:
+        # _tmp_235: ':' | ',' (':' | '**')
         mark = self._mark()
         if literal := self.expect(":"):
             return literal
         self._reset(mark)
-        if (literal := self.expect(",")) and (_tmp_325 := self._tmp_325()):
-            return [literal, _tmp_325]
+        if (literal := self.expect(",")) and (_tmp_330 := self._tmp_330()):
+            return [literal, _tmp_330]
         self._reset(mark)
         return None
 
     @memoize
-    def _tmp_233(self) -> Optional[Any]:
-        # _tmp_233: lambda_param_no_default | ','
+    def _tmp_236(self) -> Optional[Any]:
+        # _tmp_236: lambda_param_no_default | ','
         mark = self._mark()
         if lambda_param_no_default := self.lambda_param_no_default():
             return lambda_param_no_default
@@ -11114,8 +11149,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_234(self) -> Optional[Any]:
-        # _loop0_234: lambda_param_maybe_default
+    def _loop0_237(self) -> Optional[Any]:
+        # _loop0_237: lambda_param_maybe_default
         mark = self._mark()
         children = []
         while lambda_param_maybe_default := self.lambda_param_maybe_default():
@@ -11125,8 +11160,8 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _tmp_235(self) -> Optional[Any]:
-        # _tmp_235: lambda_param_no_default | ','
+    def _tmp_238(self) -> Optional[Any]:
+        # _tmp_238: lambda_param_no_default | ','
         mark = self._mark()
         if lambda_param_no_default := self.lambda_param_no_default():
             return lambda_param_no_default
@@ -11137,8 +11172,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_236(self) -> Optional[Any]:
-        # _tmp_236: '*' | '**' | '/'
+    def _tmp_239(self) -> Optional[Any]:
+        # _tmp_239: '*' | '**' | '/'
         mark = self._mark()
         if literal := self.expect("*"):
             return literal
@@ -11152,8 +11187,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_237(self) -> Optional[Any]:
-        # _tmp_237: ',' | ')' | ':'
+    def _tmp_240(self) -> Optional[Any]:
+        # _tmp_240: ',' | ')' | ':'
         mark = self._mark()
         if literal := self.expect(","):
             return literal
@@ -11167,8 +11202,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_239(self) -> Optional[Any]:
-        # _loop0_239: ',' dotted_name
+    def _loop0_242(self) -> Optional[Any]:
+        # _loop0_242: ',' dotted_name
         mark = self._mark()
         children = []
         while (self.expect(",")) and (elem := self.dotted_name()):
@@ -11178,43 +11213,10 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _gather_238(self) -> Optional[Any]:
-        # _gather_238: dotted_name _loop0_239
+    def _gather_241(self) -> Optional[Any]:
+        # _gather_241: dotted_name _loop0_242
         mark = self._mark()
         if (elem := self.dotted_name()) is not None and (
-            seq := self._loop0_239()
-        ) is not None:
-            return [elem] + seq
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _loop0_240(self) -> Optional[Any]:
-        # _loop0_240: ('.' | '...')
-        mark = self._mark()
-        children = []
-        while _tmp_326 := self._tmp_326():
-            children.append(_tmp_326)
-            mark = self._mark()
-        self._reset(mark)
-        return children
-
-    @memoize
-    def _loop0_242(self) -> Optional[Any]:
-        # _loop0_242: ',' (expression ['as' star_target])
-        mark = self._mark()
-        children = []
-        while (self.expect(",")) and (elem := self._tmp_327()):
-            children.append(elem)
-            mark = self._mark()
-        self._reset(mark)
-        return children
-
-    @memoize
-    def _gather_241(self) -> Optional[Any]:
-        # _gather_241: (expression ['as' star_target]) _loop0_242
-        mark = self._mark()
-        if (elem := self._tmp_327()) is not None and (
             seq := self._loop0_242()
         ) is not None:
             return [elem] + seq
@@ -11222,111 +11224,113 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_244(self) -> Optional[Any]:
-        # _loop0_244: ',' (expressions ['as' star_target])
+    def _loop0_243(self) -> Optional[Any]:
+        # _loop0_243: ('.' | '...')
         mark = self._mark()
         children = []
-        while (self.expect(",")) and (elem := self._tmp_328()):
+        while _tmp_331 := self._tmp_331():
+            children.append(_tmp_331)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _loop0_245(self) -> Optional[Any]:
+        # _loop0_245: ',' (expression ['as' star_target])
+        mark = self._mark()
+        children = []
+        while (self.expect(",")) and (elem := self._tmp_332()):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
         return children
 
     @memoize
-    def _gather_243(self) -> Optional[Any]:
-        # _gather_243: (expressions ['as' star_target]) _loop0_244
+    def _gather_244(self) -> Optional[Any]:
+        # _gather_244: (expression ['as' star_target]) _loop0_245
         mark = self._mark()
-        if (elem := self._tmp_328()) is not None and (
-            seq := self._loop0_244()
+        if (elem := self._tmp_332()) is not None and (
+            seq := self._loop0_245()
         ) is not None:
             return [elem] + seq
         self._reset(mark)
         return None
 
     @memoize
-    def _loop0_246(self) -> Optional[Any]:
-        # _loop0_246: ',' (expression ['as' star_target])
+    def _loop0_247(self) -> Optional[Any]:
+        # _loop0_247: ',' (expressions ['as' star_target])
         mark = self._mark()
         children = []
-        while (self.expect(",")) and (elem := self._tmp_329()):
+        while (self.expect(",")) and (elem := self._tmp_333()):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
         return children
 
     @memoize
-    def _gather_245(self) -> Optional[Any]:
-        # _gather_245: (expression ['as' star_target]) _loop0_246
+    def _gather_246(self) -> Optional[Any]:
+        # _gather_246: (expressions ['as' star_target]) _loop0_247
         mark = self._mark()
-        if (elem := self._tmp_329()) is not None and (
-            seq := self._loop0_246()
+        if (elem := self._tmp_333()) is not None and (
+            seq := self._loop0_247()
         ) is not None:
             return [elem] + seq
         self._reset(mark)
         return None
 
     @memoize
-    def _loop0_248(self) -> Optional[Any]:
-        # _loop0_248: ',' (expressions ['as' star_target])
+    def _loop0_249(self) -> Optional[Any]:
+        # _loop0_249: ',' (expression ['as' star_target])
         mark = self._mark()
         children = []
-        while (self.expect(",")) and (elem := self._tmp_330()):
+        while (self.expect(",")) and (elem := self._tmp_334()):
             children.append(elem)
             mark = self._mark()
         self._reset(mark)
         return children
 
     @memoize
-    def _gather_247(self) -> Optional[Any]:
-        # _gather_247: (expressions ['as' star_target]) _loop0_248
+    def _gather_248(self) -> Optional[Any]:
+        # _gather_248: (expression ['as' star_target]) _loop0_249
         mark = self._mark()
-        if (elem := self._tmp_330()) is not None and (
-            seq := self._loop0_248()
+        if (elem := self._tmp_334()) is not None and (
+            seq := self._loop0_249()
         ) is not None:
             return [elem] + seq
         self._reset(mark)
         return None
 
     @memoize
-    def _tmp_249(self) -> Optional[Any]:
-        # _tmp_249: 'except' | 'finally'
+    def _loop0_251(self) -> Optional[Any]:
+        # _loop0_251: ',' (expressions ['as' star_target])
+        mark = self._mark()
+        children = []
+        while (self.expect(",")) and (elem := self._tmp_335()):
+            children.append(elem)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _gather_250(self) -> Optional[Any]:
+        # _gather_250: (expressions ['as' star_target]) _loop0_251
+        mark = self._mark()
+        if (elem := self._tmp_335()) is not None and (
+            seq := self._loop0_251()
+        ) is not None:
+            return [elem] + seq
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_252(self) -> Optional[Any]:
+        # _tmp_252: 'except' | 'finally'
         mark = self._mark()
         if literal := self.expect("except"):
             return literal
         self._reset(mark)
         if literal := self.expect("finally"):
             return literal
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _loop0_250(self) -> Optional[Any]:
-        # _loop0_250: block
-        mark = self._mark()
-        children = []
-        while block := self.block():
-            children.append(block)
-            mark = self._mark()
-        self._reset(mark)
-        return children
-
-    @memoize
-    def _loop1_251(self) -> Optional[Any]:
-        # _loop1_251: except_block
-        mark = self._mark()
-        children = []
-        while except_block := self.except_block():
-            children.append(except_block)
-            mark = self._mark()
-        self._reset(mark)
-        return children
-
-    @memoize
-    def _tmp_252(self) -> Optional[Any]:
-        # _tmp_252: 'as' NAME
-        mark = self._mark()
-        if (literal := self.expect("as")) and (name := self.name()):
-            return [literal, name]
         self._reset(mark)
         return None
 
@@ -11343,7 +11347,38 @@ class EnamlParser(Parser):
 
     @memoize
     def _loop1_254(self) -> Optional[Any]:
-        # _loop1_254: except_star_block
+        # _loop1_254: except_block
+        mark = self._mark()
+        children = []
+        while except_block := self.except_block():
+            children.append(except_block)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _tmp_255(self) -> Optional[Any]:
+        # _tmp_255: 'as' NAME
+        mark = self._mark()
+        if (literal := self.expect("as")) and (name := self.name()):
+            return [literal, name]
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _loop0_256(self) -> Optional[Any]:
+        # _loop0_256: block
+        mark = self._mark()
+        children = []
+        while block := self.block():
+            children.append(block)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _loop1_257(self) -> Optional[Any]:
+        # _loop1_257: except_star_block
         mark = self._mark()
         children = []
         while except_star_block := self.except_star_block():
@@ -11353,41 +11388,11 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _tmp_255(self) -> Optional[Any]:
-        # _tmp_255: expression ['as' NAME]
-        mark = self._mark()
-        if (expression := self.expression()) and (opt := self._tmp_331(),):
-            return [expression, opt]
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_256(self) -> Optional[Any]:
-        # _tmp_256: 'as' NAME
-        mark = self._mark()
-        if (literal := self.expect("as")) and (name := self.name()):
-            return [literal, name]
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_257(self) -> Optional[Any]:
-        # _tmp_257: 'as' NAME
-        mark = self._mark()
-        if (literal := self.expect("as")) and (name := self.name()):
-            return [literal, name]
-        self._reset(mark)
-        return None
-
-    @memoize
     def _tmp_258(self) -> Optional[Any]:
-        # _tmp_258: NEWLINE | ':'
+        # _tmp_258: expression ['as' NAME]
         mark = self._mark()
-        if _newline := self.expect("NEWLINE"):
-            return _newline
-        self._reset(mark)
-        if literal := self.expect(":"):
-            return literal
+        if (expression := self.expression()) and (opt := self._tmp_336(),):
+            return [expression, opt]
         self._reset(mark)
         return None
 
@@ -11411,7 +11416,37 @@ class EnamlParser(Parser):
 
     @memoize
     def _tmp_261(self) -> Optional[Any]:
-        # _tmp_261: positional_patterns ','
+        # _tmp_261: NEWLINE | ':'
+        mark = self._mark()
+        if _newline := self.expect("NEWLINE"):
+            return _newline
+        self._reset(mark)
+        if literal := self.expect(":"):
+            return literal
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_262(self) -> Optional[Any]:
+        # _tmp_262: 'as' NAME
+        mark = self._mark()
+        if (literal := self.expect("as")) and (name := self.name()):
+            return [literal, name]
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_263(self) -> Optional[Any]:
+        # _tmp_263: 'as' NAME
+        mark = self._mark()
+        if (literal := self.expect("as")) and (name := self.name()):
+            return [literal, name]
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_264(self) -> Optional[Any]:
+        # _tmp_264: positional_patterns ','
         mark = self._mark()
         if (positional_patterns := self.positional_patterns()) and (
             literal := self.expect(",")
@@ -11421,8 +11456,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_262(self) -> Optional[Any]:
-        # _tmp_262: '->' expression
+    def _tmp_265(self) -> Optional[Any]:
+        # _tmp_265: '->' expression
         mark = self._mark()
         if (literal := self.expect("->")) and (expression := self.expression()):
             return [literal, expression]
@@ -11430,8 +11465,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_263(self) -> Optional[Any]:
-        # _tmp_263: '(' arguments? ')'
+    def _tmp_266(self) -> Optional[Any]:
+        # _tmp_266: '(' arguments? ')'
         mark = self._mark()
         if (
             (literal := self.expect("("))
@@ -11443,8 +11478,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_264(self) -> Optional[Any]:
-        # _tmp_264: '(' arguments? ')'
+    def _tmp_267(self) -> Optional[Any]:
+        # _tmp_267: '(' arguments? ')'
         mark = self._mark()
         if (
             (literal := self.expect("("))
@@ -11456,8 +11491,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_266(self) -> Optional[Any]:
-        # _loop0_266: ',' double_starred_kvpair
+    def _loop0_269(self) -> Optional[Any]:
+        # _loop0_269: ',' double_starred_kvpair
         mark = self._mark()
         children = []
         while (self.expect(",")) and (elem := self.double_starred_kvpair()):
@@ -11467,78 +11502,36 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _gather_265(self) -> Optional[Any]:
-        # _gather_265: double_starred_kvpair _loop0_266
+    def _gather_268(self) -> Optional[Any]:
+        # _gather_268: double_starred_kvpair _loop0_269
         mark = self._mark()
         if (elem := self.double_starred_kvpair()) is not None and (
-            seq := self._loop0_266()
+            seq := self._loop0_269()
         ) is not None:
             return [elem] + seq
         self._reset(mark)
         return None
 
     @memoize
-    def _tmp_267(self) -> Optional[Any]:
-        # _tmp_267: '}' | ','
-        mark = self._mark()
-        if literal := self.expect("}"):
-            return literal
-        self._reset(mark)
-        if literal := self.expect(","):
-            return literal
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_268(self) -> Optional[Any]:
-        # _tmp_268: '}' | ','
-        mark = self._mark()
-        if literal := self.expect("}"):
-            return literal
-        self._reset(mark)
-        if literal := self.expect(","):
-            return literal
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_269(self) -> Optional[Any]:
-        # _tmp_269: yield_expr | star_expressions
-        mark = self._mark()
-        if yield_expr := self.yield_expr():
-            return yield_expr
-        self._reset(mark)
-        if star_expressions := self.star_expressions():
-            return star_expressions
-        self._reset(mark)
-        return None
-
-    @memoize
     def _tmp_270(self) -> Optional[Any]:
-        # _tmp_270: yield_expr | star_expressions
+        # _tmp_270: '}' | ','
         mark = self._mark()
-        if yield_expr := self.yield_expr():
-            return yield_expr
+        if literal := self.expect("}"):
+            return literal
         self._reset(mark)
-        if star_expressions := self.star_expressions():
-            return star_expressions
+        if literal := self.expect(","):
+            return literal
         self._reset(mark)
         return None
 
     @memoize
     def _tmp_271(self) -> Optional[Any]:
-        # _tmp_271: '=' | '!' | ':' | '}'
+        # _tmp_271: '}' | ','
         mark = self._mark()
-        if literal := self.expect("="):
-            return literal
-        self._reset(mark)
-        if literal := self.expect("!"):
-            return literal
-        self._reset(mark)
-        if literal := self.expect(":"):
-            return literal
-        self._reset(mark)
         if literal := self.expect("}"):
+            return literal
+        self._reset(mark)
+        if literal := self.expect(","):
             return literal
         self._reset(mark)
         return None
@@ -11557,8 +11550,23 @@ class EnamlParser(Parser):
 
     @memoize
     def _tmp_273(self) -> Optional[Any]:
-        # _tmp_273: '!' | ':' | '}'
+        # _tmp_273: yield_expr | star_expressions
         mark = self._mark()
+        if yield_expr := self.yield_expr():
+            return yield_expr
+        self._reset(mark)
+        if star_expressions := self.star_expressions():
+            return star_expressions
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_274(self) -> Optional[Any]:
+        # _tmp_274: '=' | '!' | ':' | '}'
+        mark = self._mark()
+        if literal := self.expect("="):
+            return literal
+        self._reset(mark)
         if literal := self.expect("!"):
             return literal
         self._reset(mark)
@@ -11567,18 +11575,6 @@ class EnamlParser(Parser):
         self._reset(mark)
         if literal := self.expect("}"):
             return literal
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_274(self) -> Optional[Any]:
-        # _tmp_274: yield_expr | star_expressions
-        mark = self._mark()
-        if yield_expr := self.yield_expr():
-            return yield_expr
-        self._reset(mark)
-        if star_expressions := self.star_expressions():
-            return star_expressions
         self._reset(mark)
         return None
 
@@ -11596,22 +11592,28 @@ class EnamlParser(Parser):
 
     @memoize
     def _tmp_276(self) -> Optional[Any]:
-        # _tmp_276: '!' NAME
+        # _tmp_276: '!' | ':' | '}'
         mark = self._mark()
-        if (literal := self.expect("!")) and (name := self.name()):
-            return [literal, name]
+        if literal := self.expect("!"):
+            return literal
         self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_277(self) -> Optional[Any]:
-        # _tmp_277: ':' | '}'
-        mark = self._mark()
         if literal := self.expect(":"):
             return literal
         self._reset(mark)
         if literal := self.expect("}"):
             return literal
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_277(self) -> Optional[Any]:
+        # _tmp_277: yield_expr | star_expressions
+        mark = self._mark()
+        if yield_expr := self.yield_expr():
+            return yield_expr
+        self._reset(mark)
+        if star_expressions := self.star_expressions():
+            return star_expressions
         self._reset(mark)
         return None
 
@@ -11637,15 +11639,16 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_280(self) -> Optional[Any]:
-        # _loop0_280: fstring_format_spec
+    def _tmp_280(self) -> Optional[Any]:
+        # _tmp_280: ':' | '}'
         mark = self._mark()
-        children = []
-        while fstring_format_spec := self.fstring_format_spec():
-            children.append(fstring_format_spec)
-            mark = self._mark()
+        if literal := self.expect(":"):
+            return literal
         self._reset(mark)
-        return children
+        if literal := self.expect("}"):
+            return literal
+        self._reset(mark)
+        return None
 
     @memoize
     def _tmp_281(self) -> Optional[Any]:
@@ -11669,16 +11672,15 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_283(self) -> Optional[Any]:
-        # _tmp_283: ':' | '}'
+    def _loop0_283(self) -> Optional[Any]:
+        # _loop0_283: fstring_format_spec
         mark = self._mark()
-        if literal := self.expect(":"):
-            return literal
+        children = []
+        while fstring_format_spec := self.fstring_format_spec():
+            children.append(fstring_format_spec)
+            mark = self._mark()
         self._reset(mark)
-        if literal := self.expect("}"):
-            return literal
-        self._reset(mark)
-        return None
+        return children
 
     @memoize
     def _tmp_284(self) -> Optional[Any]:
@@ -11694,26 +11696,17 @@ class EnamlParser(Parser):
 
     @memoize
     def _tmp_285(self) -> Optional[Any]:
-        # _tmp_285: yield_expr | star_expressions
+        # _tmp_285: '!' NAME
         mark = self._mark()
-        if yield_expr := self.yield_expr():
-            return yield_expr
-        self._reset(mark)
-        if star_expressions := self.star_expressions():
-            return star_expressions
+        if (literal := self.expect("!")) and (name := self.name()):
+            return [literal, name]
         self._reset(mark)
         return None
 
     @memoize
     def _tmp_286(self) -> Optional[Any]:
-        # _tmp_286: '=' | '!' | ':' | '}'
+        # _tmp_286: ':' | '}'
         mark = self._mark()
-        if literal := self.expect("="):
-            return literal
-        self._reset(mark)
-        if literal := self.expect("!"):
-            return literal
-        self._reset(mark)
         if literal := self.expect(":"):
             return literal
         self._reset(mark)
@@ -11736,8 +11729,23 @@ class EnamlParser(Parser):
 
     @memoize
     def _tmp_288(self) -> Optional[Any]:
-        # _tmp_288: '!' | ':' | '}'
+        # _tmp_288: yield_expr | star_expressions
         mark = self._mark()
+        if yield_expr := self.yield_expr():
+            return yield_expr
+        self._reset(mark)
+        if star_expressions := self.star_expressions():
+            return star_expressions
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_289(self) -> Optional[Any]:
+        # _tmp_289: '=' | '!' | ':' | '}'
+        mark = self._mark()
+        if literal := self.expect("="):
+            return literal
+        self._reset(mark)
         if literal := self.expect("!"):
             return literal
         self._reset(mark)
@@ -11746,18 +11754,6 @@ class EnamlParser(Parser):
         self._reset(mark)
         if literal := self.expect("}"):
             return literal
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_289(self) -> Optional[Any]:
-        # _tmp_289: yield_expr | star_expressions
-        mark = self._mark()
-        if yield_expr := self.yield_expr():
-            return yield_expr
-        self._reset(mark)
-        if star_expressions := self.star_expressions():
-            return star_expressions
         self._reset(mark)
         return None
 
@@ -11775,22 +11771,28 @@ class EnamlParser(Parser):
 
     @memoize
     def _tmp_291(self) -> Optional[Any]:
-        # _tmp_291: '!' NAME
+        # _tmp_291: '!' | ':' | '}'
         mark = self._mark()
-        if (literal := self.expect("!")) and (name := self.name()):
-            return [literal, name]
+        if literal := self.expect("!"):
+            return literal
         self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_292(self) -> Optional[Any]:
-        # _tmp_292: ':' | '}'
-        mark = self._mark()
         if literal := self.expect(":"):
             return literal
         self._reset(mark)
         if literal := self.expect("}"):
             return literal
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_292(self) -> Optional[Any]:
+        # _tmp_292: yield_expr | star_expressions
+        mark = self._mark()
+        if yield_expr := self.yield_expr():
+            return yield_expr
+        self._reset(mark)
+        if star_expressions := self.star_expressions():
+            return star_expressions
         self._reset(mark)
         return None
 
@@ -11816,15 +11818,16 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_295(self) -> Optional[Any]:
-        # _loop0_295: tstring_format_spec
+    def _tmp_295(self) -> Optional[Any]:
+        # _tmp_295: ':' | '}'
         mark = self._mark()
-        children = []
-        while tstring_format_spec := self.tstring_format_spec():
-            children.append(tstring_format_spec)
-            mark = self._mark()
+        if literal := self.expect(":"):
+            return literal
         self._reset(mark)
-        return children
+        if literal := self.expect("}"):
+            return literal
+        self._reset(mark)
+        return None
 
     @memoize
     def _tmp_296(self) -> Optional[Any]:
@@ -11848,8 +11851,40 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_298(self) -> Optional[Any]:
-        # _tmp_298: ':' | '}'
+    def _loop0_298(self) -> Optional[Any]:
+        # _loop0_298: tstring_format_spec
+        mark = self._mark()
+        children = []
+        while tstring_format_spec := self.tstring_format_spec():
+            children.append(tstring_format_spec)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _tmp_299(self) -> Optional[Any]:
+        # _tmp_299: yield_expr | star_expressions
+        mark = self._mark()
+        if yield_expr := self.yield_expr():
+            return yield_expr
+        self._reset(mark)
+        if star_expressions := self.star_expressions():
+            return star_expressions
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_300(self) -> Optional[Any]:
+        # _tmp_300: '!' NAME
+        mark = self._mark()
+        if (literal := self.expect("!")) and (name := self.name()):
+            return [literal, name]
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_301(self) -> Optional[Any]:
+        # _tmp_301: ':' | '}'
         mark = self._mark()
         if literal := self.expect(":"):
             return literal
@@ -11860,19 +11895,19 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop1_299(self) -> Optional[Any]:
-        # _loop1_299: (fstring | STRING)
+    def _loop1_302(self) -> Optional[Any]:
+        # _loop1_302: (fstring | STRING)
         mark = self._mark()
         children = []
-        while _tmp_332 := self._tmp_332():
-            children.append(_tmp_332)
+        while _tmp_337 := self._tmp_337():
+            children.append(_tmp_337)
             mark = self._mark()
         self._reset(mark)
         return children
 
     @memoize
-    def _loop1_300(self) -> Optional[Any]:
-        # _loop1_300: tstring
+    def _loop1_303(self) -> Optional[Any]:
+        # _loop1_303: tstring
         mark = self._mark()
         children = []
         while tstring := self.tstring():
@@ -11882,8 +11917,8 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _tmp_301(self) -> Optional[Any]:
-        # _tmp_301: fstring | STRING
+    def _tmp_304(self) -> Optional[Any]:
+        # _tmp_304: fstring | STRING
         mark = self._mark()
         if fstring := self.fstring():
             return fstring
@@ -11894,8 +11929,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _loop0_303(self) -> Optional[Any]:
-        # _loop0_303: ',' pragma_arg
+    def _loop0_306(self) -> Optional[Any]:
+        # _loop0_306: ',' pragma_arg
         mark = self._mark()
         children = []
         while (self.expect(",")) and (elem := self.pragma_arg()):
@@ -11905,19 +11940,19 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _gather_302(self) -> Optional[Any]:
-        # _gather_302: pragma_arg _loop0_303
+    def _gather_305(self) -> Optional[Any]:
+        # _gather_305: pragma_arg _loop0_306
         mark = self._mark()
         if (elem := self.pragma_arg()) is not None and (
-            seq := self._loop0_303()
+            seq := self._loop0_306()
         ) is not None:
             return [elem] + seq
         self._reset(mark)
         return None
 
     @memoize
-    def _loop0_305(self) -> Optional[Any]:
-        # _loop0_305: '.' NAME
+    def _loop0_308(self) -> Optional[Any]:
+        # _loop0_308: '.' NAME
         mark = self._mark()
         children = []
         while (self.expect(".")) and (elem := self.name()):
@@ -11927,17 +11962,17 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _gather_304(self) -> Optional[Any]:
-        # _gather_304: NAME _loop0_305
+    def _gather_307(self) -> Optional[Any]:
+        # _gather_307: NAME _loop0_308
         mark = self._mark()
-        if (elem := self.name()) is not None and (seq := self._loop0_305()) is not None:
+        if (elem := self.name()) is not None and (seq := self._loop0_308()) is not None:
             return [elem] + seq
         self._reset(mark)
         return None
 
     @memoize
-    def _loop0_307(self) -> Optional[Any]:
-        # _loop0_307: '.' NAME
+    def _loop0_310(self) -> Optional[Any]:
+        # _loop0_310: '.' NAME
         mark = self._mark()
         children = []
         while (self.expect(".")) and (elem := self.name()):
@@ -11947,17 +11982,17 @@ class EnamlParser(Parser):
         return children
 
     @memoize
-    def _gather_306(self) -> Optional[Any]:
-        # _gather_306: NAME _loop0_307
+    def _gather_309(self) -> Optional[Any]:
+        # _gather_309: NAME _loop0_310
         mark = self._mark()
-        if (elem := self.name()) is not None and (seq := self._loop0_307()) is not None:
+        if (elem := self.name()) is not None and (seq := self._loop0_310()) is not None:
             return [elem] + seq
         self._reset(mark)
         return None
 
     @memoize
-    def _tmp_308(self) -> Optional[Any]:
-        # _tmp_308: star_targets '='
+    def _tmp_311(self) -> Optional[Any]:
+        # _tmp_311: star_targets '='
         mark = self._mark()
         if (z := self.star_targets()) and (self.expect("=")):
             return z
@@ -11965,8 +12000,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_309(self) -> Optional[Any]:
-        # _tmp_309: '.' | '...'
+    def _tmp_312(self) -> Optional[Any]:
+        # _tmp_312: '.' | '...'
         mark = self._mark()
         if literal := self.expect("."):
             return literal
@@ -11977,8 +12012,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_310(self) -> Optional[Any]:
-        # _tmp_310: '.' | '...'
+    def _tmp_313(self) -> Optional[Any]:
+        # _tmp_313: '.' | '...'
         mark = self._mark()
         if literal := self.expect("."):
             return literal
@@ -11989,8 +12024,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_311(self) -> Optional[Any]:
-        # _tmp_311: ',' expression
+    def _tmp_314(self) -> Optional[Any]:
+        # _tmp_314: ',' expression
         mark = self._mark()
         if (self.expect(",")) and (c := self.expression()):
             return c
@@ -11998,8 +12033,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_312(self) -> Optional[Any]:
-        # _tmp_312: ',' star_expression
+    def _tmp_315(self) -> Optional[Any]:
+        # _tmp_315: ',' star_expression
         mark = self._mark()
         if (self.expect(",")) and (c := self.star_expression()):
             return c
@@ -12007,8 +12042,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_313(self) -> Optional[Any]:
-        # _tmp_313: 'or' conjunction
+    def _tmp_316(self) -> Optional[Any]:
+        # _tmp_316: 'or' conjunction
         mark = self._mark()
         if (self.expect("or")) and (c := self.conjunction()):
             return c
@@ -12016,8 +12051,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_314(self) -> Optional[Any]:
-        # _tmp_314: 'and' inversion
+    def _tmp_317(self) -> Optional[Any]:
+        # _tmp_317: 'and' inversion
         mark = self._mark()
         if (self.expect("and")) and (c := self.inversion()):
             return c
@@ -12025,8 +12060,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_315(self) -> Optional[Any]:
-        # _tmp_315: slice | starred_expression
+    def _tmp_318(self) -> Optional[Any]:
+        # _tmp_318: slice | starred_expression
         mark = self._mark()
         if slice := self.slice():
             return slice
@@ -12037,8 +12072,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_316(self) -> Optional[Any]:
-        # _tmp_316: fstring | STRING
+    def _tmp_319(self) -> Optional[Any]:
+        # _tmp_319: fstring | STRING
         mark = self._mark()
         if fstring := self.fstring():
             return fstring
@@ -12049,49 +12084,40 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_317(self) -> Optional[Any]:
-        # _tmp_317: 'if' disjunction
-        mark = self._mark()
-        if (self.expect("if")) and (z := self.disjunction()):
-            return z
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_318(self) -> Optional[Any]:
-        # _tmp_318: 'if' disjunction
-        mark = self._mark()
-        if (self.expect("if")) and (z := self.disjunction()):
-            return z
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_319(self) -> Optional[Any]:
-        # _tmp_319: starred_expression | (assignment_expression | expression !':=') !'='
-        mark = self._mark()
-        if starred_expression := self.starred_expression():
-            return starred_expression
-        self._reset(mark)
-        if (_tmp_333 := self._tmp_333()) and (
-            self.negative_lookahead(self.expect, "=")
-        ):
-            return _tmp_333
-        self._reset(mark)
-        return None
-
-    @memoize
     def _tmp_320(self) -> Optional[Any]:
-        # _tmp_320: ',' star_target
+        # _tmp_320: 'if' disjunction
         mark = self._mark()
-        if (self.expect(",")) and (c := self.star_target()):
-            return c
+        if (self.expect("if")) and (z := self.disjunction()):
+            return z
         self._reset(mark)
         return None
 
     @memoize
     def _tmp_321(self) -> Optional[Any]:
-        # _tmp_321: ',' star_target
+        # _tmp_321: 'if' disjunction
+        mark = self._mark()
+        if (self.expect("if")) and (z := self.disjunction()):
+            return z
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_322(self) -> Optional[Any]:
+        # _tmp_322: starred_expression | (assignment_expression | expression !':=') !'='
+        mark = self._mark()
+        if starred_expression := self.starred_expression():
+            return starred_expression
+        self._reset(mark)
+        if (_tmp_338 := self._tmp_338()) and (
+            self.negative_lookahead(self.expect, "=")
+        ):
+            return _tmp_338
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_323(self) -> Optional[Any]:
+        # _tmp_323: ',' star_target
         mark = self._mark()
         if (self.expect(",")) and (c := self.star_target()):
             return c
@@ -12099,26 +12125,59 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_322(self) -> Optional[Any]:
-        # _tmp_322: star_targets '='
-        mark = self._mark()
-        if (star_targets := self.star_targets()) and (literal := self.expect("=")):
-            return [star_targets, literal]
-        self._reset(mark)
-        return None
-
-    @memoize
-    def _tmp_323(self) -> Optional[Any]:
-        # _tmp_323: star_targets '='
-        mark = self._mark()
-        if (star_targets := self.star_targets()) and (literal := self.expect("=")):
-            return [star_targets, literal]
-        self._reset(mark)
-        return None
-
-    @memoize
     def _tmp_324(self) -> Optional[Any]:
-        # _tmp_324: ')' | '**'
+        # _tmp_324: ',' star_target
+        mark = self._mark()
+        if (self.expect(",")) and (c := self.star_target()):
+            return c
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_325(self) -> Optional[Any]:
+        # _tmp_325: ','.(starred_expression | (assignment_expression | expression !':=') !'=')+ ',' kwargs
+        mark = self._mark()
+        if (
+            (_gather_339 := self._gather_339())
+            and (literal := self.expect(","))
+            and (kwargs := self.kwargs())
+        ):
+            return [_gather_339, literal, kwargs]
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_326(self) -> Optional[Any]:
+        # _tmp_326: starred_expression !'='
+        mark = self._mark()
+        if (starred_expression := self.starred_expression()) and (
+            self.negative_lookahead(self.expect, "=")
+        ):
+            return starred_expression
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_327(self) -> Optional[Any]:
+        # _tmp_327: star_targets '='
+        mark = self._mark()
+        if (star_targets := self.star_targets()) and (literal := self.expect("=")):
+            return [star_targets, literal]
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_328(self) -> Optional[Any]:
+        # _tmp_328: star_targets '='
+        mark = self._mark()
+        if (star_targets := self.star_targets()) and (literal := self.expect("=")):
+            return [star_targets, literal]
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_329(self) -> Optional[Any]:
+        # _tmp_329: ')' | '**'
         mark = self._mark()
         if literal := self.expect(")"):
             return literal
@@ -12129,8 +12188,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_325(self) -> Optional[Any]:
-        # _tmp_325: ':' | '**'
+    def _tmp_330(self) -> Optional[Any]:
+        # _tmp_330: ':' | '**'
         mark = self._mark()
         if literal := self.expect(":"):
             return literal
@@ -12141,8 +12200,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_326(self) -> Optional[Any]:
-        # _tmp_326: '.' | '...'
+    def _tmp_331(self) -> Optional[Any]:
+        # _tmp_331: '.' | '...'
         mark = self._mark()
         if literal := self.expect("."):
             return literal
@@ -12153,44 +12212,44 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_327(self) -> Optional[Any]:
-        # _tmp_327: expression ['as' star_target]
+    def _tmp_332(self) -> Optional[Any]:
+        # _tmp_332: expression ['as' star_target]
         mark = self._mark()
-        if (expression := self.expression()) and (opt := self._tmp_334(),):
+        if (expression := self.expression()) and (opt := self._tmp_341(),):
             return [expression, opt]
         self._reset(mark)
         return None
 
     @memoize
-    def _tmp_328(self) -> Optional[Any]:
-        # _tmp_328: expressions ['as' star_target]
+    def _tmp_333(self) -> Optional[Any]:
+        # _tmp_333: expressions ['as' star_target]
         mark = self._mark()
-        if (expressions := self.expressions()) and (opt := self._tmp_335(),):
+        if (expressions := self.expressions()) and (opt := self._tmp_342(),):
             return [expressions, opt]
         self._reset(mark)
         return None
 
     @memoize
-    def _tmp_329(self) -> Optional[Any]:
-        # _tmp_329: expression ['as' star_target]
+    def _tmp_334(self) -> Optional[Any]:
+        # _tmp_334: expression ['as' star_target]
         mark = self._mark()
-        if (expression := self.expression()) and (opt := self._tmp_336(),):
+        if (expression := self.expression()) and (opt := self._tmp_343(),):
             return [expression, opt]
         self._reset(mark)
         return None
 
     @memoize
-    def _tmp_330(self) -> Optional[Any]:
-        # _tmp_330: expressions ['as' star_target]
+    def _tmp_335(self) -> Optional[Any]:
+        # _tmp_335: expressions ['as' star_target]
         mark = self._mark()
-        if (expressions := self.expressions()) and (opt := self._tmp_337(),):
+        if (expressions := self.expressions()) and (opt := self._tmp_344(),):
             return [expressions, opt]
         self._reset(mark)
         return None
 
     @memoize
-    def _tmp_331(self) -> Optional[Any]:
-        # _tmp_331: 'as' NAME
+    def _tmp_336(self) -> Optional[Any]:
+        # _tmp_336: 'as' NAME
         mark = self._mark()
         if (literal := self.expect("as")) and (name := self.name()):
             return [literal, name]
@@ -12198,8 +12257,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_332(self) -> Optional[Any]:
-        # _tmp_332: fstring | STRING
+    def _tmp_337(self) -> Optional[Any]:
+        # _tmp_337: fstring | STRING
         mark = self._mark()
         if fstring := self.fstring():
             return fstring
@@ -12210,8 +12269,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_333(self) -> Optional[Any]:
-        # _tmp_333: assignment_expression | expression !':='
+    def _tmp_338(self) -> Optional[Any]:
+        # _tmp_338: assignment_expression | expression !':='
         mark = self._mark()
         if assignment_expression := self.assignment_expression():
             return assignment_expression
@@ -12224,8 +12283,30 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_334(self) -> Optional[Any]:
-        # _tmp_334: 'as' star_target
+    def _loop0_340(self) -> Optional[Any]:
+        # _loop0_340: ',' (starred_expression | (assignment_expression | expression !':=') !'=')
+        mark = self._mark()
+        children = []
+        while (self.expect(",")) and (elem := self._tmp_345()):
+            children.append(elem)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _gather_339(self) -> Optional[Any]:
+        # _gather_339: (starred_expression | (assignment_expression | expression !':=') !'=') _loop0_340
+        mark = self._mark()
+        if (elem := self._tmp_345()) is not None and (
+            seq := self._loop0_340()
+        ) is not None:
+            return [elem] + seq
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_341(self) -> Optional[Any]:
+        # _tmp_341: 'as' star_target
         mark = self._mark()
         if (literal := self.expect("as")) and (star_target := self.star_target()):
             return [literal, star_target]
@@ -12233,8 +12314,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_335(self) -> Optional[Any]:
-        # _tmp_335: 'as' star_target
+    def _tmp_342(self) -> Optional[Any]:
+        # _tmp_342: 'as' star_target
         mark = self._mark()
         if (literal := self.expect("as")) and (star_target := self.star_target()):
             return [literal, star_target]
@@ -12242,8 +12323,8 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_336(self) -> Optional[Any]:
-        # _tmp_336: 'as' star_target
+    def _tmp_343(self) -> Optional[Any]:
+        # _tmp_343: 'as' star_target
         mark = self._mark()
         if (literal := self.expect("as")) and (star_target := self.star_target()):
             return [literal, star_target]
@@ -12251,11 +12332,39 @@ class EnamlParser(Parser):
         return None
 
     @memoize
-    def _tmp_337(self) -> Optional[Any]:
-        # _tmp_337: 'as' star_target
+    def _tmp_344(self) -> Optional[Any]:
+        # _tmp_344: 'as' star_target
         mark = self._mark()
         if (literal := self.expect("as")) and (star_target := self.star_target()):
             return [literal, star_target]
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_345(self) -> Optional[Any]:
+        # _tmp_345: starred_expression | (assignment_expression | expression !':=') !'='
+        mark = self._mark()
+        if starred_expression := self.starred_expression():
+            return starred_expression
+        self._reset(mark)
+        if (_tmp_346 := self._tmp_346()) and (
+            self.negative_lookahead(self.expect, "=")
+        ):
+            return _tmp_346
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _tmp_346(self) -> Optional[Any]:
+        # _tmp_346: assignment_expression | expression !':='
+        mark = self._mark()
+        if assignment_expression := self.assignment_expression():
+            return assignment_expression
+        self._reset(mark)
+        if (expression := self.expression()) and (
+            self.negative_lookahead(self.expect, ":=")
+        ):
+            return expression
         self._reset(mark)
         return None
 

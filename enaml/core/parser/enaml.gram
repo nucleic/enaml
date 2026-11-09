@@ -21,12 +21,13 @@
 import ast
 import sys
 import itertools
-from typing import Any, List, NoReturn, Optional, Tuple, TypeVar, Union
+from typing import Any, List, NoReturn, Optional, Tuple, Union
 
 from enaml.core import enaml_ast
-from pegen.parser import Parser, logger, memoize, memoize_left_rec
+from pegen.parser import logger, memoize, memoize_left_rec
 
 from .base_enaml_parser import BaseEnamlParser as Parser
+from .base_python_parser import Target
 
 # Singleton ast nodes, created once for efficiency
 Load = ast.Load()
@@ -478,9 +479,9 @@ simple_stmts[list]:
 simple_stmt (memo):
     | assignment
     | &"type" type_alias
+    | &('import' | 'from' | "lazy") import_stmt
     | e=star_expressions { ast.Expr(value=e, LOCATIONS) }
     | &'return' return_stmt
-    | &('import' | 'from' | "lazy") import_stmt
     | &'raise' raise_stmt
     | 'pass' { ast.Pass(LOCATIONS) }
     | &'del' del_stmt
@@ -599,7 +600,7 @@ import_stmt[ast.Import]:
 
 import_name[ast.Import]: lazy="lazy"? 'import' a=dotted_as_names {
     ast.Import(names=a, is_lazy=1 if lazy else 0, LOCATIONS)
-    if sys.version_info >= (3, 15) else
+    if self.py_version >= (3, 15) else
     self.check_version((3, 15), "Lazy imports are", ast.Import(names=a, LOCATIONS))
     if lazy else
     ast.Import(names=a, LOCATIONS)
@@ -610,7 +611,7 @@ import_from[ast.ImportFrom]:
     | invalid_import_from
     | lazy="lazy"? 'from' a=('.' | '...')* b=dotted_name 'import' c=import_from_targets {
         ast.ImportFrom(module=b, names=c, level=self.extract_import_level(a), is_lazy=1 if lazy else 0, LOCATIONS)
-        if sys.version_info >= (3, 15) else
+        if self.py_version >= (3, 15) else
         self.check_version((3, 15), "Lazy imports are",
             ast.ImportFrom(module=b, names=c, level=self.extract_import_level(a), LOCATIONS))
         if lazy else
@@ -618,12 +619,12 @@ import_from[ast.ImportFrom]:
      }
     | lazy="lazy"? 'from' a=('.' | '...')+ 'import' b=import_from_targets {
         ast.ImportFrom(names=b, level=self.extract_import_level(a), is_lazy=1 if lazy else 0, LOCATIONS)
-        if sys.version_info >= (3, 15) else
+        if self.py_version >= (3, 15) else
         self.check_version((3, 15), "Lazy imports are",
             ast.ImportFrom(names=b, level=self.extract_import_level(a), LOCATIONS))
         if lazy else
         ast.ImportFrom(names=b, level=self.extract_import_level(a), LOCATIONS)
-        if sys.version_info >= (3, 9) else
+        if self.py_version >= (3, 9) else
         ast.ImportFrom(module=None, names=b, level=self.extract_import_level(a), LOCATIONS)
      }
 import_from_targets[List[ast.alias]]:
@@ -838,7 +839,7 @@ param_maybe_default[Tuple[ast.arg, Any]]:
     | a=param c=default? tc=TYPE_COMMENT? &')' { (self.set_arg_type_comment(a, tc), c) }
 param: a=NAME b=annotation? { ast.arg(arg=a.string, annotation=b, LOCATIONS) }
 param_star_annotation: a=NAME b=star_annotation {
-    ast.arg(arg=a.string, annotations=b, LOCATIONS)
+    ast.arg(arg=a.string, annotation=b, LOCATIONS)
  }
 annotation: ':' a=expression { a }
 star_annotation: ':' a=star_expression { a }
@@ -1850,10 +1851,10 @@ func_type_comment:
 
 # From here on, there are rules for invalid syntax with specialised error messages
 invalid_arguments[NoReturn]:
-    | a=args ',' '*' {
-        self.raise_syntax_error_known_location(
+    | ((','.(starred_expression | ( assignment_expression | expression !':=') !'=')+ ',' kwargs) | kwargs) a=',' ','.(starred_expression !'=')+ {
+        self.raise_syntax_error_starting_from(
             "iterable argument unpacking follows keyword argument unpacking",
-            a[1][-1] if a[1] else a[0][-1],
+            a,
         )
      }
     | a=expression b=for_if_clauses ',' [args | expression for_if_clauses] {
