@@ -1,0 +1,8 @@
+from enaml.widgets.api import Window, Container, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        PushButton: button:
+            event changed
+            clicked :: changed()

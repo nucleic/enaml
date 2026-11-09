@@ -1,0 +1,21 @@
+from enaml.widgets.api import Window, Container, Field
+
+
+enamldef Main(Window):
+    attr text_value = "ready"
+
+    func format_value(prefix):
+        return f"{prefix}:{text_value}"
+
+    func positional_only(a: int, b: str = "x", /, c: float = 1.25, *rest: int, flag: bool = False, **meta: object) -> tuple[int, str, tuple[int, ...], bool, dict[str, object]]:
+        return a, b, rest, flag, meta
+
+    func keyword_only(*, label: str, count: int = 1) -> tuple[str, int]:
+        return label, count
+
+    func result(value: int, label: str = "x") -> str:
+        return f"{label}:{value}"
+
+    Container:
+        Field:
+            text = format_value("demo")

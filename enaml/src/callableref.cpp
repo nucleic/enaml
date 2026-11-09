@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <cppy/cppy.h>
+#include "weakref_compat.h"
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
@@ -98,7 +99,12 @@ PyObject*
 CallableRef_call( CallableRef* self, PyObject* args, PyObject* kwargs )
 {
     cppy::ptr objrefptr( cppy::incref( self->objref ) );
-    cppy::ptr objptr( cppy::incref( PyWeakref_GET_OBJECT( objrefptr.get() ) ) );
+    PyObject* obj_raw = weakref_get_object( objrefptr.get() );
+    if( !obj_raw )
+    {
+        return nullptr;
+    }
+    cppy::ptr objptr( obj_raw );
     if( objptr.is_none() )
     {
         Py_RETURN_NONE;

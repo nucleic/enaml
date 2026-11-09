@@ -41,4 +41,5 @@ def test_task_dialog():
 def test_message_box():
     import enaml
     with enaml.imports():
-        import enaml.stdlib.message_box
+        from enaml.stdlib.message_box import MessageBox
+        assert MessageBox.__name__ == 'MessageBox'

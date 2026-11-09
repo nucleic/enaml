@@ -11,7 +11,37 @@ from contextlib import contextmanager
 import bytecode as bc
 from atom.api import Atom, Bool, Int, List, Str
 
-from ..compat import PY312, PY313, PY314
+try:
+    from bytecode.instr import CommonConstant
+except ImportError:  # pragma: no cover
+    CommonConstant = None
+
+from ..compat import PY312, PY313, PY314, PY315
+
+
+def _common_const(value):
+    """Return the matching common-constant enum for the given singleton."""
+    if CommonConstant is None:
+        return None
+    if value is None:
+        return CommonConstant.CONSTANT_NONE
+    if value is False:
+        return CommonConstant.CONSTANT_FALSE
+    if value is True:
+        return CommonConstant.CONSTANT_TRUE
+    if value == "":
+        return CommonConstant.CONSTANT_EMPTY_STR
+    if value == -1:
+        return CommonConstant.CONSTANT_MINUS_ONE
+    return None
+
+
+def _load_const_instr(value):
+    """Build the appropriate constant-load instruction for the active Python."""
+    common = _common_const(value) if PY315 else None
+    if common is not None:
+        return bc.Instr("LOAD_COMMON_CONSTANT", common)
+    return bc.Instr("LOAD_CONST", value)
 
 
 class _ReturnNoneIdentifier(ast.NodeVisitor):
@@ -153,7 +183,7 @@ class CodeGenerator(Atom):
     def load_const(self, const):
         """Load a const value onto the TOS."""
         self.code_ops.append(  # TOS
-            bc.Instr("LOAD_CONST", const),  # TOS -> value
+            _load_const_instr(const),  # TOS -> value
         )
 
     def load_attr(self, name):
@@ -218,6 +248,7 @@ class CodeGenerator(Atom):
         if (
             not PY314
             and PY312
+            and not PY315
             and self.code_ops
             and self.code_ops[-1].name == "LOAD_CONST"
         ):
@@ -428,7 +459,7 @@ class CodeGenerator(Atom):
             bc.Instr("JUMP_FORWARD", end_label),
             # Under Python 3.11 only the actual exception is pushed
             exc_label,  # TOS -> val
-            bc.Instr("LOAD_CONST", None),  # TOS -> val -> None
+            _load_const_instr(None),  # TOS -> val -> None
             bc.Instr("COPY", 2),  # TOS -> val -> None -> val
             bc.Instr("STORE_ATTR", "__traceback__"),  # TOS -> val
             bc.Instr("RAISE_VARARGS", 1),
@@ -477,11 +508,9 @@ class CodeGenerator(Atom):
                 if PY312
                 else bc.Instr("JUMP_ABSOLUTE", start_label),
                 jump_label,
+                bc.Instr("POP_BLOCK"),
+                end_label,
             ]
-        )
-        self.code_ops.extend(
-            bc.Instr("POP_BLOCK"),
-            end_label,
         )
         if PY312:
             self.code_ops.append(bc.Instr("END_FOR"))
@@ -505,8 +534,17 @@ class CodeGenerator(Atom):
                 (rc := (block[-1].name == "RETURN_CONST" and block[-1].arg is None))
                 or (
                     block[-1].name == "RETURN_VALUE"
-                    and block[-2].name == "LOAD_CONST"
-                    and block[-2].arg is None
+                    and len(block) >= 2
+                    and isinstance(block[-2], bc.Instr)
+                    and (
+                        (
+                            PY315
+                            and block[-2].name == "LOAD_COMMON_CONSTANT"
+                            and block[-2].arg == CommonConstant.CONSTANT_NONE
+                        )
+                        # The dual check on py315 is sub-optimal
+                        or (block[-2].name == "LOAD_CONST" and block[-2].arg is None)
+                    )
                     and block[-1].lineno not in _inspector.lines
                 )
             ):
@@ -537,6 +575,7 @@ class CodeGenerator(Atom):
         bc_code = bc.Bytecode.from_code(code)
         # Trim irrelevant RESUME opcode
         bc_code = bc_code[1:]
+        assert isinstance(bc_code[-1], bc.Instr)
         if bc_code[-1].name == "RETURN_CONST":
             bc_code[-1] = bc.Instr(
                 "LOAD_CONST", bc_code[-1].arg, location=bc_code[-1].location

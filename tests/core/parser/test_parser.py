@@ -1,10 +1,10 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2018-2024, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 import os
 import sys
 import ast
@@ -12,6 +12,10 @@ import enaml
 import pytest
 import traceback
 from textwrap import dedent
+
+
+def _is_stdlib_ast(node):
+    return isinstance(node, ast.AST) and type(node).__module__ == "ast"
 
 
 def validate_ast(py_node, enaml_node, dump_ast=False, offset=0):
@@ -22,35 +26,34 @@ def validate_ast(py_node, enaml_node, dump_ast=False, offset=0):
 
     """
     if dump_ast:
-        print('Python node:\n', ast.dump(py_node))
-        print('Enaml node:\n', ast.dump(enaml_node))
+        print("Python node:\n", ast.dump(py_node))
+        print("Enaml node:\n", ast.dump(enaml_node))
     assert type(py_node) == type(enaml_node)
-    if isinstance(py_node, ast.AST):
+    if _is_stdlib_ast(py_node):
         for name, field in ast.iter_fields(py_node):
-            if name == 'ctx':
+            if name == "ctx":
                 assert type(field) == type(getattr(enaml_node, name))
             else:
                 field2 = getattr(enaml_node, name, None)
-                print('    '*offset, 'Validating:', name)
-                validate_ast(field, field2, offset=offset+1)
+                print("    " * offset, "Validating:", name)
+                validate_ast(field, field2, offset=offset + 1)
     elif isinstance(py_node, list):
         if len(py_node) != len(enaml_node):
             return False
         for i, n1 in enumerate(py_node):
-            print('    '*offset, 'Validating', i+1, 'th element')
-            validate_ast(n1, enaml_node[i], offset=offset+1)
+            print("    " * offset, "Validating", i + 1, "th element")
+            validate_ast(n1, enaml_node[i], offset=offset + 1)
     else:
         assert py_node == enaml_node
 
 
 def test_syntax_error_traceback_correct_path(tmpdir):
-    """ Test that a syntax error retains the path to the file
+    """Test that a syntax error retains the path to the file"""
+    test_module_path = os.path.join(tmpdir.strpath, "view.enaml")
 
-    """
-    test_module_path = os.path.join(tmpdir.strpath, 'view.enaml')
-
-    with open(os.path.join(tmpdir.strpath, 'test_main.enaml'), 'w') as f:
-        f.write(dedent("""
+    with open(os.path.join(tmpdir.strpath, "test_main.enaml"), "w") as f:
+        f.write(
+            dedent("""
         from enaml.widgets.api import Window, Container, Label
         from view import CustomView
 
@@ -58,17 +61,20 @@ def test_syntax_error_traceback_correct_path(tmpdir):
             CustomView:
                 pass
 
-        """))
+        """)
+        )
 
-    with open(test_module_path, 'w') as f:
-        f.write(dedent("""
+    with open(test_module_path, "w") as f:
+        f.write(
+            dedent("""
         from enaml.widgets.api import Container, Label
 
         enamldef CustomLabel(Container):
             Label # : missing intentionally
                 text = "Hello world"
 
-        """))
+        """)
+        )
 
     try:
         sys.path.append(tmpdir.strpath)
@@ -79,7 +85,7 @@ def test_syntax_error_traceback_correct_path(tmpdir):
         tb = traceback.format_exc()
         print(tb)
         lines = tb.strip().split("\n")
-        line = '\n'.join(lines[-4:])
+        line = "\n".join(lines[-4:])
         expected = 'File "{}", line 5'.format(test_module_path)
         assert expected in line
     finally:
@@ -87,19 +93,19 @@ def test_syntax_error_traceback_correct_path(tmpdir):
 
 
 def test_syntax_error_traceback_show_line(tmpdir):
-    """ Test that a syntax error retains the path to the file
+    """Test that a syntax error retains the path to the file"""
+    test_module_path = os.path.join(tmpdir.strpath, "test_syntax.enaml")
 
-    """
-    test_module_path = os.path.join(tmpdir.strpath, 'test_syntax.enaml')
-
-    with open(test_module_path, 'w') as f:
-        f.write(dedent("""
+    with open(test_module_path, "w") as f:
+        f.write(
+            dedent("""
         from enaml.widgets.api import Container, Label
 
         enamldef CustomLabel(Container):
             Label # : missing intentionally
                 text = "Hello world"
-        """))
+        """)
+        )
 
     try:
         sys.path.append(tmpdir.strpath)
@@ -110,16 +116,16 @@ def test_syntax_error_traceback_show_line(tmpdir):
         tb = traceback.format_exc()
         print(tb)
         lines = tb.strip().split("\n")
-        line = '\n'.join(lines[-4:])
+        line = "\n".join(lines[-4:])
 
-        expected = 'Label # : missing intentionally'
+        expected = "Label # : missing intentionally"
         assert expected in line
     finally:
         sys.path.remove(tmpdir.strpath)
 
 
 INDENTATION_TESTS = {
-     "enamldef-block": (
+    "enamldef-block": (
         """
         from enaml.widgets.api import Window, Container, Label
 
@@ -161,7 +167,7 @@ INDENTATION_TESTS = {
                 Label:
                 text = 'Hello world'
         """,
-        "text = 'Hello world'"
+        "text = 'Hello world'",
     ),
     "if-block": (
         """
@@ -186,7 +192,7 @@ INDENTATION_TESTS = {
                 for i in range(4):
                 x += 1
         """,
-        "x += 1"
+        "x += 1",
     ),
     "try-block": (
         """
@@ -198,7 +204,7 @@ INDENTATION_TESTS = {
                 except Exception as e:
                     print(e)
         """,
-        "x = 1/0"
+        "x = 1/0",
     ),
     "except-block": (
         """
@@ -211,7 +217,7 @@ INDENTATION_TESTS = {
                 except Exception as e:
                 print(e)
         """,
-        "print(e)"
+        "print(e)",
     ),
     "finally-block": (
         """
@@ -225,7 +231,7 @@ INDENTATION_TESTS = {
                 x = 2
                 return 3
         """,
-        "x = 2"
+        "x = 2",
     ),
     "class": (
         """
@@ -240,14 +246,13 @@ INDENTATION_TESTS = {
     ),
 }
 
+
 @pytest.mark.parametrize("label", INDENTATION_TESTS.keys())
 def test_indent_error_traceback_show_line(tmpdir, label):
-    """ Test that a syntax error retains the path to the file
-
-    """
-    test_module_path = os.path.join(tmpdir.strpath, f'test_indent_{label}.enaml')
-    source, expected= INDENTATION_TESTS[label]
-    with open(test_module_path, 'w') as f:
+    """Test that a syntax error retains the path to the file"""
+    test_module_path = os.path.join(tmpdir.strpath, f"test_indent_{label}.enaml")
+    source, expected = INDENTATION_TESTS[label]
+    with open(test_module_path, "w") as f:
         f.write(dedent(source.lstrip("\n")))
     try:
         sys.path.append(tmpdir.strpath)
@@ -258,7 +263,7 @@ def test_indent_error_traceback_show_line(tmpdir, label):
         tb = traceback.format_exc()
         print(tb)
         lines = tb.strip().split("\n")
-        line = '\n'.join(lines[-4:])
+        line = "\n".join(lines[-4:])
         assert expected in line
     finally:
         sys.path.remove(tmpdir.strpath)

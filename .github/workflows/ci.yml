@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.11', '3.12', '3.13', '3.14-dev']
+        python-version: ['3.11', '3.12', '3.13', '3.14', '3.15']
         qt-version: [5, 6]
         qt-binding: [pyqt]
         exclude:
@@ -33,7 +33,9 @@ jobs:
             qt-version: 5
           - python-version: '3.13'
             qt-version: 5
-          - python-version: '3.14-dev'
+          - python-version: '3.14'
+            qt-version: 5
+          - python-version: '3.15'
             qt-version: 5
       fail-fast: false
     steps:

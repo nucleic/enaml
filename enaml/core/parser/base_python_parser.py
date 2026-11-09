@@ -1,4 +1,4 @@
-# --------------------------------------------------------------------------------------
+8# --------------------------------------------------------------------------------------
 # Copyright (c) 2021-2025, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
@@ -22,8 +22,26 @@ from typing import (
     Union,
 )
 
-from pegen.parser import Parser
+from pegen.parser import (
+    FSTRING_END,
+    FSTRING_START,
+    Parser,
+    memoize,
+)
 from pegen.tokenizer import Tokenizer
+
+try:
+    from token import (
+        TSTRING_END,
+        TSTRING_MIDDLE,
+        TSTRING_START,
+    )
+except ImportError:
+    # On Python version on which t-string are not supported 
+    # use unmatchable token values
+    TSTRING_END = -1001
+    TSTRING_MIDDLE = -1002
+    TSTRING_START = -1003
 
 # Singleton ast nodes, created once for efficiency
 Load = ast.Load()
@@ -60,6 +78,10 @@ EXPR_NAME_MAPPING = {
     ast.IfExp: "conditional expression",
     ast.NamedExpr: "named expression",
 }
+if hasattr(ast, "TemplateStr"):
+    EXPR_NAME_MAPPING[ast.TemplateStr] = "t-string expression"
+if hasattr(ast, "Interpolation"):
+    EXPR_NAME_MAPPING[ast.Interpolation] = "t-string expression"
 
 
 class Target(enum.Enum):
@@ -85,6 +107,65 @@ class BasePythonParser(Parser):
         self.py_version = (
             min(py_version, sys.version_info) if py_version else sys.version_info
         )
+        self._fstring_raw_stack: List[bool] = []
+        self._tstring_raw_stack: List[bool] = []
+
+    @memoize
+    def fstring_start(self) -> Optional[tokenize.TokenInfo]:
+        tok = self._tokenizer.peek()
+        if tok.type == FSTRING_START:
+            tok = self._tokenizer.getnext()
+            self._fstring_raw_stack.append("r" in tok.string.lower())
+            return tok
+        return None
+
+    @memoize
+    def tstring_start(self) -> Optional[tokenize.TokenInfo]:
+        tok = self._tokenizer.peek()
+        if tok.type == TSTRING_START:
+            tok = self._tokenizer.getnext()
+            self._tstring_raw_stack.append("r" in tok.string.lower())
+            return tok
+        return None
+
+    @memoize
+    def tstring_middle(self) -> Optional[tokenize.TokenInfo]:
+        tok = self._tokenizer.peek()
+        if tok.type == TSTRING_MIDDLE:
+            return self._tokenizer.getnext()
+        return None
+
+    @memoize
+    def TSTRING_START(self) -> Optional[tokenize.TokenInfo]:
+        return self.tstring_start()
+
+    @memoize
+    def TSTRING_MIDDLE(self) -> Optional[tokenize.TokenInfo]:
+        return self.tstring_middle()
+
+    @memoize
+    def TSTRING_END(self) -> Optional[tokenize.TokenInfo]:
+        return self.tstring_end()
+
+    @memoize
+    def fstring_end(self) -> Optional[tokenize.TokenInfo]:
+        tok = self._tokenizer.peek()
+        if tok.type == FSTRING_END:
+            tok = self._tokenizer.getnext()
+            if self._fstring_raw_stack:
+                self._fstring_raw_stack.pop()
+            return tok
+        return None
+
+    @memoize
+    def tstring_end(self) -> Optional[tokenize.TokenInfo]:
+        tok = self._tokenizer.peek()
+        if tok.type == TSTRING_END:
+            tok = self._tokenizer.getnext()
+            if self._tstring_raw_stack:
+                self._tstring_raw_stack.pop()
+            return tok
+        return None
 
     def parse(self, rule: str, call_invalid_rules: bool = False) -> Optional[ast.AST]:
         self.call_invalid_rules = call_invalid_rules
@@ -134,6 +215,269 @@ class BasePythonParser(Parser):
             last_token.end[1] + 1,
         )
         raise IndentationError(msg, args)
+
+    def _advance_location(self, start: tuple[int, int], text: str) -> tuple[int, int]:
+        line, col = start
+        for ch in text:
+            if ch in ("\n", "\r"):
+                line += 1
+                col = 0
+            else:
+                col += 1
+        return line, col
+
+    def _source_offset(self, start: tuple[int, int], end: tuple[int, int]) -> int:
+        line, col = start
+        offset = 0
+        while line < end[0]:
+            offset += len(self._tokenizer.get_lines([line])[0]) - col
+            line += 1
+            col = 0
+        offset += end[1] - col
+        return offset
+
+    def _is_raw_fstring(self) -> bool:
+        return bool(self._fstring_raw_stack) and self._fstring_raw_stack[-1]
+
+    def _is_raw_tstring(self) -> bool:
+        return bool(self._tstring_raw_stack) and self._tstring_raw_stack[-1]
+
+    def _decode_fstring_literal(self, text: str, *, raw: Optional[bool] = None) -> str:
+        """Decode escape sequences in a literal f-string segment unless the f-string is raw."""
+        if raw is None:
+            raw = self._is_raw_fstring()
+        if raw:
+            return text
+        return text.encode("utf-8").decode("unicode_escape")
+
+    def _decode_tstring_literal(self, text: str, *, raw: Optional[bool] = None) -> str:
+        """Decode escape sequences in a literal t-string segment unless the t-string is raw."""
+        if raw is None:
+            raw = self._is_raw_tstring()
+        if raw:
+            return text
+        return text.encode("utf-8").decode("unicode_escape")
+
+    def fstring_debug_prefix(
+        self,
+        lbrace: tokenize.TokenInfo,
+        debug_expr: tokenize.TokenInfo,
+        rbrace: tokenize.TokenInfo,
+    ) -> str:
+        """Reconstruct the literal prefix emitted before a debug f-string value."""
+        start = lbrace.end
+        stop = rbrace.start
+        lines = self._tokenizer.get_lines(list(range(start[0], stop[0] + 1)))
+
+        if start[0] == stop[0]:
+            inside = lines[0][start[1] : stop[1]]
+        else:
+            pieces = []
+            for i, line_no in enumerate(range(start[0], stop[0] + 1)):
+                line = lines[i]
+                if line_no == start[0]:
+                    pieces.append(line[start[1] :])
+                elif line_no == stop[0]:
+                    pieces.append(line[: stop[1]])
+                else:
+                    pieces.append(line)
+            inside = "".join(pieces)
+
+        eq_offset = self._source_offset(lbrace.end, debug_expr.start)
+        for idx in range(eq_offset + 1, len(inside)):
+            if inside[idx] in ("!", ":"):
+                prefix = inside[:idx]
+                return self._decode_fstring_literal(prefix, raw=self._is_raw_fstring())
+        return self._decode_fstring_literal(inside, raw=self._is_raw_fstring())
+
+    def fstring_debug_value(
+        self,
+        value: ast.AST,
+        lbrace: tokenize.TokenInfo,
+        debug_expr: Optional[tokenize.TokenInfo],
+        conversion: Optional[int],
+        format_spec: Optional[ast.AST],
+        rbrace: tokenize.TokenInfo,
+    ) -> ast.AST:
+        """Build the AST for a debug f-string replacement field."""
+        if debug_expr is None:
+            return ast.FormattedValue(
+                value=value,
+                conversion=(conversion if conversion is not None else -1),
+                format_spec=format_spec,
+                lineno=lbrace.start[0],
+                col_offset=lbrace.start[1],
+                end_lineno=rbrace.end[0],
+                end_col_offset=rbrace.end[1],
+            )
+
+        prefix = self.fstring_debug_prefix(lbrace, debug_expr, rbrace)
+        prefix_start = lbrace.end
+        prefix_end = self._advance_location(prefix_start, prefix)
+        formatted = ast.FormattedValue(
+            value=value,
+            conversion=(
+                conversion
+                if conversion is not None
+                else (ord("r") if format_spec is None else -1)
+            ),
+            format_spec=format_spec,
+            lineno=lbrace.start[0],
+            col_offset=lbrace.start[1],
+            end_lineno=rbrace.end[0],
+            end_col_offset=rbrace.end[1],
+        )
+        return ast.JoinedStr(
+            values=[
+                ast.Constant(
+                    value=prefix,
+                    lineno=prefix_start[0],
+                    col_offset=prefix_start[1],
+                    end_lineno=prefix_end[0],
+                    end_col_offset=prefix_end[1],
+                ),
+                formatted,
+            ],
+            lineno=lbrace.start[0],
+            col_offset=lbrace.start[1],
+            end_lineno=rbrace.end[0],
+            end_col_offset=rbrace.end[1],
+        )
+
+    def tstring_debug_prefix(
+        self,
+        lbrace: tokenize.TokenInfo,
+        debug_expr: tokenize.TokenInfo,
+        rbrace: tokenize.TokenInfo,
+    ) -> str:
+        """Reconstruct the literal prefix emitted before a debug t-string value."""
+        start = lbrace.end
+        stop = rbrace.start
+        lines = self._tokenizer.get_lines(list(range(start[0], stop[0] + 1)))
+
+        if start[0] == stop[0]:
+            inside = lines[0][start[1] : stop[1]]
+        else:
+            pieces = []
+            for i, line_no in enumerate(range(start[0], stop[0] + 1)):
+                line = lines[i]
+                if line_no == start[0]:
+                    pieces.append(line[start[1] :])
+                elif line_no == stop[0]:
+                    pieces.append(line[: stop[1]])
+                else:
+                    pieces.append(line)
+            inside = "".join(pieces)
+
+        eq_offset = self._source_offset(lbrace.end, debug_expr.start)
+        for idx in range(eq_offset + 1, len(inside)):
+            if inside[idx] in ("!", ":"):
+                prefix = inside[:idx]
+                return self._decode_tstring_literal(prefix, raw=self._is_raw_tstring())
+        return self._decode_tstring_literal(inside, raw=self._is_raw_tstring())
+
+    def _tstring_expression_text(
+        self,
+        lbrace: tokenize.TokenInfo,
+        rbrace: tokenize.TokenInfo,
+        *,
+        debug_expr: Optional[tokenize.TokenInfo] = None,
+    ) -> str:
+        start = lbrace.end
+        stop = rbrace.start
+        lines = self._tokenizer.get_lines(list(range(start[0], stop[0] + 1)))
+
+        if start[0] == stop[0]:
+            inside = lines[0][start[1] : stop[1]]
+        else:
+            pieces = []
+            for i, line_no in enumerate(range(start[0], stop[0] + 1)):
+                line = lines[i]
+                if line_no == start[0]:
+                    pieces.append(line[start[1] :])
+                elif line_no == stop[0]:
+                    pieces.append(line[: stop[1]])
+                else:
+                    pieces.append(line)
+            inside = "".join(pieces)
+
+        if debug_expr is not None:
+            expr_end = self._source_offset(lbrace.end, debug_expr.start)
+            return inside[:expr_end].rstrip()
+
+        depth = 0
+        for i, ch in enumerate(inside):
+            if ch in "([{":
+                depth += 1
+            elif ch in ")]}":
+                if depth:
+                    depth -= 1
+            elif depth == 0:
+                if ch in ("!", ":"):
+                    if ch == "!" and i + 1 < len(inside) and inside[i + 1] == "=":
+                        continue
+                    return inside[:i].rstrip()
+                if ch == "=" and (i + 1 >= len(inside) or inside[i + 1] != "="):
+                    return inside[:i].rstrip()
+        return inside.rstrip()
+
+    def tstring_debug_value(
+        self,
+        value: ast.AST,
+        lbrace: tokenize.TokenInfo,
+        debug_expr: Optional[tokenize.TokenInfo],
+        conversion: Optional[int],
+        format_spec: Optional[ast.AST],
+        rbrace: tokenize.TokenInfo,
+    ) -> ast.AST:
+        """Build the AST for a debug t-string replacement field."""
+        expr_text = self._tstring_expression_text(lbrace, rbrace, debug_expr=debug_expr)
+
+        if debug_expr is None:
+            return ast.Interpolation(
+                value=value,
+                str=expr_text,
+                conversion=(conversion if conversion is not None else -1),
+                format_spec=format_spec,
+                lineno=lbrace.start[0],
+                col_offset=lbrace.start[1],
+                end_lineno=rbrace.end[0],
+                end_col_offset=rbrace.end[1],
+            )
+
+        prefix = self.tstring_debug_prefix(lbrace, debug_expr, rbrace)
+        prefix_start = lbrace.end
+        prefix_end = self._advance_location(prefix_start, prefix)
+        formatted = ast.Interpolation(
+            value=value,
+            str=expr_text,
+            conversion=(
+                conversion
+                if conversion is not None
+                else (ord("r") if format_spec is None else -1)
+            ),
+            format_spec=format_spec,
+            lineno=lbrace.start[0],
+            col_offset=lbrace.start[1],
+            end_lineno=rbrace.end[0],
+            end_col_offset=rbrace.end[1],
+        )
+        return ast.TemplateStr(
+            values=[
+                ast.Constant(
+                    value=prefix,
+                    lineno=prefix_start[0],
+                    col_offset=prefix_start[1],
+                    end_lineno=prefix_end[0],
+                    end_col_offset=prefix_end[1],
+                ),
+                formatted,
+            ],
+            lineno=lbrace.start[0],
+            col_offset=lbrace.start[1],
+            end_lineno=rbrace.end[0],
+            end_col_offset=rbrace.end[1],
+        )
 
     def get_expr_name(self, node) -> str:
         """Get a descriptive name for an expression."""
@@ -220,8 +564,8 @@ class BasePythonParser(Parser):
 
     def check_fstring_conversion(
         self, mark: tokenize.TokenInfo, name: tokenize.TokenInfo
-    ) -> tokenize.TokenInfo:
-        if mark.lineno != name.lineno or mark.col_offset != name.col_offset:
+    ) -> int:
+        if mark.end != name.start:
             self.raise_syntax_error_known_range(
                 "f-string: conversion type must come right after the exclamanation mark",
                 mark,
@@ -235,7 +579,7 @@ class BasePythonParser(Parser):
                 name,
             )
 
-        return name
+        return ord(s)
 
     def _concat_strings_in_constant(self, parts) -> ast.Constant:
         s = ast.literal_eval(parts[0].string)
@@ -252,26 +596,54 @@ class BasePythonParser(Parser):
             args["kind"] = "u"
         return ast.Constant(**args)
 
+    def _flatten_joinedstr_values(self, values):
+        """Unwrap nested JoinedStr/TemplateStr nodes while preserving value order.
+
+        Empty Constant nodes are filtered out.
+
+        """
+        flattened = []
+        template_type = getattr(ast, "TemplateStr", None)
+        for value in values:
+            if isinstance(value, ast.JoinedStr) or (
+                template_type is not None and isinstance(value, template_type)
+            ):
+                flattened.extend(self._flatten_joinedstr_values(value.values))
+            elif isinstance(value, ast.Constant) and value.value == "":
+                continue
+            else:
+                flattened.append(value)
+        return flattened
+
     def concatenate_strings(self, parts):
-        """Concatenate multiple tokens and ast.JoinedStr"""
-        # Get proper start and stop
+        """Concatenate multiple tokens and template-like literal AST nodes."""
         start = end = None
-        if isinstance(parts[0], ast.JoinedStr):
+        template_type = getattr(ast, "TemplateStr", None)
+        if isinstance(parts[0], ast.JoinedStr) or (
+            template_type is not None and isinstance(parts[0], template_type)
+        ):
             start = parts[0].lineno, parts[0].col_offset
-        if isinstance(parts[-1], ast.JoinedStr):
+        if isinstance(parts[-1], ast.JoinedStr) or (
+            template_type is not None and isinstance(parts[-1], template_type)
+        ):
             end = parts[-1].end_lineno, parts[-1].end_col_offset
 
-        # Combine the different parts
         seen_joined = False
+        seen_template = False
         values = []
         ss = []
         for p in parts:
-            if isinstance(p, ast.JoinedStr):
+            if isinstance(p, ast.JoinedStr) or (
+                template_type is not None and isinstance(p, template_type)
+            ):
                 seen_joined = True
+                seen_template = seen_template or (
+                    template_type is not None and isinstance(p, template_type)
+                )
                 if ss:
                     values.append(self._concat_strings_in_constant(ss))
                     ss.clear()
-                values.extend(p.values)
+                values.extend(self._flatten_joinedstr_values(p.values))
             else:
                 ss.append(p)
 
@@ -293,14 +665,19 @@ class BasePythonParser(Parser):
 
         if not seen_joined and len(values) == 1 and isinstance(values[0], ast.Constant):
             return values[0]
-        else:
-            return ast.JoinedStr(
-                values=consolidated,
-                lineno=start[0] if start else values[0].lineno,
-                col_offset=start[1] if start else values[0].col_offset,
-                end_lineno=end[0] if end else values[-1].end_lineno,
-                end_col_offset=end[1] if end else values[-1].end_col_offset,
-            )
+
+        cls = (
+            ast.TemplateStr
+            if seen_template and hasattr(ast, "TemplateStr")
+            else ast.JoinedStr
+        )
+        return cls(
+            values=consolidated,
+            lineno=start[0] if start else values[0].lineno,
+            col_offset=start[1] if start else values[0].col_offset,
+            end_lineno=end[0] if end else values[-1].end_lineno,
+            end_col_offset=end[1] if end else values[-1].end_col_offset,
+        )
 
     def generate_ast_for_string(self, tokens):
         """Generate AST nodes for strings."""
