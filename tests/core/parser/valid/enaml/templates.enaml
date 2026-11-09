@@ -1,0 +1,16 @@
+from enaml.widgets.api import Window, Container, Field, PushButton
+
+
+template LabelPanel(Content):
+    const panel_label = "Apply"
+    Container:
+        Content: content:
+            pass
+        PushButton: action:
+            text = "Apply"
+
+
+enamldef Main(Window):
+    Container:
+        LabelPanel(Field): panel:
+            panel.content.text = "hello"

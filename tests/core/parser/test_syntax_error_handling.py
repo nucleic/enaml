@@ -60,6 +60,9 @@ def test_version_sensitive_invalid_syntax_is_rejected(source, message):
     parse_invalid_syntax(source, message)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 15), reason="Lazy imports are only supported in Python 3.15+"
+)
 @pytest.mark.parametrize(
     "source, message",
     [

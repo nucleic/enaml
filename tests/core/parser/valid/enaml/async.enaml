@@ -1,0 +1,26 @@
+from enaml.widgets.api import Window, Container, Field
+import asyncio
+
+
+enamldef Main(Window):
+    attr value = "idle"
+
+    async func refresh():
+        await asyncio.sleep(0)
+        return value.upper()
+
+    async func fetch(path: str, /, *, timeout: float = 1.5, **extra: object) -> tuple[str, float, dict[str, object]]:
+        await asyncio.sleep(0)
+        return path, timeout, extra
+
+    async func combine(name: str, count: int = 1, *, suffix: str = "!", **meta: object) -> tuple[str, int, dict[str, object]]:
+        await asyncio.sleep(0)
+        return f"{name}{suffix}", count, meta
+
+    async func with_annotations(a: int, b: str = "x", /, *, c: float = 1.25, **kw: object) -> tuple[int, str, float, dict[str, object]]:
+        await asyncio.sleep(0)
+        return a, b, c, kw
+
+    Container:
+        Field:
+            text = value
