@@ -14,6 +14,10 @@ import traceback
 from textwrap import dedent
 
 
+def _is_stdlib_ast(node):
+    return isinstance(node, ast.AST) and type(node).__module__ == "ast"
+
+
 def validate_ast(py_node, enaml_node, dump_ast=False, offset=0):
     """Validate each node of an ast against another ast.
 
@@ -25,7 +29,7 @@ def validate_ast(py_node, enaml_node, dump_ast=False, offset=0):
         print("Python node:\n", ast.dump(py_node))
         print("Enaml node:\n", ast.dump(enaml_node))
     assert type(py_node) == type(enaml_node)
-    if isinstance(py_node, ast.AST):
+    if _is_stdlib_ast(py_node):
         for name, field in ast.iter_fields(py_node):
             if name == "ctx":
                 assert type(field) == type(getattr(enaml_node, name))

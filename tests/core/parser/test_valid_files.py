@@ -10,6 +10,11 @@ VALID_DIR = Path(__file__).resolve().parent / "valid" / "enaml"
 PYTHON_VALID_DIR = Path(__file__).resolve().parent / "valid" / "python"
 
 
+def _is_stdlib_ast(node):
+    """Return True for stdlib AST nodes, excluding Enaml wrapper nodes."""
+    return isinstance(node, ast.AST) and type(node).__module__ == "ast"
+
+
 def _dump_node(node, *, seen=None, include_attributes=True):
     """Return a stable structural representation for AST-like objects."""
     if seen is None:
@@ -17,7 +22,7 @@ def _dump_node(node, *, seen=None, include_attributes=True):
 
     if node is None:
         return "None"
-    if isinstance(node, ast.AST):
+    if _is_stdlib_ast(node):
         return ast.dump(node, include_attributes=include_attributes)
     if isinstance(node, list):
         return (
@@ -65,7 +70,7 @@ def _unwrap_python_ast(node):
     seen = set()
     while node is not None and id(node) not in seen:
         seen.add(id(node))
-        if isinstance(node, ast.AST):
+        if _is_stdlib_ast(node):
             return node
         if hasattr(node, "ast") and getattr(node, "ast") is not None:
             node = getattr(node, "ast")
@@ -105,7 +110,12 @@ def _iter_enaml_fixtures():
 
 
 def _should_skip_python_fixture(path):
-    return sys.version_info < (3, 14) and "tstring" in path.stem.lower()
+    stem = path.stem.lower()
+    if sys.version_info < (3, 14) and "tstring" in stem:
+        return True
+    if sys.version_info < (3, 15) and "lazy_import" in stem:
+        return True
+    return False
 
 
 @pytest.mark.parametrize("path", _iter_python_snippets())

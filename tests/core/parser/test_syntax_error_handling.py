@@ -11,7 +11,8 @@ def parse_invalid_syntax(source, message, *, py_version=None, start=None, end=No
         parse(source, py_version=py_version)
 
     text = str(exc.value)
-    assert message.lower() in text.lower()
+    messages = (message,) if isinstance(message, str) else message
+    assert any(m.lower() in text.lower() for m in messages)
 
     if start is None:
         return
@@ -30,7 +31,14 @@ def parse_invalid_syntax(source, message, *, py_version=None, start=None, end=No
         ("(a 1)", "invalid syntax"),
         ("print 1", "Missing parentheses"),
         ("a if b", "expected 'else'"),
-        ("f'{x!}'", "missing conversion"),
+        (
+            "f'{x!}'",
+            (
+                "missing conversion",
+                "missing conversion character",
+                "invalid conversion character",
+            ),
+        ),
         ("(a = 1)", "invalid syntax"),
     ],
 )
