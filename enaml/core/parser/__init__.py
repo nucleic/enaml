@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright (c) 2013-2025, Nucleic Development Team.
+# Copyright (c) 2013-2026, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,7 +8,7 @@
 import io
 import os
 import tokenize
-from typing import Callable, Iterator, Optional, TextIO, Union
+from typing import Callable, Iterator, Optional, TextIO
 
 from pegen.tokenizer import Tokenizer
 
@@ -31,7 +31,7 @@ def _parse(
         else tokenize.generate_tokens(stream.readline)
     )
     tokenizer = Tokenizer(
-        tok_stream, verbose=verbose, path=path if os.path.isfile(path) else None
+        tok_stream, verbose=verbose, path=path if os.path.isfile(path) else ""
     )
     parser = EnamlParser(
         tokenizer,
@@ -42,7 +42,6 @@ def _parse(
     return parser.parse("start")
 
 
-# XXX document
 # filename is named so for backward compatibility
 def parse(
     source: str,
@@ -58,24 +57,7 @@ def parse(
     This function is meant for in memory sources and one should prefer parse_file
     for sources existing in a file.
 
-    Parameters
-    ----------
-
-
     """
-    try:
-        return _parse(
-            io.StringIO(source), filename, py_version, token_stream_factory, verbose
-        )
-    except tokenize.TokenError as err:
-        message = str(err)
-        details = err.args[1] if len(err.args) > 1 else (1, 0)
-        line_no, col = details
-        lines = source.splitlines()
-        line = lines[line_no - 1] if 0 < line_no <= len(lines) else ""
-        if "line continuation" in message.lower() or "backslash" in message.lower():
-            message = "f-string: bare backslash not allowed"
-        raise SyntaxError(
-            message,
-            (filename, line_no, col + 1, line, line_no, col + 1),
-        ) from None
+    return _parse(
+        io.StringIO(source), filename, py_version, token_stream_factory, verbose
+    )
