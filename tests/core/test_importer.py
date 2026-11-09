@@ -5,6 +5,7 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.compat import PY315
 import importlib
 import os
 import sys
@@ -83,7 +84,9 @@ def test_import_and_cache_generation(enaml_module):
     mod = sys.modules[name]
     assert mod.__name__ == name
     assert mod.__file__ == os.path.join(folder, name + ".enaml")
-    assert os.path.join(folder, "__enamlcache__") in mod.__cached__
+    if not PY315:
+        assert mod.__cached__
+        assert os.path.join(folder, "__enamlcache__") in mod.__cached__
     assert isinstance(mod.__loader__, EnamlImporter)
     assert isinstance(mod.__spec__, ModuleSpec)
 

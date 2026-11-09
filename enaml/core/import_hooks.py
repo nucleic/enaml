@@ -10,7 +10,7 @@ import os
 import io
 import struct
 import sys
-from abc import ABCMeta, abstractmethod, abstractclassmethod
+from abc import ABCMeta, abstractmethod
 from collections import defaultdict, namedtuple
 from zipfile import ZipFile
 

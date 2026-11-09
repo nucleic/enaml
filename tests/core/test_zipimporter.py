@@ -5,6 +5,7 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.compat import PY315
 import os
 import sys
 import enaml
@@ -112,7 +113,8 @@ def test_zipimport_from_module(enaml_qtbot, enaml_sleep, zip_library):
 
     assert buttons.__name__ == "buttons"
     assert buttons.__file__
-    assert buttons.__cached__
+    if not PY315:
+        assert buttons.__cached__
     assert isinstance(buttons.__loader__, EnamlImporter)
     assert isinstance(buttons.__spec__, ModuleSpec)
 
