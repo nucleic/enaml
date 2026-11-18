@@ -6,3 +6,8 @@ enamldef Main(Window):
         PushButton: button:
             event changed
             clicked :: changed()
+
+
+
+enamldef Main(Window):
+    event changed: int = update

@@ -30,3 +30,9 @@ enamldef Main(Window):
 enamldef Main(Window):
     focus_gained => ():
         pass
+
+
+
+enamldef Main(Window):
+    calculate => (x: int) -> int:
+        return x

@@ -47,3 +47,8 @@ template LabelPanel(a: int, b = "x", *rest): pass
 
 
 
+template Outer():
+    Inner(): pass
+
+
+

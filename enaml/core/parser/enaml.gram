@@ -461,11 +461,8 @@ statements[list]: a=statement+ { list(itertools.chain.from_iterable(a)) }
 
 statement[list]: a=compound_stmt { [a] } | a=simple_stmts { a }
 
-statement_newline[list]:
-    | a=compound_stmt NEWLINE { [a] }
-    | simple_stmts
-    | NEWLINE { [ast.Pass(LOCATIONS)] }
-    | ENDMARKER { None }
+# The upstream interactive entry point is not exposed by Enaml, so its
+# statement_newline helper is intentionally not ported from python.gram.
 
 simple_stmts[list]:
     | a=simple_stmt !';' NEWLINE { [a] } # Not needed, there for speedup
@@ -1842,15 +1839,8 @@ del_t_atom:
 # TYPING ELEMENTS
 # ---------------
 
-# type_expressions allow */** but ignore them
-type_expressions[list]:
-    | a=','.expression+ ',' '*' b=expression ',' '**' c=expression { a + [b, c] }
-    | a=','.expression+ ',' '*' b=expression { a + [b] }
-    | a=','.expression+ ',' '**' b=expression { a + [b] }
-    | '*' a=expression ',' '**' b=expression { [a, b] }
-    | '*' a=expression { [a] }
-    | '**' a=expression { [a] }
-    | a=','.expression+ {a}
+# The upstream func_type entry point is not exposed by Enaml, so its
+# type_expressions helper is intentionally not ported from python.gram.
 
 func_type_comment:
     | NEWLINE t=TYPE_COMMENT &(NEWLINE INDENT) { t.string }  # Must be followed by indented block
