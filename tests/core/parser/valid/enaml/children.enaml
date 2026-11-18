@@ -1,0 +1,26 @@
+enamldef Main(Window):
+    Container:
+        PushButton: push: pass
+
+
+
+enamldef Main(Window):
+    Container:
+        alias pb: push
+        PushButton: push:
+            pass
+
+
+
+enamldef Main(Window):
+    Container:
+        alias pb: push.clicked
+        PushButton: push:
+            pass
+
+
+
+enamldef Main(Window):
+    Container:
+        focus_gained => ():
+            pass

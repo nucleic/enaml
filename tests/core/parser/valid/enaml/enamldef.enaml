@@ -1,0 +1,21 @@
+enamldef Main(Window): pass
+
+
+
+enamldef Main(Window):
+    """A docstring in the body."""
+    attr value = "demo"
+
+    Container:
+        Field:
+            text = value
+
+
+
+enamldef Main(Window):
+    attr count: int
+
+
+
+enamldef Main(Window):
+    attr value: int = 1

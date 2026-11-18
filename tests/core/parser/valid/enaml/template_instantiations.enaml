@@ -1,0 +1,33 @@
+enamldef Main(Window):
+    LabelPanel(Field): child: child.field = expr
+
+
+
+enamldef Main(Window):
+    LabelPanel(Field): panel:
+        panel.content.text = "hello"
+
+
+
+enamldef Main(Window):
+    LabelPanel(*test): panel:
+        pass
+
+
+
+enamldef Main(Window):
+    LabelPanel((t for t in tests)): panel:
+        pass
+
+
+
+
+enamldef Main(Window):
+    LabelPanel(1,2,3): panel1:
+        pass
+
+
+
+enamldef Main(Window):
+    Item(1, *items): first, *others:
+        first.value = 1

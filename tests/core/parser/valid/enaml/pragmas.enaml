@@ -1,0 +1,16 @@
+pragma debug
+pragma runner("fast", label)
+enamldef Main(Window):
+    attr value = "demo"
+
+
+
+pragma first
+pragma second("x", 2)
+template Item(): pass
+
+
+
+enamldef Main(Window):
+    pragma marker(label)
+    Item(): pass

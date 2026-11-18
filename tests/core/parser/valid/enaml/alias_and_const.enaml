@@ -1,0 +1,7 @@
+enamldef Main(Window):
+    alias name: ns.value
+
+
+
+enamldef Main(Window):
+    const label: str = "demo"

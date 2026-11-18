@@ -1,0 +1,65 @@
+enamldef Main(Window):
+    a = 1
+
+
+
+enamldef Main(Window): main:
+    attr model
+    a = model.a
+
+
+
+enamldef Main(Window): main:
+    attr model
+    main.a = model.a
+
+
+
+enamldef Main(Window):
+    attr model
+    a << model.a
+
+
+
+enamldef Main(Window): main:
+    attr model
+    main.a << model.a
+
+
+
+enamldef Main(Window): main:
+    attr model
+    main.a <<
+        print("update")
+        return model.a == 1
+
+
+
+enamldef Main(Window):
+    attr model
+    a >> model.a
+
+
+
+enamldef Main(Window): main:
+    attr model
+    main.a >> model.a
+
+
+
+enamldef Main(Window):
+    attr model
+    a := model.a
+
+
+
+enamldef Main(Window): main:
+    attr model
+    main.a := model.a
+
+
+
+enamldef Main(Window):
+    attr model
+    a ::
+        pass

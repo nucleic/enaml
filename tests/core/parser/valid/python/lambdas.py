@@ -8,6 +8,8 @@ lambda x=1: x
 
 lambda x, y: x + y
 
+lambda x, y=1, z=2: x + y + z
+
 lambda x, /: x
 
 lambda x, y=1, /: x + y

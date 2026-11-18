@@ -82,6 +82,14 @@ def f(*args):
     pass
 
 
+def f(*args: *Ts, option=1):
+    pass
+
+
+def f(*args: *Ts):
+    pass
+
+
 def f(**kwargs):
     pass
 

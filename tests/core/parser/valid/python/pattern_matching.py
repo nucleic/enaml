@@ -963,6 +963,16 @@ match x:
         y = 1
 
 
+class Namespace:
+    class Point:
+        __match_args__ = ("x", "y")
+
+
+match value:
+    case Namespace.Point(x, y=y):
+        result = x, y
+
+
 
 match = case = 0
 match match:
