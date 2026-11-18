@@ -1,9 +1,21 @@
-async def fetch(query):
-    return await query()
+async def f():
+    pass
 
 
-async def gather(items):
-    result = []
-    async for item in items:
-        result.append(item)
-    return result
+async def f():
+    await b
+
+
+async def f():
+    async for i in range(10):
+        pass
+
+
+async def f():
+    async with open(f) as p:
+        pass
+
+
+async def f():
+    a = [i async for i in range(10)]
+    return a

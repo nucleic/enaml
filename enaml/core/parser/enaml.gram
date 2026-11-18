@@ -1,5 +1,5 @@
 #---------------------------------------------------------------------------------------
-# Copyright (c) 2021-2025, Nucleic Development Team.
+# Copyright (c) 2021-2026, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@
 
 @header'''
 #---------------------------------------------------------------------------------------
-# Copyright (c) 2021-2025, Nucleic Development Team.
+# Copyright (c) 2021-2026, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -89,8 +89,8 @@ pragma[enaml_ast.Pragma]:
      }
 pragma_arg[enaml_ast.PragmaArg]:
     | a=NAME { enaml_ast.PragmaArg(kind="token", value=a.string) }
-    | a=NUMBER { enaml_ast.PragmaArg(kind="number", value=a) }
-    | a=STRING { enaml_ast.PragmaArg(kind="string", value=a) }
+    | a=NUMBER { enaml_ast.PragmaArg(kind="number", value=a.string) }
+    | a=STRING { enaml_ast.PragmaArg(kind="string", value=a.string) }
 
 
 # --- StorageExpr, ConstExpr, AliasExpr ------------------------------------------------
@@ -424,14 +424,8 @@ template_argument:
             LOCATIONS,
         )
       }
-    | a=expression b=for_if_clauses {
-        enaml_ast.PythonExpression(
-            ast.GeneratorExp(elt=a, generators=b, LOCATIONS),
-            LOCATIONS,
-        )
-      }
 template_ids:
-    | a=','.NAME+ b=[',' '*' z=NAME { z }] {
+    | a=','.NAME+ b=[',' '*' z=NAME { z }] &template_id_termination {
         enaml_ast.TemplateIdentifiers(
             names=[p.string for p in a],
             starname=b.string if b else "",
@@ -441,6 +435,9 @@ template_ids:
     | '*' b=NAME {
         enaml_ast.TemplateIdentifiers(names=[], starname=b.string, LOCATIONS)
       }
+template_id_termination:
+    | ':'
+    | NEWLINE
 template_inst_body:
     | NEWLINE INDENT a=template_inst_item+ DEDENT { a }
     | a=template_inst_item { [a] }
@@ -1014,7 +1011,7 @@ pattern:
 
 as_pattern["ast.MatchAs"]:
     | pattern=or_pattern 'as' target=pattern_capture_target {
-        self.raise_syntax_error_known_location("cannot use '_' as a target", pattern) if isinstance(pattern, ast.MatchAs) and pattern.pattern is None and pattern.name is None else ast.MatchAs(pattern=pattern, name=target, LOCATIONS)
+        ast.MatchAs(pattern=pattern, name=target, LOCATIONS)
      }
     | invalid_as_pattern
 
@@ -1129,7 +1126,7 @@ maybe_star_pattern:
 
 star_pattern:
     | '*' target=pattern_capture_target { ast.MatchStar(name=target, LOCATIONS) }
-    | '*' wildcard_pattern { ast.MatchStar(target=None, LOCATIONS) }
+    | '*' wildcard_pattern { ast.MatchStar(name=None, LOCATIONS) }
 
 mapping_pattern:
     | '{' '}' { ast.MatchMapping(keys=[], patterns=[], rest=None, LOCATIONS) }
@@ -1692,22 +1689,38 @@ for_if_clause[ast.comprehension]:
     | invalid_for_target
 
 listcomp[ast.ListComp]:
-    | '[' a=named_expression b=for_if_clauses ']' { ast.ListComp(elt=a, generators=b, LOCATIONS) }
     | invalid_comprehension
+    | '[' a=named_expression b=for_if_clauses ']' { ast.ListComp(elt=a, generators=b, LOCATIONS) }
+    | '[' a=starred_expression b=for_if_clauses ']' {
+        ast.ListComp(elt=a, generators=b, LOCATIONS)
+        if self.py_version >= (3, 15)
+        else None }
 
 setcomp[ast.SetComp]:
-    | '{' a=named_expression b=for_if_clauses '}' { ast.SetComp(elt=a, generators=b, LOCATIONS) }
     | invalid_comprehension
+    | '{' a=named_expression b=for_if_clauses '}' { ast.SetComp(elt=a, generators=b, LOCATIONS) }
+    | '{' a=starred_expression b=for_if_clauses '}' {
+        ast.SetComp(elt=a, generators=b, LOCATIONS)
+        if self.py_version >= (3, 15)
+        else None }
 
 genexp[ast.GeneratorExp]:
-    | '(' a=( assignment_expression | expression !':=') b=for_if_clauses ')' {
-        ast.GeneratorExp(elt=a, generators=b, LOCATIONS)
-     }
     | invalid_comprehension
+    | '(' a=(assignment_expression | expression !':=') b=for_if_clauses ')' {
+        ast.GeneratorExp(elt=a, generators=b, LOCATIONS) }
+    | '(' a=starred_expression b=for_if_clauses ')' {
+        ast.GeneratorExp(elt=a, generators=b, LOCATIONS)
+        if self.py_version >= (3, 15)
+        else None }
 
 dictcomp[ast.DictComp]:
-    | '{' a=kvpair b=for_if_clauses '}' { ast.DictComp(key=a[0], value=a[1], generators=b, LOCATIONS) }
     | invalid_dict_comprehension
+    | '{' a=kvpair b=for_if_clauses '}' {
+        ast.DictComp(key=a[0], value=a[1], generators=b, LOCATIONS) }
+    | '{' '**' a=bitwise_or b=for_if_clauses '}' {
+        ast.DictComp(key=a, value=None, generators=b, LOCATIONS)
+        if self.py_version >= (3, 15)
+        else None }
 
 # FUNCTION CALL ARGUMENTS
 # =======================
@@ -1735,6 +1748,7 @@ kwargs[list]:
 starred_expression:
     | invalid_starred_expression
     | '*' a=expression { ast.Starred(value=a, ctx=Load, LOCATIONS) }
+    | '*' { self.raise_syntax_error("Invalid star expression") }
 
 kwarg_or_starred:
     | invalid_kwarg
@@ -1946,6 +1960,11 @@ invalid_expression[NoReturn]:
             "f-string: lambda expressions are not allowed without parentheses", a, b
         )
      }
+    | a='lambda' [lambda_params] b=':' &( TSTRING_MIDDLE | tstring_replacement_field)  {
+        self.raise_syntax_error_known_range(
+            "t-string: lambda expressions are not allowed without parentheses", a, b
+        )
+     }
 invalid_named_expression[NoReturn]:
     | a=expression ':=' expression {
         self.raise_syntax_error_known_location(
@@ -2006,6 +2025,8 @@ invalid_block[NoReturn]:
 invalid_comprehension[NoReturn]:
     | ('[' | '(' | '{') a=starred_expression for_if_clauses {
         self.raise_syntax_error_known_location("iterable unpacking cannot be used in comprehension", a)
+        if self.py_version < (3, 15)
+        else None
      }
     | ('[' | '{') a=star_named_expression ',' b=star_named_expressions for_if_clauses {
         self.raise_syntax_error_known_range(
@@ -2020,6 +2041,8 @@ invalid_comprehension[NoReturn]:
 invalid_dict_comprehension[NoReturn]:
     | '{' a='**' bitwise_or for_if_clauses '}' {
         self.raise_syntax_error_known_location("dict unpacking cannot be used in dict comprehension", a)
+        if self.py_version < (3, 15)
+        else None
      }
 invalid_parameters[NoReturn]:
     | a="/" ',' {
@@ -2191,13 +2214,13 @@ invalid_try_stmt[NoReturn]:
         )
      }
 invalid_except_stmt[None]:
-    | 'except' '*'? a=expression ',' expressions ['as' NAME ] ':' {
+    | 'except' '*'? a=expression ',' expressions 'as' t=NAME ':' {
         self.raise_syntax_error_known_range(
             "multiple exception types must be parenthesized when using 'as'"
             if self.py_version >= (3, 14)
             else "multiple exception types must be parenthesized",
             a,
-            a,
+            t,
         )
      }
     | 'except' '*'? a=expression ',' b=expressions ':' {
@@ -2391,10 +2414,6 @@ invalid_replacement_field:
         self.raise_syntax_error_on_next_token("f-string: expecting '}'")
      }
 
-invalid_conversion_character:
-    | '!' &(':' | '}') { self.raise_syntax_error_on_next_token("f-string: missing conversion character") }
-    | '!' !NAME { self.raise_syntax_error_on_next_token("f-string: invalid conversion character") }
-
 invalid_tstring_replacement_field:
     | '{' a='=' { self.raise_syntax_error_known_location("t-string: valid expression required before '='", a) }
     | '{' a='!' { self.raise_syntax_error_known_location("t-string: valid expression required before '!'", a) }
@@ -2432,3 +2451,8 @@ invalid_string_tstring_concat:
     | a=tstring+ b=(fstring|STRING) {
         self.raise_syntax_error_known_range("cannot mix t-string literals with string or bytes literals", a[-1], b)
      }
+
+
+invalid_conversion_character:
+    | '!' &(':' | '}') { self.raise_syntax_error_on_next_token("f-string: missing conversion character") }
+    | '!' !NAME { self.raise_syntax_error_on_next_token("f-string: invalid conversion character") }

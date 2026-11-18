@@ -1,4 +1,5 @@
-from enaml.widgets.api import Window, Container, Field, PushButton
+template LabelPanel(Content): const a = 1
+
 
 
 template LabelPanel(Content):
@@ -10,7 +11,39 @@ template LabelPanel(Content):
             text = "Apply"
 
 
-enamldef Main(Window):
+
+template LabelPanel(Content):
+    """test"""
+    const panel_label = "Apply"
     Container:
-        LabelPanel(Field): panel:
-            panel.content.text = "hello"
+        Content: content:
+            pass
+        PushButton: action:
+            text = "Apply"
+
+
+
+template LabelPanel(Content: Widget):
+    const panel_label = "Apply"
+    Container:
+        Template(Content): pass
+
+
+
+template LabelPanel(Content: Widget, C=1):
+    const panel_label = "Apply"
+    const c = C
+    Container:
+        Template(Content): pass
+
+
+
+template LabelPanel(*V):
+    const c = V
+
+
+
+template LabelPanel(a: int, b = "x", *rest): pass
+
+
+

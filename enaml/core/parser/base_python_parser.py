@@ -1,5 +1,5 @@
 8# --------------------------------------------------------------------------------------
-# Copyright (c) 2021-2025, Nucleic Development Team.
+# Copyright (c) 2021-2026, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -37,7 +37,7 @@ try:
         TSTRING_START,
     )
 except ImportError:
-    # On Python version on which t-string are not supported 
+    # On Python version on which t-string are not supported
     # use unmatchable token values
     TSTRING_END = -1001
     TSTRING_MIDDLE = -1002
@@ -403,7 +403,7 @@ class BasePythonParser(Parser):
 
         if debug_expr is not None:
             expr_end = self._source_offset(lbrace.end, debug_expr.start)
-            return inside[:expr_end].rstrip()
+            return inside[:expr_end]
 
         depth = 0
         for i, ch in enumerate(inside):

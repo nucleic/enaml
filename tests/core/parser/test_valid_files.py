@@ -1,5 +1,9 @@
 import ast
+import io
+import difflib
 import sys
+import textwrap
+import tokenize
 from pathlib import Path
 
 import pytest
@@ -73,11 +77,20 @@ def _unwrap_python_ast(node):
         seen.add(id(node))
         if _is_stdlib_ast(node):
             return node
+        if isinstance(node, list):
+            if len(node) == 1:
+                node = node[0]
+                continue
+            if all(_is_stdlib_ast(item) for item in node):
+                return ast.Module(body=node, type_ignores=[])
+            return node
         if hasattr(node, "ast") and getattr(node, "ast") is not None:
             node = getattr(node, "ast")
             continue
         body = getattr(node, "body", None)
         if isinstance(body, list):
+            if all(_is_stdlib_ast(item) for item in body):
+                return ast.Module(body=body, type_ignores=[])
             for item in body:
                 if hasattr(item, "ast") and getattr(item, "ast") is not None:
                     node = item
@@ -98,7 +111,57 @@ def _iter_python_snippets():
         PYTHON_VALID_DIR.rglob("*.py"),
         key=lambda path: str(path.relative_to(PYTHON_VALID_DIR)),
     ):
-        items.append(path)
+        stem = path.stem.lower()
+        if sys.version_info < (3, 14) and "type_params" in stem:
+            items.append(
+                pytest.param(
+                    path,
+                    marks=pytest.mark.skip(
+                        "type declarations allowed only in Python 3.12+"
+                    ),
+                    id=stem,
+                )
+            )
+        elif sys.version_info < (3, 14) and "tstring" in stem:
+            items.append(
+                pytest.param(
+                    path,
+                    marks=pytest.mark.skip(
+                        "T-strings are only supported in Python 3.14+"
+                    ),
+                    id=stem,
+                )
+            )
+        elif sys.version_info < (3, 14) and "unparenthesized_except" in stem:
+            items.append(
+                pytest.param(
+                    path,
+                    marks=pytest.mark.skip(
+                        "Unparenthesized multi-exception except blocks are only supported in Python 3.14+"
+                    ),
+                    id=stem,
+                )
+            )
+        elif sys.version_info < (3, 15) and "lazy_import" in stem:
+            items.append(
+                pytest.param(
+                    path,
+                    marks=pytest.mark.skip("Lazy imports allowed only in Python 3.15+"),
+                    id=stem,
+                )
+            )
+        elif sys.version_info < (3, 15) and "comprehensions_unpacking" in stem:
+            items.append(
+                pytest.param(
+                    path,
+                    marks=pytest.mark.skip(
+                        "Unpacking in comprehensions allowed only in Python 3.15+"
+                    ),
+                    id=stem,
+                )
+            )
+        else:
+            items.append(pytest.param(path, id=stem))
     return items
 
 
@@ -110,28 +173,41 @@ def _iter_enaml_fixtures():
     )
 
 
-def _should_skip_python_fixture(path):
-    stem = path.stem.lower()
-    if sys.version_info < (3, 14) and "tstring" in stem:
-        return True
-    if sys.version_info < (3, 15) and "lazy_import" in stem:
-        return True
-    return False
-
-
 @pytest.mark.parametrize("path", _iter_python_snippets())
 def test_valid_python_fixtures_match_stdlib_ast(path):
-    if _should_skip_python_fixture(path):
-        pytest.skip("t-strings require Python 3.14+")
+    with open(path) as f:
+        source = f.read()
 
-    source = path.read_text(encoding="utf-8")
-    parsed = _unwrap_python_ast(parse(source))
-    python_ast = ast.parse(source)
+    for part in source.split("\n\n\n"):
+        original = ast.parse(part)
 
-    assert _dump_node(parsed, include_attributes=True) == _dump_node(
-        python_ast, include_attributes=True
-    )
+        try:
+            enaml_ast = _unwrap_python_ast(parse(part))
+        except Exception:
+            temp = io.StringIO(part)
+            print("Parsing failed:")
+            print("Source is:")
+            print(textwrap.indent(part, "  "))
+            temp = io.StringIO(part)
+            print("Token stream is:")
+            for t in tokenize.generate_tokens(temp.readline):
+                print(t)
+            print()
+            print("CPython ast is:")
+            print(ast.dump(original, include_attributes=True, indent="  "))
+            raise
 
+        o = ast.dump(original, include_attributes=True, indent="  ")
+        p = ast.dump(enaml_ast, include_attributes=True, indent="  ")
+        diff = "\n".join(
+            difflib.unified_diff(
+                o.split("\n"), p.split("\n"), "cpython", "python-pegen"
+            )
+        )
+        if diff:
+            print(part)
+            print(diff)
+        assert not diff
 
 
 @pytest.mark.parametrize(
@@ -139,8 +215,16 @@ def test_valid_python_fixtures_match_stdlib_ast(path):
 )
 def test_valid_enaml_fixtures_parse_without_error(path):
     source = path.read_text(encoding="utf-8")
-    module = parse(source)
 
-    assert hasattr(module, "body")
-    assert isinstance(module.body, list)
-    EnamlCompiler.compile(module, str(path))
+    for part in source.split("\n\n\n"):
+
+        try:
+            module = parse(part)
+        except Exception:
+            print("Parsing failed for part:")
+            print(textwrap.indent(part, "  "))
+            raise
+
+        assert hasattr(module, "body")
+        assert isinstance(module.body, list)
+        EnamlCompiler.compile(module, str(path))
