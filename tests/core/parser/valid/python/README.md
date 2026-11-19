@@ -1,9 +1,16 @@
 # Python parser compatibility fixtures
 
-This directory stores Python snippets that are intended to be parsed by the Enaml parser and compared against the stdlib `ast` module.
+This directory stores Python snippets that are intended to be parsed by the
+Enaml parser and compared against the stdlib `ast` module.
 
-These fixtures are the foundation of the pegen-style valid-corpus migration. They should be grouped by language feature rather than by ad hoc file name alone.
+Each file is parsed once as a complete Python module. Fixtures are grouped by
+language feature in directories and have descriptive filenames such as
+`statements/for_statement.py`. Do not use a run of blank lines to delimit
+independent test cases; create another file instead.
 
-Examples include assignment, function definitions, comprehensions, async syntax, and version-gated grammar features.
+Some directories cover syntax gated to newer Python versions. Their relative
+paths are used when applying the corresponding pytest skip marks on older
+interpreters.
 
-The corpus includes modern Python grammar cases such as template strings, walrus expressions, async syntax, and function definitions, and compares their AST output directly against the stdlib parser.
+The EOF regression fixtures at this directory's root intentionally preserve
+their missing-final-newline property and should remain single, focused files.

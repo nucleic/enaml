@@ -1,0 +1,3 @@
+enamldef Main(Window):
+    attr model
+    a >> model.a

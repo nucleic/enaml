@@ -1,0 +1,2 @@
+enamldef Main(Window):
+    LabelPanel(Field): child: child.field = expr

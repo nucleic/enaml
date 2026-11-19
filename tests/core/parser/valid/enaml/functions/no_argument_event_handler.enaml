@@ -1,0 +1,3 @@
+enamldef Main(Window):
+    focus_gained => ():
+        pass

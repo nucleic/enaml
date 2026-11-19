@@ -1,0 +1,5 @@
+enamldef Main(Window): main:
+    attr model
+    main.a <<
+        print("update")
+        return model.a == 1

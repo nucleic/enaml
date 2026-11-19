@@ -1,0 +1,3 @@
+enamldef Main(Window):
+    LabelPanel(Field): panel:
+        panel.content.text = "hello"

@@ -1,4 +1,5 @@
 import ast
+from contextlib import nullcontext
 import io
 import difflib
 import sys
@@ -109,59 +110,68 @@ def _iter_python_snippets():
     items = []
     for path in sorted(
         PYTHON_VALID_DIR.rglob("*.py"),
-        key=lambda path: str(path.relative_to(PYTHON_VALID_DIR)),
+        key=lambda path: path.relative_to(PYTHON_VALID_DIR).as_posix(),
     ):
-        stem = path.stem.lower()
-        if sys.version_info < (3, 14) and "type_params" in stem:
+        fixture_id = path.relative_to(PYTHON_VALID_DIR).as_posix()
+        normalized_id = fixture_id.lower()
+        if sys.version_info < (3, 14) and "type_params" in normalized_id:
             items.append(
                 pytest.param(
                     path,
                     marks=pytest.mark.skip(
                         "type declarations allowed only in Python 3.12+"
                     ),
-                    id=stem,
+                    id=fixture_id,
                 )
             )
-        elif sys.version_info < (3, 14) and "tstring" in stem:
+        elif sys.version_info < (3, 14) and "tstrings/" in normalized_id:
             items.append(
                 pytest.param(
                     path,
                     marks=pytest.mark.skip(
                         "T-strings are only supported in Python 3.14+"
                     ),
-                    id=stem,
+                    id=fixture_id,
                 )
             )
-        elif sys.version_info < (3, 14) and "unparenthesized_except" in stem:
+        elif (
+            sys.version_info < (3, 14)
+            and "unparenthesized_except" in normalized_id
+        ):
             items.append(
                 pytest.param(
                     path,
                     marks=pytest.mark.skip(
                         "Unparenthesized multi-exception except blocks are only supported in Python 3.14+"
                     ),
-                    id=stem,
+                    id=fixture_id,
                 )
             )
-        elif sys.version_info < (3, 15) and "lazy_import" in stem:
+        elif sys.version_info < (3, 15) and "lazy_import" in normalized_id:
             items.append(
                 pytest.param(
                     path,
-                    marks=pytest.mark.skip("Lazy imports allowed only in Python 3.15+"),
-                    id=stem,
+                    marks=pytest.mark.skip(
+                        "Lazy imports allowed only in Python 3.15+"
+                    ),
+                    id=fixture_id,
                 )
             )
-        elif sys.version_info < (3, 15) and "comprehensions_unpacking" in stem:
+        elif (
+            sys.version_info < (3, 15)
+            and "comprehensions_unpacking" in normalized_id
+        ):
             items.append(
                 pytest.param(
                     path,
                     marks=pytest.mark.skip(
                         "Unpacking in comprehensions allowed only in Python 3.15+"
                     ),
-                    id=stem,
+                    id=fixture_id,
                 )
             )
         else:
-            items.append(pytest.param(path, id=stem))
+            items.append(pytest.param(path, id=fixture_id))
     return items
 
 
@@ -169,60 +179,67 @@ def _iter_enaml_fixtures():
     if not VALID_DIR.exists():
         return []
     return sorted(
-        VALID_DIR.rglob("*.enaml"), key=lambda path: str(path.relative_to(VALID_DIR))
+        VALID_DIR.rglob("*.enaml"),
+        key=lambda path: path.relative_to(VALID_DIR).as_posix(),
     )
 
 
 @pytest.mark.parametrize("path", _iter_python_snippets())
 def test_valid_python_fixtures_match_stdlib_ast(path):
-    with open(path) as f:
-        source = f.read()
+    fixture_id = path.relative_to(PYTHON_VALID_DIR).as_posix()
+    source = path.read_text(encoding="utf-8")
+    original = ast.parse(source)
 
-    for part in source.split("\n\n\n"):
-        original = ast.parse(part)
+    try:
+        enaml_ast = _unwrap_python_ast(parse(source))
+    except Exception:
+        temp = io.StringIO(source)
+        print(f"Parsing failed for {fixture_id}:")
+        print("Source is:")
+        print(textwrap.indent(source, "  "))
+        temp = io.StringIO(source)
+        print("Token stream is:")
+        for t in tokenize.generate_tokens(temp.readline):
+            print(t)
+        print()
+        print("CPython ast is:")
+        print(ast.dump(original, include_attributes=True, indent="  "))
+        raise
 
-        try:
-            enaml_ast = _unwrap_python_ast(parse(part))
-        except Exception:
-            temp = io.StringIO(part)
-            print("Parsing failed:")
-            print("Source is:")
-            print(textwrap.indent(part, "  "))
-            temp = io.StringIO(part)
-            print("Token stream is:")
-            for t in tokenize.generate_tokens(temp.readline):
-                print(t)
-            print()
-            print("CPython ast is:")
-            print(ast.dump(original, include_attributes=True, indent="  "))
-            raise
-
-        o = ast.dump(original, include_attributes=True, indent="  ")
-        p = ast.dump(enaml_ast, include_attributes=True, indent="  ")
-        diff = "\n".join(
-            difflib.unified_diff(
-                o.split("\n"), p.split("\n"), "cpython", "python-pegen"
-            )
+    o = ast.dump(original, include_attributes=True, indent="  ")
+    p = ast.dump(enaml_ast, include_attributes=True, indent="  ")
+    diff = "\n".join(
+        difflib.unified_diff(
+            o.split("\n"), p.split("\n"), "cpython", "python-pegen"
         )
-        if diff:
-            print(part)
-            print(diff)
-        assert not diff
+    )
+    if diff:
+        print(f"{fixture_id}:")
+        print(source)
+        print(diff)
+    assert not diff
 
 
 @pytest.mark.parametrize(
-    "path", _iter_enaml_fixtures(), ids=lambda path: str(path.relative_to(VALID_DIR))
+    "path",
+    _iter_enaml_fixtures(),
+    ids=lambda path: path.relative_to(VALID_DIR).as_posix(),
 )
 def test_valid_enaml_fixtures_parse_without_error(path):
+    fixture_id = path.relative_to(VALID_DIR).as_posix()
     source = path.read_text(encoding="utf-8")
+    warning_context = (
+        pytest.warns(SyntaxWarning, match="unhandled pragma")
+        if "pragmas/" in fixture_id
+        else nullcontext()
+    )
 
-    for part in source.split("\n\n\n"):
-
+    with warning_context:
         try:
-            module = parse(part)
+            module = parse(source)
         except Exception:
-            print("Parsing failed for part:")
-            print(textwrap.indent(part, "  "))
+            print(f"Parsing failed for {fixture_id}:")
+            print(textwrap.indent(source, "  "))
             raise
 
         assert hasattr(module, "body")

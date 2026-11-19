@@ -2,14 +2,13 @@
 
 This directory stores Enaml programs that should parse successfully as part of the corpus-based validation layer.
 
-Fixtures are kept as a single file per grammar construct at the root of this directory so the accepted syntax is easy to scan and extend without artificial "basic_" prefixes:
+Fixtures are organized into a directory per former corpus file, with a
+descriptive file for each grammar construct or closely related family:
 
-- attributes.enaml
-- bindings.enaml
-- events.enaml
-- functions.enaml
-- templates.enaml
-- async.enaml
-- other Enaml syntax files that represent a single construct or family
+- `operators/one_way_binding.enaml`
+- `functions/keyword_only.enaml`
+- `templates/typed_parameter.enaml`
+- `pragmas/body_pragma.enaml`
 
-The goal is to keep the broad grammar acceptance checks readable and maintainable rather than hiding them inside unrelated parser tests.
+Files are discovered recursively and parsed and compiled as complete programs.
+Blank lines are ordinary Enaml source whitespace rather than test delimiters.

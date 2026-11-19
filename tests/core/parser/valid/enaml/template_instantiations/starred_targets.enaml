@@ -1,0 +1,3 @@
+enamldef Main(Window):
+    Item(1, *items): first, *others:
+        first.value = 1
