@@ -1,0 +1,7 @@
+# messages = ["invalid syntax"]
+# start = [1, 25]
+# end_line = 1
+# end_offset = 26
+# --- source ---
+template Panel(Content)::
+    pass

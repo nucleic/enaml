@@ -17,7 +17,10 @@ import pytest
 
 
 SOURCE_MARKER = "# --- source ---"
-INVALID_DIR = Path(__file__).resolve().parent / "invalid" / "python"
+INVALID_ROOT = Path(__file__).resolve().parent / "invalid"
+INVALID_DIR = INVALID_ROOT / "python"
+PYTHON_INVALID_DIR = INVALID_ROOT / "python"
+ENAML_INVALID_DIR = INVALID_ROOT / "enaml"
 ROOT_KEYS = {
     "messages",
     "parser_version",
@@ -71,7 +74,7 @@ class InvalidFixture:
 
     @property
     def fixture_id(self):
-        return self.path.relative_to(INVALID_DIR).as_posix()
+        return self.path.relative_to(INVALID_ROOT).as_posix()
 
     def is_supported(self, version: tuple[int, int]) -> bool:
         if self.minimum_python is not None and version < self.minimum_python:
@@ -385,25 +388,32 @@ def pytest_generate_tests(metafunc):
 
     version = _python_version()
     parameters = []
-    for path in sorted(
-        INVALID_DIR.rglob("*.py"),
-        key=lambda path: path.relative_to(INVALID_DIR).as_posix(),
-    ):
-        fixture = parse_invalid_fixture(path)
-        fixture_id = path.relative_to(INVALID_DIR).as_posix()
-        if not fixture.is_supported(version):
-            parameters.append(
-                pytest.param(
-                    path,
-                    marks=pytest.mark.skip(
-                        fixture.skip_reason or "unsupported Python version"
-                    ),
-                    id=fixture_id,
+    fixture_roots = (
+        (PYTHON_INVALID_DIR, "*.py"),
+        (ENAML_INVALID_DIR, "*.enaml"),
+    )
+    for fixture_root, pattern in fixture_roots:
+        if not fixture_root.exists():
+            continue
+        for path in sorted(
+            fixture_root.rglob(pattern),
+            key=lambda path: path.relative_to(INVALID_ROOT).as_posix(),
+        ):
+            fixture = parse_invalid_fixture(path)
+            fixture_id = path.relative_to(INVALID_ROOT).as_posix()
+            if not fixture.is_supported(version):
+                parameters.append(
+                    pytest.param(
+                        path,
+                        marks=pytest.mark.skip(
+                            fixture.skip_reason or "unsupported Python version"
+                        ),
+                        id=fixture_id,
+                    )
                 )
-            )
-        else:
-            fixture.select_expectation(version)
-            parameters.append(pytest.param(path, id=fixture_id))
+            else:
+                fixture.select_expectation(version)
+                parameters.append(pytest.param(path, id=fixture_id))
     metafunc.parametrize("invalid_fixture_path", parameters)
 
 

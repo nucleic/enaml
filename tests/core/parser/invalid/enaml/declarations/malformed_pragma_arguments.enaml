@@ -1,0 +1,6 @@
+# messages = ["invalid syntax"]
+# start = [1, 15]
+# end_line = 1
+# end_offset = 16
+# --- source ---
+pragma runner(,

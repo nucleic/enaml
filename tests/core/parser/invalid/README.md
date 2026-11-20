@@ -1,7 +1,7 @@
 # Invalid parser fixtures
 
-Files below `python/` are source fixtures for syntax that must be rejected by
-the Enaml parser. They are not importable Python modules.
+Files below `python/` and `enaml/` are source fixtures for syntax that must be
+rejected by the Enaml parser. They are not importable Python modules.
 
 Each fixture starts with flat TOML keys encoded in comments. The header records
 the expected diagnostic, parser target version, source locations, runtime

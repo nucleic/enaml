@@ -7,9 +7,7 @@ import pytest
 from enaml.core.parser import parse
 
 
-def test_invalid_python_fixtures_raise_matching_syntax_error(
-    invalid_fixture
-):
+def test_invalid_fixtures_raise_matching_syntax_error(invalid_fixture):
     fixture_id = invalid_fixture.fixture_id
     expectation = invalid_fixture.select_expectation(
         (sys.version_info[0], sys.version_info[1])

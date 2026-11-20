@@ -1,0 +1,7 @@
+# messages = ["Invalid star expression"]
+# start = [1, 17]
+# end_line = 1
+# end_offset = 18
+# --- source ---
+template Panel(*):
+    pass
