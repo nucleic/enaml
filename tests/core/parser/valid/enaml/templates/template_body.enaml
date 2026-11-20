@@ -1,0 +1,7 @@
+template LabelPanel(Content):
+    const panel_label = "Apply"
+    Container:
+        Content: content:
+            pass
+        PushButton: action:
+            text = "Apply"

@@ -1,0 +1,4 @@
+pragma debug
+pragma runner("fast", label)
+enamldef Main(Window):
+    attr value = "demo"

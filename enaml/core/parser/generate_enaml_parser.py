@@ -1,16 +1,17 @@
 # --------------------------------------------------------------------------------------
-# Copyright (c) 2022-2024, Nucleic Development Team.
+# Copyright (c) 2022-2026, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 # --------------------------------------------------------------------------------------
 """Script used to generate the Enaml parser from enaml.gram"""
+
 import pathlib
 
 from pegen.build import build_python_parser_and_generator
 
-
+# Must be run on Python 3.15+ to properly manage the TSTRING related tokens
 def main():
 
     # TODO add support for generating a verbose parser
@@ -19,6 +20,7 @@ def main():
     build_python_parser_and_generator(
         str(dir_path / "enaml.gram"), str(dir_path / "enaml_parser.py")
     )
+
 
 if __name__ == "__main__":
     main()

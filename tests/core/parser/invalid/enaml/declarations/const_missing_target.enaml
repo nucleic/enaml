@@ -1,0 +1,7 @@
+# messages = ["invalid syntax"]
+# start = [2, 17]
+# end_line = 2
+# end_offset = 18
+# --- source ---
+enamldef Main(Window):
+    const label:

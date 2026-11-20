@@ -1,0 +1,2 @@
+enamldef Main(Window):
+    attr value: int = 1

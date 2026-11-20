@@ -1,0 +1,3 @@
+enamldef Main(Window):
+    LabelPanel(*test): panel:
+        pass

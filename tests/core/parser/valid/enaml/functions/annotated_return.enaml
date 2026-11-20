@@ -1,0 +1,4 @@
+enamldef Main(Window):
+    attr text_value = "ready"
+    func result(value: int, label: str = "x") -> str:
+        return f"{label}:{value}"

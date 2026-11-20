@@ -1,0 +1,2 @@
+template LabelPanel(*V):
+    const c = V

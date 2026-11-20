@@ -1,0 +1,7 @@
+enamldef Main(Window):
+    """A docstring in the body."""
+    attr value = "demo"
+
+    Container:
+        Field:
+            text = value

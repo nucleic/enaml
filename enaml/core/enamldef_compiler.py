@@ -5,10 +5,17 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 #------------------------------------------------------------------------------
+from atom.api import List, Typed
+
 from . import block_compiler as block
 from . import compiler_common as cmn
-from .enaml_ast import EnamlDef
+from .enaml_ast import ConstExpr, EnamlDef
 from ..compat import PY313
+
+
+def collect_const_names(node):
+    """Collect const expression names declared directly in an enamldef."""
+    return [item.name for item in node.body if isinstance(item, ConstExpr)]
 
 
 class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
@@ -19,6 +26,9 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
     class method.
 
     """
+    #: A mapping of const names to values collected during traversal.
+    const_names = List()
+
     @classmethod
     def compile(cls, node, args, filename):
         """ Invoke the compiler for the given node.
@@ -48,6 +58,8 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
 
         """
         compiler = cls(filename=filename)
+        compiler.const_names = collect_const_names(node)
+        compiler.local_names = set(compiler.const_names)
         cg = compiler.code_generator
 
         # Setup the block for execution.
@@ -154,9 +166,40 @@ class FirstPassEnamlDefCompiler(block.FirstPassBlockCompiler):
         cg.call_function(is_method=True)
         cg.pop_top()
 
-        # Load and return the compiler node list..
+        # Load the compiler node list and const values.
         cg.load_fast(cmn.NODE_LIST)
+        for name in self.const_names:
+            cg.load_fast(name)
+        cg.build_tuple(len(self.const_names))
+        cg.build_tuple(2)
         cg.return_value()
+
+    def visit_ConstExpr(self, node):
+        # Setup the line number for the const expr.
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
+
+        # Generate the code for the expression.
+        names = self.local_names
+        cmn.safe_eval_ast(cg, node.expr.ast, node.name, node.lineno, names)
+
+        # Validate the type of the expression value.
+        if node.typename:
+            with cg.try_squash_raise():
+                cg.dup_top()
+                if not PY313:
+                    cg.push_null()
+                    cg.rot_two()
+                cmn.load_helper(cg, 'type_check_expr')
+                cg.rot_two()
+                if PY313:
+                    cg.push_null()
+                    cg.rot_two()
+                cmn.load_typename(cg, node.typename, names)
+                cg.call_function(2)
+                cg.pop_top()
+
+        cg.store_fast(node.name)
 
 
 class SecondPassEnamlDefCompiler(block.SecondPassBlockCompiler):
@@ -167,6 +210,9 @@ class SecondPassEnamlDefCompiler(block.SecondPassBlockCompiler):
     'compile' class method.
 
     """
+    #: A mapping of const names to their value index.
+    const_indices = Typed(dict, ())
+
     @classmethod
     def compile(cls, node, args, index_map, filename):
         """ Invoke the compiler for the given node.
@@ -198,6 +244,10 @@ class SecondPassEnamlDefCompiler(block.SecondPassBlockCompiler):
         compiler = cls()
         compiler.filename = filename
         compiler.index_map = index_map
+        const_names = collect_const_names(node)
+        compiler.local_names = set(const_names)
+        for index, name in enumerate(const_names):
+            compiler.const_indices[name] = index
 
         cg = compiler.code_generator
 
@@ -224,6 +274,23 @@ class SecondPassEnamlDefCompiler(block.SecondPassBlockCompiler):
         cg = self.code_generator
         cg.load_const(None)
         cg.return_value()
+
+    def visit_ConstExpr(self, node):
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
+
+        cg.load_fast(cmn.T_CONSTS)
+        cg.load_const(self.const_indices[node.name])
+        cg.binary_subscr()
+        cg.store_fast(node.name)
+
+        cmn.load_node(cg, 0)
+        cg.load_attr('scope')
+        cg.load_method('__setitem__')
+        cg.load_const(node.name)
+        cg.load_fast(node.name)
+        cg.call_function(2, is_method=True)
+        cg.pop_top()
 
 
 class EnamlDefCompiler(cmn.CompilerBase):
@@ -267,7 +334,7 @@ class EnamlDefCompiler(cmn.CompilerBase):
         )
 
         # Generate the code for the second pass.
-        second_args = [cmn.NODE_LIST]
+        second_args = [cmn.NODE_LIST, cmn.T_CONSTS]
         second_code = SecondPassEnamlDefCompiler.compile(
             node, second_args, index_map, filename
         )
@@ -288,7 +355,9 @@ class EnamlDefCompiler(cmn.CompilerBase):
         for arg in first_args:
             cg.load_fast(arg)
         cg.call_function(len(first_args))
+        cg.unpack_sequence(2)
         cg.store_fast(cmn.NODE_LIST)
+        cg.store_fast(cmn.T_CONSTS)
 
         # Load and invoke the second pass code object.
         cg.load_const(second_code)

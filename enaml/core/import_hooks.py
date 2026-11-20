@@ -10,7 +10,7 @@ import os
 import io
 import struct
 import sys
-from abc import ABCMeta, abstractmethod, abstractclassmethod
+from abc import ABCMeta, abstractmethod
 from collections import defaultdict, namedtuple
 from zipfile import ZipFile
 
@@ -147,7 +147,8 @@ class AbstractEnamlImporter(object, metaclass=ABCMeta):
     #--------------------------------------------------------------------------
     # Abstract API
     #--------------------------------------------------------------------------
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def locate_module(cls, fullname, path=None):
         """ Searches for the given Enaml module and returns an instance
         of AbstractEnamlImporter on success.

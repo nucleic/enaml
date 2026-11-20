@@ -93,3 +93,17 @@ def test_compile_lamba_with_default_in_dict_comp():
     window.keymap['b']()
     assert window.mode == "b"
 
+
+def test_compile_enamldef_const_runtime():
+    source = dedent("""\
+    from enaml.widgets.api import Window
+
+    enamldef Main(Window):
+        const title: str = "demo"
+        attr captured: str = title
+    """)
+    Main = compile_source(source, "Main")
+    window = Main()
+
+    assert window.captured == "demo"
+

@@ -1,0 +1,4 @@
+enamldef Main(Window):
+    attr text_value = "ready"
+    func keyword_only(*, label: str, count: int = 1) -> tuple[str, int]:
+        return label, count

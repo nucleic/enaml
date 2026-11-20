@@ -1,0 +1,8 @@
+# start = [1, 19]
+# end_line = 1
+# end_offset = 20
+# messages = ["var-keyword argument cannot have default value"]
+# parser_version = [3, 11]
+# --- source ---
+def foo(a,**b: int=3):
+	pass

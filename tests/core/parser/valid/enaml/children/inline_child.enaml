@@ -1,0 +1,3 @@
+enamldef Main(Window):
+    Container:
+        PushButton: push: pass

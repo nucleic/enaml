@@ -136,15 +136,15 @@ class BaseEnamlParser(BasePythonParser):
                     self.raise_syntax_error_known_location(msg, item)
 
         func_node = ast.FunctionDef(
-            name = "f",
-            args = self.make_arguments(None, [], None, None, None),
-            decorator_list = [],
-            returns = None,
-            body = body,
-            lineno = body[0].lineno,
-            col_offset = body[0].col_offset,
-            end_lineno = body[-1].end_lineno,
-            end_col_offset = body[-1].end_col_offset,
+            name="f",
+            args=self.make_arguments(None, [], None, None, None),
+            decorator_list=[],
+            returns=None,
+            body=body,
+            lineno=body[0].lineno,
+            col_offset=body[0].col_offset,
+            end_lineno=body[-1].end_lineno,
+            end_col_offset=body[-1].end_col_offset,
         )
 
         return self.create_python_module([func_node])

@@ -1,0 +1,5 @@
+template LabelPanel(Content: Widget, C=1):
+    const panel_label = "Apply"
+    const c = C
+    Container:
+        Template(Content): pass
