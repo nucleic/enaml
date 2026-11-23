@@ -1,0 +1,3 @@
+@d
+class A:
+    pass

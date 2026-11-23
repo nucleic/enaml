@@ -1,0 +1,7 @@
+# messages = ["invalid syntax"]
+# start = [2, 16]
+# end_line = 2
+# end_offset = 17
+# --- source ---
+enamldef Main(Window):
+    alias name:

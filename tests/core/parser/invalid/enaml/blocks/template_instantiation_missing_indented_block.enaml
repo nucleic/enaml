@@ -1,0 +1,8 @@
+# messages = ["expected an indented block"]
+# start = [3, 1]
+# end_line = 3
+# end_offset = 1
+# --- source ---
+enamldef Main(Window):
+    Panel(Field):
+pass

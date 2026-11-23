@@ -1,0 +1,3 @@
+enamldef Main(Window):
+    LabelPanel((t for t in tests)): panel:
+        pass

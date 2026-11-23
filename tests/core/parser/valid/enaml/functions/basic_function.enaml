@@ -1,0 +1,5 @@
+enamldef Main(Window):
+    attr text_value = "ready"
+
+    func format_value(prefix):
+        return f"{prefix}:{text_value}"

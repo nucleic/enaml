@@ -1,0 +1,3 @@
+pragma first
+pragma second("x", 2)
+template Item(): pass

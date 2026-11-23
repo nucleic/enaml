@@ -1,0 +1,4 @@
+enamldef Main(Window):
+    attr model
+    a ::
+        pass

@@ -1,0 +1,4 @@
+enamldef Main(Window):
+    attr text_value = "ready"
+    func positional_only(a: int, b: str = "x", /, c: float = 1.25, *rest: int, flag: bool = False, **meta: object) -> tuple[int, str, tuple[int, ...], bool, dict[str, object]]:
+        return a, b, rest, flag, meta

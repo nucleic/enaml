@@ -1,0 +1,3 @@
+enamldef Main(Window):
+    calculate => (x: int) -> int:
+        return x

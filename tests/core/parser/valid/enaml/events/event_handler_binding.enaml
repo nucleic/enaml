@@ -1,0 +1,5 @@
+enamldef Main(Window):
+    Container:
+        PushButton: button:
+            event changed
+            clicked :: changed()
