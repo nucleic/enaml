@@ -3,6 +3,18 @@ Enaml Release Notes
 
 Dates are written as DD/MM/YYYY
 
+0.20.0 - 23/11/2026
+-------------------
+- add support for Python 3.15 PR #630
+- drop support for Python 3.10 PR #610
+- fix f-string parsing bug #628 PR #630
+- improve C++ extension lifetime management PR #606 #609 #611 #612 #615
+- update DynamicScope C++ binding PR #614
+- update declarative functions C++ binding PR #613
+- fix annotated functions not executing in DynamicScope PR #619
+- fix lambda defaults on Python 3.13 and later PR #620
+- fix patching declarative members added to a class PR #622
+
 0.19.0 - 06/10/2025
 -------------------
 - support for Python 3.14 PR #580
